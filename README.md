@@ -11,16 +11,16 @@
 
 ## Download
 
-Open the [latest release](https://github.com/sarthakguptadev/appubot/releases/latest) and pick the file for your computer:
+Always the newest version, straight from the [latest release](https://github.com/sarthakguptadev/appubot/releases/latest):
 
-| Computer | File |
+| Computer | Download |
 |---|---|
-| Mac with Apple silicon (M1 and later) | `AppuBot-<version>-arm64.dmg` |
-| Mac with an Intel processor | `AppuBot-<version>-x64.dmg` |
-| Windows (most PCs) | `AppuBot-Setup-<version>-x64.exe` |
-| Windows on Arm | `AppuBot-Setup-<version>-arm64.exe` |
-| Linux (any distribution) | `AppuBot-<version>-<arch>.AppImage` |
-| Debian / Ubuntu | `appubot_<version>_amd64.deb` or `appubot_<version>_arm64.deb` |
+| Mac with Apple silicon (M1 and later) | [AppuBot-arm64.dmg](https://github.com/sarthakguptadev/appubot/releases/latest/download/AppuBot-arm64.dmg) |
+| Mac with an Intel processor | [AppuBot-x64.dmg](https://github.com/sarthakguptadev/appubot/releases/latest/download/AppuBot-x64.dmg) |
+| Windows (most PCs) | [AppuBot-Setup-x64.exe](https://github.com/sarthakguptadev/appubot/releases/latest/download/AppuBot-Setup-x64.exe) |
+| Windows on Arm | [AppuBot-Setup-arm64.exe](https://github.com/sarthakguptadev/appubot/releases/latest/download/AppuBot-Setup-arm64.exe) |
+| Linux, any distribution (x64 / Arm) | [AppuBot-x86_64.AppImage](https://github.com/sarthakguptadev/appubot/releases/latest/download/AppuBot-x86_64.AppImage) · [AppuBot-arm64.AppImage](https://github.com/sarthakguptadev/appubot/releases/latest/download/AppuBot-arm64.AppImage) |
+| Debian / Ubuntu (x64 / Arm) | [appubot_amd64.deb](https://github.com/sarthakguptadev/appubot/releases/latest/download/appubot_amd64.deb) · [appubot_arm64.deb](https://github.com/sarthakguptadev/appubot/releases/latest/download/appubot_arm64.deb) |
 
 Not sure which Mac you have? Apple menu › About This Mac: "Chip: Apple M…" means Apple silicon.
 
