@@ -109,7 +109,8 @@ jobs:
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
         run: pnpm -C apps/desktop exec electron-builder ${{ matrix.target }} --publish never
-      # electron-builder signs with CSC_LINK and notarizes when APPLE_API_KEY (a file), _KEY_ID and _ISSUER are set
+      # electron-builder signs with CSC_LINK and notarizes when APPLE_API_KEY (a file), _KEY_ID and _ISSUER are set;
+      # stapling Apple's ticket sometimes loses its connection to Apple, so packaging gets three tries
       - if: runner.os == 'macOS'
         env:
           CSC_LINK: ${{ secrets.MAC_CERT_P12_BASE64 }}
@@ -125,7 +126,12 @@ jobs:
           export APPLE_API_KEY="$RUNNER_TEMP/AuthKey.p8"
           printf '%s\n' "$APPLE_API_KEY_P8" > "$APPLE_API_KEY"
           unset APPLE_API_KEY_P8
-          pnpm -C apps/desktop exec electron-builder ${{ matrix.target }} --publish never
+          for try in 1 2 3; do
+            pnpm -C apps/desktop exec electron-builder ${{ matrix.target }} --publish never && break
+            if [ "$try" = 3 ]; then exit 1; fi
+            echo "::warning::Packaging failed (try $try of 3); trying again in a minute"
+            sleep 60
+          done
           rm -f "$APPLE_API_KEY"
       - uses: actions/upload-artifact@v7
         with:
