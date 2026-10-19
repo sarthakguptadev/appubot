@@ -1,0 +1,167 @@
+name: Release
+# Builds AppuBot for macOS (Apple silicon, Intel), Windows (x64, Arm) and Linux (x64, Arm) and publishes it here, where
+# installed apps look for updates. The version is the day's date in India (2026.10.19); one release a day. Untick
+# "Publish" for a test build: the installers stay on the run's page for a day and nothing is published.
+on:
+  workflow_dispatch:
+    inputs:
+      notes:
+        description: What's new (shown on the release page)
+        required: false
+        type: string
+      publish:
+        description: Publish it (untick for a test build)
+        type: boolean
+        default: true
+      ref:
+        description: Branch or commit to build
+        required: false
+        type: string
+        default: main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PUBLISH: ${{ inputs.publish }}
+        run: |
+          version=$(TZ=Asia/Kolkata date +%Y.%-m.%-d)
+          tag="v$version"
+          if [ "$PUBLISH" != true ]; then
+            echo "Test build of AppuBot $version: nothing is published"
+          elif draft=$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft 2>/dev/null); then
+            if [ "$draft" = true ]; then
+              gh release delete "$tag" --repo "$GITHUB_REPOSITORY" --yes
+            else
+              echo "::error::AppuBot $version is already out: the next release can go out tomorrow"
+              exit 1
+            fi
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: prepare
+    timeout-minutes: 90
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - { name: mac-arm64, runner: macos-15, target: --mac --arm64 }
+          - { name: mac-x64, runner: macos-15-intel, target: --mac --x64 }
+          - { name: win-x64, runner: windows-latest, target: --win nsis --x64 }
+          - { name: win-arm64, runner: windows-11-arm, target: --win nsis --arm64 }
+          - { name: linux-x64, runner: ubuntu-latest, target: --linux AppImage deb --x64 }
+          - { name: linux-arm64, runner: ubuntu-24.04-arm, target: --linux AppImage deb --arm64, optional: true }
+    runs-on: ${{ matrix.runner }}
+    continue-on-error: ${{ matrix.optional == true }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: sarthakguptadev/appubot-source
+          ref: ${{ inputs.ref }}
+          ssh-key: ${{ secrets.SOURCE_DEPLOY_KEY }}
+          persist-credentials: false
+          show-progress: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: pnpm }
+      - run: node scripts/stamp-version.mjs "${{ needs.prepare.outputs.version }}"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -C packages/mcp-bridge build
+      # x86-64 links come out unsigned; electron-builder signs them again with the Developer ID
+      - if: runner.os == 'macOS'
+        working-directory: native/appubot-helper
+        run: |
+          swift build -c release -q
+          codesign --force --sign - .build/release/appubot-helper .build/release/appubot-notify
+      - run: pnpm -C apps/desktop exec electron-vite build --logLevel warn
+      # electron-builder's own fpm is an x86-64 binary
+      - if: runner.os == 'Linux' && runner.arch == 'ARM64'
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ruby ruby-dev build-essential > /dev/null
+          sudo gem install fpm --no-document --silent
+          echo "USE_SYSTEM_FPM=true" >> "$GITHUB_ENV"
+      - if: runner.os != 'macOS'
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: pnpm -C apps/desktop exec electron-builder ${{ matrix.target }} --publish never
+      # electron-builder signs with CSC_LINK and notarizes when APPLE_API_KEY (a file), _KEY_ID and _ISSUER are set
+      - if: runner.os == 'macOS'
+        env:
+          CSC_LINK: ${{ secrets.MAC_CERT_P12_BASE64 }}
+          CSC_KEY_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
+          APPLE_API_KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+        run: |
+          if [ -z "$CSC_LINK" ] || [ -z "$APPLE_API_KEY_P8" ] || [ -z "$APPLE_API_ISSUER" ]; then
+            echo "::error::The Mac signing and notarization secrets aren't all set"
+            exit 1
+          fi
+          export APPLE_API_KEY="$RUNNER_TEMP/AuthKey.p8"
+          printf '%s\n' "$APPLE_API_KEY_P8" > "$APPLE_API_KEY"
+          unset APPLE_API_KEY_P8
+          pnpm -C apps/desktop exec electron-builder ${{ matrix.target }} --publish never
+          rm -f "$APPLE_API_KEY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          retention-days: 1
+          if-no-files-found: error
+          path: |
+            apps/desktop/release/*.dmg
+            apps/desktop/release/*.zip
+            apps/desktop/release/*.exe
+            apps/desktop/release/*.AppImage
+            apps/desktop/release/*.deb
+            apps/desktop/release/*.blockmap
+            apps/desktop/release/latest*.yml
+
+  publish:
+    needs: [prepare, build]
+    if: inputs.publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: sarthakguptadev/appubot-source
+          ref: ${{ inputs.ref }}
+          ssh-key: ${{ secrets.SOURCE_DEPLOY_KEY }}
+          persist-credentials: false
+          show-progress: false
+          sparse-checkout: apps/desktop/scripts/merge-update-info.mjs
+          sparse-checkout-cone-mode: false
+      - uses: actions/download-artifact@v4
+        with: { path: dist }
+      # one update file per OS: latest-mac.yml lists both Macs, latest.yml both .exe (x64 first)
+      - run: |
+          mkdir out
+          find dist -type f ! -name 'latest*.yml' -exec cp {} out/ \;
+          node apps/desktop/scripts/merge-update-info.mjs out/latest-mac.yml dist/mac-arm64/latest-mac.yml dist/mac-x64/latest-mac.yml
+          node apps/desktop/scripts/merge-update-info.mjs out/latest.yml dist/win-x64/latest.yml dist/win-arm64/latest.yml
+          cp dist/linux-x64/latest-linux.yml out/
+          if [ -f dist/linux-arm64/latest-linux-arm64.yml ]; then cp dist/linux-arm64/latest-linux-arm64.yml out/; fi
+          ls -l out
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+          NOTES: ${{ inputs.notes }}
+        run: gh release create "v$VERSION" out/* --repo "$GITHUB_REPOSITORY" --title "AppuBot $VERSION" --notes "${NOTES:-AppuBot $VERSION}" --latest
