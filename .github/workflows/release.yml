@@ -165,10 +165,11 @@ jobs:
           sparse-checkout-cone-mode: false
       - uses: actions/download-artifact@v8
         with: { path: dist }
-      # one update file per OS: latest-mac.yml lists both Macs, latest.yml both .exe (x64 first)
+      # one update file per OS: latest-mac.yml lists both Macs, latest.yml both .exe (x64 first); the dmg blockmaps stay
+      # out (Mac updates use the zip's)
       - run: |
           mkdir out
-          find dist -type f ! -name 'latest*.yml' -exec cp {} out/ \;
+          find dist -type f ! -name 'latest*.yml' ! -name '*.dmg.blockmap' -exec cp {} out/ \;
           node apps/desktop/scripts/merge-update-info.mjs out/latest-mac.yml dist/mac-arm64/latest-mac.yml dist/mac-x64/latest-mac.yml
           node apps/desktop/scripts/merge-update-info.mjs out/latest.yml dist/win-x64/latest.yml dist/win-arm64/latest.yml
           cp dist/linux-x64/latest-linux.yml out/
