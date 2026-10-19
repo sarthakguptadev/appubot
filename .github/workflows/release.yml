@@ -96,7 +96,7 @@ jobs:
       - if: runner.os == 'macOS'
         working-directory: native/appubot-helper
         run: |
-          swift build -c release -q
+          swift build -c release -q > "$RUNNER_TEMP/swift.log" 2>&1 || { cat "$RUNNER_TEMP/swift.log"; exit 1; }
           codesign --force --sign - .build/release/appubot-helper .build/release/appubot-notify
       - run: pnpm -C apps/desktop exec electron-vite build --logLevel warn
       # electron-builder's own fpm is an x86-64 binary
