@@ -86,8 +86,8 @@ jobs:
           git fetch -q --depth 1 origin "$REF"
           git checkout -q FETCH_HEAD
           rm -f "$key"
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with: { node-version: 24, cache: pnpm }
       - run: node scripts/stamp-version.mjs "${{ needs.prepare.outputs.version }}"
       - run: pnpm install --frozen-lockfile
@@ -127,7 +127,7 @@ jobs:
           unset APPLE_API_KEY_P8
           pnpm -C apps/desktop exec electron-builder ${{ matrix.target }} --publish never
           rm -f "$APPLE_API_KEY"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.name }}
           retention-days: 1
@@ -148,7 +148,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: sarthakguptadev/appubot-source
           ref: ${{ inputs.ref }}
@@ -157,7 +157,7 @@ jobs:
           show-progress: false
           sparse-checkout: apps/desktop/scripts/merge-update-info.mjs
           sparse-checkout-cone-mode: false
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with: { path: dist }
       # one update file per OS: latest-mac.yml lists both Macs, latest.yml both .exe (x64 first)
       - run: |
