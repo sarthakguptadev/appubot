@@ -2,14 +2,14 @@ name: Release
 # Builds AppuBot for macOS (Apple silicon, Intel), Windows (x64, Arm) and Linux (x64, Arm) and publishes it here, where
 # installed apps look for updates. The version is the day's date in India (2026.10.19); one release a day. Untick
 # "Publish" for a test build: the installers stay on the run's page for a day and nothing is published.
-# The release page lists What's Changed: the source's commit titles since the previous release (whose source commit
-# each release keeps in a hidden <!-- source: --> line), leaving out CLAUDE.md, Test: and CI: commits and any with
-# [skip changelog] in its title.
+# The release page lists What's Changed for users, never commit titles: every "Changelog: <line>" in the source's
+# commit messages since the previous release (whose source commit each release keeps in a hidden <!-- source: -->
+# line), plus the notes box (lines split by ";"); with neither, "Fixes and improvements".
 on:
   workflow_dispatch:
     inputs:
       notes:
-        description: A few words above What's Changed (optional)
+        description: What's new for users, lines split by ; (optional)
         required: false
         type: string
       publish:
@@ -188,12 +188,15 @@ jobs:
           prev=$( { gh release view --repo "$GITHUB_REPOSITORY" --json body --jq .body 2>/dev/null || true; } | sed -n 's/.*<!-- source: \([0-9a-f]\{40\}\) -->.*/\1/p' | head -n 1)
           range=HEAD
           if [ -n "$prev" ] && git merge-base --is-ancestor "$prev" HEAD 2>/dev/null; then range="$prev..HEAD"; fi
-          git log --reverse --no-merges --format='%s' "$range" | { grep -v -i -E '^(CLAUDE\.md|tests?:|ci:)|\[skip changelog\]' || true; } | sed 's/^/- /' > "$RUNNER_TEMP/changes.md"
           {
-            if [ -n "$NOTES" ]; then printf '%s\n\n' "$NOTES"; fi
+            printf '%s' "$NOTES" | tr ';' '\n'
+            echo
+            git log --reverse --no-merges --format='%B' "$range" | sed -n 's/^[Cc]hangelog:[[:space:]]*//p'
+          } | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' | { grep -v '^$' || true; } | sed 's/^/- /' > "$RUNNER_TEMP/changes.md"
+          {
             echo "## What's Changed"
             echo
-            if [ -s "$RUNNER_TEMP/changes.md" ]; then cat "$RUNNER_TEMP/changes.md"; else echo "- Rebuilt with no changes"; fi
+            if [ -s "$RUNNER_TEMP/changes.md" ]; then cat "$RUNNER_TEMP/changes.md"; else echo "- Fixes and improvements"; fi
             echo
             echo "<!-- source: $head -->"
           } > "$RUNNER_TEMP/notes.md"
