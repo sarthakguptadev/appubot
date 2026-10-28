@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/icon.png" width="128" height="128" alt="AppuBot, free AI bots that use the apps on your own computer">
+  <img src="assets/release-banner.jpg" width="100%" alt="AppuBot, free AI bots that use the apps on your own computer">
 </p>
 
 <h1 align="center">AppuBot</h1>
