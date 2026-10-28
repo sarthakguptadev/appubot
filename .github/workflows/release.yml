@@ -214,8 +214,9 @@ jobs:
           fetch-depth: 0
           sparse-checkout: apps/desktop/scripts/merge-update-info.mjs
           sparse-checkout-cone-mode: false
+      # the builds' installers only (the apps directory artifact went into the builds, not the release)
       - uses: actions/download-artifact@v8
-        with: { path: dist }
+        with: { path: dist, pattern: '{mac,win,linux}-*' }
       # one update file per OS: latest-mac.yml lists both Macs, latest.yml both .exe (x64 first); the dmg blockmaps stay
       # out (Mac updates use the zip's)
       - run: |
