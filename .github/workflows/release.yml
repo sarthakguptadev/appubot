@@ -232,6 +232,8 @@ jobs:
             git log --reverse --no-merges --format='%B' "$range" | sed -n 's/^[Cc]hangelog:[[:space:]]*//p'
           } | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' | { grep -v '^$' || true; } | sed 's/^/- /' > "$RUNNER_TEMP/changes.md"
           {
+            echo '<img src="https://raw.githubusercontent.com/sarthakguptadev/appubot/main/assets/release-banner.jpg" alt="AppuBot" width="100%">'
+            echo
             echo "## What's Changed"
             echo
             if [ -s "$RUNNER_TEMP/changes.md" ]; then cat "$RUNNER_TEMP/changes.md"; else echo "- Fixes and improvements"; fi
