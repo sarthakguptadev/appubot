@@ -1,0 +1,25 @@
+name: Clean up
+# A published release's run is deleted as soon as it finishes (its logs are public); failed runs and test builds stay
+# until the next release run starts, which deletes every earlier one. This workflow's own earlier runs go too.
+on:
+  workflow_run:
+    workflows: [Release]
+    types: [completed]
+
+permissions:
+  actions: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          RUN: ${{ github.event.workflow_run.id }}
+        run: |
+          published=$(gh run view "$RUN" --repo "$GITHUB_REPOSITORY" --json jobs --jq '[.jobs[] | select(.name == "publish" and .conclusion == "success")] | length')
+          if [ "$published" = 1 ]; then gh run delete "$RUN" --repo "$GITHUB_REPOSITORY" > /dev/null && echo "Deleted the published release's run"; fi
+          gh run list --repo "$GITHUB_REPOSITORY" --workflow cleanup.yml --status completed --limit 100 --json databaseId --jq '.[].databaseId' |
+            while read -r id; do
+              if [ "$id" != "$GITHUB_RUN_ID" ]; then gh run delete "$id" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1 || true; fi
+            done
