@@ -33,9 +33,18 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      actions: write
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
+      # the logs are public: earlier release runs (finished, any result) are deleted, only this one stays
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run list --repo "$GITHUB_REPOSITORY" --workflow release.yml --status completed --limit 200 --json databaseId --jq '.[].databaseId' |
+            while read -r id; do
+              if [ "$id" != "$GITHUB_RUN_ID" ]; then gh run delete "$id" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1 || true; fi
+            done
       - id: version
         env:
           GH_TOKEN: ${{ github.token }}
