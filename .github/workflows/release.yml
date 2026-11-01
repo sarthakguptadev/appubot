@@ -135,8 +135,25 @@ jobs:
       - uses: actions/setup-node@v7
         with: { node-version: 24, cache: pnpm }
       - run: node scripts/stamp-version.mjs "${{ needs.prepare.outputs.version }}"
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile --filter @appubot/desktop...
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Caches/electron
+            ~/Library/Caches/electron-builder
+            ~/.cache/electron
+            ~/.cache/electron-builder
+            ~/AppData/Local/electron/Cache
+            ~/AppData/Local/electron-builder/Cache
+          key: electron-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: electron-${{ runner.os }}-${{ runner.arch }}-
       - run: pnpm -C packages/mcp-bridge build
+      - if: runner.os == 'macOS'
+        uses: actions/cache@v4
+        with:
+          path: native/appubot-helper/.build
+          key: swift-${{ runner.arch }}-${{ hashFiles('native/appubot-helper/Package.resolved', 'native/appubot-helper/Package.swift', 'native/appubot-helper/Sources/**') }}
+          restore-keys: swift-${{ runner.arch }}-
       # x86-64 links come out unsigned; electron-builder signs them again with the Developer ID
       - if: runner.os == 'macOS'
         working-directory: native/appubot-helper
