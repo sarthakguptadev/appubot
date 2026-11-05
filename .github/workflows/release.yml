@@ -50,7 +50,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PUBLISH: ${{ inputs.publish }}
         run: |
-          version=$(TZ=Asia/Kolkata date +%Y.%-m.%-d)
+          version=2026.11.4
           tag="v$version"
           if [ "$PUBLISH" != true ]; then
             echo "Test build of AppuBot $version: nothing is published"
