@@ -1,6 +1,7 @@
 name: Release
 # Builds AppuBot for macOS (Apple silicon, Intel), Windows (x64, Arm) and Linux (x64, Arm) and publishes it here, where
-# installed apps look for updates. The version is the day's date in India (2026.10.19); one release a day. Untick
+# installed apps look for updates. The version is the day's date in India and that day's release counted from 1
+# (2026.1107.1, 2026.1107.2), above every earlier version, also the old one-a-day 2026.11.7 kind. Untick
 # "Publish" for a test build: the installers stay on the run's page for a day and nothing is published.
 # The release page lists What's Changed for users, never commit titles: every "Changelog: <line>" in the source's
 # commit messages since the previous release (whose source commit each release keeps in a hidden <!-- source: -->
@@ -50,7 +51,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PUBLISH: ${{ inputs.publish }}
         run: |
-          version=$(TZ=Asia/Kolkata date +%Y.%-m.%-d)
+          day=$(TZ=Asia/Kolkata date +%Y.%-m%d)
+          last=$(gh release list --repo "$GITHUB_REPOSITORY" --limit 200 --json tagName,isDraft --jq "[.[] | select(.isDraft | not) | .tagName | select(startswith(\"v$day.\")) | ltrimstr(\"v$day.\") | tonumber? // empty] | max // 0")
+          version="$day.$((last + 1))"
           tag="v$version"
           if [ "$PUBLISH" != true ]; then
             echo "Test build of AppuBot $version: nothing is published"
@@ -58,7 +61,7 @@ jobs:
             if [ "$draft" = true ]; then
               gh release delete "$tag" --repo "$GITHUB_REPOSITORY" --yes
             else
-              echo "::error::AppuBot $version is already out: the next release can go out tomorrow"
+              echo "::error::AppuBot $version is already out"
               exit 1
             fi
           fi
