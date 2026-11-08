@@ -1,0 +1,162 @@
+name: iOS
+# Builds the phone app for iOS from the source (eas build --local on this runner: no EAS build credits) and uploads it
+# to App Store Connect, where it shows in TestFlight once Apple has processed it. The version and build number are the
+# ones committed in apps/mobile/app.json (expo.version, expo.ios.buildNumber): nothing is stamped or raised here, so a
+# build number already uploaded is refused before building; raise it in the source first. Untick "Upload" for a test
+# build: the .ipa stays on the run's page for a day.
+# Secrets: EXPO_TOKEN (an Expo access token), IOS_DIST_CERT_P12_BASE64 + IOS_DIST_CERT_PASSWORD (the App Store
+# distribution certificate), IOS_PROFILE_BASE64 (its App Store provisioning profile), and the App Store Connect API
+# key the Mac builds use (APPLE_API_KEY_P8, APPLE_API_KEY_ID, APPLE_API_ISSUER).
+on:
+  workflow_dispatch:
+    inputs:
+      upload:
+        description: Upload to App Store Connect (untick for a test build)
+        type: boolean
+        default: true
+      ref:
+        description: Branch or commit to build
+        required: false
+        type: string
+        default: main
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: ios
+
+jobs:
+  ios:
+    runs-on: macos-26
+    timeout-minutes: 120
+    env:
+      ASC_APP_ID: '6829390070'
+    steps:
+      # the logs are public: earlier iOS runs (finished, any result) are deleted, only this one stays
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run list --repo "$GITHUB_REPOSITORY" --workflow ios.yml --status completed --limit 200 --json databaseId --jq '.[].databaseId' |
+            while read -r id; do
+              if [ "$id" != "$GITHUB_RUN_ID" ]; then gh run delete "$id" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1 || true; fi
+            done
+      - env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          P12: ${{ secrets.IOS_DIST_CERT_P12_BASE64 }}
+          P12_PASSWORD: ${{ secrets.IOS_DIST_CERT_PASSWORD }}
+          PROFILE: ${{ secrets.IOS_PROFILE_BASE64 }}
+          KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
+          KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+        run: |
+          missing=""
+          for v in EXPO_TOKEN P12 P12_PASSWORD PROFILE KEY_P8 KEY_ID ISSUER; do [ -n "${!v}" ] || missing="$missing $v"; done
+          if [ -n "$missing" ]; then echo "::error::Secrets not set:$missing"; exit 1; fi
+      - uses: actions/checkout@v7
+        with:
+          repository: sarthakguptadev/appubot-source
+          ref: ${{ inputs.ref }}
+          ssh-key: ${{ secrets.SOURCE_DEPLOY_KEY }}
+          persist-credentials: false
+          show-progress: false
+      - id: version
+        run: |
+          version=$(node -p "require('./apps/mobile/app.json').expo.version")
+          build=$(node -p "require('./apps/mobile/app.json').expo.ios.buildNumber")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "build=$build" >> "$GITHUB_OUTPUT"
+          echo "AppuBot for iOS $version ($build)"
+      # App Store Connect refuses a build number it already has: say so now rather than after the build
+      - if: inputs.upload
+        env:
+          KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
+          KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          VERSION: ${{ steps.version.outputs.version }}
+          BUILD: ${{ steps.version.outputs.build }}
+        run: |
+          node -e '
+            const crypto = require("node:crypto");
+            const b64 = (o) => Buffer.from(typeof o === "string" ? o : JSON.stringify(o)).toString("base64url");
+            const now = Math.floor(Date.now() / 1000);
+            const head = b64({ alg: "ES256", kid: process.env.KEY_ID, typ: "JWT" });
+            const body = b64({ iss: process.env.ISSUER, iat: now, exp: now + 600, aud: "appstoreconnect-v1" });
+            const sig = crypto.sign("sha256", Buffer.from(`${head}.${body}`), { key: process.env.KEY_P8, dsaEncoding: "ieee-p1363" }).toString("base64url");
+            const q = new URLSearchParams({ "filter[app]": process.env.ASC_APP_ID, "filter[version]": process.env.BUILD, "filter[preReleaseVersion.version]": process.env.VERSION, limit: "1" });
+            fetch(`https://api.appstoreconnect.apple.com/v1/builds?${q}`, { headers: { authorization: `Bearer ${head}.${body}.${sig}` } })
+              .then(async (r) => {
+                if (!r.ok) { console.log(`::warning::Couldn’t ask App Store Connect about build ${process.env.BUILD} (${r.status}); building anyway`); return; }
+                const j = await r.json();
+                if (j.data?.length) { console.log(`::error::Build ${process.env.BUILD} of ${process.env.VERSION} is already on App Store Connect. Raise expo.ios.buildNumber in apps/mobile/app.json.`); process.exit(1); }
+              })
+              .catch(() => console.log("::warning::Couldn’t reach App Store Connect; building anyway"));
+          '
+      - name: Xcode 26
+        run: |
+          xcode=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -n 1)
+          if [ -z "$xcode" ]; then echo "::error::No Xcode 26 on this runner"; exit 1; fi
+          sudo xcode-select -s "$xcode"
+          xcodebuild -version | head -n 1
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with: { node-version: 24, cache: pnpm }
+      - run: pnpm install --frozen-lockfile --filter @appubot/mobile... > "$RUNNER_TEMP/install.log" 2>&1 || { tail -n 20 "$RUNNER_TEMP/install.log"; exit 1; }
+      # the signing files where credentials.json (git-ignored, read by eas-cli itself) names them
+      - working-directory: apps/mobile
+        env:
+          P12: ${{ secrets.IOS_DIST_CERT_P12_BASE64 }}
+          P12_PASSWORD: ${{ secrets.IOS_DIST_CERT_PASSWORD }}
+          PROFILE: ${{ secrets.IOS_PROFILE_BASE64 }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/signing"
+          printf '%s' "$P12" | base64 --decode > "$RUNNER_TEMP/signing/dist.p12"
+          printf '%s' "$PROFILE" | base64 --decode > "$RUNNER_TEMP/signing/AppuBot.mobileprovision"
+          node -e '
+            const fs = require("node:fs");
+            const dir = process.env.RUNNER_TEMP + "/signing";
+            fs.writeFileSync("credentials.json", JSON.stringify({ ios: {
+              provisioningProfilePath: dir + "/AppuBot.mobileprovision",
+              distributionCertificate: { path: dir + "/dist.p12", password: process.env.P12_PASSWORD },
+            } }), { mode: 0o600 });
+          '
+      - name: Build
+        working-directory: apps/mobile
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          EAS_BUILD_DISABLE_EXPO_DOCTOR_STEP: '1'
+        run: |
+          npx --yes eas-cli@27.5.0 build --local --platform ios --profile production --non-interactive --output "$RUNNER_TEMP/AppuBot.ipa" > "$RUNNER_TEMP/build.log" 2>&1 || {
+            grep -E '(^|[^a-z])(error|❌|fatal)' "$RUNNER_TEMP/build.log" | grep -v -E '^\s*[0-9]+ \|' | tail -n 25
+            exit 1
+          }
+          rm -f credentials.json
+          ls -lh "$RUNNER_TEMP/AppuBot.ipa" | awk '{print "Built AppuBot.ipa, " $5}'
+      - if: inputs.upload
+        name: Upload to App Store Connect
+        env:
+          KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
+          KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+        run: |
+          node -e '
+            require("node:fs").writeFileSync(process.env.RUNNER_TEMP + "/signing/asc.json", JSON.stringify({
+              key_id: process.env.KEY_ID, issuer_id: process.env.ISSUER, key: process.env.KEY_P8, in_house: false,
+            }), { mode: 0o600 });
+          '
+          fastlane run upload_to_testflight ipa:"$RUNNER_TEMP/AppuBot.ipa" api_key_path:"$RUNNER_TEMP/signing/asc.json" \
+            skip_waiting_for_build_processing:true > "$RUNNER_TEMP/upload.log" 2>&1 || {
+            grep -iE 'error|invalid|refused|already' "$RUNNER_TEMP/upload.log" | tail -n 20
+            exit 1
+          }
+          echo "Uploaded ${{ steps.version.outputs.version }} (${{ steps.version.outputs.build }}): it shows in TestFlight once Apple has processed it"
+      - if: ${{ !inputs.upload }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: AppuBot-ios
+          retention-days: 1
+          if-no-files-found: error
+          path: ${{ runner.temp }}/AppuBot.ipa
+      - if: always()
+        run: rm -rf "$RUNNER_TEMP/signing" apps/mobile/credentials.json
