@@ -1,6 +1,8 @@
 name: TestFlight group
 # Gives an iOS build that's already on App Store Connect to TestFlight groups (the iOS workflow does this after each
 # upload). Groups: names split by commas; empty uses the TESTFLIGHT_GROUPS variable, else the app's only group.
+# External groups need a key with the App Manager role (ASC_TESTFLIGHT_KEY_P8 + ASC_TESTFLIGHT_KEY_ID); the Developer
+# key that uploads gets a 403 there.
 on:
   workflow_dispatch:
     inputs:
@@ -43,8 +45,8 @@ jobs:
           persist-credentials: false
           show-progress: false
       - env:
-          KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
-          KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          KEY_P8: ${{ secrets.ASC_TESTFLIGHT_KEY_P8 || secrets.APPLE_API_KEY_P8 }}
+          KEY_ID: ${{ secrets.ASC_TESTFLIGHT_KEY_ID || secrets.APPLE_API_KEY_ID }}
           ISSUER: ${{ secrets.APPLE_API_ISSUER }}
           APP_ID: '6829390070'
           VERSION: ${{ inputs.version }}
