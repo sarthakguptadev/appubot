@@ -3,7 +3,9 @@ name: iOS
 # to App Store Connect, where it shows in TestFlight once Apple has processed it. The version and build number are the
 # ones committed in apps/mobile/app.json (expo.version, expo.ios.buildNumber): nothing is stamped or raised here, so a
 # build number already uploaded is refused before building; raise it in the source first. Untick "Upload" for a test
-# build: the .ipa stays on the run's page for a day.
+# build: the .ipa stays on the run's page for a day. After an upload it is given to TestFlight groups (the groups box, else
+# the TESTFLIGHT_GROUPS variable, else the app's only group; .github/scripts/testflight.mjs); for a build already up, run
+# the TestFlight group workflow.
 # Secrets: EXPO_TOKEN (an Expo access token), IOS_DIST_CERT_P12_BASE64 + IOS_DIST_CERT_PASSWORD (the App Store
 # distribution certificate), IOS_PROFILE_BASE64 (its App Store provisioning profile), and the App Store Connect API
 # key the Mac builds use (APPLE_API_KEY_P8, APPLE_API_KEY_ID, APPLE_API_ISSUER).
@@ -19,6 +21,14 @@ on:
         required: false
         type: string
         default: main
+      groups:
+        description: TestFlight groups to give it to, split by commas (optional; else TESTFLIGHT_GROUPS, else the only one)
+        required: false
+        type: string
+      whats_new:
+        description: What to Test, for external testers (optional)
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -30,7 +40,7 @@ concurrency:
 jobs:
   ios:
     runs-on: macos-26
-    timeout-minutes: 120
+    timeout-minutes: 150
     env:
       ASC_APP_ID: '6829390070'
     steps:
@@ -151,6 +161,26 @@ jobs:
             exit 1
           }
           echo "Uploaded ${{ steps.version.outputs.version }} (${{ steps.version.outputs.build }}): it shows in TestFlight once Apple has processed it"
+      # the TestFlight groups' script, from this repo (the workspace holds the source)
+      - if: inputs.upload
+        uses: actions/checkout@v7
+        with:
+          path: .public
+          sparse-checkout: .github/scripts
+          persist-credentials: false
+          show-progress: false
+      - if: inputs.upload
+        name: Give it to TestFlight groups
+        env:
+          KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
+          KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          APP_ID: ${{ env.ASC_APP_ID }}
+          VERSION: ${{ steps.version.outputs.version }}
+          BUILD: ${{ steps.version.outputs.build }}
+          GROUPS: ${{ inputs.groups || vars.TESTFLIGHT_GROUPS }}
+          WHATS_NEW: ${{ inputs.whats_new }}
+        run: node .public/.github/scripts/testflight.mjs
       - if: ${{ !inputs.upload }}
         uses: actions/upload-artifact@v7
         with:
