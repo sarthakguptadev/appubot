@@ -168,7 +168,13 @@ jobs:
         with:
           name: apps-directory
           path: apps/desktop/src/main/core/services
-      - run: pnpm -C apps/desktop exec electron-vite build --logLevel warn
+      # the build's last step fetches Electron's release from GitHub for the Chromium notices, which answers 504 now and then
+      - run: |
+          for try in 1 2 3; do
+            pnpm -C apps/desktop exec electron-vite build --logLevel warn && exit 0
+            if [ "$try" -lt 3 ]; then echo "build failed (try $try): again in 40 s"; sleep 40; fi
+          done
+          exit 1
       # electron-builder's own fpm is an x86-64 binary
       - if: runner.os == 'Linux' && runner.arch == 'ARM64'
         run: |
