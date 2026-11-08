@@ -8,7 +8,8 @@ name: iOS
 # the TestFlight group workflow.
 # Secrets: EXPO_TOKEN (an Expo access token), IOS_DIST_CERT_P12_BASE64 + IOS_DIST_CERT_PASSWORD (the App Store
 # distribution certificate), IOS_PROFILE_BASE64 (its App Store provisioning profile), and the App Store Connect API
-# key the Mac builds use (APPLE_API_KEY_P8, APPLE_API_KEY_ID, APPLE_API_ISSUER).
+# key the Mac builds use (APPLE_API_KEY_P8, APPLE_API_KEY_ID, APPLE_API_ISSUER). External TestFlight groups need a key
+# with the App Manager role: ASC_TESTFLIGHT_KEY_P8 + ASC_TESTFLIGHT_KEY_ID (same issuer), used for the groups when set.
 on:
   workflow_dispatch:
     inputs:
@@ -169,11 +170,13 @@ jobs:
           sparse-checkout: .github/scripts
           persist-credentials: false
           show-progress: false
+      # the upload stands either way: a refusal here is an error on the run, not a failed build
       - if: inputs.upload
         name: Give it to TestFlight groups
+        continue-on-error: true
         env:
-          KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
-          KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          KEY_P8: ${{ secrets.ASC_TESTFLIGHT_KEY_P8 || secrets.APPLE_API_KEY_P8 }}
+          KEY_ID: ${{ secrets.ASC_TESTFLIGHT_KEY_ID || secrets.APPLE_API_KEY_ID }}
           ISSUER: ${{ secrets.APPLE_API_ISSUER }}
           APP_ID: ${{ env.ASC_APP_ID }}
           VERSION: ${{ steps.version.outputs.version }}
