@@ -1,5 +1,6 @@
-// Sends an Android App Bundle to Google Play through the Play Developer API, with the service account's own key and
-// nothing else (no dependencies).
+// Sends an Android App Bundle to Google Play through the Play Developer API as a Google Cloud service account (no
+// dependencies): with an access token the workflow got for it without any key (PLAY_ACCESS_TOKEN: GitHub's own
+// identity, exchanged through Workload Identity Federation), else with the account's JSON key (PLAY_SERVICE_ACCOUNT).
 //   node play.mjs check    before the build: the key works, the app and the track are there, and VERSION_CODE is above
 //                          every one Play already has (Play refuses a version code it has seen)
 //   node play.mjs upload   uploads AAB, puts it on TRACK as a release for ROLLOUT percent of users (100: everyone) with
@@ -7,7 +8,7 @@
 // A release sent to production goes live by itself once Google has reviewed it (unless Managed publishing is on in Play
 // Console). When Play won't send changes for review by itself (an earlier rejection waits there), the release is
 // saved and the run says to press "Send for review" in Play Console › Publishing overview.
-// Env: PLAY_SERVICE_ACCOUNT (the JSON key's text), PACKAGE, TRACK (production | beta = open testing | alpha = closed
+// Env: PLAY_ACCESS_TOKEN or PLAY_SERVICE_ACCOUNT (the JSON key's text), PACKAGE, TRACK (production | beta = open testing | alpha = closed
 // testing | internal), VERSION_CODE; upload also AAB, ROLLOUT, WHATS_NEW. PLAY_API_URL / PLAY_UPLOAD_URL point tests
 // at a stand-in.
 import crypto from 'node:crypto';
@@ -31,11 +32,13 @@ const mode = process.argv[2];
 if (mode !== 'check' && mode !== 'upload') fail('usage: play.mjs check | upload');
 
 let account;
-try {
-  account = JSON.parse(env.PLAY_SERVICE_ACCOUNT ?? '');
-  if (!account.client_email || !account.private_key) throw new Error('not a key');
-} catch {
-  fail('PLAY_SERVICE_ACCOUNT_JSON isn’t a service account’s JSON key (the whole file Google Cloud gave you, as it is)');
+if (!env.PLAY_ACCESS_TOKEN) {
+  try {
+    account = JSON.parse(env.PLAY_SERVICE_ACCOUNT ?? '');
+    if (!account.client_email || !account.private_key) throw new Error('not a key');
+  } catch {
+    fail('PLAY_SERVICE_ACCOUNT_JSON isn’t a service account’s JSON key (the whole file Google Cloud gave you, as it is)');
+  }
 }
 const PACKAGE = env.PACKAGE || fail('PACKAGE isn’t set');
 const TRACK = env.TRACK || 'production';
@@ -47,6 +50,7 @@ if (!(percent > 0 && percent <= 100)) fail('ROLLOUT is a percentage from 1 to 10
 
 let cached;
 async function token() {
+  if (env.PLAY_ACCESS_TOKEN) return env.PLAY_ACCESS_TOKEN;
   if (cached && cached.until > Date.now()) return cached.value;
   const b64 = (o) => Buffer.from(JSON.stringify(o)).toString('base64url');
   const now = Math.floor(Date.now() / 1000);
