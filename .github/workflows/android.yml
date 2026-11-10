@@ -1,0 +1,142 @@
+name: Android
+# Builds the phone app for Android from the source (eas build --local on this runner: no EAS build credits), signed
+# with the upload key Expo keeps for the app (fetched with EXPO_TOKEN), and sends the bundle to Google Play, where it
+# goes out by itself once Google has reviewed it. The version name is the one committed in apps/mobile/app.json
+# (expo.version, the same as the iPhone app's); the version code is stamped here, the minutes since 2026-01-01 UTC, so
+# it always grows and nothing needs raising by hand. Untick "Send to Google Play" for a test build: the .aab stays on
+# the run's page for a day.
+# Track: production, beta (open testing), alpha (closed testing) or internal; empty uses the PLAY_TRACK variable, else
+# production. Rollout: the percentage of users who get it at first (100: everyone).
+# Secrets: EXPO_TOKEN (an Expo access token) and PLAY_SERVICE_ACCOUNT_JSON (the JSON key of a Google Cloud service
+# account invited in Play Console › Users and permissions with this app's release permissions; .github/scripts/play.mjs).
+on:
+  workflow_dispatch:
+    inputs:
+      upload:
+        description: Send to Google Play (untick for a test build)
+        type: boolean
+        default: true
+      ref:
+        description: Branch or commit to build
+        required: false
+        type: string
+        default: main
+      track:
+        description: Track - production, beta (open testing), alpha (closed testing), internal (optional; else PLAY_TRACK, else production)
+        required: false
+        type: string
+      rollout:
+        description: Percent of users who get it at first (optional; 100 is everyone)
+        required: false
+        type: string
+      whats_new:
+        description: What's new on its Play page, up to 500 characters (optional)
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: android
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      PACKAGE: com.appubot.app
+      TRACK: ${{ inputs.track || vars.PLAY_TRACK || 'production' }}
+      ROLLOUT: ${{ inputs.rollout || '100' }}
+    steps:
+      # the logs are public: earlier Android runs (finished, any result) are deleted, only this one stays
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run list --repo "$GITHUB_REPOSITORY" --workflow android.yml --status completed --limit 200 --json databaseId --jq '.[].databaseId' |
+            while read -r id; do
+              if [ "$id" != "$GITHUB_RUN_ID" ]; then gh run delete "$id" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1 || true; fi
+            done
+      - env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          PLAY: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          UPLOAD: ${{ inputs.upload }}
+        run: |
+          missing=""
+          [ -n "$EXPO_TOKEN" ] || missing="$missing EXPO_TOKEN"
+          if [ "$UPLOAD" = true ] && [ -z "$PLAY" ]; then missing="$missing PLAY_SERVICE_ACCOUNT_JSON"; fi
+          if [ -n "$missing" ]; then echo "::error::Secrets not set:$missing"; exit 1; fi
+      # the Play script, from this repo, kept outside the workspace (the source is checked out over it next)
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: .github/scripts
+          persist-credentials: false
+          show-progress: false
+      - run: |
+          mkdir -p "$RUNNER_TEMP/scripts"
+          cp .github/scripts/play.mjs "$RUNNER_TEMP/scripts/"
+      - uses: actions/checkout@v7
+        with:
+          repository: sarthakguptadev/appubot-source
+          ref: ${{ inputs.ref }}
+          ssh-key: ${{ secrets.SOURCE_DEPLOY_KEY }}
+          persist-credentials: false
+          show-progress: false
+      # the version code is committed in the runner's copy only, so the build sees a clean tree
+      - id: version
+        run: |
+          code=$(node -e 'console.log(Math.floor((Date.now() - Date.UTC(2026, 0, 1)) / 60000))')
+          CODE="$code" node -e '
+            const fs = require("node:fs");
+            const file = "apps/mobile/app.json";
+            const app = JSON.parse(fs.readFileSync(file, "utf8"));
+            if (app.expo.android.package !== process.env.PACKAGE) { console.log(`::error::app.json is ${app.expo.android.package}, not ${process.env.PACKAGE}`); process.exit(1); }
+            app.expo.android.versionCode = Number(process.env.CODE);
+            fs.writeFileSync(file, JSON.stringify(app, null, 2) + "\n");
+          '
+          git -c user.name=AppuBot -c user.email=build@appubot.invalid commit -q -m "Android version code $code" apps/mobile/app.json
+          version=$(node -p "require('./apps/mobile/app.json').expo.version")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          echo "AppuBot for Android $version ($code)"
+      # Play refuses a key that isn't invited, a track it hasn't got and a version code it has seen: say so before the build
+      - if: inputs.upload
+        name: Check Google Play
+        env:
+          PLAY_SERVICE_ACCOUNT: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          VERSION_CODE: ${{ steps.version.outputs.code }}
+        run: node "$RUNNER_TEMP/scripts/play.mjs" check
+      - run: sudo rm -rf /usr/share/dotnet /usr/local/.ghcup /opt/ghc /usr/share/swift /usr/local/share/boost || true
+      - uses: actions/setup-java@v6
+        with: { distribution: temurin, java-version: 17 }
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with: { node-version: 24, cache: pnpm }
+      - run: pnpm install --frozen-lockfile --filter @appubot/mobile... > "$RUNNER_TEMP/install.log" 2>&1 || { tail -n 20 "$RUNNER_TEMP/install.log"; exit 1; }
+      - name: Build
+        working-directory: apps/mobile
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          EAS_BUILD_DISABLE_EXPO_DOCTOR_STEP: '1'
+        run: |
+          npx --yes eas-cli@27.5.0 build --local --platform android --profile production --non-interactive --output "$RUNNER_TEMP/AppuBot.aab" > "$RUNNER_TEMP/build.log" 2>&1 || {
+            grep -E '(^|[^a-z])(error|e:|FAILURE|FAILED|What went wrong|Execution failed|fatal)' "$RUNNER_TEMP/build.log" | grep -v -E '^\s*[0-9]+ \|' | tail -n 30
+            exit 1
+          }
+          ls -lh "$RUNNER_TEMP/AppuBot.aab" | awk '{print "Built AppuBot.aab, " $5}'
+      - if: inputs.upload
+        name: Send to Google Play
+        env:
+          PLAY_SERVICE_ACCOUNT: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          VERSION_CODE: ${{ steps.version.outputs.code }}
+          AAB: ${{ runner.temp }}/AppuBot.aab
+          WHATS_NEW: ${{ inputs.whats_new || 'Fixes and improvements.' }}
+        run: node "$RUNNER_TEMP/scripts/play.mjs" upload
+      - if: ${{ !inputs.upload }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: AppuBot-android
+          retention-days: 1
+          if-no-files-found: error
+          path: ${{ runner.temp }}/AppuBot.aab
