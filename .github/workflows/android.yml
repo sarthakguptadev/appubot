@@ -7,8 +7,11 @@ name: Android
 # the run's page for a day.
 # Track: production, beta (open testing), alpha (closed testing) or internal; empty uses the PLAY_TRACK variable, else
 # production. Rollout: the percentage of users who get it at first (100: everyone).
-# Secrets: EXPO_TOKEN (an Expo access token) and PLAY_SERVICE_ACCOUNT_JSON (the JSON key of a Google Cloud service
-# account invited in Play Console › Users and permissions with this app's release permissions; .github/scripts/play.mjs).
+# Secrets: EXPO_TOKEN (an Expo access token). Google Play is reached as a Google Cloud service account invited in Play
+# Console › Users and permissions with this app's release permissions (.github/scripts/play.mjs), with no key kept
+# anywhere: the variables PLAY_WIF_PROVIDER (a Workload Identity provider that admits only this repo's main branch) and
+# PLAY_SERVICE_ACCOUNT (the account's email) let this run's own GitHub identity get a one-hour token for it. Where keys
+# are allowed, the secret PLAY_SERVICE_ACCOUNT_JSON (the account's JSON key) works instead.
 on:
   workflow_dispatch:
     inputs:
@@ -37,6 +40,7 @@ on:
 permissions:
   contents: read
   actions: write
+  id-token: write
 
 concurrency:
   group: android
@@ -61,12 +65,16 @@ jobs:
       - env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
           PLAY: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          WIF: ${{ vars.PLAY_WIF_PROVIDER }}
+          ACCOUNT: ${{ vars.PLAY_SERVICE_ACCOUNT }}
           UPLOAD: ${{ inputs.upload }}
         run: |
           missing=""
           [ -n "$EXPO_TOKEN" ] || missing="$missing EXPO_TOKEN"
-          if [ "$UPLOAD" = true ] && [ -z "$PLAY" ]; then missing="$missing PLAY_SERVICE_ACCOUNT_JSON"; fi
-          if [ -n "$missing" ]; then echo "::error::Secrets not set:$missing"; exit 1; fi
+          if [ "$UPLOAD" = true ] && [ -z "$PLAY" ]; then
+            if [ -z "$WIF" ] || [ -z "$ACCOUNT" ]; then missing="$missing PLAY_WIF_PROVIDER+PLAY_SERVICE_ACCOUNT(variables)"; fi
+          fi
+          if [ -n "$missing" ]; then echo "::error::Not set:$missing"; exit 1; fi
       # the Play script, from this repo, kept outside the workspace (the source is checked out over it next)
       - uses: actions/checkout@v7
         with:
@@ -101,9 +109,20 @@ jobs:
           echo "code=$code" >> "$GITHUB_OUTPUT"
           echo "AppuBot for Android $version ($code)"
       # Play refuses a key that isn't invited, a track it hasn't got and a version code it has seen: say so before the build
+      - if: inputs.upload && vars.PLAY_WIF_PROVIDER != ''
+        id: google
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.PLAY_WIF_PROVIDER }}
+          service_account: ${{ vars.PLAY_SERVICE_ACCOUNT }}
+          token_format: access_token
+          access_token_scopes: https://www.googleapis.com/auth/androidpublisher
+          create_credentials_file: false
+          export_environment_variables: false
       - if: inputs.upload
         name: Check Google Play
         env:
+          PLAY_ACCESS_TOKEN: ${{ steps.google.outputs.access_token }}
           PLAY_SERVICE_ACCOUNT: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
           VERSION_CODE: ${{ steps.version.outputs.code }}
         run: node "$RUNNER_TEMP/scripts/play.mjs" check
@@ -125,9 +144,21 @@ jobs:
             exit 1
           }
           ls -lh "$RUNNER_TEMP/AppuBot.aab" | awk '{print "Built AppuBot.aab, " $5}'
+      # a fresh token: the first one lasts an hour and the build took part of it
+      - if: inputs.upload && vars.PLAY_WIF_PROVIDER != ''
+        id: google_again
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.PLAY_WIF_PROVIDER }}
+          service_account: ${{ vars.PLAY_SERVICE_ACCOUNT }}
+          token_format: access_token
+          access_token_scopes: https://www.googleapis.com/auth/androidpublisher
+          create_credentials_file: false
+          export_environment_variables: false
       - if: inputs.upload
         name: Send to Google Play
         env:
+          PLAY_ACCESS_TOKEN: ${{ steps.google_again.outputs.access_token }}
           PLAY_SERVICE_ACCOUNT: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
           VERSION_CODE: ${{ steps.version.outputs.code }}
           AAB: ${{ runner.temp }}/AppuBot.aab
