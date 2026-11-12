@@ -1,0 +1,65 @@
+name: App Store
+# Sends an iOS build that's already on App Store Connect to the App Store: puts it on the App Store version for its
+# version number, writes What's New and submits it to App Review; approved, it goes out by itself (the iOS workflow
+# does this after each upload). Untick "Submit" to only prepare the version and see where things stand.
+# Needs a key with the App Manager role (ASC_TESTFLIGHT_KEY_P8 + ASC_TESTFLIGHT_KEY_ID); the Developer key that
+# uploads gets a 403 here.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version (expo.version, like 2026.1112.1)
+        required: true
+        type: string
+      build:
+        description: Build number (expo.ios.buildNumber)
+        required: true
+        type: string
+      whats_new:
+        description: What's New on its App Store page (optional)
+        required: false
+        type: string
+      submit:
+        description: Submit to App Review (untick to only prepare the version)
+        type: boolean
+        default: true
+      manual_release:
+        description: Wait for "Release this version" after approval, instead of going out by itself
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: appstore
+
+jobs:
+  appstore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run list --repo "$GITHUB_REPOSITORY" --workflow appstore.yml --status completed --limit 100 --json databaseId --jq '.[].databaseId' |
+            while read -r id; do
+              if [ "$id" != "$GITHUB_RUN_ID" ]; then gh run delete "$id" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1 || true; fi
+            done
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: .github/scripts
+          persist-credentials: false
+          show-progress: false
+      - env:
+          KEY_P8: ${{ secrets.ASC_TESTFLIGHT_KEY_P8 || secrets.APPLE_API_KEY_P8 }}
+          KEY_ID: ${{ secrets.ASC_TESTFLIGHT_KEY_ID || secrets.APPLE_API_KEY_ID }}
+          ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          APP_ID: '6829390070'
+          VERSION: ${{ inputs.version }}
+          BUILD: ${{ inputs.build }}
+          WHATS_NEW: ${{ inputs.whats_new }}
+          SUBMIT: ${{ inputs.submit }}
+          RELEASE: ${{ inputs.manual_release && 'MANUAL' || 'AFTER_APPROVAL' }}
+        run: node .github/scripts/appstore.mjs
