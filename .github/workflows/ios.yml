@@ -2,8 +2,11 @@ name: iOS
 # Builds the phone app for iOS from the source (eas build --local on this runner: no EAS build credits) and uploads it
 # to App Store Connect, where it shows in TestFlight once Apple has processed it. The version and build number are the
 # ones committed in apps/mobile/app.json (expo.version, expo.ios.buildNumber): nothing is stamped or raised here, so a
-# build number already uploaded is refused before building; raise it in the source first. Untick "Upload" for a test
-# build: the .ipa stays on the run's page for a day. After an upload it is given to TestFlight groups (the groups box, else
+# build number already uploaded is refused before building; raise it in the source first (and the version, once it
+# has been approved on the App Store: Apple takes no more builds of an approved version). Untick "Upload" for a test
+# build: the .ipa stays on the run's page for a day. After an upload it is sent to the App Store (submitted to App
+# Review, out by itself once approved: .github/scripts/appstore.mjs; untick "Send it to the App Store" for TestFlight
+# alone; for a build already up, run the App Store workflow) and given to TestFlight groups (the groups box, else
 # the TESTFLIGHT_GROUPS variable, else the app's only group; .github/scripts/testflight.mjs); for a build already up, run
 # the TestFlight group workflow.
 # Secrets: EXPO_TOKEN (an Expo access token), IOS_DIST_CERT_P12_BASE64 + IOS_DIST_CERT_PASSWORD (the App Store
@@ -27,9 +30,13 @@ on:
         required: false
         type: string
       whats_new:
-        description: What to Test, for external testers (optional)
+        description: What to Test for external testers, and What's New on the App Store (optional)
         required: false
         type: string
+      app_store:
+        description: Send it to the App Store too (submitted to App Review; goes out by itself once approved)
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -184,6 +191,20 @@ jobs:
           GROUPS: ${{ inputs.groups || vars.TESTFLIGHT_GROUPS }}
           WHATS_NEW: ${{ inputs.whats_new }}
         run: node .public/.github/scripts/testflight.mjs
+      # the App Store (.github/scripts/appstore.mjs): the build on its version, What's New, submitted to App Review.
+      # The upload stands either way: a refusal here is an error on the run, not a failed build
+      - if: inputs.upload && inputs.app_store
+        name: Send it to the App Store
+        continue-on-error: true
+        env:
+          KEY_P8: ${{ secrets.ASC_TESTFLIGHT_KEY_P8 || secrets.APPLE_API_KEY_P8 }}
+          KEY_ID: ${{ secrets.ASC_TESTFLIGHT_KEY_ID || secrets.APPLE_API_KEY_ID }}
+          ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          APP_ID: ${{ env.ASC_APP_ID }}
+          VERSION: ${{ steps.version.outputs.version }}
+          BUILD: ${{ steps.version.outputs.build }}
+          WHATS_NEW: ${{ inputs.whats_new }}
+        run: node .public/.github/scripts/appstore.mjs
       - if: ${{ !inputs.upload }}
         uses: actions/upload-artifact@v7
         with:
