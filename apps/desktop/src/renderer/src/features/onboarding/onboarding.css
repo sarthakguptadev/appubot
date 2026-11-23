@@ -1,0 +1,70 @@
+/* Onboarding's pictures of macOS (MacMocks.tsx): System Settings' privacy pane, the notification request and the
+   microphone alert, each in macOS's own light and dark colours, with a pointer that shows what to press. Plain CSS
+   (no Tailwind): the loops are keyframes; Reduce motion leaves the pointer resting on the target. */
+.ob-mac {
+  --m-wall: linear-gradient(140deg, #dfe6f3 0%, #eee6f0 48%, #f6e4d8 100%);
+  --m-win: #f3f3f3;
+  --m-side: #e8e8e8;
+  --m-group: #ffffff;
+  --m-line: rgba(0, 0, 0, .075);
+  --m-text: #1d1d1f;
+  --m-muted: #8a8a8e;
+  --m-field: rgba(0, 0, 0, .055);
+  --m-switch-off: #e2e2e4;
+  --m-blue: #0a84ff;
+  --m-button: rgba(0, 0, 0, .075);
+  --m-banner: rgba(246, 246, 246, .9);
+  --m-alert: #ececec;
+  --m-menubar: rgba(255, 255, 255, .45);
+  --m-shadow: 0 22px 44px -16px rgba(0, 0, 0, .3), 0 0 0 .5px rgba(0, 0, 0, .16);
+  --m-callout: #ee7944;
+}
+.dark .ob-mac {
+  --m-wall: linear-gradient(140deg, #222a3b 0%, #2a2333 50%, #33251d 100%);
+  --m-win: #1f1f21;
+  --m-side: #2a2a2c;
+  --m-group: #2c2c2e;
+  --m-line: rgba(255, 255, 255, .08);
+  --m-text: #f5f5f7;
+  --m-muted: #98989d;
+  --m-field: rgba(255, 255, 255, .07);
+  --m-switch-off: #48484a;
+  --m-button: rgba(255, 255, 255, .12);
+  --m-banner: rgba(44, 44, 46, .92);
+  --m-alert: #2c2c2e;
+  --m-menubar: rgba(0, 0, 0, .3);
+  --m-shadow: 0 22px 44px -16px rgba(0, 0, 0, .7), 0 0 0 .5px rgba(255, 255, 255, .12);
+  --m-callout: #f58056;
+}
+
+/* one loop: the pointer comes in, presses, the switch (or button) answers, a pause, again */
+.ob-loop { --ob-loop: 4.8s; }
+.ob-pointer { animation: ob-pointer var(--ob-loop) cubic-bezier(.45, 0, .2, 1) infinite; transform-origin: 2px 2px; }
+@keyframes ob-pointer {
+  0% { transform: translate(64px, 54px); opacity: 0; }
+  10% { opacity: 1; }
+  38% { transform: translate(0, 0) scale(1); }
+  44% { transform: translate(0, 0) scale(.84); }
+  50%, 86% { transform: translate(0, 0) scale(1); opacity: 1; }
+  96%, 100% { transform: translate(0, 0); opacity: 0; }
+}
+.ob-switch { background: var(--m-switch-off); }
+.ob-switch[data-on] { background: var(--m-blue); }
+.ob-switch[data-on] .ob-knob { transform: translateX(11px); }
+.ob-loop .ob-switch:not([data-on]) { animation: ob-track var(--ob-loop) ease infinite; }
+.ob-loop .ob-switch:not([data-on]) .ob-knob { animation: ob-knob var(--ob-loop) cubic-bezier(.3, .7, .4, 1) infinite; }
+@keyframes ob-track { 0%, 45% { background: var(--m-switch-off); } 49%, 92% { background: var(--m-blue); } 98%, 100% { background: var(--m-switch-off); } }
+@keyframes ob-knob { 0%, 45% { transform: translateX(0); } 50%, 92% { transform: translateX(11px); } 98%, 100% { transform: translateX(0); } }
+/* a button the pointer presses: lit while it's pressed and after */
+.ob-loop .ob-press { animation: ob-press var(--ob-loop) ease infinite; }
+@keyframes ob-press { 0%, 40% { filter: none; } 44%, 52% { filter: brightness(.86); } 56%, 100% { filter: none; } }
+.ob-loop .ob-hover { animation: ob-hover var(--ob-loop) ease infinite; }
+@keyframes ob-hover { 0%, 34% { background: transparent; color: var(--m-text); } 38%, 90% { background: var(--m-blue); color: #fff; } 96%, 100% { background: transparent; color: var(--m-text); } }
+/* the ring around what to press, breathing */
+.ob-ring { box-shadow: 0 0 0 2px var(--m-callout); animation: ob-ring 2.4s ease-in-out infinite; }
+@keyframes ob-ring { 0%, 100% { box-shadow: 0 0 0 2px var(--m-callout), 0 0 0 2px color-mix(in srgb, var(--m-callout) 30%, transparent); } 50% { box-shadow: 0 0 0 2px var(--m-callout), 0 0 0 6px color-mix(in srgb, var(--m-callout) 0%, transparent); } }
+@media (prefers-reduced-motion: reduce) {
+  .ob-mac *, .ob-mac { animation: none !important; }
+  /* still: the pointer rests on the target, which shows as hovered */
+  .ob-mac .ob-loop .ob-hover { background: var(--m-blue); color: #fff; }
+}

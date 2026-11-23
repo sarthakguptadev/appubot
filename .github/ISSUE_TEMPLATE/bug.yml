@@ -1,0 +1,54 @@
+name: Bug report
+description: Something in AppuBot doesn't work as it should.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What did you see, and what did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: How to make it happen
+      placeholder: |
+        1. Open …
+        2. Press …
+        3. See …
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: AppuBot version
+      description: Settings › About
+      placeholder: 2026.1123.1
+    validations:
+      required: true
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where
+      multiple: true
+      options:
+        - Mac
+        - Windows
+        - Linux
+        - iPhone app
+        - Android app
+        - AppuBot Cloud
+        - Telegram
+    validations:
+      required: true
+  - type: input
+    id: agent
+    attributes:
+      label: AI the bot runs on
+      placeholder: Claude Code, Codex, Copilot, Cursor, Grok, OpenCode…
+  - type: textarea
+    id: more
+    attributes:
+      label: Anything else
+      description: Screenshots, a recording or error messages. Remove anything private first.

@@ -1,0 +1,200 @@
+/* AppuBot design tokens for Tailwind v4 (desktop). Mirror of index.ts. */
+@theme {
+  --font-display: "Geist Variable", "Geist", -apple-system, BlinkMacSystemFont, "Noto Sans Devanagari", system-ui, sans-serif;
+  --font-sans: "Geist Variable", "Geist", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Noto Sans Devanagari", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-indigo-50:#fafcff; --color-indigo-100:#e8effc; --color-indigo-200:#d2dff9;
+  --color-indigo-300:#a7c0f1; --color-indigo-400:#81a0e9; --color-indigo-500:#6a88e2;
+  --color-indigo-600:#556adc; --color-indigo-700:#4250d5; --color-indigo-800:#3333cc;
+  --color-indigo-900:#212191; --color-indigo-950:#11115b;
+  --color-orange-50:#fffbfa; --color-orange-100:#feede6; --color-orange-200:#fddcce;
+  --color-orange-300:#f9bb9e; --color-orange-400:#f59970; --color-orange-500:#f38858;
+  --color-orange-600:#ee7944; --color-orange-700:#e96c2f; --color-orange-800:#e6651b;
+  --color-orange-900:#a5460f; --color-orange-950:#682906;
+  --color-grey-50:#f9f9f9; --color-grey-100:#f5f5f5; --color-grey-200:#f0f0f0; --color-grey-300:#e6e6e6;
+  --color-grey-400:#cccccc; --color-grey-500:#b3b3b3; --color-grey-600:#999999; --color-grey-700:#666666;
+  --color-grey-800:#525252; --color-grey-900:#3d3d3d; --color-grey-950:#292929;
+  --color-green-100:#e3f1d8; --color-green-400:#90c85b; --color-green-500:#83c040; --color-green-600:#6ea335; --color-green-700:#496d21;
+  --color-yellow-100:#fff0cf; --color-yellow-400:#ffb94a; --color-yellow-500:#feb12b; --color-yellow-600:#df9c2a; --color-yellow-800:#a27224;
+  --color-red-100:#f8d1c6; --color-red-300:#db715c; --color-red-400:#c43d2b; --color-red-500:#b81514; --color-red-700:#781a11;
+  --color-pink-100:#f9d5e1; --color-pink-400:#d4508e; --color-pink-500:#b12060;
+
+  /* semantic, driven by CSS vars so dark mode can flip them */
+  --color-bg: var(--ab-bg);
+  --color-surface: var(--ab-surface);
+  --color-surface-2: var(--ab-surface-2);
+  --color-surface-3: var(--ab-surface-3);
+  --color-fg: var(--ab-fg);
+  --color-fg-2: var(--ab-fg-2);
+  --color-muted: var(--ab-muted);
+  --color-inverse: var(--ab-inverse);
+  --color-border: var(--ab-border);
+  --color-border-subtle: var(--ab-border-subtle);
+  --color-primary: var(--ab-primary);
+  --color-primary-fg: var(--ab-primary-fg);
+  --color-accent: var(--ab-accent);
+  --color-accent-strong: var(--ab-accent-strong);
+  --color-accent-soft: var(--ab-accent-soft);
+  --color-link: var(--ab-link);
+  --color-ring: var(--ab-ring);
+  --color-success: var(--ab-success);
+  --color-success-soft: var(--ab-success-soft);
+  --color-warning: var(--ab-warning);
+  --color-warning-soft: var(--ab-warning-soft);
+  --color-attention: var(--ab-attention);
+  --color-danger: var(--ab-danger);
+  --color-danger-soft: var(--ab-danger-soft);
+  --color-code-bg: var(--ab-code-bg);
+  --color-user-bubble: var(--ab-user-bubble);
+  --color-agent-bubble: var(--ab-agent-bubble);
+  --color-popover: var(--ab-popover);
+  --color-content: var(--ab-content);
+  --color-unread: var(--ab-unread);
+
+  --text-label:12px; --text-caption:14px; --text-body:16px; --text-body-lg:18px;
+  --text-card:20px; --text-h2:28px; --text-h1:36px; --text-metric:48px; --text-hero:56px;
+  --tracking-display:-0.025em; --tracking-heading:-0.02em;
+
+  /* Tailwind's default radii (sm 4, md 6, lg 8, xl 12, 2xl 16, 3xl 24): ported Synara/Akeru classes assume them */
+  --radius-pill:9999px;
+
+  --shadow-card:0 0 40px 0 #0000000f;
+  --shadow-card-hover:0 8px 40px -4px #0000001f;
+  --shadow-sm:0 1px 3px #00000014;
+  --shadow-md:0 4px 24px #0000001f;
+  --shadow-lg:0 12px 40px -8px #0000001f;
+  --shadow-btn-filled:inset 0 1px 0 #ffffff66, inset 0 -2px 0 #00000033;
+  --shadow-btn-outline:inset 0 2px 0 #c8c8c81a, inset 0 -1px 0 #0000000d;
+  --shadow-focus:0 0 0 3px #a5bbfc26;
+
+  /*
+   * The app's shape, type and motion scale since the 2026-11-14 overhaul, in Rare UI's manner (rareui.com) at desktop
+   * density: filled squircle controls with no border (36px by default where Rare UI's are 48), cards whose edge is a
+   * shadow, semibold labels, and springs. One place for the numbers, so a control, a card and a sheet agree.
+   */
+  --radius-control-sm:8px; --radius-control:10px; --radius-control-lg:12px; --radius-row:10px;
+  --radius-pop:14px; --radius-card:16px; --radius-sheet:22px;
+  /* type roles (sizes only, so a role drops in wherever a size was without moving a line height): a note under
+     something, dense chrome, body, a chat's text, a card's title, a page's heading */
+  --text-note:12px; --text-ui:13px; --text-copy:14px; --text-lead:15px; --text-title:16px; --text-heading:22px;
+  --tracking-ui:-0.01em;
+  /* edges and lifts (light and dark values below) */
+  --shadow-field:var(--ab-shadow-field);
+  --shadow-raised:var(--ab-shadow-raised);
+  --shadow-raised-hover:var(--ab-shadow-raised-hover);
+  --shadow-lift:var(--ab-shadow-lift);
+  --shadow-edge:var(--ab-shadow-edge);
+  /* Rare UI's curves; the springs are motion's (duration, bounce) sampled for CSS: use each with its duration */
+  --ease-rare:cubic-bezier(.22,1,.36,1);
+  --ease-rare-in:cubic-bezier(.4,0,1,1);
+  --ease-rare-in-out:cubic-bezier(.65,0,.35,1);
+  --ease-spring:linear(0, 0.061, 0.201, 0.372, 0.542, 0.693, 0.815, 0.908, 0.972, 1.013, 1.036, 1.045, 1.045, 1.041, 1.033, 1.025, 1.018, 1.011, 1.006, 1.003, 1, 0.999, 0.998, 0.998, 1);
+  --ease-spring-soft:linear(0, 0.046, 0.152, 0.282, 0.416, 0.54, 0.649, 0.739, 0.812, 0.869, 0.912, 0.944, 0.966, 0.982, 0.992, 0.998, 1.002, 1.004, 1.005, 1.005, 1.005, 1.004, 1.003, 1.003, 1);
+  --ease-spring-bouncy:linear(0, 0.07, 0.236, 0.439, 0.638, 0.81, 0.942, 1.032, 1.083, 1.105, 1.104, 1.091, 1.07, 1.048, 1.028, 1.012, 1, 0.993, 0.99, 0.989, 0.99, 0.991, 0.994, 0.996, 1);
+  --duration-spring:.47s; --duration-spring-soft:.46s; --duration-spring-bouncy:.62s;
+
+  --ease-reveal:cubic-bezier(.25,1,.5,1);
+  --ease-ui:cubic-bezier(.2,0,0,1);
+  --duration-fast:.15s; --duration-normal:.2s; --duration-slow:.5s; --duration-entrance:.7s;
+}
+
+/*
+ * Glass (Synara-style): on macOS the window has native vibrancy and <body> paints a translucent coat over it
+ * (--ab-coat). The sidebar sits straight on the coat; the chat and side panels are "content cards" with a
+ * slightly denser fill, a hairline border and rounded corners. Neutrals are ink at low alpha so they read on glass.
+ * html[data-glass="off"] (non-mac, browser preview) swaps the coat for an opaque background.
+ */
+:root {
+  --ab-glass-opacity: 20%;
+  /*
+   * A background's three tones (packages/theme `backgrounds.ts`): the sidebar, the page (the chat, pages, dialogs)
+   * and what is raised on them. Settings › Appearance › Background sets `--ab-bg-*` on <html> (lib/appearance.ts);
+   * without them this is the neutral one. Everything below is made of these and of ink at low alpha, so a tinted
+   * background needs nothing else. Light since 2026-11-17: the sidebar a clear step darker than the page (it was
+   * #fafafa under #fcfcfc, all but the same), a softer ink, and the bot's bubble a flat grey with no outline.
+   */
+  --ab-tone-side: var(--ab-bg-side-light, #f7f7f7);
+  --ab-tone-page: var(--ab-bg-page-light, #fdfdfd);
+  --ab-tone-raised: var(--ab-bg-raised-light, #ffffff);
+  --ab-coat: color-mix(in srgb, var(--ab-tone-side) var(--ab-glass-opacity), transparent);
+  /* the chat and side panel: solid in either look (only the sidebar shows the glass) */
+  --ab-content: var(--ab-tone-page);
+  /* the settings window's section nav */
+  --ab-settings-nav: var(--ab-tone-side);
+  /* menus, popovers and the composer (dialogs are solid --ab-content): Settings › Appearance's glass opacity moves them (--ab-solid-boost, -1…1) */
+  --ab-popover: color-mix(in srgb, var(--ab-tone-raised) clamp(60%, calc(94% + var(--ab-solid-boost, 0) * 34%), 100%), transparent);
+  --ab-hairline: color-mix(in srgb, #1c1c1c 12%, transparent);
+
+  --ab-bg: var(--ab-tone-page); --ab-surface: var(--ab-tone-raised); --ab-surface-2:rgba(28,28,28,.05); --ab-surface-3:rgba(28,28,28,.09);
+  --ab-fg:#1c1c1c; --ab-fg-2:rgba(28,28,28,.76); --ab-muted:rgba(28,28,28,.6); --ab-inverse:#fdfdfd;
+  --ab-border:rgba(28,28,28,.1); --ab-border-subtle:rgba(28,28,28,.06);
+  --ab-primary:#1c1c1c; --ab-primary-fg:#ffffff;
+  --ab-accent:#ee7944; --ab-accent-strong:#c74614; --ab-accent-soft:rgba(238,121,68,.13);
+  --ab-link:#c74614; --ab-ring:color-mix(in srgb, #ee7944 70%, transparent);
+  --ab-success:#3f7f1f; --ab-success-soft:rgba(110,163,53,.14); --ab-warning:#8a5f1a; --ab-warning-soft:rgba(254,177,43,.18);
+  /* a status dot that needs you (a bot waiting, not signed in, reconnecting): --ab-warning is a text colour, a dark
+     brown that reads as a muddy dot on light; dark mode's warning is already this amber */
+  --ab-attention:#e8a21f;
+  --ab-danger:#b81514; --ab-danger-soft:rgba(184,21,20,.09); --ab-code-bg:rgba(28,28,28,.04);
+  --ab-user-bubble:rgba(28,28,28,.03);
+  /* the bot's reply bubble in the answers chat view: ink at 6% on the page, a flat grey with no outline (dark: a lift of ink) */
+  --ab-agent-bubble:rgba(28,28,28,.06);
+  --ab-composer: var(--ab-popover);
+  --ab-surface-border: var(--ab-hairline);
+  --ab-composer-shadow: 0 4px 18px -6px color-mix(in srgb, var(--ab-fg) 7%, transparent);
+  --ab-unread:#2e8eff;
+  --ab-diff-add:#1a7f37; --ab-diff-del:#cf222e;
+  --ab-shadow-pop: 0 12px 32px -8px rgba(0,0,0,.18), 0 0 0 1px rgba(0,0,0,.05);
+  /* Rare UI's shadows: a field's depth, a card's, a card under the pointer, a raised chip (the chosen segment), a hairline as a ring */
+  --ab-shadow-field: 0 1px 2px rgba(0,0,0,.04), 0 2px 8px rgba(0,0,0,.05);
+  --ab-shadow-raised: 0 0 0 1px rgba(0,0,0,.05), 0 1px 2px rgba(0,0,0,.04), 0 3px 10px rgba(0,0,0,.06);
+  --ab-shadow-raised-hover: 0 0 0 1px rgba(0,0,0,.05), 0 1px 2px rgba(0,0,0,.05), 0 6px 18px rgba(0,0,0,.09);
+  --ab-shadow-lift: 0 .5px 1px rgba(0,0,0,.05), 0 1px 3px rgba(0,0,0,.08), inset 0 .5px 0 rgba(255,255,255,.9);
+  --ab-shadow-edge: 0 0 0 1px rgba(0,0,0,.08);
+  color-scheme: light;
+}
+/*
+ * Dark is three flat tones (the owner's call 2026-11-11, read off Grok Bot's app): the sidebar and Settings' nav
+ * #0e0e0e, the chat, pages and dialogs #121212 (a step up, no line between the two), and everything raised on them
+ * (buttons, pills, the composer, menus) #1f1f1f, with #282828 for what sits on that; ink alphas for muted text,
+ * borders and the bubble (--ab-surface-2 on the chat reads as the raised tone, --ab-surface-3 as the one above it).
+ * (Black cards and a black sidebar, after Rare UI's, were tried on 2026-11-14 and taken back the same evening.)
+ */
+.dark {
+  --ab-glass-opacity: 20%;
+  --ab-tone-side: var(--ab-bg-side-dark, #0e0e0e);
+  --ab-tone-page: var(--ab-bg-page-dark, #121212);
+  --ab-tone-raised: var(--ab-bg-raised-dark, #1f1f1f);
+  --ab-popover: color-mix(in srgb, var(--ab-tone-raised) clamp(55%, calc(95% + var(--ab-solid-boost, 0) * 40%), 100%), transparent);
+  --ab-hairline: color-mix(in srgb, #ffffff 9%, transparent);
+
+  --ab-surface-2:rgba(252,252,252,.056); --ab-surface-3:rgba(252,252,252,.1);
+  --ab-fg:#fcfcfc; --ab-fg-2:rgba(252,252,252,.78); --ab-muted:rgba(252,252,252,.58); --ab-inverse:#0d0d0d;
+  --ab-border:rgba(252,252,252,.072); --ab-border-subtle:rgba(252,252,252,.046);
+  --ab-primary:#fcfcfc; --ab-primary-fg:#0d0d0d;
+  --ab-accent:#f58056; --ab-accent-strong:#f58056; --ab-accent-soft:rgba(245,128,86,.16);
+  --ab-link:#f58056; --ab-ring:color-mix(in srgb, #f58056 65%, transparent);
+  --ab-success:#90c85b; --ab-success-soft:rgba(144,200,91,.16); --ab-warning:#ffb94a; --ab-warning-soft:rgba(255,185,74,.16); --ab-attention:#ffb94a;
+  --ab-danger:#e02e2a; --ab-danger-soft:rgba(224,46,42,.16); --ab-code-bg:rgba(252,252,252,.026);
+  --ab-user-bubble:rgba(252,252,252,.026);
+  --ab-agent-bubble:rgba(252,252,252,.055);
+  /* the composer: the raised tone, all but solid (Glass opacity lets the chat through it, down to 10%) */
+  --ab-composer: color-mix(in srgb, var(--ab-tone-raised) clamp(10%, calc(96% + var(--ab-solid-boost, 0) * 86%), 100%), transparent);
+  --ab-surface-border: rgba(252,252,252,.04);
+  --ab-composer-shadow: 0 6px 24px -10px rgba(0,0,0,.30);
+  --ab-unread:#4c9dff;
+  --ab-diff-add:#3fb950; --ab-diff-del:#f85149;
+  --ab-shadow-pop: 0 12px 32px -8px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.07);
+  --ab-shadow-field: none;
+  --ab-shadow-raised: 0 0 0 1px rgba(255,255,255,.05), 0 1px 2px rgba(0,0,0,.4), 0 3px 10px rgba(0,0,0,.3);
+  --ab-shadow-raised-hover: 0 0 0 1px rgba(255,255,255,.07), 0 1px 2px rgba(0,0,0,.45), 0 6px 18px rgba(0,0,0,.4);
+  --ab-shadow-lift: 0 .5px 1px rgba(0,0,0,.35), 0 1.5px 4px rgba(0,0,0,.25), inset 0 .5px 0 rgba(255,255,255,.07);
+  --ab-shadow-edge: 0 0 0 1px rgba(255,255,255,.1);
+  color-scheme: dark;
+}
+/* The layout is flush to the window with no outline, inset, divider or header line (index.css): the sidebar a step
+   darker than the chat. Solid (Reduce transparency), the sidebar is opaque too. */
+html[data-glass="off"] { --ab-coat: var(--ab-tone-side); }
+/* the sidebar's colour as a solid, for what must cut a hole in it (a presence dot's ring) */
+:root { --ab-coat-solid: var(--ab-tone-side); }

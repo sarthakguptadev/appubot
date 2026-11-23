@@ -1,0 +1,170 @@
+appId: ai.appubot.desktop
+productName: AppuBot
+directories:
+  buildResources: resources
+  output: release
+files:
+  - out/**
+  - package.json
+  - "!**/*.map"
+  # Claude Code's and Codex's own programs aren't shipped: their ACP adapters (and the Claude Agent SDK's JS) are, and
+  # drive the user's own `claude` / `codex` (agent-runtime `adapterCli`), which installs like any agent's CLI
+  - "!**/node_modules/@anthropic-ai/claude-agent-sdk-*{,/**}"
+  - "!**/node_modules/@openai/codex{,/**}"
+  - "!**/node_modules/@openai/codex-*{,/**}"
+  # uiohook-napi (teach mode's recorder on Windows/Linux) ships prebuilt binaries: its C sources stay out
+  - "!**/node_modules/uiohook-napi/{libuiohook,src}/**"
+  - "!**/node_modules/uiohook-napi/binding.gyp"
+# No native module is compiled for Electron: uiohook-napi is N-API (one prebuild per platform works with any Electron),
+# and @electron/rebuild doesn't recognise its prebuilds' file names, so it would build it from source (and refuses to
+# when packaging another OS). Turn this back on only for a dependency that has to be built against Electron.
+npmRebuild: false
+extraResources:
+  - from: ../../packages/mcp-bridge/dist/bridge.mjs
+    to: bridge/bridge.mjs
+  # the licenses of what the app is made with, as a plain file in the resources folder (written by every
+  # `electron-vite build`: scripts/notices.mjs)
+  - from: node_modules/.cache/appubot-notices/THIRD_PARTY_NOTICES.txt
+    to: THIRD_PARTY_NOTICES.txt
+# Updates: the source repo stays private, so builds go to the GitHub Releases of a public repo of their own
+# (that repo's own .github/workflows/release.yml checks this repo out, builds each OS and architecture with
+# `--publish never`, merges the update files and publishes the release). Every build gets this as app-update.yml,
+# which electron-updater reads (electron/appUpdater.ts; no token needed, the repo is public).
+publish:
+  provider: github
+  owner: sarthakguptadev
+  repo: appubot
+asarUnpack:
+  - "**/node_modules/@trycua/**"
+  - "**/node_modules/@ubjs/**"
+  - "**/node_modules/@anthropic-ai/**"
+  - "**/node_modules/@openai/**"
+  - "**/node_modules/@agentclientprotocol/**"
+  # its .node binary is dlopen'ed from a real file
+  - "**/node_modules/uiohook-napi/**"
+  # voice: sherpa-onnx's addon (and the onnxruntime libraries beside it) is dlopen'ed from a real file by the voice
+  # host, which runs as an Electron-as-Node child from out/main/voiceHost.js, read from a real file too
+  - "**/node_modules/sherpa-onnx-*/**"
+  - "out/main/voiceHost.js"
+  # and the code it shares with main (Rollup splits it into a chunk the host requires), or the host dies at once
+  - "out/main/chunks/**"
+mac:
+  category: public.app-category.productivity
+  # the Swift helper (computer use, teach mode) is macOS only
+  extraResources:
+    - from: ../../native/appubot-helper/.build/release/appubot-helper
+      to: bin/appubot-helper
+    # the icon, already compiled (see `icon` below)
+    - from: resources/compiled-icon/Assets.car
+      to: Assets.car
+    # Chromium's licenses: Windows and Linux installs get them from electron-builder, the Mac app doesn't
+    - from: node_modules/.cache/appubot-notices/LICENSES.chromium.html
+      to: LICENSES.chromium.html
+  # beside the app's own executable, so macOS takes it for AppuBot: it reads and asks for the notification permission
+  # (Electron can't); its embedded Info.plist signs it as ai.appubot.desktop. extraFiles land in Contents/.
+  extraFiles:
+    - from: ../../native/appubot-helper/.build/release/appubot-notify
+      to: MacOS/appubot-notify
+  # The Icon Composer bundle (resources/AppuBot.icon: Default, Dark, Clear and Tinted on macOS 26) compiled by
+  # scripts/make-icon.mjs into Assets.car (named Icon, CFBundleIconName below) and the icns older macOS shows. Compiled
+  # here rather than by electron-builder: its actool needs Xcode 26 on a macOS 26 host, and the CI runners are macOS 15.
+  icon: resources/compiled-icon/Icon.icns
+  # the zip is what the app updates itself from (Squirrel.Mac), the dmg is for first installs; both need the app signed
+  # with a Developer ID (and notarized) for macOS to open it and to accept an update
+  target: [dmg, zip]
+  # Download names carry the arch and no version, so github.com/…/releases/latest/download/<name> is always the newest
+  # (appubot.com/download/<build>; the version is in each release's tag). Apple silicon and Intel are separate builds,
+  # listed in one latest-mac.yml, where the updater tells them apart by "arm64" in the name
+  artifactName: AppuBot-${arch}.${ext}
+  hardenedRuntime: true
+  entitlements: resources/entitlements.mac.plist
+  entitlementsInherit: resources/entitlements.mac.plist
+  extendInfo:
+    CFBundleIconName: Icon
+    NSAppleEventsUsageDescription: AppuBot automates apps on your behalf.
+    NSScreenCaptureUsageDescription: AppuBot takes screenshots so the agent can see your screen.
+    NSAccessibilityUsageDescription: AppuBot controls the mouse and keyboard on your behalf.
+    NSMicrophoneUsageDescription: AppuBot listens when you talk to a bot by voice.
+    LSUIElement: false
+  # teach mode records with the Swift helper here: the Windows/Linux recorder's hooks stay out of the Mac app
+  # a platform's own list starts with what the app is (out/, package.json) again: one made only of exclusions makes
+  # electron-builder take the whole folder (src/, scripts/, configs) into app.asar
+  files:
+    - out/**
+    - package.json
+    - "!**/node_modules/uiohook-napi{,/**}"
+    - "!**/node_modules/node-gyp-build{,/**}"
+    # pnpm installs only this platform's speech runtime; the others stay out should one be there
+    - "!**/node_modules/sherpa-onnx-{win,linux}-*{,/**}"
+# The window the .dmg opens in: AppuBot and Applications on scripts/make-installer-art.mjs's picture (resources/
+# background.tiff, its 2x inside), at the points its arrow runs between; Finder draws the labels black or white with the
+# Mac's appearance, so the picture is a deep orange both read on
+dmg:
+  background: resources/background.tiff
+  window: { width: 660, height: 400 }
+  iconSize: 104
+  iconTextSize: 13
+  contents:
+    - { x: 175, y: 215 }
+    - { x: 485, y: 215, type: link, path: /Applications }
+win:
+  icon: resources/icon.png
+  target: [nsis]
+  # only Windows' prebuilds of teach mode's input hooks
+  files:
+    - out/**
+    - package.json
+    - "!**/node_modules/uiohook-napi/prebuilds/{darwin,linux}-*{,/**}"
+    - "!**/node_modules/sherpa-onnx-{darwin,linux}-*{,/**}"
+  # the tray icon (electron/window.ts appIconPath)
+  extraResources:
+    - from: resources/icon.png
+      to: icon.png
+nsis:
+  # no spaces (latest.yml has to name the file exactly as GitHub stores it), no version (see mac.artifactName), and the
+  # arch: x64 and Arm are separate builds listed in one latest.yml, where the updater takes the .exe named after the
+  # machine's arch
+  artifactName: AppuBot-Setup-${arch}.${ext}
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  shortcutName: AppuBot
+  # the assisted installer's pictures (scripts/make-installer-art.mjs): the welcome and finish pages' sidebar (the
+  # uninstaller's too) and the other pages' header, right of their titles
+  installerSidebar: resources/installerSidebar.bmp
+  uninstallerSidebar: resources/installerSidebar.bmp
+  installerHeader: resources/installerHeader.bmp
+linux:
+  icon: resources/icon.png
+  category: Utility
+  # the npm name (@appubot/desktop) isn't a file name: the binary and its .desktop entry are `appubot`
+  executableName: appubot
+  # the .desktop file is package.json's desktopName, which Electron also uses as the window's WM_CLASS / app id, so
+  # docks and taskbars link the running window to its launcher
+  syncDesktopName: true
+  # appubot:// links (electron/deeplinks.ts) open AppuBot
+  mimeTypes: [x-scheme-handler/appubot]
+  target: [AppImage, deb]
+  # only Linux's prebuilds of teach mode's input hooks
+  files:
+    - out/**
+    - package.json
+    - "!**/node_modules/uiohook-napi/prebuilds/{darwin,win32}-*{,/**}"
+    - "!**/node_modules/sherpa-onnx-{darwin,win}-*{,/**}"
+  synopsis: Your computer's AI agents, reachable from Telegram.
+  # deb packages list a maintainer (published in every .deb)
+  maintainer: Sarthak Gupta <sarthakguptadev@users.noreply.github.com>
+  # the window and tray icon (electron/window.ts appIconPath)
+  extraResources:
+    - from: resources/icon.png
+      to: icon.png
+appImage:
+  # like the other downloads: the arch (electron-builder spells x64 "x86_64" for an AppImage), no version
+  artifactName: AppuBot-${arch}.${ext}
+deb:
+  # a Debian package name is lowercase (without it, the npm name's "@appubot/desktop" ends up in the file name)
+  packageName: appubot
+  # amd64 / arm64, no version (see mac.artifactName)
+  artifactName: appubot_${arch}.${ext}
+  # electron-builder's own list, plus what teach mode's input hooks (uiohook-napi: libXt, libXrandr) load
+  depends: [libgtk-3-0, libnotify4, libnss3, libxss1, libxtst6, xdg-utils, libatspi2.0-0, libuuid1, libsecret-1-0, libxt6, libxrandr2]

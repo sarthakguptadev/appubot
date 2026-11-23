@@ -1,0 +1,19 @@
+/* The sidebar cloud card's scene (CloudPromoCard.tsx): the person's own bots riding a cloud at night, drawn in the
+   app's own flat tones (ink tints over the sidebar's tone; the only colour is the bots'). Motion is slow and small, and
+   off under Reduce motion. `transform` only: the Tailwind translate utilities these sit on use `translate`. */
+.cp-star { opacity: .34; }
+/* the cloud: one soft tone, both halves opaque (two see-through greys read as two clouds), the front a step lighter so
+   it reads over the bots' lower part */
+.cp-back { color: color-mix(in srgb, var(--ab-fg) 12%, var(--ab-tone-side)); }
+.cp-front { color: color-mix(in srgb, var(--ab-fg) 17%, var(--ab-tone-side)); }
+.cp-wisp { color: color-mix(in srgb, var(--ab-fg) 7%, transparent); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .cp-float { animation: cp-float 5.6s ease-in-out infinite alternate; }
+  .cp-star { animation: cp-twinkle 3.4s ease-in-out infinite alternate; }
+  .cp-wisp { animation: cp-drift 18s ease-in-out infinite alternate; }
+  .cp-wisp[data-way='back'] { animation-direction: alternate-reverse; animation-duration: 23s; }
+}
+@keyframes cp-float { from { transform: translateY(1px); } to { transform: translateY(-2.5px); } }
+@keyframes cp-twinkle { from { opacity: .16; } to { opacity: .62; } }
+@keyframes cp-drift { from { transform: translateX(-5px); } to { transform: translateX(7px); } }

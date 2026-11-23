@@ -1,0 +1,16 @@
+name: Idea
+description: Something AppuBot could do, or do better.
+labels: [idea]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What you're trying to do
+      description: The job you want done, and what gets in the way today.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+      description: How you'd like AppuBot to help. Sketches and examples welcome.

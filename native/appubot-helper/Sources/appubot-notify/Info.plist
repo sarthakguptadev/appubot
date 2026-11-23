@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- embedded in the binary: codesign then signs it as AppuBot (ai.appubot.desktop), which macOS's notification
+	     permission is keyed by -->
+	<key>CFBundleIdentifier</key>
+	<string>ai.appubot.desktop</string>
+	<key>CFBundleName</key>
+	<string>AppuBot</string>
+</dict>
+</plist>
