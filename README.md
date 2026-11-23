@@ -214,13 +214,13 @@ AppuBot updates itself. It looks for new versions in the background, downloads t
 
 ```mermaid
 flowchart LR
-  You["You<br>app, phone or Telegram"] --> Bot["Your bot<br>name, job, memory, skills"]
-  Bot --> AI["Your AI<br>Claude Code, Codex, Copilot,<br>Cursor, Grok or OpenCode"]
-  AI --> Tools["Tools<br>computer use, terminal,<br>files, connected apps"]
-  Tools --> Check{"Important?"}
-  Check -- "yes" --> Ask["Waits for your OK"]
-  Check -- "no" --> Done["Does it and reports back"]
-  Ask --> Done
+  A[You: app, phone or Telegram] --> B[Your bot: job, memory, skills]
+  B --> C[Your AI: Claude Code, Codex, Copilot, Cursor, Grok or OpenCode]
+  C --> D[Tools: computer use, terminal, files, apps]
+  D --> E{Important step?}
+  E -->|yes| F[Waits for your OK]
+  E -->|no| G[Does it and reports back]
+  F --> G
 ```
 
 1. **You ask** in the app, from your phone, by voice or on Telegram.
