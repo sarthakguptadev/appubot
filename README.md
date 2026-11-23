@@ -1,12 +1,16 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/readme/banner-dark.webp">
-  <img src="assets/readme/banner-light.webp" alt="AppuBot: five AppuBot bots above the line Free AI bots that use the apps on your own computer" width="100%">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/readme/bots-dark.webp">
+  <img src="assets/readme/bots-light.webp" alt="AppuBot's bots: Appu, the orange one, with four more" width="100%">
 </picture>
 
 <div align="center">
 
+# AppuBot
+
+**The free Grok Bot alternative: a team of AI bots that use the apps on your own computer.**
+
 <p>
-A Grok Bot, OpenAI dots and Meta Muse alternative for Mac, Windows and Linux.<br>
+A free alternative to Grok Bot, OpenAI dots and Meta Muse for Mac, Windows and Linux.<br>
 It runs on the Claude, ChatGPT, Cursor, Grok or Copilot account you already have,<br>
 works on your own computer or around the clock in AppuBot Cloud, and answers you on Telegram.
 </p>
@@ -35,6 +39,8 @@ works on your own computer or around the clock in AppuBot Cloud, and answers you
 </p>
 
 <sub>Free to download · no account, no card · AppuBot Cloud from $19 a month · source available</sub>
+
+<sub>AppuBot is a free alternative to <b>Grok Bot</b>, <b>OpenAI dots</b> and <b>Meta Muse</b>, and to <b>MausBot</b>, <b>OpenBot</b>, <b>OpenClaw</b>, <b>Hermes Agent</b>, <b>Manus</b> and <b>Claude Cowork</b>: bring your own AI (Claude Code, Codex, Cursor, Grok, GitHub Copilot or OpenCode), local-first, with computer use in your real apps.</sub>
 
 </div>
 
