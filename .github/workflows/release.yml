@@ -169,7 +169,10 @@ jobs:
           name: apps-directory
           path: apps/desktop/src/main/core/services
       # the build's last step fetches Electron's release from GitHub for the Chromium notices, which answers 504 now and then
-      - run: |
+      # our releases only send usage analytics: the PostHog key is built in here, never kept in the source
+      - env:
+          MAIN_VITE_POSTHOG_KEY: ${{ vars.POSTHOG_KEY }}
+        run: |
           for try in 1 2 3; do
             pnpm -C apps/desktop exec electron-vite build --logLevel warn && exit 0
             if [ "$try" -lt 3 ]; then echo "build failed (try $try): again in 40 s"; sleep 40; fi
