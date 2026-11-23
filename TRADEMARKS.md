@@ -1,6 +1,6 @@
 # AppuBot trademarks
 
-The code in this repository is source-available under the PolyForm Shield License 1.0.0 ([LICENSE](LICENSE)). That licence covers the code only. It gives no rights to the AppuBot name or brand.
+The code in this repository is source-available under the PolyForm Shield License 1.0.0 ([LICENSE](LICENSE.md)). That licence covers the code only. It gives no rights to the AppuBot name or brand.
 
 ## What is ours
 

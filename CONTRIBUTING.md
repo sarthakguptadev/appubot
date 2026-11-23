@@ -32,6 +32,6 @@ Follow [Build from source](README.md#build-from-source) in the README. You need 
 
 By sending a contribution you agree to the [Contributor Licence Agreement](CLA.md). In short: you keep the copyright in your work, and you give AppuBot a licence to use it, including in paid versions.
 
-AppuBot's code is under the [PolyForm Shield License 1.0.0](LICENSE). The AppuBot name, logo and icon are ours: see [TRADEMARKS.md](TRADEMARKS.md).
+AppuBot's code is under the [PolyForm Shield License 1.0.0](LICENSE.md). The AppuBot name, logo and icon are ours: see [TRADEMARKS.md](TRADEMARKS.md).
 
 Questions? Write to [sarthak@appubot.com](mailto:sarthak@appubot.com).

@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "description": "AppuBot: AI bots that use the real apps on your own computer.",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "SEE LICENSE IN LICENSE.md",
   "packageManager": "pnpm@11.25.0",
   "engines": {
     "node": ">=22"
