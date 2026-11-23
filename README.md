@@ -8,7 +8,7 @@
 <p>
 A Grok Bot, OpenAI dots and Meta Muse alternative for Mac, Windows and Linux.<br>
 It runs on the Claude, ChatGPT, Cursor, Grok or Copilot account you already have,<br>
-and you can message your bots on Telegram.
+works on your own computer or around the clock in AppuBot Cloud, and answers you on Telegram.
 </p>
 
 <p>
@@ -30,7 +30,7 @@ and you can message your bots on Telegram.
 <a href="https://appubot.com/faq">FAQ</a>
 </p>
 
-<sub>Free during early access · no account, no card · source available</sub>
+<sub>Free to download · no account, no card · AppuBot Cloud from $19 a month · source available</sub>
 
 </div>
 
@@ -62,7 +62,10 @@ AppuBot gives you a team of AI bots, each with its own name, job and AI. They ru
 | **Routines on a schedule** | Every hour, every weekday or whenever you choose. |
 | **Memory you can read and edit** | Your rates, your accountant, how you like your replies. |
 | **Approvals, not surprises** | Anything important waits for your OK, however long you take. |
-| **Connected apps** | Gmail, Notion, Slack and hundreds more, chosen per bot. |
+| **Connected apps** | Gmail, Notion, Slack and 1,700 more, chosen per bot. |
+| **Talk by voice** | Voice mode, menu bar calls, dictation and Telegram voice notes, with speech handled on your own computer. |
+| **Files in, files out** | PDFs, spreadsheets, photos and recordings in; invoices, exports and charts out, in the app or on Telegram. |
+| **AppuBot Cloud** | Optional: your bots on a cloud computer of their own, with a live desktop you can watch or take over, so routines and Telegram keep going while your laptop is off. From $19 a month. |
 
 ## A look around
 
@@ -120,7 +123,7 @@ Grok Bot (xAI), dots (OpenAI) and Muse (Meta) work on a computer in the cloud. A
 
 | | AppuBot | Grok Bot | OpenAI dots | Meta Muse |
 | --- | --- | --- | --- | --- |
-| Price | Free during early access | $30 to $200 a month, plus extra usage | ChatGPT Pro, $100 to $500 a month, or Business Premium | Free up to a limit, then $20 or $100 a month |
+| Price | Free on your computer; Cloud from $19 a month | $30 to $200 a month, plus extra usage | ChatGPT Pro, $100 to $500 a month, or Business Premium | Free up to a limit, then $20 or $100 a month |
 | Uses the apps on your computer | Yes, any app, in its own window | No, it works on its own cloud computer | Partly: a connected computer gives it your files and browser | No, it works in a cloud browser |
 | AI model | Your choice: Claude Code, Codex, Copilot, Cursor, Grok or OpenCode | Grok only | GPT-6 Astra only | Muse Spark only |
 | How many agents | As many bots as you like | Many bots, sharing one cloud computer | One dot to start | One Muse per person |
@@ -140,7 +143,7 @@ Grok Bot (xAI), dots (OpenAI) and Muse (Meta) work on a computer in the cloud. A
 <details>
 <summary><b>Is AppuBot free?</b></summary>
 <br>
-Yes, during early access, with no account and no card. You only keep paying for the AI plan you already have, like Claude or ChatGPT.
+Yes. The app is free on your own computer, with no account and no card, and it stays that way. If you want your bots to keep working while your computer is off, AppuBot Cloud is an optional add-on from $19 a month, with Work plans for teams from $69 a month, and every plan starts with a 3-day trial for $1. Either way, you keep paying only your own AI plan, like Claude or ChatGPT.
 </details>
 
 <details>
@@ -158,7 +161,7 @@ Yes. It's made for the Mac first, with Windows and Linux versions too, computer 
 <details>
 <summary><b>Where does my data go?</b></summary>
 <br>
-It stays on your computer. What leaves is what a bot sends to its AI provider, such as Anthropic or OpenAI, just like when you use that AI yourself.
+It stays on your computer. What leaves is what a bot sends to its AI provider, such as Anthropic or OpenAI, just like when you use that AI yourself, and anonymous usage counts: which features get used, never your messages, files or names. Builds you make from this code send none.
 </details>
 
 <details>
