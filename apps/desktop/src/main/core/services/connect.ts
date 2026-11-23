@@ -649,8 +649,10 @@ export class ConnectService {
     if (this.probe) return;
     // a relay that has never echoed can't be asked: start over
     if (!this.echoes) { this.lost(ws, why); return; }
-    const sent = Date.now();
     this.ping();
+    // the oldest ping still unanswered, this one at the latest: read back, since ping() stamps its own time and a
+    // clock read here could be a millisecond earlier, leaving the probe waiting for an answer to nothing
+    const sent = this.awaiting;
     this.probe = setTimeout(() => {
       this.probe = null;
       if (this.sock === ws && this.awaiting && this.awaiting <= sent) this.lost(ws, `${why}; the relay didn’t answer`);
