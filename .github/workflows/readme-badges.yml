@@ -21,9 +21,11 @@ jobs:
         with: { persist-credentials: false }
       - uses: actions/setup-node@v7
         with: { node-version: 24 }
-      - env: { GH_TOKEN: ${{ github.token }} }
+      - env:
+          GH_TOKEN: ${{ github.token }}
         run: node scripts/readme-badges.mjs "$RUNNER_TEMP/badges"
-      - env: { GH_TOKEN: ${{ github.token }} }
+      - env:
+          GH_TOKEN: ${{ github.token }}
         working-directory: ${{ runner.temp }}/badges
         run: |
           git init -q -b readme-assets
