@@ -29,6 +29,7 @@ works on your own computer or around the clock in AppuBot Cloud, and answers you
 <a href="https://github.com/sarthakguptadev/AppuBot/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/sarthakguptadev/AppuBot/ci.yml?style=flat&color=3d444d&labelColor=24292f&branch=main&label=ci" alt="CI"></a>
 <a href="LICENSE.md"><img src="https://img.shields.io/badge/license-PolyForm%20Shield%201.0.0-3d444d?style=flat&color=3d444d&labelColor=24292f" alt="Licence: PolyForm Shield 1.0.0"></a>
 <a href="https://x.com/AppuBot_"><img src="https://img.shields.io/badge/@AppuBot__-3d444d?style=flat&color=3d444d&labelColor=24292f&logo=x&logoColor=white" alt="AppuBot on X"></a>
+<a href="https://x.com/sarthakguptadev"><img src="https://img.shields.io/badge/@sarthakguptadev-3d444d?style=flat&color=3d444d&labelColor=24292f&logo=x&logoColor=white" alt="Sarthak Gupta, the maker, on X"></a>
 </p>
 
 <p>
@@ -229,5 +230,5 @@ AppuBot's code is source-available under the [PolyForm Shield License 1.0.0](LIC
 
 <p align="center">
 <img src="assets/icon.png" alt="" width="72"><br>
-<sub><a href="https://appubot.com">appubot.com</a> · <a href="https://x.com/AppuBot_">@AppuBot_</a> · <a href="mailto:sarthak@appubot.com">sarthak@appubot.com</a></sub>
+<sub>Made by Sarthak Gupta (<a href="https://x.com/sarthakguptadev">@sarthakguptadev</a>)<br><a href="https://appubot.com">appubot.com</a> · <a href="https://x.com/AppuBot_">@AppuBot_</a> · <a href="mailto:sarthak@appubot.com">sarthak@appubot.com</a></sub>
 </p>
