@@ -226,3 +226,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
+
+## The README's download-button logos
+
+`assets/readme/logos`, drawn onto the README's download buttons only; nothing in the app uses them.
+
+- `tux.svg`: Tux by Larry Ewing (lewing@isc.tamu.edu), made with The GIMP. Free to use and change if you credit Larry Ewing and The GIMP. Source: https://commons.wikimedia.org/wiki/File:Tux.svg
+- `apple.svg`, `app-store.svg`, `windows.svg`, `google-play.svg`: the Apple, App Store, Windows and Google Play logos, trademarks of Apple Inc., Microsoft Corporation and Google LLC, used only to say where AppuBot can be downloaded. Sources: https://commons.wikimedia.org/wiki/File:Apple_logo_black.svg, https://commons.wikimedia.org/wiki/File:App_Store_(iOS).svg, https://commons.wikimedia.org/wiki/File:Windows_logo_-_2021.svg, https://commons.wikimedia.org/wiki/File:Google_Play_2022_icon.svg
