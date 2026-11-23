@@ -58,7 +58,7 @@ works on your own computer or around the clock in AppuBot Cloud, and answers you
 - **See it work:** [What you can ask](#what-you-can-ask) · [A day with AppuBot](#a-day-with-appubot) · [A look around](#a-look-around)
 - **Learn more:** [How it works](#how-it-works) · [Your AI, your choice](#your-ai-your-choice) · [Telegram](#talk-to-your-bots-on-telegram) · [Safety and privacy](#safety-and-privacy) · [AppuBot Cloud](#appubot-cloud)
 - **Decide:** [AppuBot vs Grok Bot, OpenAI dots and Meta Muse](#appubot-vs-grok-bot-openai-dots-and-meta-muse) · [Questions](#questions)
-- **For developers:** [Download or build it yourself?](#download-or-build-it-yourself) · [Build from source](#build-from-source) · [Contributing](#contributing) · [Licence](#licence)
+- **For developers:** [Download or build it yourself?](#download-or-build-it-yourself) · [Build from source](#build-from-source) · [Partners](#partners) · [Contributing](#contributing) · [Licence](#licence)
 
 ## Get started in 3 steps
 
@@ -471,6 +471,24 @@ A build of your own signs in, pairs phones and connects apps through AppuBot's s
 | `scripts` | Dev, test, release and benchmark scripts |
 
 </details>
+
+## Partners
+
+The companies that build and back AppuBot.
+
+<p>
+<a href="https://www.agent37.com/?ref=appubot"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/partners/agent37-dark.png"><img src="assets/readme/partners/agent37-light.png" alt="Cloud computers by Agent 37" height="64"></picture></a>
+<a href="https://loops.so/?ref=appubot"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/partners/loops-dark.png"><img src="assets/readme/partners/loops-light.png" alt="Email by Loops" height="64"></picture></a>
+<a href="https://www.rareui.com/?ref=appubot"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/partners/rareui-dark.png"><img src="assets/readme/partners/rareui-light.png" alt="Components by Rare UI" height="64"></picture></a>
+</p>
+
+| Partner | What it does for AppuBot |
+| --- | --- |
+| [Agent 37](https://www.agent37.com/?ref=appubot) | Hosts AppuBot Cloud: every plan's cloud computer, with its live desktop and nightly backups. |
+| [Loops](https://loops.so/?ref=appubot) | Sponsors AppuBot: the email platform for software companies. |
+| [Rare UI](https://www.rareui.com/?ref=appubot) | Animated React components used in the app, by Swami Malode. |
+
+**Want your product here?** AI models, cloud computers, tools and the services apps are built on: partners and sponsors get a post on X, a badge here and on [appubot.com/partners](https://appubot.com/partners), a link to their site, a place in our ads, and the views and traffic that come with them. [✉️ Become a partner](mailto:sarthak@appubot.com?subject=Partnering%20with%20AppuBot).
 
 ## Contributing
 

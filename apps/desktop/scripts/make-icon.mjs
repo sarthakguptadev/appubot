@@ -8,8 +8,8 @@
  * draws in every appearance (Default, Dark, Clear light/dark, Tinted light/dark). The flat `resources/icon.svg` (the
  * site, the installers' art) keeps the plain drawing. Run it again after changing the drawing:
  * `node scripts/make-icon.mjs` (`--preview <dir>` renders each appearance with ictool). Needs Xcode 26+ (Icon
- * Composer). The menu bar glyph (src/main/electron/trayGlyph.ts), the What's new banner's `LogoGlyph` and the phone's
- * icons share this geometry: change them together.
+ * Composer). The menu bar glyph (src/main/electron/trayGlyph.ts) and the phone's icons share this geometry: change
+ * them together.
  */
 import { execFileSync } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';

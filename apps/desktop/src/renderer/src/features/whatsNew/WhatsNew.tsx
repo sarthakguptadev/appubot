@@ -16,7 +16,6 @@ import { macSystemOf, useStore } from '../../lib/store';
 import { native } from '../../lib/native';
 import { SettingsCard, SettingsEmptyState } from '../settings/sections/shared';
 import { RELEASES } from './releases';
-import { WhatsNewHero } from './WhatsNewHero';
 
 const SEEN_KEY = 'appubot.whatsNewSeen';
 const ALL = releasesNewestFirst(RELEASES);
@@ -240,15 +239,9 @@ export function WhatsNewDialog() {
       }
     >
       {release ? (
-        <>
-          <WhatsNewHero />
-          <Features notes={release} />
-        </>
+        <Features notes={release} />
       ) : (
-        <>
-          <WhatsNewHero />
-          <ReleaseList open={shown?.kind === 'all' ? shown.open : undefined} />
-        </>
+        <ReleaseList open={shown?.kind === 'all' ? shown.open : undefined} />
       )}
     </Dialog>
   );
@@ -258,10 +251,5 @@ export function WhatsNewDialog() {
 export function WhatsNewSection() {
   const current = notesFor(RELEASES, installed())?.version ?? ALL[0]?.version;
   if (!ALL.length) return <SettingsEmptyState>No release notes yet.</SettingsEmptyState>;
-  return (
-    <>
-      <WhatsNewHero />
-      <ReleaseList open={current} />
-    </>
-  );
+  return <ReleaseList open={current} />;
 }
