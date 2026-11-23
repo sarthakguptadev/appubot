@@ -24,7 +24,7 @@ All rights reserved, by Sarthak Gupta.
 
 ## If you build from this code
 
-A build that isn't ours must carry its own name, its own icon and its own app ID before you run it beyond your own computer, and must not call itself AppuBot. Our builds come only from https://appubot.com and https://github.com/sarthakguptadev/appubot/releases.
+A build that isn't ours must carry its own name, its own icon and its own app ID before you run it beyond your own computer, and must not call itself AppuBot. Our builds come only from https://appubot.com and https://github.com/sarthakguptadev/AppuBot/releases.
 
 ## Questions
 
