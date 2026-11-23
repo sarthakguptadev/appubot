@@ -7,21 +7,21 @@
 <p align="center">
   <b>Free AI bots that use the apps on your own computer.</b><br>
   A Grok Bot, OpenAI dots and Meta Muse alternative for Mac, Windows and Linux. It runs on the Claude, ChatGPT, Cursor, Grok or Copilot account you already have, and you can message your bots on Telegram.<br><br>
-  <a href="https://appubot.com">appubot.com</a> · <a href="https://github.com/sarthakguptadev/appubot/releases/latest"><b>Download the latest version</b></a> · <a href="https://appubot.com/compare">Compare</a> · <a href="https://appubot.com/faq">FAQ</a>
+  <a href="https://appubot.com">appubot.com</a> · <a href="https://github.com/sarthakguptadev/AppuBot/releases/latest"><b>Download the latest version</b></a> · <a href="https://appubot.com/compare">Compare</a> · <a href="https://appubot.com/faq">FAQ</a>
 </p>
 
 ## Download
 
-Always the newest version, straight from the [latest release](https://github.com/sarthakguptadev/appubot/releases/latest):
+Always the newest version, straight from the [latest release](https://github.com/sarthakguptadev/AppuBot/releases/latest):
 
 | Computer | Download |
 |---|---|
-| Mac with Apple silicon (M1 and later) | [AppuBot-arm64.dmg](https://github.com/sarthakguptadev/appubot/releases/latest/download/AppuBot-arm64.dmg) |
-| Mac with an Intel processor | [AppuBot-x64.dmg](https://github.com/sarthakguptadev/appubot/releases/latest/download/AppuBot-x64.dmg) |
-| Windows (most PCs) | [AppuBot-Setup-x64.exe](https://github.com/sarthakguptadev/appubot/releases/latest/download/AppuBot-Setup-x64.exe) |
-| Windows on Arm | [AppuBot-Setup-arm64.exe](https://github.com/sarthakguptadev/appubot/releases/latest/download/AppuBot-Setup-arm64.exe) |
-| Linux, any distribution (x64 / Arm) | [AppuBot-x86_64.AppImage](https://github.com/sarthakguptadev/appubot/releases/latest/download/AppuBot-x86_64.AppImage) · [AppuBot-arm64.AppImage](https://github.com/sarthakguptadev/appubot/releases/latest/download/AppuBot-arm64.AppImage) |
-| Debian / Ubuntu (x64 / Arm) | [appubot_amd64.deb](https://github.com/sarthakguptadev/appubot/releases/latest/download/appubot_amd64.deb) · [appubot_arm64.deb](https://github.com/sarthakguptadev/appubot/releases/latest/download/appubot_arm64.deb) |
+| Mac with Apple silicon (M1 and later) | [AppuBot-arm64.dmg](https://github.com/sarthakguptadev/AppuBot/releases/latest/download/AppuBot-arm64.dmg) |
+| Mac with an Intel processor | [AppuBot-x64.dmg](https://github.com/sarthakguptadev/AppuBot/releases/latest/download/AppuBot-x64.dmg) |
+| Windows (most PCs) | [AppuBot-Setup-x64.exe](https://github.com/sarthakguptadev/AppuBot/releases/latest/download/AppuBot-Setup-x64.exe) |
+| Windows on Arm | [AppuBot-Setup-arm64.exe](https://github.com/sarthakguptadev/AppuBot/releases/latest/download/AppuBot-Setup-arm64.exe) |
+| Linux, any distribution (x64 / Arm) | [AppuBot-x86_64.AppImage](https://github.com/sarthakguptadev/AppuBot/releases/latest/download/AppuBot-x86_64.AppImage) · [AppuBot-arm64.AppImage](https://github.com/sarthakguptadev/AppuBot/releases/latest/download/AppuBot-arm64.AppImage) |
+| Debian / Ubuntu (x64 / Arm) | [appubot_amd64.deb](https://github.com/sarthakguptadev/AppuBot/releases/latest/download/appubot_amd64.deb) · [appubot_arm64.deb](https://github.com/sarthakguptadev/AppuBot/releases/latest/download/appubot_arm64.deb) |
 
 Not sure which Mac you have? Apple menu › About This Mac: "Chip: Apple M…" means Apple silicon.
 
@@ -118,7 +118,7 @@ A build of your own signs in, pairs phones and connects apps through AppuBot's s
 
 ## Contributing
 
-Found a bug or have an idea? [Open an issue](https://github.com/sarthakguptadev/appubot/issues). Pull requests are welcome.
+Found a bug or have an idea? [Open an issue](https://github.com/sarthakguptadev/AppuBot/issues). Pull requests are welcome.
 
 By sending a contribution you agree to our [Contributor Licence Agreement](CLA.md). In short: you keep the copyright in your work, and you give us a licence to use it in AppuBot, including in paid versions.
 

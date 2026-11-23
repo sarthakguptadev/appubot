@@ -9,4 +9,4 @@
 
 ---
 
-By sending this pull request, you agree to the [Contributor Licence Agreement](https://github.com/sarthakguptadev/appubot/blob/main/CLA.md): you keep the copyright in your work, and you give AppuBot a licence to use it.
+By sending this pull request, you agree to the [Contributor Licence Agreement](https://github.com/sarthakguptadev/AppuBot/blob/main/CLA.md): you keep the copyright in your work, and you give AppuBot a licence to use it.

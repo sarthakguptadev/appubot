@@ -4,8 +4,8 @@ Thanks for helping make AppuBot better. Bug reports, ideas and pull requests are
 
 ## Ways to help
 
-- **Report a bug:** [open an issue](https://github.com/sarthakguptadev/appubot/issues/new/choose) with what happened, what you expected and your AppuBot version (Settings › About).
-- **Suggest an idea or ask a question:** start a [discussion](https://github.com/sarthakguptadev/appubot/discussions).
+- **Report a bug:** [open an issue](https://github.com/sarthakguptadev/AppuBot/issues/new/choose) with what happened, what you expected and your AppuBot version (Settings › About).
+- **Suggest an idea or ask a question:** start a [discussion](https://github.com/sarthakguptadev/AppuBot/discussions).
 - **Send a fix or a feature:** open a pull request. For anything bigger than a small fix, open an issue or a discussion first, so we can agree on the approach before you spend time on it.
 - **Found a security problem?** Don't open an issue: follow [SECURITY.md](SECURITY.md).
 

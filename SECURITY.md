@@ -2,7 +2,7 @@
 
 If you find a security problem in AppuBot, please tell us privately, not in a public issue.
 
-- **Best:** use GitHub's [Report a vulnerability](https://github.com/sarthakguptadev/appubot/security/advisories/new) form.
+- **Best:** use GitHub's [Report a vulnerability](https://github.com/sarthakguptadev/AppuBot/security/advisories/new) form.
 - **Or:** email [sarthak@appubot.com](mailto:sarthak@appubot.com).
 
 Reports about any part of AppuBot are welcome: the desktop app in this repository, and also the phone apps, AppuBot Cloud and AppuBot's servers.
