@@ -12,20 +12,24 @@ works on your own computer or around the clock in AppuBot Cloud, and answers you
 </p>
 
 <p>
-<a href="https://github.com/sarthakguptadev/AppuBot/releases/latest"><img src="https://img.shields.io/github/v/release/sarthakguptadev/AppuBot?style=flat&label=version&color=ee7944&labelColor=222" alt="Latest version"></a>
-<a href="https://github.com/sarthakguptadev/AppuBot/releases"><img src="https://img.shields.io/github/downloads/sarthakguptadev/AppuBot/total?style=flat&label=downloads&color=ee7944&labelColor=222" alt="Downloads"></a>
-<a href="#download"><img src="https://img.shields.io/badge/macOS%20%C2%B7%20Windows%20%C2%B7%20Linux-ee7944?style=flat&label=desktop&labelColor=222" alt="macOS, Windows and Linux"></a>
-<a href="https://apps.apple.com/app/id6829390070"><img src="https://img.shields.io/badge/App%20Store-iPhone-0D96F6?style=flat&logo=appstore&logoColor=white&labelColor=222" alt="On the App Store"></a>
-<a href="https://play.google.com/store/apps/details?id=com.appubot.app"><img src="https://img.shields.io/badge/Google%20Play-Android-34A853?style=flat&logo=googleplay&logoColor=white&labelColor=222" alt="On Google Play"></a>
-<br>
-<a href="https://github.com/sarthakguptadev/AppuBot/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/sarthakguptadev/AppuBot/ci.yml?branch=main&style=flat&label=ci&labelColor=222" alt="CI"></a>
-<a href="LICENSE.md"><img src="https://img.shields.io/badge/license-PolyForm%20Shield%201.0.0-555?style=flat&labelColor=222" alt="Licence: PolyForm Shield 1.0.0"></a>
-<a href="https://x.com/AppuBot_"><img src="https://img.shields.io/badge/@AppuBot__-000?style=flat&logo=x&logoColor=white&labelColor=222" alt="AppuBot on X"></a>
+<a href="https://github.com/sarthakguptadev/AppuBot/releases/latest/download/AppuBot-arm64.dmg"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/buttons/mac-dark.png"><img src="assets/readme/buttons/mac-light.png" alt="Download for macOS" height="44"></picture></a>
+<a href="https://github.com/sarthakguptadev/AppuBot/releases/latest/download/AppuBot-Setup-x64.exe"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/buttons/windows-dark.png"><img src="assets/readme/buttons/windows-light.png" alt="Download for Windows" height="44"></picture></a>
+<a href="#download"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/buttons/linux-dark.png"><img src="assets/readme/buttons/linux-light.png" alt="Download for Linux" height="44"></picture></a>
+<a href="https://apps.apple.com/app/id6829390070"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/buttons/appstore-dark.png"><img src="assets/readme/buttons/appstore-light.png" alt="Download on the App Store" height="44"></picture></a>
+<a href="https://play.google.com/store/apps/details?id=com.appubot.app"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/buttons/googleplay-dark.png"><img src="assets/readme/buttons/googleplay-light.png" alt="Get it on Google Play" height="44"></picture></a>
 </p>
 
 <p>
-<a href="https://github.com/sarthakguptadev/AppuBot/releases/latest"><b>Download for Mac, Windows and Linux</b></a> &nbsp;·&nbsp;
+<a href="https://github.com/sarthakguptadev/AppuBot/releases/latest"><img src="https://img.shields.io/github/v/release/sarthakguptadev/AppuBot?style=flat&color=3d444d&labelColor=24292f&label=version" alt="Latest version"></a>
+<a href="https://github.com/sarthakguptadev/AppuBot/releases"><img src="https://img.shields.io/github/downloads/sarthakguptadev/AppuBot/total?style=flat&color=3d444d&labelColor=24292f&label=downloads" alt="Downloads"></a>
+<a href="https://github.com/sarthakguptadev/AppuBot/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/sarthakguptadev/AppuBot/ci.yml?style=flat&color=3d444d&labelColor=24292f&branch=main&label=ci" alt="CI"></a>
+<a href="LICENSE.md"><img src="https://img.shields.io/badge/license-PolyForm%20Shield%201.0.0-3d444d?style=flat&color=3d444d&labelColor=24292f" alt="Licence: PolyForm Shield 1.0.0"></a>
+<a href="https://x.com/AppuBot_"><img src="https://img.shields.io/badge/@AppuBot__-3d444d?style=flat&color=3d444d&labelColor=24292f&logo=x&logoColor=white" alt="AppuBot on X"></a>
+</p>
+
+<p>
 <a href="https://appubot.com">appubot.com</a> &nbsp;·&nbsp;
+<a href="https://appubot.com/pricing">AppuBot Cloud</a> &nbsp;·&nbsp;
 <a href="https://appubot.com/compare">Compare</a> &nbsp;·&nbsp;
 <a href="https://appubot.com/faq">FAQ</a>
 </p>
