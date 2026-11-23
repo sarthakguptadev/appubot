@@ -126,7 +126,7 @@ The phone apps, AppuBot Cloud and AppuBot's servers are run by us. If something'
 
 ## Licence
 
-AppuBot's code is source-available under the [PolyForm Shield License 1.0.0](LICENSE). You may use, study and change it for anything except making a product that competes with AppuBot. That includes free products, and anything offered as a substitute for AppuBot.
+AppuBot's code is source-available under the [PolyForm Shield License 1.0.0](LICENSE.md). You may use, study and change it for anything except making a product that competes with AppuBot. That includes free products, and anything offered as a substitute for AppuBot.
 
 - The AppuBot name, logo and icon aren't covered: see [TRADEMARKS.md](TRADEMARKS.md).
 - `apps/desktop/src/renderer/src/components/rare` is Rare UI by Swami Malode, under its own licence in that folder.
