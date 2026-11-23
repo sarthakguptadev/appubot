@@ -139,12 +139,17 @@ jobs:
           key: electron-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: electron-${{ runner.os }}-${{ runner.arch }}-
       - run: pnpm -C packages/mcp-bridge build
+      # .build holds absolute paths and the compiler's module cache: one made in another checkout folder (the repo's old
+      # name) or by another Swift crashes the compiler ("DESERIALIZATION FAILURE"), so both are in the key
+      - if: runner.os == 'macOS'
+        id: swift
+        run: echo "toolchain=$(swift --version 2>&1 | shasum | cut -c1-12)" >> "$GITHUB_OUTPUT"
       - if: runner.os == 'macOS'
         uses: actions/cache@v4
         with:
           path: native/appubot-helper/.build
-          key: swift-${{ runner.arch }}-${{ hashFiles('native/appubot-helper/Package.resolved', 'native/appubot-helper/Package.swift', 'native/appubot-helper/Sources/**') }}
-          restore-keys: swift-${{ runner.arch }}-
+          key: swift-${{ runner.arch }}-${{ github.repository }}-${{ steps.swift.outputs.toolchain }}-${{ hashFiles('native/appubot-helper/Package.resolved', 'native/appubot-helper/Package.swift', 'native/appubot-helper/Sources/**') }}
+          restore-keys: swift-${{ runner.arch }}-${{ github.repository }}-${{ steps.swift.outputs.toolchain }}-
       # x86-64 links come out unsigned; electron-builder signs them again with the Developer ID
       - if: runner.os == 'macOS'
         working-directory: native/appubot-helper
