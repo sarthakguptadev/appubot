@@ -1,0 +1,32 @@
+name: Readme badges
+# Redraws the README's badges (scripts/readme-badges.mjs: the version and downloads from the API, the licence and the X
+# accounts) every day and after every release, onto the readme-assets branch the README loads them from: one commit,
+# replaced each time. A Mac, so the type matches the download buttons.
+on:
+  schedule: [{ cron: '17 3 * * *' }]
+  workflow_run: { workflows: [Release], types: [completed] }
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: readme-badges
+
+jobs:
+  badges:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v7
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@v7
+        with: { node-version: 24 }
+      - env: { GH_TOKEN: ${{ github.token }} }
+        run: node scripts/readme-badges.mjs "$RUNNER_TEMP/badges"
+      - env: { GH_TOKEN: ${{ github.token }} }
+        working-directory: ${{ runner.temp }}/badges
+        run: |
+          git init -q -b readme-assets
+          git add -A
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -qm 'README badges'
+          git push -qf "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" readme-assets
