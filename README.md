@@ -24,12 +24,13 @@ works on your own computer or around the clock in AppuBot Cloud, and answers you
 </p>
 
 <p>
-<a href="https://github.com/sarthakguptadev/AppuBot/releases/latest"><img src="https://img.shields.io/github/v/release/sarthakguptadev/AppuBot?style=flat&color=3d444d&labelColor=24292f&label=version" alt="Latest version"></a>
-<a href="https://github.com/sarthakguptadev/AppuBot/releases"><img src="https://img.shields.io/github/downloads/sarthakguptadev/AppuBot/total?style=flat&color=3d444d&labelColor=24292f&label=downloads" alt="Downloads"></a>
-<a href="https://github.com/sarthakguptadev/AppuBot/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/sarthakguptadev/AppuBot/ci.yml?style=flat&color=3d444d&labelColor=24292f&branch=main&label=ci" alt="CI"></a>
-<a href="LICENSE.md"><img src="https://img.shields.io/badge/license-PolyForm%20Shield%201.0.0-3d444d?style=flat&color=3d444d&labelColor=24292f" alt="Licence: PolyForm Shield 1.0.0"></a>
-<a href="https://x.com/AppuBot_"><img src="https://img.shields.io/badge/@AppuBot__-3d444d?style=flat&color=3d444d&labelColor=24292f&logo=x&logoColor=white" alt="AppuBot on X"></a>
-<a href="https://x.com/sarthakguptadev"><img src="https://img.shields.io/badge/@sarthakguptadev-3d444d?style=flat&color=3d444d&labelColor=24292f&logo=x&logoColor=white" alt="Sarthak Gupta, the maker, on X"></a>
+<a href="https://github.com/sarthakguptadev/AppuBot/releases/latest"><picture><source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/github/v/release/sarthakguptadev/AppuBot?style=for-the-badge&label=version&logo=github&logoColor=white&color=0d1117&labelColor=0d1117"><img src="https://img.shields.io/github/v/release/sarthakguptadev/AppuBot?style=for-the-badge&label=version&logo=github&logoColor=black&color=ffffff&labelColor=ffffff" alt="Latest version"></picture></a>
+<a href="https://github.com/sarthakguptadev/AppuBot/releases"><picture><source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/github/downloads/sarthakguptadev/AppuBot/total?style=for-the-badge&label=downloads&logo=github&logoColor=white&color=0d1117&labelColor=0d1117"><img src="https://img.shields.io/github/downloads/sarthakguptadev/AppuBot/total?style=for-the-badge&label=downloads&logo=github&logoColor=black&color=ffffff&labelColor=ffffff" alt="Downloads"></picture></a>
+<a href="https://github.com/sarthakguptadev/AppuBot/actions/workflows/ci.yml"><picture><source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/github/actions/workflow/status/sarthakguptadev/AppuBot/ci.yml?branch=main&style=for-the-badge&label=ci&logo=githubactions&logoColor=white&color=0d1117&labelColor=0d1117"><img src="https://img.shields.io/github/actions/workflow/status/sarthakguptadev/AppuBot/ci.yml?branch=main&style=for-the-badge&label=ci&logo=githubactions&logoColor=black&color=ffffff&labelColor=ffffff" alt="CI"></picture></a>
+<a href="LICENSE.md"><picture><source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/badge/license-PolyForm%20Shield-0d1117?style=for-the-badge&labelColor=0d1117"><img src="https://img.shields.io/badge/license-PolyForm%20Shield-ffffff?style=for-the-badge&labelColor=ffffff" alt="Licence: PolyForm Shield 1.0.0"></picture></a>
+<br>
+<a href="https://x.com/AppuBot_"><picture><source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/badge/@AppuBot__-0d1117?style=for-the-badge&logo=x&logoColor=white"><img src="https://img.shields.io/badge/@AppuBot__-ffffff?style=for-the-badge&logo=x&logoColor=black" alt="AppuBot on X"></picture></a>
+<a href="https://x.com/sarthakguptadev"><picture><source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/badge/@sarthakguptadev-0d1117?style=for-the-badge&logo=x&logoColor=white"><img src="https://img.shields.io/badge/@sarthakguptadev-ffffff?style=for-the-badge&logo=x&logoColor=black" alt="Sarthak Gupta, the maker, on X"></picture></a>
 </p>
 
 <p>
