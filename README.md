@@ -88,4 +88,4 @@ AppuBot updates itself. It looks for new versions in the background, downloads t
 
 This repository only hosts AppuBot's downloads. AppuBot's source code isn't public.
 
-Questions or feedback: [hello@appubot.com](mailto:hello@appubot.com)
+Questions or feedback: [sarthak@appubot.com](mailto:sarthak@appubot.com)
