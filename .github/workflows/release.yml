@@ -76,9 +76,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          repository: sarthakguptadev/appubot-source
           ref: ${{ inputs.ref }}
-          ssh-key: ${{ secrets.SOURCE_DEPLOY_KEY }}
           persist-credentials: false
           show-progress: false
       - uses: pnpm/action-setup@v6
@@ -119,21 +117,11 @@ jobs:
       run:
         shell: bash
     steps:
-      # the source, with the read-only deploy key (actions/checkout's key file is refused by Windows on Arm's ssh)
-      - env:
-          KEY: ${{ secrets.SOURCE_DEPLOY_KEY }}
-          REF: ${{ inputs.ref }}
-        run: |
-          key="$RUNNER_TEMP/source-key"
-          printf '%s\n' "$KEY" > "$key"
-          chmod 600 "$key"
-          if [ "$RUNNER_OS" = Windows ]; then icacls "$(cygpath -w "$key")" /inheritance:r /grant:r "$USERNAME:F" > /dev/null; fi
-          export GIT_SSH_COMMAND="ssh -i '$key' -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new -o LogLevel=ERROR"
-          git init -q .
-          git remote add origin git@github.com:sarthakguptadev/appubot-source.git
-          git fetch -q --depth 1 origin "$REF"
-          git checkout -q FETCH_HEAD
-          rm -f "$key"
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+          show-progress: false
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with: { node-version: 24, cache: pnpm }
@@ -241,9 +229,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          repository: sarthakguptadev/appubot-source
           ref: ${{ inputs.ref }}
-          ssh-key: ${{ secrets.SOURCE_DEPLOY_KEY }}
           persist-credentials: false
           show-progress: false
           fetch-depth: 0

@@ -25,9 +25,13 @@ Always the newest version, straight from the [latest release](https://github.com
 
 Not sure which Mac you have? Apple menu › About This Mac: "Chip: Apple M…" means Apple silicon.
 
+**On your phone:** [App Store](https://apps.apple.com/app/id6829390070) · [Google Play](https://play.google.com/store/apps/details?id=com.appubot.app). Message your bots and watch them work from anywhere.
+
+**AppuBot Cloud:** your bots on a cloud computer of their own, so they keep working while your laptop is closed or off. Optional and paid: [plans and prices](https://appubot.com/pricing).
+
 ## What AppuBot does
 
-AppuBot gives you a team of AI bots, each with its own name, job and AI. They run on your own computer, so they work where your files and signed-in apps already are, not on a computer in the cloud.
+AppuBot gives you a team of AI bots, each with its own name, job and AI. They run on your own computer, where your files and signed-in apps already are, or on an AppuBot Cloud computer when you want them working while yours is off.
 
 - **Works in your real apps.** A bot opens an app and clicks, types and scrolls in its window: Excel, Numbers, Finder, Safari, your accounting software. Its cursor moves on your screen, so you can watch it work and take over any time.
 - **Your own AI account.** Each bot runs on Claude Code, Codex (ChatGPT), GitHub Copilot, Cursor, Grok or OpenCode, with the account you're already signed in to. No new subscription and no API keys.
@@ -78,14 +82,54 @@ Yes. It's made for the Mac first, with Windows and Linux versions too, computer 
 It stays on your computer. What leaves is what a bot sends to its AI provider, such as Anthropic or OpenAI, just like when you use that AI yourself.
 
 **Is AppuBot open source?**
-No. The app is free during early access; this repository hosts its downloads.
+Its code is public here, source-available under the PolyForm Shield License: you may read it, build it, change it and send us improvements, but not use it to make a competing product. See [Licence](#licence).
 
 ## Updates
 
 AppuBot updates itself. It looks for new versions in the background, downloads them, and installs them the next time it restarts. You can also check from **Settings › About**. Versions are named after their release date, e.g. `2026.10.17`.
 
-## About this repository
+## Build from source
 
-This repository only hosts AppuBot's downloads. AppuBot's source code isn't public.
+To use AppuBot, download it above: our builds are signed, update themselves, and work with the phone apps and AppuBot Cloud. Build from source when you want to work on the code.
+
+You need Node 22 or later and pnpm 11. On a Mac, also the Xcode Command Line Tools, for the small Swift helper.
+
+```bash
+pnpm install
+pnpm -C packages/mcp-bridge build                     # the tools bridge the bots use
+(cd native/appubot-helper && swift build -c release)  # Mac only
+pnpm dev:desktop                                      # runs the app
+```
+
+Check your changes with `pnpm typecheck && pnpm test`, or `pnpm check` on a Mac for everything, including a build and a launch test.
+
+A build of your own signs in, pairs phones and connects apps through AppuBot's services, like ours. It sends no usage analytics.
+
+| Folder | What's in it |
+|---|---|
+| `apps/desktop` | The app: Electron, with the gateway and services in `src/main` and the React UI in `src/renderer` |
+| `packages/protocol` | The shapes of everything the app's parts send each other |
+| `packages/client` | The typed client for the app's gateway |
+| `packages/chat-core` | Chat logic shared by the UI and the gateway |
+| `packages/agent-runtime` | Runs the AI agents (Claude Code, Codex, Copilot, Cursor, Grok, OpenCode) |
+| `packages/mcp-bridge` | The tools a bot uses: computer use, files, questions |
+| `packages/theme` | Colours, type and shapes |
+| `native/appubot-helper` | The Mac's Swift helper: screenshots, input, notifications |
+
+## Contributing
+
+Found a bug or have an idea? [Open an issue](https://github.com/sarthakguptadev/appubot/issues). Pull requests are welcome.
+
+By sending a contribution you agree to our [Contributor Licence Agreement](CLA.md). In short: you keep the copyright in your work, and you give us a licence to use it in AppuBot, including in paid versions.
+
+The phone apps, AppuBot Cloud and AppuBot's servers are run by us. If something's wrong with them, tell us in an issue.
+
+## Licence
+
+AppuBot's code is source-available under the [PolyForm Shield License 1.0.0](LICENSE). You may use, study and change it for anything except making a product that competes with AppuBot. That includes free products, and anything offered as a substitute for AppuBot.
+
+- The AppuBot name, logo and icon aren't covered: see [TRADEMARKS.md](TRADEMARKS.md).
+- `apps/desktop/src/renderer/src/components/rare` is Rare UI by Swami Malode, under its own licence in that folder.
+- Other third-party code keeps its own licence: see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 Questions or feedback: [sarthak@appubot.com](mailto:sarthak@appubot.com)

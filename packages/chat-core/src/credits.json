@@ -1,0 +1,157 @@
+[
+  {
+    "kind": "code",
+    "name": "Synara",
+    "by": "Emanuele Di Pietro",
+    "url": "https://github.com/emanuele-web04/synara",
+    "used": "The chat transcript (turn layout, tool rows, streaming text, durations, table repair), sign-in checks, the Claude model catalog, settings layout and styles, the empty chat's animated ASCII background.",
+    "license": "MIT",
+    "holders": [
+      "2026 T3 Tools Inc.",
+      "2026 Emanuele Di Pietro"
+    ]
+  },
+  {
+    "kind": "code",
+    "name": "T3 Code",
+    "by": "T3 Tools",
+    "url": "https://github.com/pingdotgg/t3code",
+    "used": "Through Synara and Akeru Bot, both built on it; directly: how the Usage page reads Claude Code, Codex, Grok, OpenCode and Pi history and prices it.",
+    "license": "MIT",
+    "holders": [
+      "2026 T3 Tools Inc."
+    ]
+  },
+  {
+    "kind": "code",
+    "name": "Akeru Bot",
+    "by": "OpenCore",
+    "url": "https://github.com/opencoredev/akeru-bot",
+    "used": "Conversation history and priming, the bot roster, question cards.",
+    "license": "MIT",
+    "holders": [
+      "2026 T3 Tools Inc."
+    ]
+  },
+  {
+    "kind": "code",
+    "name": "MonoCode",
+    "by": "Nick",
+    "url": "https://github.com/hardbeat920/monocode",
+    "used": "The work view (how a bot's steps are grouped, summed up in a line and folded away in the chat), and how plan limits read their windows and reset times.",
+    "license": "MIT",
+    "holders": [
+      "2026 Nick"
+    ]
+  },
+  {
+    "kind": "code",
+    "name": "shadcn/ui",
+    "by": "shadcn",
+    "url": "https://github.com/shadcn-ui/ui",
+    "used": "The text shimmer.",
+    "license": "MIT",
+    "holders": [
+      "2023 shadcn"
+    ]
+  },
+  {
+    "kind": "code",
+    "name": "Silero VAD",
+    "by": "Silero Team",
+    "url": "https://github.com/snakers4/silero-vad",
+    "used": "The voice activity model voice mode ships (silero_vad_v5.onnx).",
+    "license": "MIT",
+    "holders": [
+      "2020-present Silero Team"
+    ]
+  },
+  {
+    "kind": "code",
+    "name": "Rare UI",
+    "by": "Swami Malode",
+    "url": "https://rareui.com",
+    "used": "Animated components by Swami Malode (https://github.com/swamimalode07/rare-ui), ported into src/renderer/src/components/rare: voice mode's orb (FluidOrb), voice notes (VoiceNote), pictures and files appearing (GridReveal), the time and date wheels (DurationPicker), secret fields on Vault cards (PasswordInput), one-time codes (OTPInput), notices (Toast), reactions (EmojiReaction), the Usage page's activity grid (GitHubActivity) and rolling numbers (AnimatedCounter), code blocks (CodeBlock), the chat's working line (AiStatus), ticks and checkboxes (the task list's check) and the delete button that asks in place (DeleteButton). The app's own controls, cards and motion follow Rare UI's design language since the 2026-11-14 overhaul.",
+    "license": "MIT + Commons Clause + Attribution",
+    "licenseFile": "RareUI.txt"
+  },
+  {
+    "kind": "asset",
+    "name": "Geist",
+    "by": "Vercel",
+    "url": "https://github.com/vercel/geist-font",
+    "used": "The desktop app's typeface, and the plan cards', as appubot.com is set (@fontsource-variable/geist 5.3.0). SIL Open Font License 1.1, Copyright 2024 The Geist Project Authors."
+  },
+  {
+    "kind": "asset",
+    "name": "Simple Icons",
+    "by": "Simple Icons contributors",
+    "url": "https://github.com/simple-icons/simple-icons",
+    "used": "Some agent logos. CC0 1.0: no attribution needed; the logos are their owners' trademarks."
+  },
+  {
+    "kind": "asset",
+    "name": "Instrument Sans",
+    "by": "Instrument",
+    "url": "https://github.com/Instrument/instrument-sans",
+    "used": "The face of headings in the phone app and on the install screens. SIL Open Font License 1.1."
+  },
+  {
+    "kind": "asset",
+    "name": "JetBrains Mono",
+    "by": "JetBrains",
+    "url": "https://github.com/JetBrains/JetBrainsMono",
+    "used": "The face of code, commands and file names. SIL Open Font License 1.1."
+  },
+  {
+    "kind": "asset",
+    "name": "Inter",
+    "by": "Rasmus Andersson",
+    "url": "https://github.com/rsms/inter",
+    "used": "Text where the system's own face isn't there. SIL Open Font License 1.1."
+  },
+  {
+    "kind": "asset",
+    "name": "Hugeicons",
+    "by": "Hugeicons",
+    "url": "https://hugeicons.com",
+    "used": "The icons across both apps (its free set)."
+  },
+  {
+    "kind": "service",
+    "name": "Agent Client Protocol",
+    "url": "https://agentclientprotocol.com",
+    "used": "How AppuBot talks to every agent, and the registry behind More agents."
+  },
+  {
+    "kind": "service",
+    "name": "Composio",
+    "url": "https://composio.dev",
+    "used": "Connect apps: the sign-ins and tools for your apps."
+  },
+  {
+    "kind": "service",
+    "name": "Cua",
+    "by": "trycua",
+    "url": "https://github.com/trycua/cua",
+    "used": "Computer use: how a bot sees and works an app's window."
+  },
+  {
+    "kind": "service",
+    "name": "sherpa-onnx",
+    "by": "k2-fsa",
+    "url": "https://github.com/k2-fsa/sherpa-onnx",
+    "used": "Hearing and speaking on your own computer."
+  },
+  {
+    "kind": "service",
+    "name": "noVNC",
+    "url": "https://github.com/novnc/noVNC",
+    "used": "Showing your AppuBot computer's screen in the app."
+  },
+  {
+    "kind": "service",
+    "name": "Electron and Expo",
+    "used": "What the desktop app and the phone app are built with."
+  }
+]

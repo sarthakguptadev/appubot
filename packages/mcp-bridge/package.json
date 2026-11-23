@@ -1,0 +1,28 @@
+{
+  "name": "@appubot/mcp-bridge",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Stdio MCP server spawned by ACP agents; forwards computer-use and user-facing tools to the AppuBot gateway.",
+  "main": "./src/index.ts",
+  "bin": {
+    "appubot-mcp-bridge": "./dist/bridge.mjs"
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@appubot/client": "workspace:*",
+    "@appubot/protocol": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.32.0",
+    "ws": "^8.22.0",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.18.2",
+    "esbuild": "^0.27.7",
+    "typescript": "^5.9.0"
+  }
+}

@@ -1,0 +1,87 @@
+/*
+ * CodeBlock's colours (components/rare/CodeBlock.tsx): Rare UI's theme, every shade made from one accent colour.
+ *
+ * Ported from `buildTheme` in Rare UI's `components/ui/code-block.tsx` (https://rareui.com).
+ * Copyright (c) 2026 Swami Malode. MIT + Commons Clause + Attribution (apps/desktop/scripts/licenses/RareUI.txt).
+ *
+ * Rare UI computes the shades in JavaScript and hands them to Prism. Here they are the same hue, saturation and
+ * lightness sums written as CSS relative colours of `--cb-accent-src` (the bot's colour where a chat sets `--ab-bot`,
+ * else AppuBot's accent), handed to Shiki's CSS-variables theme (features/chat/highlight.ts), so one highlighted
+ * block serves every accent and both colour schemes. Light mode flips the lightness ramp (100 - l), as Rare UI does.
+ */
+.rare-code {
+  --cb-accent-src: var(--ab-bot, var(--ab-accent, #F75001));
+  --cb-accent: hsl(from var(--cb-accent-src) h s clamp(38, l, 50));
+  --cb-bg: oklch(0.985 0 0);
+  --cb-border: rgb(0 0 0 / 0.08);
+  --cb-header-bg: rgb(0 0 0 / 0.03);
+  --cb-plain: #171717;
+  --cb-muted: rgb(0 0 0 / 0.6);
+  --cb-gutter: rgb(0 0 0 / 0.32);
+  --cb-hover-wash: rgb(0 0 0 / 0.06);
+  --cb-float-bg: rgb(0 0 0 / 0.04);
+  --cb-selection: hsl(from var(--cb-accent-src) h s 45 / 0.25);
+  --cb-line-wash: hsl(from var(--cb-accent-src) h s 45 / 0.08);
+
+  --shiki-foreground: var(--cb-plain);
+  --shiki-background: transparent;
+  --shiki-token-comment: hsl(from var(--cb-accent-src) h calc(s * 0.35) 58);
+  --shiki-token-punctuation: hsl(from var(--cb-accent-src) h calc(s * 0.3) 38);
+  --shiki-token-keyword: var(--cb-accent);
+  --shiki-token-string: hsl(from var(--cb-accent-src) h s 24);
+  --shiki-token-string-expression: hsl(from var(--cb-accent-src) h s 24);
+  --shiki-token-function: hsl(from var(--cb-accent-src) h calc(s * 0.5) 12);
+  --shiki-token-constant: hsl(from var(--cb-accent-src) h s 30);
+  --shiki-token-parameter: hsl(from var(--cb-accent-src) h calc(s * 0.15) 3);
+  --shiki-token-link: var(--cb-accent);
+  /* a diff keeps its meaning whatever the accent */
+  --shiki-token-inserted: #1a7f37;
+  --shiki-token-deleted: #cf222e;
+  --shiki-token-changed: #9a6700;
+}
+.dark .rare-code {
+  --cb-accent: hsl(from var(--cb-accent-src) h s clamp(56, l, 70));
+  /* neutral chrome: Rare UI's preview surface */
+  --cb-bg: oklch(0.1822 0 0);
+  --cb-border: rgb(255 255 255 / 0.08);
+  --cb-header-bg: rgb(255 255 255 / 0.03);
+  --cb-plain: #ffffff;
+  --cb-muted: rgb(255 255 255 / 0.6);
+  --cb-gutter: rgb(255 255 255 / 0.28);
+  --cb-hover-wash: rgb(255 255 255 / 0.08);
+  --cb-float-bg: rgb(255 255 255 / 0.05);
+  --cb-selection: hsl(from var(--cb-accent-src) h s 58 / 0.3);
+  --cb-line-wash: hsl(from var(--cb-accent-src) h s 58 / 0.1);
+
+  --shiki-token-comment: hsl(from var(--cb-accent-src) h calc(s * 0.35) 42);
+  --shiki-token-punctuation: hsl(from var(--cb-accent-src) h calc(s * 0.3) 62);
+  --shiki-token-string: hsl(from var(--cb-accent-src) h s 76);
+  --shiki-token-string-expression: hsl(from var(--cb-accent-src) h s 76);
+  --shiki-token-function: hsl(from var(--cb-accent-src) h calc(s * 0.5) 88);
+  --shiki-token-constant: hsl(from var(--cb-accent-src) h s 70);
+  --shiki-token-parameter: hsl(from var(--cb-accent-src) h calc(s * 0.15) 97);
+  --shiki-token-inserted: #3fb950;
+  --shiki-token-deleted: #f85149;
+  --shiki-token-changed: #d29922;
+}
+
+.rare-code { color: var(--cb-plain); }
+.rare-code [data-slot="code-block-viewport"] ::selection { background: var(--cb-selection); }
+.rare-code [data-slot="code-block-viewport"] { scrollbar-width: thin; scrollbar-color: var(--cb-border) transparent; }
+/* the highlighted block (Shiki's `<pre class="shiki"><code><span class="line">`), or the plain one in the same shape */
+.rare-code[data-slot] pre {
+  margin: 0; padding: 0; border: none; border-radius: 0; background: transparent !important; overflow: visible;
+  width: max-content; min-width: 100%; font-family: var(--font-mono) !important; font-size: 13px; line-height: 1.5rem; tab-size: 4;
+  color: var(--cb-plain); counter-reset: cb-line;
+}
+.rare-code[data-slot] pre code { display: block; border: none; background: transparent; padding: 0; font-family: inherit !important; font-size: inherit; line-height: inherit; color: inherit; }
+.rare-code[data-slot] pre code * { font-family: inherit !important; }
+.rare-code[data-slot] pre .line { display: inline-block; min-width: 100%; padding: 0 .875rem; }
+.rare-code[data-slot][data-lines="true"] pre .line::before {
+  counter-increment: cb-line; content: counter(cb-line);
+  display: inline-block; width: var(--cb-gutter-width, 2ch); margin-right: 1rem; text-align: right; color: var(--cb-gutter); user-select: none;
+}
+/* soft wrap: lines break inside the block instead of scrolling it sideways */
+.rare-code[data-slot][data-wrap="true"] pre { width: auto; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
+.rare-code[data-slot][data-wrap="true"] pre .line { display: inline; padding: 0; }
+.rare-code[data-slot][data-wrap="true"] pre code { padding: 0 .875rem; }

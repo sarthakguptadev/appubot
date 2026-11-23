@@ -1,0 +1,284 @@
+/*
+ * The work trail (features/chat/WorkTrail.tsx): a turn's status line, the runs of work under it on a thin rail with a
+ * quarter-curve branch to each step, the live run as a short window pinned to its newest step, steps arriving one
+ * after another, and the fold that puts the work away behind the status line.
+ *
+ * Ported from MonoCode (https://github.com/hardbeat920/monocode, MIT, Copyright (c) 2026 Nick): src/styles/index.css
+ * (`.zen-phase-body`, `.zen-phase-live` and its edge fades, `.zen-phase-step` with its rail and branch, `.zen-fold-drop`,
+ * `.zen-fold-rail`, `.zen-fold-tail`, `.zen-fold-item` and its states, the `zen-fold-*`, `zen-step-*`, `zen-rail-grow`,
+ * `zen-branch-draw` and `zen-thinking-pulse` keyframes, and their reduced-motion rules).
+ *
+ * Changed for AppuBot: the classes are `wt-*`; colours come from AppuBot's `--ab-fg` and `--ab-content` (MonoCode's
+ * `--color-content` and `--color-background-base`) with MonoCode's own percentages; the fold's rail sits under the
+ * bot's 16px avatar (7px in, where MonoCode's sits 23px in under a 14px icon inside 16px of padding); the tones of
+ * the rows (MonoCode's `text-content/50` and friends) are classes here; a running row has no spinner.
+ */
+
+.wt {
+  /* MonoCode's tones of the work: icons 45%, labels and verbs 50%, unparsed labels 65%, files 70%, hover 80% */
+  --wt-icon: color-mix(in srgb, var(--ab-fg) 45%, transparent);
+  --wt-dim: color-mix(in srgb, var(--ab-fg) 50%, transparent);
+  --wt-label: color-mix(in srgb, var(--ab-fg) 65%, transparent);
+  --wt-target: color-mix(in srgb, var(--ab-fg) 70%, transparent);
+  --wt-hover: color-mix(in srgb, var(--ab-fg) 80%, transparent);
+  --wt-chip: color-mix(in srgb, var(--ab-fg) 6%, transparent);
+  --wt-chip-hover: color-mix(in srgb, var(--ab-fg) 10%, transparent);
+  /* opaque, not translucent: a curve leaving the spine on a tangent runs along it for a pixel, and the same colour
+     painted twice doesn't light up where a translucent one would */
+  --wt-rail: color-mix(in srgb, var(--ab-fg) 14%, var(--ab-content));
+}
+
+.wt-icon { color: var(--wt-icon); }
+.wt-dim { color: var(--wt-dim); }
+.wt-label { color: var(--wt-label); }
+.wt-target { color: var(--wt-target); }
+.group:hover .wt-hover-up,
+.group:focus-visible .wt-hover-up { color: var(--wt-hover); }
+.wt-chip { background: var(--wt-chip); }
+.wt-chip:hover { background: var(--wt-chip-hover); }
+.wt-fail { color: var(--ab-danger); }
+
+/* the reasoning a thought row opens onto: one step quieter than the bot's words */
+.wt-reasoning { color: color-mix(in srgb, var(--ab-fg) 48%, transparent); }
+.wt-reasoning :is(strong, em) { color: color-mix(in srgb, var(--ab-fg) 62%, transparent); }
+
+/* ---------- a run of work: its body opens and closes on grid rows ---------- */
+.wt-phase-body {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition:
+    grid-template-rows 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 220ms ease;
+}
+.wt-phase-body[data-open="false"] {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+.wt-phase-body > * {
+  min-height: 0;
+  overflow: hidden;
+}
+
+/*
+ * The live run: a short window, so a long run doesn't push the turn off the screen. `overflow: auto` must beat the
+ * hidden above (WebKit won't scroll while overflow-x stays hidden). It keeps its class while closing, so settling
+ * collapses from the window rather than flashing the whole list.
+ */
+.wt-phase-body > .wt-phase-live { max-height: min(17.5rem, 45vh); }
+.wt-phase-body[data-open="true"] > .wt-phase-live {
+  overflow: auto;
+  overscroll-behavior: contain;
+  overflow-anchor: none;
+  scrollbar-width: none;
+}
+.wt-phase-body > .wt-phase-live::-webkit-scrollbar { display: none; }
+
+/* soft edges, only on a side with more to scroll to; the lengths are registered so an edge eases in and out */
+@property --wt-fade-top { syntax: "<length>"; inherits: false; initial-value: 0px; }
+@property --wt-fade-bottom { syntax: "<length>"; inherits: false; initial-value: 0px; }
+.wt-phase-body[data-open="true"] > .wt-phase-live {
+  --wt-mask: linear-gradient(to bottom, transparent, #000 var(--wt-fade-top), #000 calc(100% - var(--wt-fade-bottom)), transparent);
+  -webkit-mask-image: var(--wt-mask);
+  mask-image: var(--wt-mask);
+  transition: --wt-fade-top 160ms ease-out, --wt-fade-bottom 160ms ease-out;
+}
+.wt-phase-live[data-fade-top="true"] { --wt-fade-top: 1.5rem; }
+.wt-phase-live[data-fade-bottom="true"] { --wt-fade-bottom: 2rem; }
+
+/*
+ * The rail: a spine down the run with each step branching off it on a quarter circle, tangent to the spine at the
+ * top and to the row at the bottom, drawn on the step itself so it follows however tall the step turns out.
+ */
+.wt-step {
+  position: relative;
+  /* the header's 16px icon slot and its 6px gap: a step's words start under the header's */
+  padding-left: 22px;
+}
+.wt-step::before,
+.wt-step::after {
+  content: "";
+  position: absolute;
+  /* the middle of that slot */
+  left: 7.5px;
+}
+/* a height, not top/bottom, so the spine can grow down past a step when the next one lands under it */
+.wt-step::before {
+  top: 0;
+  height: 100%;
+  width: 1px;
+  background: var(--wt-rail);
+}
+/* the last step is where the spine leaves off, curve and all */
+.wt-step:last-child::before { height: 7px; }
+.wt-step::after {
+  top: 6px;
+  width: 8px;
+  height: 8px;
+  border-left: 1px solid var(--wt-rail);
+  border-bottom: 1px solid var(--wt-rail);
+  border-bottom-left-radius: 8px;
+}
+
+/* ---------- the fold: the line out of the status line's chevron, and a rail under it ---------- */
+.wt-fold-drop,
+.wt-fold-rail { position: relative; }
+.wt-fold-drop::after {
+  content: "";
+  position: absolute;
+  left: 7.5px;
+  top: calc(50% + 8px);
+  bottom: -4px;
+  width: 1px;
+  background: var(--wt-rail);
+}
+.wt-fold-rail::before {
+  content: "";
+  position: absolute;
+  left: 7.5px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--wt-rail);
+}
+.wt-fold-tail::before { bottom: auto; height: 7px; }
+.wt-fold-rail::after {
+  content: "";
+  position: absolute;
+  left: 7.5px;
+  top: 6px;
+  width: 8px;
+  height: 8px;
+  border-left: 1px solid var(--wt-rail);
+  border-bottom: 1px solid var(--wt-rail);
+  border-bottom-left-radius: 8px;
+}
+
+.wt-fold-item[data-fold-state="closed"] {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  pointer-events: none;
+  user-select: none;
+}
+/* open rows stay in ordinary block flow so text rewraps as the window changes width; grid only while it moves */
+.wt-fold-item[data-fold-state="open"] { display: flow-root; }
+.wt-fold-item[data-fold-state="opening"],
+.wt-fold-item[data-fold-state="closing"] { display: grid; }
+.wt-fold-item[data-fold-state="opening"] { animation: wt-fold-open 340ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.wt-fold-item[data-fold-state="closing"] {
+  pointer-events: none;
+  user-select: none;
+  animation: wt-fold-close 340ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.wt-fold-item:is([data-fold-state="opening"], [data-fold-state="closing"]) > *,
+.wt-fold-item[data-fold-state="closed"] > * {
+  min-height: 0;
+  overflow: hidden;
+}
+@keyframes wt-fold-open {
+  from { grid-template-rows: 0fr; opacity: 0; }
+  to { grid-template-rows: 1fr; opacity: 1; }
+}
+@keyframes wt-fold-close {
+  from { grid-template-rows: 1fr; opacity: 1; }
+  to { grid-template-rows: 0fr; opacity: 0; }
+}
+
+/*
+ * A live step arrives in beats over its --step-ms: its slot opens and pushes what is below down while the spine runs
+ * on past the step above into the gap and the branch curves off it; only then does the row rise into the room,
+ * revealed from the bottom up by a soft-edged mask. The next step of a burst waits for the last beat.
+ */
+@keyframes wt-step-open {
+  from { grid-template-rows: 0fr; }
+  to { grid-template-rows: 1fr; }
+}
+@keyframes wt-rail-grow {
+  from { transform: scaleY(0); }
+}
+/* a wipe from the top-left traces the quarter curve in order */
+@keyframes wt-branch-draw {
+  from { clip-path: inset(0 100% 100% 0); }
+  to { clip-path: inset(0); }
+}
+/* the mask is three times the row's height: clear, a soft ramp, solid; sliding it sweeps the ramp up the row */
+@keyframes wt-step-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    -webkit-mask-position: 0 0;
+    mask-position: 0 0;
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    -webkit-mask-position: 0 100%;
+    mask-position: 0 100%;
+  }
+}
+/* the step above lengthens its spine once it is no longer the last, at its own pace */
+.wt-step[data-live]::before { transition: height calc(var(--step-ms, 320ms) * 0.3) ease-in; }
+/* a step queued behind others is out of the layout until its turn, and the step above keeps a last step's short spine */
+.wt-step[data-waiting] { display: none; }
+.wt-step:has(+ .wt-step[data-waiting])::before { height: 7px; }
+.wt-step[data-entering] {
+  display: grid;
+  overflow: clip;
+  animation: wt-step-open calc(var(--step-ms) * 0.4) cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.wt-step[data-entering]:is(:last-child, :has(+ .wt-step[data-waiting]))::before {
+  transform-origin: top;
+  animation: wt-rail-grow calc(var(--step-ms) * 0.15) ease-in-out calc(var(--step-ms) * 0.15) both;
+}
+.wt-step[data-entering]::after {
+  animation: wt-branch-draw calc(var(--step-ms) * 0.2) ease-out calc(var(--step-ms) * 0.3) both;
+}
+.wt-step[data-entering] > * {
+  min-height: 0;
+  -webkit-mask-image: linear-gradient(to top, #000 33.3%, transparent 66.7%);
+  mask-image: linear-gradient(to top, #000 33.3%, transparent 66.7%);
+  -webkit-mask-size: 100% 300%;
+  mask-size: 100% 300%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  animation: wt-step-in calc(var(--step-ms) * 0.5) cubic-bezier(0.16, 1, 0.3, 1) calc(var(--step-ms) * 0.5) both;
+}
+
+/* the thinking line breathes while reasoning streams in */
+@keyframes wt-thinking-pulse {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.9; }
+}
+.wt-thinking-pulse { animation: wt-thinking-pulse 1.8s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .wt-step[data-entering],
+  .wt-step[data-entering]::before,
+  .wt-step[data-entering]::after,
+  .wt-thinking-pulse {
+    animation: none;
+  }
+  .wt-step[data-live]::before,
+  .wt-phase-body,
+  .wt-phase-body[data-open="true"] > .wt-phase-live {
+    transition: none;
+  }
+  /* no fade means no animationend to settle on, so an arriving step drops straight into its settled layout */
+  .wt-step[data-entering] {
+    display: block;
+    overflow: visible;
+  }
+  .wt-step[data-entering] > * {
+    -webkit-mask-image: none;
+    mask-image: none;
+    animation: none;
+  }
+  .wt-fold-item[data-fold-state="opening"] {
+    display: flow-root;
+    animation: none;
+  }
+  .wt-fold-item[data-fold-state="closing"] {
+    grid-template-rows: 0fr;
+    animation: none;
+  }
+}

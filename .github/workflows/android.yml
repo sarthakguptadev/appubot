@@ -89,6 +89,8 @@ jobs:
           repository: sarthakguptadev/appubot-source
           ref: ${{ inputs.ref }}
           ssh-key: ${{ secrets.SOURCE_DEPLOY_KEY }}
+          # the app and its packages: this repository's code, the source's public/ submodule
+          submodules: true
           persist-credentials: false
           show-progress: false
       # the version code is committed in the runner's copy only, so the build sees a clean tree

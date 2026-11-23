@@ -1,0 +1,1 @@
+{ "name": "@appubot/scripts", "private": true, "type": "module", "dependencies": { "@appubot/client": "workspace:*", "@appubot/protocol": "workspace:*", "ws": "^8.22.0" } }

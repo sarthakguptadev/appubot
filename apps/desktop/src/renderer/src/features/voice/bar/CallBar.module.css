@@ -1,0 +1,98 @@
+/* The menu bar's call window (CallBar.tsx, VoiceBarApp.tsx). Colours and radii come from the theme tokens. */
+
+/* the window is see-through: only the card and its notice draw */
+:global(html[data-view="voicebar"]),
+:global(html[data-view="voicebar"] body) {
+  background: transparent !important;
+  background-image: none !important;
+}
+
+/* the page sits on the window's bottom edge, which stays put as the card grows */
+.stageWrap {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+/* room around the card for its shadow; the window is sized to this */
+.stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px 20px 20px;
+}
+
+.card {
+  width: 340px;
+  overflow: hidden;
+  border-radius: var(--radius-sheet);
+  background: var(--ab-content);
+  color: var(--ab-fg);
+  box-shadow: 0 0 0 1px var(--ab-hairline), var(--ab-shadow-pop);
+  animation: call-arrive 260ms var(--ease-spring-soft, ease-out) backwards;
+}
+
+.leaving {
+  pointer-events: none;
+  animation: call-leave 200ms ease-in forwards;
+}
+
+@keyframes call-arrive {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+}
+
+@keyframes call-leave {
+  to { opacity: 0; transform: translateY(8px) scale(0.97); }
+}
+
+.meter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 40px;
+  margin: 10px 14px;
+  color: var(--ab-muted);
+  transition: color 200ms ease;
+}
+
+.meter[data-who="bot"] { color: var(--ab-fg); }
+.meter[data-who="you"] { color: var(--ab-accent); }
+
+.meter > span {
+  width: 3px;
+  height: 100%;
+  border-radius: 3px;
+  background: currentColor;
+  transform: scaleY(0.1);
+  will-change: transform;
+}
+
+/* an approval waits, a download, an error: one short line above the card */
+.notice {
+  max-width: 340px;
+  overflow: hidden;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ab-fg);
+  color: var(--ab-bg);
+  font: inherit;
+  font-size: var(--text-note);
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  box-shadow: var(--ab-shadow-pop);
+  animation: call-arrive 260ms ease-out backwards;
+}
+
+.notice:not(:disabled) { cursor: pointer; }
+.notice:not(:disabled):hover { opacity: 0.88; }
+
+@media (prefers-reduced-motion: reduce) {
+  .card, .leaving, .notice { animation: none; }
+  .meter { transition: none; }
+}

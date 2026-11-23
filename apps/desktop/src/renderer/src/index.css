@@ -1,0 +1,386 @@
+@import "tailwindcss";
+@import "@appubot/theme/tokens.css";
+@import "./components/ui/botAvatar.css"; /* the bot avatars' motion (shared with the agent cursor overlay) */
+@import "./themes/messages.css"; /* the Messages theme (html[data-theme="messages"]; lib/appearance.ts) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Fontsource registers "<Family> Variable" for variable fonts. One face for the whole app, headings included: Geist
+   (bundled, main.tsx), as appubot.com and the plan cards are set; a script it doesn't carry (Devanagari, Arabic, CJK,
+   Thai…) falls to the system's face behind it. */
+@theme {
+  --font-display: "Geist Variable", "Geist", -apple-system, BlinkMacSystemFont, "Noto Sans Devanagari", system-ui, sans-serif;
+  --font-sans: "Geist Variable", "Geist", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Noto Sans Devanagari", system-ui, sans-serif;
+  /* Synara's code face (JetBrains Mono, bundled) for chips, inline code and code blocks */
+  --font-mono: "JetBrains Mono Variable", "JetBrains Mono", "SF Mono", SFMono-Regular, Menlo, monospace;
+  --animate-caret: caret-blink 1.06s steps(2, start) infinite;
+  --animate-spin-slow: spin 0.9s linear infinite;
+  --animate-spin-stepped: spin 1.3s steps(26, end) infinite;
+  --ease-out-quint: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes caret-blink { to { visibility: hidden; } }
+/* a menu, popover or tooltip arriving (Rare UI's card entrance): a short rise, a little growth, out of a blur */
+@keyframes pop-in { from { opacity: 0; transform: translateY(-5px) scale(.97); filter: blur(4px); } to { opacity: 1; transform: none; filter: blur(0); } }
+/* Lists and pages arrive a row after a row (Rare UI's staggered entrance, lib/motion.ts `reveal` for motion's): `ab-rise`
+   on each sibling, or `ab-rise-list` on their parent; the first twelve wait their turn, the rest come with the twelfth.
+   Only at mount, so a row that turns up later arrives by itself. */
+@keyframes rise-in { from { opacity: 0; transform: translateY(6px); filter: blur(4px); } to { opacity: 1; transform: none; filter: blur(0); } }
+.ab-rise, .ab-rise-list > * {
+  animation: rise-in var(--duration-spring-soft) var(--ease-spring-soft) backwards;
+  animation-delay: calc(var(--rise-i, 0) * var(--rise-step, 35ms));
+}
+:is(.ab-rise, .ab-rise-list > *):nth-child(2) { --rise-i: 1; }
+:is(.ab-rise, .ab-rise-list > *):nth-child(3) { --rise-i: 2; }
+:is(.ab-rise, .ab-rise-list > *):nth-child(4) { --rise-i: 3; }
+:is(.ab-rise, .ab-rise-list > *):nth-child(5) { --rise-i: 4; }
+:is(.ab-rise, .ab-rise-list > *):nth-child(6) { --rise-i: 5; }
+:is(.ab-rise, .ab-rise-list > *):nth-child(7) { --rise-i: 6; }
+:is(.ab-rise, .ab-rise-list > *):nth-child(8) { --rise-i: 7; }
+:is(.ab-rise, .ab-rise-list > *):nth-child(9) { --rise-i: 8; }
+:is(.ab-rise, .ab-rise-list > *):nth-child(10) { --rise-i: 9; }
+:is(.ab-rise, .ab-rise-list > *):nth-child(11) { --rise-i: 10; }
+:is(.ab-rise, .ab-rise-list > *):nth-child(n+12) { --rise-i: 11; }
+@media (prefers-reduced-motion: reduce) {
+  .ab-rise, .ab-rise-list > * { animation: none; }
+}
+/* the way out of a menu or popover (components/ui/useLeaving.ts keeps it mounted for LEAVE_MS): quicker than it came, no travel */
+@keyframes pop-out { to { opacity: 0; transform: scale(.98); filter: blur(3px); } }
+.ab-leaving { animation: pop-out .13s var(--ease-rare-in) forwards !important; pointer-events: none; }
+@keyframes message-enter { from { opacity: 0; transform: translateY(3px) scale(.992); } to { opacity: 1; transform: none; } }
+
+/* A message you just sent eases in (Synara's chat-message-send-enter); transform/opacity only. */
+@keyframes chat-message-send-enter {
+  from { opacity: 0; transform: translateY(3px) scale(0.992); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.chat-message-send-enter { animation: chat-message-send-enter 180ms ease-out both; will-change: opacity, transform; }
+@media (prefers-reduced-motion: reduce) {
+  .chat-message-send-enter { animation: none; }
+}
+
+/* Windows and Linux: the system's window buttons sit over the window's top-right corner (titleBarOverlay in
+   electron/window.ts); --wco-right is their width, which the header under them keeps clear. 0 on macOS, whose
+   traffic lights are at the top left. Outside Electron (browser preview) the fallback is Windows' 3 × 46px. */
+:root { --wco-right: 0px; }
+html[data-platform="win32"], html[data-platform="linux"] {
+  --wco-right: calc(100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, calc(100vw - 138px)));
+}
+
+@utility drag { -webkit-app-region: drag; }
+@utility no-drag { -webkit-app-region: no-drag; }
+@utility tabular { font-variant-numeric: tabular-nums; }
+/* Continuous ("squircle") corners like Synara's user bubbles and composer: the element's border-radius stays the
+   geometry and Electron smooths it natively (plain rounded corners anywhere else). */
+@utility squircle { -electron-corner-smoothing: system-ui; }
+/* The Round look (the default; Settings › Appearance › Buttons, lib/appearance.ts `shape`): a control marked `ab-pill`
+   is fully round, a circle where it is square, with plain corners; the Squircle look keeps the radius and the corner
+   smoothing its own classes give. Unlayered, so it wins over the radius utilities whatever their order. */
+html:not([data-shape="squircle"]) .ab-pill { border-radius: 9999px; -electron-corner-smoothing: 0%; }
+/* the chat box round its round buttons: their radius plus the room between them and its edge */
+html:not([data-shape="squircle"]) .chat-composer { border-radius: 22px; }
+
+/* element defaults live in the base layer so utilities (outline-none, cursor-*) can override them */
+@layer base {
+  html, body, #root { height: 100%; margin: 0; }
+  html { background: transparent; }
+  body {
+    background: var(--ab-coat); color: var(--ab-fg); font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased; overflow: hidden; font-size: 14px; line-height: 1.45;
+    user-select: none; cursor: default; letter-spacing: normal;
+  }
+  input, textarea, [contenteditable], .selectable, .chat-markdown, .md { user-select: text; cursor: auto; }
+  button { cursor: default; }
+  :focus-visible { outline: 2px solid var(--ab-ring); outline-offset: 2px; }
+  ::selection { background: color-mix(in srgb, var(--ab-accent) 28%, transparent); }
+  ::placeholder { color: var(--ab-muted); opacity: .8; }
+
+}
+
+/* Scrollbars (Synara's): a 10px track whose thumb floats 2px in from its edges. Stays outside @layer so it is not
+   overridden, and nothing sets scrollbar-width/scrollbar-color, which would switch these rules off in Chromium. */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-corner { background: transparent; }
+::-webkit-scrollbar-thumb { background-color: rgba(0, 0, 0, .1); border: 2px solid transparent; background-clip: padding-box; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background-color: rgba(0, 0, 0, .18); }
+.dark ::-webkit-scrollbar-thumb { background-color: rgba(255, 255, 255, .07); }
+.dark ::-webkit-scrollbar-thumb:hover { background-color: rgba(255, 255, 255, .14); }
+
+/* ---------- press ---------- */
+/* What a control does under the pointer (Rare UI's): it gives a little and springs back. `--press` is how far
+   (round icon buttons go further); colours change on a short ease of their own. */
+@layer components {
+  .ab-press {
+    --_tint: .15s var(--ease-rare);
+    transition:
+      background-color var(--_tint), color var(--_tint), border-color var(--_tint), box-shadow var(--_tint), opacity var(--_tint),
+      transform var(--duration-spring) var(--ease-spring);
+  }
+  /* going down is quick and plain; the spring is the way back */
+  .ab-press:active:not(:disabled) {
+    transform: scale(var(--press, .96));
+    transition:
+      background-color var(--_tint), color var(--_tint), border-color var(--_tint), box-shadow var(--_tint), opacity var(--_tint),
+      transform .1s var(--ease-rare);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ab-press:active:not(:disabled) { transform: none; }
+}
+
+/* ---------- glass surfaces ---------- */
+/* content card: the chat column and side panel, filled with the content colour on the coat (T3 Code's layout below) */
+.content-card {
+  position: relative;
+  background: var(--ab-content);
+}
+/* T3 Code's flush layout (tokens.css has its colours), glass or solid: the chat and side panel fill the window edge to
+   edge, no outline, corners, gap or header line; the side panel keeps one hairline against the chat. The grain is
+   T3 Code's (MIT, its `--surface-grain`): a faint fractal noise over the coat. */
+body {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+/* solid, the sidebar is flat like the chat (no grain): its darker tone alone parts the two */
+.app-main { padding: 0; }
+html[data-glass="off"] body { background-image: none; }
+.app-panel { padding-left: 0; }
+.app-panel > .content-card { width: 100% !important; box-shadow: inset .5px 0 0 var(--ab-hairline); }
+.app-header { box-shadow: none; }
+/* find in chat (ThreadSearch): every match, and the current one */
+::highlight(ab-find) { background-color: color-mix(in srgb, #ffd43b 38%, transparent); color: inherit; }
+::highlight(ab-find-current) { background-color: #ffb020; color: #111; }
+/* frosted floating surfaces: menus, popovers, tooltips, dialogs */
+.glass-popover {
+  background: var(--ab-popover);
+  -webkit-backdrop-filter: blur(28px) saturate(170%);
+  backdrop-filter: blur(28px) saturate(170%);
+  border: .5px solid var(--ab-hairline);
+  box-shadow: var(--ab-shadow-pop);
+}
+/* a raised card (question, form and approval cards, the composer's notices): Rare UI's card, the raised tone with a
+   soft shadow for its edge and no border (the name is from when it was glass) */
+.glass-raised { background: var(--ab-surface); box-shadow: var(--ab-shadow-raised); }
+.hairline-b { box-shadow: inset 0 -.5px 0 var(--ab-hairline); }
+.hairline-t { box-shadow: inset 0 .5px 0 var(--ab-hairline); }
+/* The composer (Synara's .chat-composer-surface): raised glass with the input outline, 1.2rem corners. In the
+   components layer so utilities (a docked approval's square top, the drop-target border) still win. */
+@layer components {
+  .chat-composer-surface {
+    background: var(--ab-composer);
+    border: 1px solid var(--ab-surface-border);
+    border-radius: 1.2rem;
+    box-shadow: var(--ab-composer-shadow);
+  }
+}
+
+/* ---------- shimmer ---------- */
+/* Text shimmer, vendored from Synara's index.css (itself shadcn 4.12.0's `@utility shimmer`, MIT). The 2s / 40 steps
+   cadence repaints at 20fps so the glass under a live label isn't recomposited every frame; labels also sync their
+   start to the document timeline (lib/animationTimelineSync.ts) so every shimmer steps in the same frame.
+   `shimmer-group` masks a whole indicator so its icon's strokes shimmer with the text ("Thinking"). */
+@property --shimmer-angle { syntax: "<angle>"; inherits: true; initial-value: 20deg; }
+@property --shimmer-image { syntax: "*"; inherits: false; }
+@property --shimmer-text-fill { syntax: "*"; inherits: false; }
+
+@theme inline {
+  @keyframes tw-shimmer {
+    from { background-position: 100% 0; mask-position: 100% 0; }
+    to { background-position: 0 0; mask-position: 0 0; }
+  }
+}
+
+@utility shimmer {
+  --_spread: var(--shimmer-spread, calc(3ch + 40px));
+  --_base: currentColor;
+  --_highlight: var(--shimmer-color, oklch(from currentColor l c h / calc(alpha* 0.2)));
+
+  background-image: var(
+    --shimmer-image,
+    linear-gradient(
+      calc(90deg + var(--shimmer-angle)),
+      var(--_base) calc(50% - var(--_spread)),
+      color-mix(in oklch, var(--_highlight), var(--_base) 50%) calc(50% - var(--_spread) * 0.5),
+      var(--_highlight) 50%,
+      color-mix(in oklch, var(--_highlight), var(--_base) 50%) calc(50% + var(--_spread) * 0.5),
+      var(--_base) calc(50% + var(--_spread))
+    )
+  );
+  background-repeat: no-repeat;
+  background-size: calc(200% + var(--_spread) * 2) 100%;
+  background-position: 0 0;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: var(--shimmer-text-fill, transparent);
+  animation: tw-shimmer var(--shimmer-duration, 2s) var(--shimmer-timing, steps(40, end)) infinite;
+
+  @variant dark {
+    --_highlight: var(--shimmer-color, oklch(from currentColor max(0.8, calc(l + 0.4)) c h / calc(alpha + 0.4)));
+  }
+
+  &:where([dir="rtl"], [dir="rtl"] *) { animation-direction: reverse; }
+}
+
+@utility shimmer-group {
+  @apply shimmer;
+  background-image: none;
+  -webkit-text-fill-color: currentColor;
+  mask-image: linear-gradient(
+    calc(90deg + var(--shimmer-angle)),
+    #000 calc(50% - var(--_spread)),
+    rgb(0 0 0 / 0.2) 50%,
+    #000 calc(50% + var(--_spread))
+  );
+  mask-repeat: no-repeat;
+  mask-size: calc(200% + var(--_spread) * 2) 100%;
+  mask-position: 0 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer { animation: none; background-image: none; -webkit-text-fill-color: currentColor; }
+  .shimmer-group { animation: none; mask-image: none; }
+}
+
+/* signature hero glow (orange → amber → periwinkle → near white) */
+.hero-glow {
+  position: absolute; pointer-events: none; border-radius: 9999px; filter: blur(64px);
+  background: radial-gradient(closest-side, #F9730C 0%, #FFB053 38%, #A5BBFC 72%, rgba(244,247,255,0) 100%);
+  opacity: .45;
+}
+.dark .hero-glow { opacity: .28; }
+
+.stream-caret {
+  display: inline-block; width: 2px; height: 1.05em; margin-left: 2px; vertical-align: -0.15em;
+  background: var(--ab-accent); border-radius: 1px; animation: var(--animate-caret);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+
+/* ---------- markdown ---------- */
+/* Chat markdown, adapted from Synara's .chat-markdown (MIT). Owned by the chat feature (features/chat/Markdown.tsx). */
+/* the transcript's type: 14px at 1.6 (Rare UI's answer text, 15/28, at desktop density), medium-weight bold without synthesis */
+.chat-markdown { min-width: 0; overflow-wrap: anywhere; word-break: break-word; font-size: 14px; line-height: 1.6; letter-spacing: -0.005em; color: var(--ab-fg); }
+.chat-markdown strong, .chat-markdown b { font-weight: 500; font-synthesis: none; }
+.chat-markdown > :first-child { margin-top: 0; }
+.chat-markdown > :last-child { margin-bottom: 0; }
+.chat-markdown p, .chat-markdown ul, .chat-markdown ol, .chat-markdown blockquote, .chat-markdown pre, .chat-markdown .chat-markdown-table { margin: .65rem 0; }
+.chat-markdown ul { padding-left: 1.25rem; list-style-type: disc; }
+.chat-markdown ol { padding-left: 1.25rem; list-style-type: decimal; }
+.chat-markdown ul ul { list-style-type: circle; }
+.chat-markdown ul ul ul { list-style-type: square; }
+.chat-markdown ol ol { list-style-type: lower-alpha; }
+.chat-markdown ol ol ol { list-style-type: lower-roman; }
+.chat-markdown li + li { margin-top: .25rem; }
+.chat-markdown li > ul, .chat-markdown li > ol { margin: .25rem 0; }
+.chat-markdown li::marker { color: var(--ab-muted); }
+/* GFM task lists: the checkbox sits in the gutter where the bullet was */
+.chat-markdown li.task-list-item { list-style: none; }
+.chat-markdown .chat-markdown-task-checkbox { width: .95em; height: .95em; margin: 0 .4em .1em -1.4em; vertical-align: middle; accent-color: var(--ab-primary); }
+.chat-markdown hr { margin: 1.5rem 0; border: 0; border-top: 1px solid var(--ab-border); }
+.chat-markdown h1, .chat-markdown h2, .chat-markdown h3, .chat-markdown h4, .chat-markdown h5, .chat-markdown h6 {
+  margin: 1.1em 0 .35em; font-weight: 600; line-height: 1.25; letter-spacing: -0.01em;
+}
+.chat-markdown h1 { font-size: 1.75em; }
+.chat-markdown h2 { font-size: 1.55em; }
+.chat-markdown h3 { font-size: 1.35em; }
+.chat-markdown h4 { font-size: 1.2em; }
+.chat-markdown h5 { font-size: 1.1em; }
+.chat-markdown h6 { font-size: 1em; color: var(--ab-muted); }
+.chat-markdown :is(h1 + h2, h2 + h3, h3 + h4, h4 + h5, h5 + h6) { margin-top: .5em; }
+.chat-markdown a { color: var(--ab-link); text-decoration: none; cursor: pointer; }
+.chat-markdown a:hover, .chat-markdown a:focus-visible { text-decoration: underline; text-decoration-thickness: from-font; text-underline-offset: .18em; }
+.chat-markdown blockquote { border-left: 2px solid var(--ab-border); padding-left: .8rem; color: var(--ab-muted); }
+/* GitHub `> [!NOTE]` alerts */
+.chat-markdown blockquote[data-github-alert] { --alert: #0969da; border-left: 3px solid var(--alert); color: var(--ab-fg); }
+.dark .chat-markdown blockquote[data-github-alert] { --alert: #4493f8; }
+.chat-markdown blockquote[data-github-alert="tip"] { --alert: var(--ab-success); }
+.chat-markdown blockquote[data-github-alert="important"] { --alert: #8250df; }
+.dark .chat-markdown blockquote[data-github-alert="important"] { --alert: #ab7df8; }
+.chat-markdown blockquote[data-github-alert="warning"] { --alert: var(--ab-warning); }
+.chat-markdown blockquote[data-github-alert="caution"] { --alert: var(--ab-danger); }
+.chat-markdown .markdown-alert-title { display: flex; align-items: center; gap: .5em; margin: 0 0 .2rem; color: var(--alert); font-weight: 500; }
+.chat-markdown .markdown-alert-title + * { margin-top: 0; }
+/* Synara's code: inline chips and blocks on the bubble's tint, JetBrains Mono at the chat-code size (12px) */
+.chat-markdown :not(pre) > code {
+  border-radius: .4rem; background: var(--ab-code-bg); padding: .1rem .4rem; color: var(--ab-fg); font-family: var(--font-mono); font-size: .875em; letter-spacing: 0;
+}
+.chat-markdown img { max-width: 100%; border-radius: 10px; }
+/* opens the message's image gallery (imageGallery.ts); one inside a link opens the link */
+.chat-markdown img[data-gallery-src]:not(a img) { cursor: zoom-in; }
+.chat-markdown pre { max-width: 100%; overflow-x: auto; border-radius: 1rem; background: var(--ab-code-bg); padding: .5rem .6rem; font-family: var(--font-mono); }
+.chat-markdown pre code { border: none; background: transparent; padding: 0; font-family: inherit; font-size: 12.5px; line-height: 1.55; letter-spacing: 0; }
+/* fenced code: Rare UI's frame (components/rare/CodeBlock.tsx, codeBlock.css); here only its place in the text */
+.chat-markdown .chat-markdown-codeblock { margin: .65rem 0; }
+/* ```mermaid drawn (MermaidDiagram.tsx): at its own size, centred, a wide one scrolls sideways inside the block */
+.chat-markdown .chat-markdown-mermaid { overflow-x: auto; padding: .35rem .6rem .7rem; text-align: center; }
+.chat-markdown .chat-markdown-mermaid svg { display: inline-block; max-width: none; height: auto; vertical-align: top; }
+.chat-markdown .chat-markdown-codeblock__note { margin: 0; padding: 0 .6rem .45rem; font-size: 12px; line-height: 1.4; color: var(--ab-muted); }
+.chat-markdown .chat-markdown-table { overflow-x: auto; }
+.chat-markdown table { width: 100%; border-collapse: collapse; }
+.chat-markdown th, .chat-markdown td { border: 1px solid var(--ab-border); padding: .35rem .45rem; text-align: left; }
+/* sent messages: tighter blocks, code steps off the bubble tint */
+.chat-markdown--user { font-size: 14px; line-height: 1.6; }
+.chat-markdown--user :is(p, ul, ol, blockquote, pre, .chat-markdown-table) { margin: .45rem 0; }
+/* the rule above ties the base first/last-child reset on specificity and comes later, so restate it: the bubble's
+   own padding is the only space around its text */
+.chat-markdown--user > :first-child { margin-top: 0; }
+.chat-markdown--user > :last-child { margin-bottom: 0; }
+.chat-markdown--user :not(pre) > code { background: color-mix(in srgb, var(--ab-fg) 9%, transparent); box-shadow: none; }
+.chat-markdown--user :not(.rare-code) > pre { background: color-mix(in srgb, var(--ab-fg) 7%, transparent); }
+/* A text message's type, in either bubble: 15px, a reply's prose on a 22px line and your own words on 20, a touch of
+   tracking (Geist sits tight at this size), blocks 10px apart; code keeps its own size and spacing. */
+:is(.chat-bubble-reply, .chat-bubble-sent) .chat-markdown { font-size: 15px; line-height: 22px; letter-spacing: .01em; }
+.chat-bubble-sent .chat-markdown { line-height: 20px; }
+:is(.chat-bubble-reply, .chat-bubble-sent) .chat-markdown :is(p, ul, ol, blockquote, pre, .chat-markdown-table, .chat-markdown-codeblock) { margin: 10px 0; }
+:is(.chat-bubble-reply, .chat-bubble-sent) .chat-markdown > :first-child { margin-top: 0; }
+:is(.chat-bubble-reply, .chat-bubble-sent) .chat-markdown > :last-child { margin-bottom: 0; }
+:is(.chat-bubble-reply, .chat-bubble-sent) .chat-markdown li + li { margin-top: 2px; }
+:is(.chat-bubble-reply, .chat-bubble-sent) .chat-markdown :is(h1, h2, h3, h4, h5, h6) { margin: 18px 0 0; font-size: 15px; line-height: 22px; letter-spacing: .01em; }
+/* the sheen: a faint light at the bubble's top that fades down it, stronger on the light scheme's wash than in the dark,
+   where it would read as a shine; quieter still over your own colour */
+:is(.chat-bubble-reply, .chat-page) { background-image: linear-gradient(rgb(255 255 255 / .16), transparent); }
+.chat-bubble-sent { background-image: linear-gradient(rgb(255 255 255 / .06), transparent); }
+.dark :is(.chat-bubble-reply, .chat-page) { background-image: linear-gradient(rgb(255 255 255 / .03), transparent); }
+.dark .chat-bubble-sent { background-image: linear-gradient(rgb(255 255 255 / .01), transparent); }
+/* your message in the bot's colour: everything inside takes the bubble's ink (set inline as --ab-fg/--ab-link) */
+.chat-bubble-sent { --ab-muted: color-mix(in srgb, currentColor 72%, transparent); --ab-border: color-mix(in srgb, currentColor 35%, transparent); }
+.chat-bubble-sent .chat-markdown a { text-decoration: underline; text-decoration-thickness: from-font; text-underline-offset: .18em; }
+.chat-bubble-sent ::selection { background: color-mix(in srgb, currentColor 28%, transparent); color: inherit; }
+.chat-bubble-sent ::highlight(ab-find) { background-color: rgb(255 255 255 / 0.35); }
+/* secondary text (a thought opened up, a tool's text output): reads as chrome. Narration folded into "Worked for"
+   keeps full colour, as in Synara (its markdown sets text-foreground over the muted wrapper). */
+.chat-markdown--muted { color: var(--ab-muted); }
+.chat-markdown--muted :not(pre) > code { color: inherit; }
+/* streaming: no caret; text is revealed smoothly instead (Synara, see lib/streaming.ts) */
+
+/* ---------- question cards (adapted from Akeru's generative-ui.css, MIT) ---------- */
+/* the chosen one: a ring (never a border, so a choice keeps its size) and a deeper fill */
+.gen-choice[aria-pressed="true"] { box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--ab-primary) 60%, var(--ab-border)); background: color-mix(in srgb, var(--ab-primary) 9%, transparent); }
+.gen-choices[data-unavailable] .gen-choice { opacity: .55; }
+.gen-choices[data-answered] .gen-choice:not([aria-pressed="true"], :focus-within) { opacity: .55; }
+.gen-answer-badge { display: inline-grid; place-items: center; width: .875rem; height: .875rem; border-radius: 999px; background: var(--ab-primary); color: var(--ab-primary-fg); }
+.gen-mark {
+  display: inline-grid; place-items: center; flex-shrink: 0; width: 1rem; height: 1rem; border-radius: 999px;
+  border: 1.5px solid color-mix(in srgb, var(--ab-fg) 50%, transparent); background: var(--ab-surface); color: var(--ab-primary-fg);
+  transition: background-color 150ms ease-out, border-color 150ms ease-out;
+}
+.gen-choice:enabled:hover .gen-mark:not([data-checked]) { border-color: color-mix(in srgb, var(--ab-fg) 72%, transparent); }
+.gen-mark[data-checked] { border-color: var(--ab-primary); background: var(--ab-primary); }
+.gen-mark-dot { width: .375rem; height: .375rem; border-radius: 999px; background: currentColor; opacity: 0; transform: scale(.5); transition: opacity 150ms ease-out, transform 150ms cubic-bezier(.2, .8, .2, 1); }
+.gen-mark[data-checked] > .gen-mark-dot { opacity: 1; transform: scale(1); }
+
+/* the AppuBot computer's screen (features/cloud/screenSession.ts): noVNC draws the computer's own cursor as the
+   canvas's CSS cursor, `none` when that is blank; while only watching, the Mac's pointer stays a normal arrow (it
+   moves nothing there). In control the computer's cursor is the pointer again. */
+.ab-screen[data-watching] canvas { cursor: default !important; }
+
+/* a group tile's members swapping places (components/layout/Sidebar.tsx GroupTile): the old one rises out, the new one rises in */
+@keyframes ab-swap-out { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(-10px) scale(0.7); } }
+@keyframes ab-swap-in { from { opacity: 0; transform: translateY(10px) scale(0.7); } to { opacity: 1; transform: translateY(0) scale(1); } }
+/* a group's tile: its members on a slowly turning shape, each bot kept upright (components/layout/Sidebar GroupTile) */
+@keyframes ab-orbit { to { transform: rotate(360deg); } }
+@keyframes ab-orbit-upright { to { transform: rotate(-360deg); } }

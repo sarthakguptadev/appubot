@@ -1,0 +1,5 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": { "composite": true, "noEmit": true, "types": ["electron-vite/node", "node"], "lib": ["ES2022", "DOM"], "paths": { "@main/*": ["./src/main/*"] } },
+  "include": ["electron.vite.config.ts", "src/main/**/*", "src/preload/**/*", "src/renderer/src/components/ui/botAvatarMotion.ts"]
+}

@@ -1,0 +1,24 @@
+packages:
+  - apps/*
+  - packages/*
+  - scripts
+allowBuilds:
+  electron: true
+  electron-winstaller: false
+  esbuild: true
+  "@trycua/cua-driver": true
+  "@trycua/cua-driver-darwin-arm64": true
+  "@anthropic-ai/claude-agent-sdk": true
+  "@anthropic-ai/claude-agent-sdk-darwin-arm64": true
+  "@openai/codex": true
+  "@openai/codex-darwin-arm64": true
+  # teach mode's recorder on Windows/Linux: ships N-API prebuilds; its install script would only check them
+  uiohook-napi: false
+  # onnxruntime-web (voice mode's VAD) brings it; its install script only checks the version
+  protobufjs: false
+minimumReleaseAgeExclude:
+  - sherpa-onnx-darwin-arm64@2.0.0
+  - sherpa-onnx-darwin-x64@2.0.0
+  - sherpa-onnx-linux-arm64@2.0.0
+  - sherpa-onnx-linux-x64@2.0.0
+  - sherpa-onnx-win-x64@2.0.0

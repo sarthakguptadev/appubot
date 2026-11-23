@@ -1,0 +1,190 @@
+/*
+ * The Messages theme (html[data-theme="messages"], the default; lib/appearance.ts `AppTheme`): a messaging app's chat.
+ * Warm near-black (light: warm paper) tones, a faint wallpaper of drifting lines behind the chat, bubbles with a
+ * hairline, a tail on the sender's side and the time inside (features/chat/Bubble.tsx), and the composer as floating
+ * pieces: a round +, the field, a round send. Colours were read off the owner's reference (2026-11-12): page #121110,
+ * the bot's bubble #211f1b edged #37352f, yours #161513 edged #413d38, ink #f3eee7, ticks #7dcaff.
+ * `classic` has no rules here: it is tokens.css and index.css as they are. This file is unlayered, so its rules win
+ * over Tailwind's utilities on the same element (the hook classes below: .chat-composer-field, .chat-round…).
+ */
+
+/* ---------- tokens ---------- */
+html[data-theme="messages"] {
+  --ab-coat: color-mix(in srgb, #efece6 var(--ab-glass-opacity), transparent);
+  --ab-coat-solid: #efece6;
+  --ab-content: #f7f5f0;
+  --ab-settings-nav: #efece6;
+  --ab-popover: color-mix(in srgb, #ffffff clamp(60%, calc(95% + var(--ab-solid-boost, 0) * 35%), 100%), transparent);
+  --ab-hairline: color-mix(in srgb, #1b1a17 12%, transparent);
+
+  --ab-bg:#f7f5f0; --ab-surface:#ffffff; --ab-surface-2:rgba(38,30,16,.05); --ab-surface-3:rgba(38,30,16,.088);
+  --ab-fg:#1b1a17; --ab-fg-2:rgba(27,26,23,.76); --ab-muted:rgba(27,26,23,.54); --ab-inverse:#fbfaf7;
+  --ab-border:rgba(27,26,23,.1); --ab-border-subtle:rgba(27,26,23,.06);
+  --ab-primary:#1b1a17; --ab-primary-fg:#ffffff;
+  --ab-code-bg:rgba(38,30,16,.045);
+  --ab-composer: color-mix(in srgb, #ffffff clamp(30%, calc(96% + var(--ab-solid-boost, 0) * 66%), 100%), transparent);
+  --ab-surface-border: color-mix(in srgb, #1b1a17 13%, transparent);
+  --ab-composer-shadow: 0 6px 20px -8px rgba(40,30,10,.16), 0 1px 2px rgba(40,30,10,.05);
+
+  /* the bubbles: opaque, since the tail is drawn over the bubble's own corner in the same fill */
+  --ab-bubble-in:#ffffff; --ab-bubble-in-line:#e2ded5;
+  --ab-bubble-out:#ebe7de; --ab-bubble-out-line:#d5cfc2;
+  --ab-agent-bubble: var(--ab-bubble-in);
+  --ab-user-bubble: var(--ab-bubble-out);
+  --ab-tick:#2b97e3;
+  --ab-wallpaper-line:#e9e5dc;
+  /* the round buttons' rim: glass catching light from above */
+  --ab-round-rim: inset 0 .5px 0 rgba(255,255,255,.9);
+  /* a hairline: one device pixel on a Retina screen, a whole pixel elsewhere */
+  --ab-bubble-hair: 1px;
+}
+html[data-theme="messages"].dark {
+  --ab-coat: color-mix(in srgb, #0c0b0a var(--ab-glass-opacity), transparent);
+  --ab-coat-solid: #0c0b0a;
+  --ab-content: #121110;
+  --ab-settings-nav: #0c0b0a;
+  --ab-popover: color-mix(in srgb, #262421 clamp(55%, calc(95% + var(--ab-solid-boost, 0) * 40%), 100%), transparent);
+  --ab-hairline: color-mix(in srgb, #f3eee7 10%, transparent);
+
+  --ab-bg:#121110; --ab-surface:#211f1c; --ab-surface-2:rgba(243,238,231,.06); --ab-surface-3:rgba(243,238,231,.105);
+  --ab-fg:#f3eee7; --ab-fg-2:rgba(243,238,231,.8); --ab-muted:rgba(243,238,231,.56); --ab-inverse:#121110;
+  --ab-border:rgba(243,238,231,.085); --ab-border-subtle:rgba(243,238,231,.05);
+  --ab-primary:#f3eee7; --ab-primary-fg:#121110;
+  --ab-code-bg:rgba(243,238,231,.05);
+  --ab-composer: color-mix(in srgb, #33312e clamp(30%, calc(94% + var(--ab-solid-boost, 0) * 64%), 100%), transparent);
+  --ab-surface-border: rgba(243,238,231,.1);
+  --ab-composer-shadow: 0 8px 26px -10px rgba(0,0,0,.55);
+
+  --ab-bubble-in:#211f1b; --ab-bubble-in-line:#37352f;
+  --ab-bubble-out:#161513; --ab-bubble-out-line:#413d38;
+  --ab-tick:#7dcaff;
+  --ab-wallpaper-line:#1c1b18;
+  --ab-round-rim: inset 0 .5px 0 rgba(255,255,255,.2);
+}
+html[data-theme="messages"][data-glass="off"] { --ab-coat: #efece6; }
+html[data-theme="messages"][data-glass="off"].dark { --ab-coat: #0c0b0a; }
+@media (min-resolution: 2dppx) {
+  html[data-theme="messages"] { --ab-bubble-hair: .5px; }
+}
+html[data-theme="messages"].dark .glass-raised { background: color-mix(in srgb, #2a2825 55%, transparent); }
+
+/* ---------- the chat's wallpaper ---------- */
+/* Long, slow lines across the chat column (ThreadView, GroupView), behind the header, the messages and the composer.
+   One tile, drawn as a mask so the line takes the theme's own colour. */
+html[data-theme="messages"] .chat-wallpaper { position: relative; isolation: isolate; }
+html[data-theme="messages"] .chat-wallpaper::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: var(--ab-wallpaper-line);
+  -webkit-mask: var(--ab-wallpaper) 0 0 / 960px 420px repeat;
+  mask: var(--ab-wallpaper) 0 0 / 960px 420px repeat;
+}
+html[data-theme="messages"] {
+  --ab-wallpaper: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='960' height='420' viewBox='0 0 960 420' fill='none' stroke='%23000' stroke-width='1'%3E%3Cpath d='M-240 34Q0 10 240 34T720 34T1200 34'/%3E%3Cpath d='M0 92Q240 112 480 92T960 92'/%3E%3Cpath d='M-120 151Q120 133 360 151T840 151T1320 151'/%3E%3Cpath d='M-360 212Q-120 234 120 212T600 212T1080 212'/%3E%3Cpath d='M0 270Q240 254 480 270T960 270'/%3E%3Cpath d='M-200 331Q40 349 280 331T760 331T1240 331'/%3E%3Cpath d='M-60 389Q180 371 420 389T900 389T1380 389'/%3E%3C/svg%3E");
+}
+
+/* ---------- bubbles (features/chat/Bubble.tsx; only drawn in this theme) ---------- */
+.chat-bubble {
+  position: relative; isolation: isolate; min-width: 0;
+  border: var(--ab-bubble-hair) solid var(--bubble-line); border-radius: 18px;
+  background: var(--bubble-fill); color: var(--ab-fg);
+  padding: 7px 13px 8px; font-size: 13px; line-height: 1.625;
+}
+.chat-bubble--in { --bubble-fill: var(--ab-bubble-in); --bubble-line: var(--ab-bubble-in-line); }
+.chat-bubble--out { --bubble-fill: var(--ab-bubble-out); --bubble-line: var(--ab-bubble-out-line); }
+/* bubbles of one run that aren't its last: the corner toward the next one tightens */
+.chat-bubble--in[data-spot="first"], .chat-bubble--in[data-spot="middle"] { border-bottom-left-radius: 7px; }
+.chat-bubble--in[data-spot="middle"], .chat-bubble--in[data-spot="last"] { border-top-left-radius: 7px; }
+.chat-bubble--out[data-spot="first"], .chat-bubble--out[data-spot="middle"] { border-bottom-right-radius: 7px; }
+.chat-bubble--out[data-spot="middle"], .chat-bubble--out[data-spot="last"] { border-top-right-radius: 7px; }
+
+/* The tail: the corner on the sender's side drooping into a point. An SVG over that corner, under the bubble's
+   content (z-index -1 in the bubble's own stacking context) and over its background and border: it fills the corner
+   again in the bubble's colour and strokes the new outline, so the hairline runs round the tail unbroken. Its origin
+   is the border box's bottom corner; `.chat-bubble-tail g` moves the drawing onto the border's centre line. */
+.chat-bubble-tail {
+  position: absolute; z-index: -1; overflow: visible; pointer-events: none;
+  width: 24px; height: 28px;
+  bottom: calc(-8px - var(--ab-bubble-hair)); left: calc(-1 * var(--ab-bubble-hair));
+}
+.chat-bubble--out > .chat-bubble-tail { left: auto; right: calc(-1 * var(--ab-bubble-hair)); transform: scaleX(-1); }
+.chat-bubble-tail g { transform: translate(calc(var(--ab-bubble-hair) / 2), calc(var(--ab-bubble-hair) / -2)); }
+.chat-bubble-tail .fill { fill: var(--bubble-fill); }
+.chat-bubble-tail .line { fill: none; stroke: var(--bubble-line); stroke-width: var(--ab-bubble-hair); stroke-linecap: round; stroke-linejoin: round; }
+/* room under a tailed bubble for the tail itself */
+.chat-bubble[data-tail] { margin-bottom: 5px; }
+
+/* The time (and your message's ticks) at the bubble's bottom right. The last paragraph ends with an invisible copy of
+   it (`--stamp`, set on the bubble), so a short last line shares its row with the time and a full one pushes it under;
+   anything else at the end (a list, code, a table, a picture) leaves it a row of its own. */
+.chat-bubble-stamp {
+  position: absolute; right: 11px; bottom: 5px; display: inline-flex; align-items: center; gap: 3px;
+  font-size: 10.5px; line-height: 14px; letter-spacing: .01em; color: var(--ab-muted);
+  font-variant-numeric: tabular-nums; white-space: nowrap; user-select: none;
+}
+.chat-bubble-stamp svg { color: var(--ab-tick); flex-shrink: 0; }
+.chat-bubble-stamp svg[data-pending] { color: currentColor; }
+.chat-bubble[data-stamp] .chat-markdown > p:last-child::after {
+  content: var(--stamp); display: inline-block; height: 0; overflow: hidden; visibility: hidden;
+  padding-left: 14px; font-size: 10.5px; letter-spacing: .01em; font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.chat-bubble--out[data-stamp] .chat-markdown > p:last-child::after { padding-right: 19px; }
+.chat-bubble[data-stamp]:not(:has(> .chat-markdown > p:last-child)) { padding-bottom: 21px; }
+/* your message's code steps off the bubble's own tone */
+.chat-bubble--out .chat-markdown--user :not(pre) > code { background: var(--ab-surface-3); }
+.chat-bubble--out .chat-markdown--user :not(.rare-code) > pre { background: var(--ab-surface-2); }
+
+/* a reaction: a chip on the bubble's bottom edge, on its sender's side */
+.chat-reaction-row { position: relative; z-index: 1; display: flex; align-items: center; gap: 8px; margin-top: -15px; }
+.chat-reaction-row--out { justify-content: flex-end; padding-right: 9px; }
+.chat-reaction-row--in { justify-content: flex-start; padding-left: 12px; }
+html[data-theme="messages"] .chat-reaction {
+  height: 24px; padding: 0 8px; border: var(--ab-bubble-hair) solid var(--ab-bubble-out-line);
+  background: var(--ab-bubble-out); box-shadow: none; font-size: 14px;
+}
+
+/* ---------- the composer: a round +, the field, a round send ---------- */
+html[data-theme="messages"] .chat-composer-surface.chat-composer {
+  align-items: flex-end; gap: 8px; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none;
+}
+html[data-theme="messages"] .chat-composer-field {
+  min-height: 40px; padding: 9.25px 16px; border-radius: 20px;
+  background: var(--ab-composer); border: var(--ab-bubble-hair) solid var(--ab-surface-border);
+  box-shadow: var(--ab-round-rim), var(--ab-composer-shadow);
+  -webkit-backdrop-filter: blur(24px) saturate(160%); backdrop-filter: blur(24px) saturate(160%);
+  transition: border-color 150ms ease-out;
+}
+html[data-theme="messages"] .chat-composer[data-dragging] .chat-composer-field { border-color: var(--ab-accent); }
+/* the round glass buttons: the composer's +, the voice button, the arrow back to the end (a voice button that is
+   recording keeps its own red pill: Dictation.tsx `data-recording`) */
+html[data-theme="messages"] .chat-round:not([data-recording]) {
+  width: 40px; height: 40px; min-width: 40px; border-radius: 999px; color: var(--ab-fg);
+  background: var(--ab-composer); border: var(--ab-bubble-hair) solid var(--ab-surface-border);
+  box-shadow: var(--ab-round-rim), var(--ab-composer-shadow);
+  -webkit-backdrop-filter: blur(24px) saturate(160%); backdrop-filter: blur(24px) saturate(160%);
+}
+html[data-theme="messages"] .chat-round:not([data-recording]):hover { background-image: linear-gradient(var(--ab-surface-2), var(--ab-surface-2)); scale: none; }
+html[data-theme="messages"] .chat-round svg { width: 17px; height: 17px; }
+/* send and stop keep their solid ink: the one filled thing in the row */
+html[data-theme="messages"] .chat-send { height: 40px; min-width: 40px; }
+html[data-theme="messages"] .chat-send:not([data-recording]) { width: 40px; }
+html[data-theme="messages"] .chat-send svg { width: 17px; height: 17px; }
+/* an approval is a card of its own over the composer, no longer its top half */
+html[data-theme="messages"] .chat-approval {
+  margin-bottom: 8px; border-radius: 20px; border: var(--ab-bubble-hair) solid var(--ab-surface-border);
+  box-shadow: var(--ab-round-rim), var(--ab-composer-shadow);
+}
+
+/* ---------- the chat's chrome ---------- */
+/* the header's buttons as round glass, like the composer's */
+html[data-theme="messages"] .app-header .chat-header-button {
+  width: 30px; height: 30px; border-radius: 999px; color: var(--ab-fg-2);
+  background: var(--ab-composer); border: var(--ab-bubble-hair) solid var(--ab-surface-border); box-shadow: var(--ab-round-rim);
+}
+html[data-theme="messages"] .app-header .chat-header-button:hover { color: var(--ab-fg); background-image: linear-gradient(var(--ab-surface-2), var(--ab-surface-2)); }
+html[data-theme="messages"] .app-header .chat-header-buttons { gap: 6px; }
+/* where the conversation resumes: a quiet pill, no rules either side */
+html[data-theme="messages"] .chat-separator > span[aria-hidden] { visibility: hidden; }
+html[data-theme="messages"] .chat-separator > span:not([aria-hidden]) {
+  padding: 2px 10px; border-radius: 999px; font-size: 11px;
+  background: var(--ab-bubble-out); border: var(--ab-bubble-hair) solid var(--ab-bubble-out-line);
+}

@@ -1,0 +1,2543 @@
+{
+  "label": "after-final",
+  "commit": "8c269843",
+  "dirty": true,
+  "machine": "Apple M5",
+  "bundle": {
+    "at": "2026-11-16T07:33:56.444Z",
+    "initial": {
+      "js": 1819728,
+      "jsGzip": 587548,
+      "css": 201455,
+      "cssGzip": 34652,
+      "chunks": 1
+    },
+    "lazy": {
+      "js": 7790682,
+      "chunks": 104
+    },
+    "biggestChunks": [
+      {
+        "file": "assets/index-BCKvePbk.js",
+        "bytes": 1819728,
+        "gzip": 587548,
+        "initial": true
+      },
+      {
+        "file": "assets/elk-QONTBCTQ-qQfiqYiZ.js",
+        "bytes": 1477110,
+        "gzip": 452750,
+        "initial": false
+      },
+      {
+        "file": "assets/cynefin-EF2NZ3EQ-DG2b8OA6.js",
+        "bytes": 654653,
+        "gzip": 138917,
+        "initial": false
+      },
+      {
+        "file": "assets/mermaid.core-DjcpuByU.js",
+        "bytes": 641778,
+        "gzip": 152948,
+        "initial": false
+      },
+      {
+        "file": "assets/cytoscape.esm-BDkkwuE4.js",
+        "bytes": 443165,
+        "gzip": 141372,
+        "initial": false
+      },
+      {
+        "file": "assets/index-Ce7yXR8W.js",
+        "bytes": 270101,
+        "gzip": 80645,
+        "initial": false
+      },
+      {
+        "file": "assets/katex-DbHk1ER-.js",
+        "bytes": 261847,
+        "gzip": 77624,
+        "initial": false
+      },
+      {
+        "file": "assets/translations-DEmzIswl.js",
+        "bytes": 248151,
+        "gzip": 65450,
+        "initial": false
+      },
+      {
+        "file": "assets/SettingsView-CGng6c61.js",
+        "bytes": 239328,
+        "gzip": 75849,
+        "initial": false
+      },
+      {
+        "file": "assets/usecaseDiagram-WPOLBNNX-C1EW7t3k.js",
+        "bytes": 189926,
+        "gzip": 50650,
+        "initial": false
+      },
+      {
+        "file": "assets/rfb-CxsXsMUX.js",
+        "bytes": 181861,
+        "gzip": 54329,
+        "initial": false
+      },
+      {
+        "file": "assets/typescript-BPQ3VLAy.js",
+        "bytes": 181080,
+        "gzip": 16109,
+        "initial": false
+      },
+      {
+        "file": "assets/jsx-g9-lgVsj.js",
+        "bytes": 177792,
+        "gzip": 16719,
+        "initial": false
+      },
+      {
+        "file": "assets/tsx-COt5Ahok.js",
+        "bytes": 175536,
+        "gzip": 16590,
+        "initial": false
+      },
+      {
+        "file": "assets/javascript-wDzz0qaB.js",
+        "bytes": 174827,
+        "gzip": 16598,
+        "initial": false
+      }
+    ],
+    "entryComposition": [
+      {
+        "name": "apps/desktop/src/renderer/src",
+        "bytes": 1176383
+      },
+      {
+        "name": "react-dom",
+        "bytes": 653747
+      },
+      {
+        "name": "motion-dom",
+        "bytes": 318891
+      },
+      {
+        "name": "packages/chat-core",
+        "bytes": 271015
+      },
+      {
+        "name": "zod",
+        "bytes": 262440
+      },
+      {
+        "name": "packages/protocol",
+        "bytes": 203528
+      },
+      {
+        "name": "framer-motion",
+        "bytes": 132790
+      },
+      {
+        "name": "@hugeicons/core-free-icons",
+        "bytes": 120598
+      },
+      {
+        "name": "micromark-core-commonmark",
+        "bytes": 109024
+      },
+      {
+        "name": "tailwind-merge",
+        "bytes": 105226
+      },
+      {
+        "name": "packages/client",
+        "bytes": 47679
+      },
+      {
+        "name": "svg-path-properties",
+        "bytes": 47443
+      },
+      {
+        "name": "mdast-util-to-markdown",
+        "bytes": 39993
+      },
+      {
+        "name": "mdast-util-to-hast",
+        "bytes": 39682
+      },
+      {
+        "name": "micromark",
+        "bytes": 39428
+      },
+      {
+        "name": "svgpath",
+        "bytes": 37208
+      },
+      {
+        "name": "property-information",
+        "bytes": 33436
+      },
+      {
+        "name": "mdast-util-from-markdown",
+        "bytes": 31445
+      },
+      {
+        "name": "vfile",
+        "bytes": 31269
+      },
+      {
+        "name": "unified",
+        "bytes": 29874
+      },
+      {
+        "name": "@noble/curves",
+        "bytes": 29126
+      },
+      {
+        "name": "micromark-extension-gfm-table",
+        "bytes": 28275
+      },
+      {
+        "name": "@noble/ciphers",
+        "bytes": 25142
+      },
+      {
+        "name": "earcut",
+        "bytes": 21543
+      },
+      {
+        "name": "@noble/hashes",
+        "bytes": 21385
+      }
+    ]
+  },
+  "startup": {
+    "at": "2026-11-16T07:35:38.655Z",
+    "runs": 6,
+    "first": {
+      "main:module": 244,
+      "main:ready": 284,
+      "core:created": 301,
+      "core:stores": 304,
+      "core:power": 304,
+      "core:gateway": 306,
+      "core:voice-routines": 307,
+      "core:started": 308,
+      "main:window-created": 382,
+      "win:ready-to-show": 560,
+      "win:did-finish-load": 560,
+      "core:computer": 644,
+      "win:nav-start": 381,
+      "appubot:bundle-evaluated": 555,
+      "first-paint": 553,
+      "first-contentful-paint": 553,
+      "appubot:hydrated": 570,
+      "appubot:main-painted": 605,
+      "appubot:transcript-painted": 667
+    },
+    "warmMedian": {
+      "main:module": 269,
+      "main:ready": 311,
+      "core:created": 332,
+      "core:stores": 335,
+      "core:power": 335,
+      "core:gateway": 338,
+      "core:voice-routines": 338,
+      "core:started": 340,
+      "main:window-created": 421,
+      "win:ready-to-show": 641,
+      "win:did-finish-load": 642,
+      "core:computer": 763,
+      "win:nav-start": 420,
+      "appubot:bundle-evaluated": 635,
+      "first-paint": 632,
+      "first-contentful-paint": 632,
+      "appubot:hydrated": 662,
+      "appubot:main-painted": 701,
+      "appubot:transcript-painted": 786
+    },
+    "cold": [
+      {
+        "main:module": 402,
+        "main:ready": 499,
+        "core:created": 520,
+        "core:stores": 528,
+        "core:power": 528,
+        "core:gateway": 532,
+        "core:voice-routines": 533,
+        "core:started": 534,
+        "main:window-created": 619,
+        "win:ready-to-show": 837,
+        "win:did-finish-load": 837,
+        "core:computer": 893,
+        "win:nav-start": 617,
+        "appubot:bundle-evaluated": 834,
+        "first-paint": 833,
+        "first-contentful-paint": 833,
+        "appubot:hydrated": 875,
+        "appubot:main-painted": 912,
+        "appubot:transcript-painted": 978
+      },
+      {
+        "main:module": 244,
+        "main:ready": 284,
+        "core:created": 301,
+        "core:stores": 304,
+        "core:power": 304,
+        "core:gateway": 306,
+        "core:voice-routines": 307,
+        "core:started": 308,
+        "main:window-created": 382,
+        "win:ready-to-show": 560,
+        "win:did-finish-load": 560,
+        "core:computer": 644,
+        "win:nav-start": 381,
+        "appubot:bundle-evaluated": 555,
+        "first-paint": 553,
+        "first-contentful-paint": 553,
+        "appubot:hydrated": 570,
+        "appubot:main-painted": 605,
+        "appubot:transcript-painted": 667
+      },
+      {
+        "main:module": 235,
+        "main:ready": 281,
+        "core:created": 298,
+        "core:stores": 300,
+        "core:power": 300,
+        "core:gateway": 303,
+        "core:voice-routines": 303,
+        "core:started": 308,
+        "main:window-created": 371,
+        "win:ready-to-show": 549,
+        "win:did-finish-load": 550,
+        "core:computer": 614,
+        "win:nav-start": 369,
+        "appubot:bundle-evaluated": 542,
+        "first-paint": 545,
+        "first-contentful-paint": 545,
+        "appubot:hydrated": 563,
+        "appubot:main-painted": 591,
+        "appubot:transcript-painted": 665
+      }
+    ],
+    "launches": [
+      {
+        "main:module": 241,
+        "main:ready": 281,
+        "core:created": 299,
+        "core:stores": 301,
+        "core:power": 301,
+        "core:gateway": 303,
+        "core:voice-routines": 304,
+        "core:started": 306,
+        "main:window-created": 382,
+        "win:ready-to-show": 547,
+        "win:did-finish-load": 547,
+        "core:computer": 605,
+        "win:nav-start": 380,
+        "appubot:bundle-evaluated": 544,
+        "first-paint": 548,
+        "first-contentful-paint": 548,
+        "appubot:hydrated": 562,
+        "appubot:main-painted": 590,
+        "appubot:transcript-painted": 658
+      },
+      {
+        "main:module": 207,
+        "main:ready": 247,
+        "core:created": 264,
+        "core:stores": 267,
+        "core:power": 267,
+        "core:gateway": 269,
+        "core:voice-routines": 270,
+        "core:started": 272,
+        "main:window-created": 341,
+        "win:ready-to-show": 515,
+        "win:did-finish-load": 516,
+        "core:computer": 582,
+        "win:nav-start": 340,
+        "appubot:bundle-evaluated": 511,
+        "first-paint": 516,
+        "first-contentful-paint": 516,
+        "appubot:hydrated": 527,
+        "appubot:main-painted": 558,
+        "appubot:transcript-painted": 620
+      },
+      {
+        "main:module": 284,
+        "main:ready": 327,
+        "core:created": 346,
+        "core:stores": 349,
+        "core:power": 349,
+        "core:gateway": 352,
+        "core:voice-routines": 352,
+        "core:started": 354,
+        "main:window-created": 446,
+        "win:ready-to-show": 641,
+        "win:did-finish-load": 642,
+        "core:computer": 815,
+        "win:nav-start": 444,
+        "appubot:bundle-evaluated": 635,
+        "first-paint": 632,
+        "first-contentful-paint": 632,
+        "appubot:hydrated": 675,
+        "appubot:main-painted": 704,
+        "appubot:transcript-painted": 789
+      },
+      {
+        "main:module": 252,
+        "main:ready": 307,
+        "core:created": 332,
+        "core:stores": 335,
+        "core:power": 335,
+        "core:gateway": 338,
+        "core:voice-routines": 338,
+        "core:started": 340,
+        "main:window-created": 418,
+        "win:ready-to-show": 616,
+        "win:did-finish-load": 616,
+        "core:computer": 722,
+        "win:nav-start": 417,
+        "appubot:bundle-evaluated": 608,
+        "first-paint": 613,
+        "first-contentful-paint": 613,
+        "appubot:hydrated": 640,
+        "appubot:main-painted": 669,
+        "appubot:transcript-painted": 774
+      },
+      {
+        "main:module": 269,
+        "main:ready": 311,
+        "core:created": 328,
+        "core:stores": 331,
+        "core:power": 331,
+        "core:gateway": 334,
+        "core:voice-routines": 334,
+        "core:started": 336,
+        "main:window-created": 421,
+        "win:ready-to-show": 642,
+        "win:did-finish-load": 642,
+        "core:computer": 763,
+        "win:nav-start": 420,
+        "appubot:bundle-evaluated": 639,
+        "first-paint": 636,
+        "first-contentful-paint": 636,
+        "appubot:hydrated": 662,
+        "appubot:main-painted": 701,
+        "appubot:transcript-painted": 786
+      },
+      {
+        "main:module": 342,
+        "main:ready": 395,
+        "core:created": 413,
+        "core:stores": 416,
+        "core:power": 416,
+        "core:gateway": 419,
+        "core:voice-routines": 419,
+        "core:started": 421,
+        "main:window-created": 498,
+        "win:ready-to-show": 700,
+        "win:did-finish-load": 700,
+        "core:computer": 789,
+        "win:nav-start": 496,
+        "appubot:bundle-evaluated": 697,
+        "first-paint": 696,
+        "first-contentful-paint": 696,
+        "appubot:hydrated": 719,
+        "appubot:main-painted": 752,
+        "appubot:transcript-painted": 836
+      }
+    ],
+    "idle": {
+      "seconds": 30,
+      "rssMB": {
+        "main": 277.8,
+        "gpu": 99.1,
+        "utility": 50.7,
+        "renderer": 302.4,
+        "helper": 51.5,
+        "total": 781.5
+      },
+      "cpuPct": {
+        "main": 0.87,
+        "gpu": 23.99,
+        "utility": 0,
+        "renderer": 18.54,
+        "helper": 0,
+        "total": 43.4
+      },
+      "rendererHeapMB": 17.6
+    },
+    "idleReducedMotion": {
+      "seconds": 15,
+      "cpuPct": {
+        "main": 0.13,
+        "gpu": 0,
+        "utility": 0,
+        "renderer": 0.93,
+        "helper": 0,
+        "total": 1.06
+      }
+    },
+    "longThread": {
+      "rows": 600,
+      "rssMB": {
+        "main": 278.5,
+        "gpu": 103.7,
+        "utility": 50.7,
+        "renderer": 489.5,
+        "helper": 51.5,
+        "total": 973.9
+      },
+      "rendererHeapMB": 33.8
+    },
+    "processes": [
+      "main",
+      "gpu",
+      "utility",
+      "renderer",
+      "helper"
+    ]
+  },
+  "renderer": {
+    "at": "2026-11-16T07:38:41.523Z",
+    "runs": 5,
+    "long": 600,
+    "median": {
+      "loadTbtMs": 4,
+      "loadLongestTaskMs": 54,
+      "bundleEvalMs": 77,
+      "openThreadMs": 36,
+      "renderAllMs": 275.8,
+      "switchBotMs": 31,
+      "settingsFirstMs": 47.5,
+      "settingsAgainMs": 43.3,
+      "heapMB": 35.5,
+      "domNodes": 32652,
+      "stream": {
+        "frames": 793,
+        "slowFrames": 0,
+        "worstFrameMs": 33.3,
+        "longAnimationFrames": 0,
+        "longAnimationFrameMs": 0,
+        "loafScriptMs": 0,
+        "loafBlockingMs": 0,
+        "keyLatencyP50": 15.1,
+        "keyLatencyP95": 16.6,
+        "keyLatencyMax": 17,
+        "commits": 554,
+        "renders": 2985
+      }
+    },
+    "all": {
+      "loadTbtMs": [
+        4,
+        6,
+        15,
+        4,
+        4
+      ],
+      "loadLongestTaskMs": [
+        54,
+        56,
+        65,
+        54,
+        54
+      ],
+      "bundleEvalMs": [
+        111.3,
+        70.9,
+        74.1,
+        78.3,
+        77
+      ],
+      "openThreadMs": [
+        32,
+        39.7,
+        31.9,
+        36,
+        44.1
+      ],
+      "renderAllMs": [
+        275.8,
+        246,
+        277.9,
+        266.7,
+        287.9
+      ],
+      "switchBotMs": [
+        31,
+        32,
+        31,
+        32,
+        31
+      ],
+      "settingsFirstMs": [
+        47.5,
+        43.4,
+        48.3,
+        44.9,
+        48.4
+      ],
+      "settingsAgainMs": [
+        44.9,
+        42.6,
+        44.8,
+        43.3,
+        41.1
+      ],
+      "heapMB": [
+        35.5,
+        35.5,
+        35.5,
+        35.5,
+        35.5
+      ],
+      "domNodes": [
+        32652,
+        32652,
+        32652,
+        32652,
+        32652
+      ]
+    },
+    "streaming": [
+      {
+        "streamMs": 13167,
+        "frames": 789,
+        "slowFrames": 0,
+        "worstFrameMs": 16.8,
+        "longAnimationFrames": 0,
+        "longAnimationFrameMs": 0,
+        "loafScriptMs": 0,
+        "loafBlockingMs": 0,
+        "keyLatencyP50": 13.3,
+        "keyLatencyP95": 16.6,
+        "keyLatencyMax": 16.9,
+        "keys": 126,
+        "typed": 126,
+        "commits": 554,
+        "renders": 2939,
+        "topRenders": [
+          [
+            "Row2",
+            404
+          ],
+          [
+            "AgentTurn2",
+            402
+          ],
+          [
+            "LiveTurn",
+            401
+          ],
+          [
+            "Icon",
+            290
+          ],
+          [
+            "Composer",
+            142
+          ],
+          [
+            "ArrowUp",
+            141
+          ],
+          [
+            "Button2",
+            89
+          ],
+          [
+            "Rr",
+            78
+          ],
+          [
+            "AnimatePresence",
+            75
+          ],
+          [
+            "PresenceChild",
+            60
+          ],
+          [
+            "PopChild",
+            60
+          ],
+          [
+            "PopChildMeasure",
+            60
+          ],
+          [
+            "Tooltip",
+            57
+          ],
+          [
+            "motion.span",
+            37
+          ],
+          [
+            "Kbd",
+            32
+          ],
+          [
+            "motion.div",
+            31
+          ],
+          [
+            "BotAvatar",
+            26
+          ],
+          [
+            "ChevronDown",
+            25
+          ],
+          [
+            "ChevronRight",
+            22
+          ],
+          [
+            "Transcript",
+            17
+          ],
+          [
+            "ArrowDown",
+            17
+          ],
+          [
+            "ThreadView",
+            16
+          ],
+          [
+            "ChatHeader",
+            16
+          ],
+          [
+            "CrumbArrow",
+            16
+          ],
+          [
+            "ThreadSwitcher",
+            16
+          ],
+          [
+            "SquarePen",
+            16
+          ],
+          [
+            "PanelRight",
+            16
+          ],
+          [
+            "ThreadSearch",
+            16
+          ],
+          [
+            "QuoteSelection",
+            16
+          ],
+          [
+            "ApprovalBar",
+            16
+          ],
+          [
+            "motion.section",
+            16
+          ],
+          [
+            "ShieldQuestion",
+            16
+          ],
+          [
+            "Preview",
+            16
+          ],
+          [
+            "Menu",
+            13
+          ],
+          [
+            "Copy",
+            11
+          ],
+          [
+            "AiStatus",
+            10
+          ],
+          [
+            "Shimmer",
+            10
+          ],
+          [
+            "pre",
+            10
+          ],
+          [
+            "CodeBlock",
+            10
+          ],
+          [
+            "CodeFrame",
+            10
+          ]
+        ],
+        "owners": [
+          [
+            "Row2 ← Transcript",
+            404
+          ],
+          [
+            "AgentTurn2 ← Row2",
+            402
+          ],
+          [
+            "LiveTurn ← AgentTurn2",
+            401
+          ],
+          [
+            "Composer ← ThreadView",
+            142
+          ],
+          [
+            "Icon ← Composer",
+            141
+          ],
+          [
+            "ArrowUp ← Icon",
+            141
+          ],
+          [
+            "Rr ← BotAvatar",
+            78
+          ],
+          [
+            "Tooltip ← ChatHeader",
+            48
+          ],
+          [
+            "Button2 ← ApprovalBar",
+            48
+          ],
+          [
+            "Icon ← Button2",
+            41
+          ],
+          [
+            "Button2 ← Tooltip",
+            32
+          ],
+          [
+            "AnimatePresence ← ThreadView",
+            32
+          ],
+          [
+            "PresenceChild ← ThreadView",
+            32
+          ],
+          [
+            "PopChild ← ThreadView",
+            32
+          ],
+          [
+            "PopChildMeasure ← ThreadView",
+            32
+          ],
+          [
+            "Kbd ← Button2",
+            32
+          ],
+          [
+            "ChevronDown ← Icon",
+            25
+          ],
+          [
+            "ChevronRight ← Icon",
+            22
+          ],
+          [
+            "AnimatePresence ← AiStatus",
+            21
+          ],
+          [
+            "Transcript ← ThreadView",
+            17
+          ],
+          [
+            "Icon ← Transcript",
+            17
+          ],
+          [
+            "ArrowDown ← Icon",
+            17
+          ],
+          [
+            "ThreadView ← MainLayout",
+            16
+          ],
+          [
+            "ChatHeader ← ThreadView",
+            16
+          ],
+          [
+            "BotAvatar ← Tooltip",
+            16
+          ],
+          [
+            "CrumbArrow ← ChatHeader",
+            16
+          ],
+          [
+            "Icon ← CrumbArrow",
+            16
+          ],
+          [
+            "ThreadSwitcher ← ChatHeader",
+            16
+          ],
+          [
+            "Icon ← ThreadSwitcher",
+            16
+          ],
+          [
+            "SquarePen ← Icon",
+            16
+          ],
+          [
+            "PanelRight ← Icon",
+            16
+          ],
+          [
+            "motion.div ← ThreadView",
+            16
+          ],
+          [
+            "ThreadSearch ← ThreadView",
+            16
+          ],
+          [
+            "QuoteSelection ← ThreadView",
+            16
+          ],
+          [
+            "ApprovalBar ← ThreadView",
+            16
+          ],
+          [
+            "motion.section ← ApprovalBar",
+            16
+          ],
+          [
+            "Icon ← ApprovalBar",
+            16
+          ],
+          [
+            "ShieldQuestion ← Icon",
+            16
+          ],
+          [
+            "Preview ← ApprovalBar",
+            16
+          ],
+          [
+            "PresenceChild ← AiStatus",
+            13
+          ]
+        ]
+      },
+      {
+        "streamMs": 13252,
+        "frames": 793,
+        "slowFrames": 0,
+        "worstFrameMs": 33.3,
+        "longAnimationFrames": 0,
+        "longAnimationFrameMs": 0,
+        "loafScriptMs": 0,
+        "loafBlockingMs": 0,
+        "keyLatencyP50": 15.2,
+        "keyLatencyP95": 16.7,
+        "keyLatencyMax": 17.2,
+        "keys": 126,
+        "typed": 126,
+        "commits": 554,
+        "renders": 2986,
+        "topRenders": [
+          [
+            "Row2",
+            404
+          ],
+          [
+            "AgentTurn2",
+            402
+          ],
+          [
+            "LiveTurn",
+            401
+          ],
+          [
+            "Icon",
+            296
+          ],
+          [
+            "Composer",
+            143
+          ],
+          [
+            "ArrowUp",
+            141
+          ],
+          [
+            "Button2",
+            94
+          ],
+          [
+            "Rr",
+            81
+          ],
+          [
+            "AnimatePresence",
+            77
+          ],
+          [
+            "PresenceChild",
+            62
+          ],
+          [
+            "PopChild",
+            62
+          ],
+          [
+            "PopChildMeasure",
+            62
+          ],
+          [
+            "Tooltip",
+            61
+          ],
+          [
+            "motion.span",
+            37
+          ],
+          [
+            "Kbd",
+            34
+          ],
+          [
+            "motion.div",
+            32
+          ],
+          [
+            "BotAvatar",
+            27
+          ],
+          [
+            "ChevronDown",
+            26
+          ],
+          [
+            "ChevronRight",
+            23
+          ],
+          [
+            "Transcript",
+            18
+          ],
+          [
+            "ArrowDown",
+            18
+          ],
+          [
+            "ThreadView",
+            17
+          ],
+          [
+            "ChatHeader",
+            17
+          ],
+          [
+            "CrumbArrow",
+            17
+          ],
+          [
+            "ThreadSwitcher",
+            17
+          ],
+          [
+            "SquarePen",
+            17
+          ],
+          [
+            "PanelRight",
+            17
+          ],
+          [
+            "ThreadSearch",
+            17
+          ],
+          [
+            "QuoteSelection",
+            17
+          ],
+          [
+            "ApprovalBar",
+            17
+          ],
+          [
+            "motion.section",
+            17
+          ],
+          [
+            "ShieldQuestion",
+            17
+          ],
+          [
+            "Preview",
+            17
+          ],
+          [
+            "Menu",
+            13
+          ],
+          [
+            "Copy",
+            11
+          ],
+          [
+            "AiStatus",
+            10
+          ],
+          [
+            "Shimmer",
+            10
+          ],
+          [
+            "pre",
+            10
+          ],
+          [
+            "CodeBlock",
+            10
+          ],
+          [
+            "CodeFrame",
+            10
+          ]
+        ],
+        "owners": [
+          [
+            "Row2 ← Transcript",
+            404
+          ],
+          [
+            "AgentTurn2 ← Row2",
+            402
+          ],
+          [
+            "LiveTurn ← AgentTurn2",
+            401
+          ],
+          [
+            "Composer ← ThreadView",
+            143
+          ],
+          [
+            "Icon ← Composer",
+            141
+          ],
+          [
+            "ArrowUp ← Icon",
+            141
+          ],
+          [
+            "Rr ← BotAvatar",
+            81
+          ],
+          [
+            "Tooltip ← ChatHeader",
+            51
+          ],
+          [
+            "Button2 ← ApprovalBar",
+            51
+          ],
+          [
+            "Icon ← Button2",
+            43
+          ],
+          [
+            "Button2 ← Tooltip",
+            34
+          ],
+          [
+            "AnimatePresence ← ThreadView",
+            34
+          ],
+          [
+            "PresenceChild ← ThreadView",
+            34
+          ],
+          [
+            "PopChild ← ThreadView",
+            34
+          ],
+          [
+            "PopChildMeasure ← ThreadView",
+            34
+          ],
+          [
+            "Kbd ← Button2",
+            34
+          ],
+          [
+            "ChevronDown ← Icon",
+            26
+          ],
+          [
+            "ChevronRight ← Icon",
+            23
+          ],
+          [
+            "AnimatePresence ← AiStatus",
+            21
+          ],
+          [
+            "Transcript ← ThreadView",
+            18
+          ],
+          [
+            "Icon ← Transcript",
+            18
+          ],
+          [
+            "ArrowDown ← Icon",
+            18
+          ],
+          [
+            "ThreadView ← MainLayout",
+            17
+          ],
+          [
+            "ChatHeader ← ThreadView",
+            17
+          ],
+          [
+            "BotAvatar ← Tooltip",
+            17
+          ],
+          [
+            "CrumbArrow ← ChatHeader",
+            17
+          ],
+          [
+            "Icon ← CrumbArrow",
+            17
+          ],
+          [
+            "ThreadSwitcher ← ChatHeader",
+            17
+          ],
+          [
+            "Icon ← ThreadSwitcher",
+            17
+          ],
+          [
+            "SquarePen ← Icon",
+            17
+          ],
+          [
+            "PanelRight ← Icon",
+            17
+          ],
+          [
+            "motion.div ← ThreadView",
+            17
+          ],
+          [
+            "ThreadSearch ← ThreadView",
+            17
+          ],
+          [
+            "QuoteSelection ← ThreadView",
+            17
+          ],
+          [
+            "ApprovalBar ← ThreadView",
+            17
+          ],
+          [
+            "motion.section ← ApprovalBar",
+            17
+          ],
+          [
+            "Icon ← ApprovalBar",
+            17
+          ],
+          [
+            "ShieldQuestion ← Icon",
+            17
+          ],
+          [
+            "Preview ← ApprovalBar",
+            17
+          ],
+          [
+            "PresenceChild ← AiStatus",
+            13
+          ]
+        ]
+      },
+      {
+        "streamMs": 13242,
+        "frames": 793,
+        "slowFrames": 0,
+        "worstFrameMs": 16.8,
+        "longAnimationFrames": 0,
+        "longAnimationFrameMs": 0,
+        "loafScriptMs": 0,
+        "loafBlockingMs": 0,
+        "keyLatencyP50": 15.3,
+        "keyLatencyP95": 16.8,
+        "keyLatencyMax": 17,
+        "keys": 126,
+        "typed": 126,
+        "commits": 554,
+        "renders": 2986,
+        "topRenders": [
+          [
+            "Row2",
+            404
+          ],
+          [
+            "AgentTurn2",
+            402
+          ],
+          [
+            "LiveTurn",
+            401
+          ],
+          [
+            "Icon",
+            296
+          ],
+          [
+            "Composer",
+            143
+          ],
+          [
+            "ArrowUp",
+            141
+          ],
+          [
+            "Button2",
+            94
+          ],
+          [
+            "Rr",
+            81
+          ],
+          [
+            "AnimatePresence",
+            77
+          ],
+          [
+            "PresenceChild",
+            62
+          ],
+          [
+            "PopChild",
+            62
+          ],
+          [
+            "PopChildMeasure",
+            62
+          ],
+          [
+            "Tooltip",
+            61
+          ],
+          [
+            "motion.span",
+            37
+          ],
+          [
+            "Kbd",
+            34
+          ],
+          [
+            "motion.div",
+            32
+          ],
+          [
+            "BotAvatar",
+            27
+          ],
+          [
+            "ChevronDown",
+            26
+          ],
+          [
+            "ChevronRight",
+            23
+          ],
+          [
+            "Transcript",
+            18
+          ],
+          [
+            "ArrowDown",
+            18
+          ],
+          [
+            "ThreadView",
+            17
+          ],
+          [
+            "ChatHeader",
+            17
+          ],
+          [
+            "CrumbArrow",
+            17
+          ],
+          [
+            "ThreadSwitcher",
+            17
+          ],
+          [
+            "SquarePen",
+            17
+          ],
+          [
+            "PanelRight",
+            17
+          ],
+          [
+            "ThreadSearch",
+            17
+          ],
+          [
+            "QuoteSelection",
+            17
+          ],
+          [
+            "ApprovalBar",
+            17
+          ],
+          [
+            "motion.section",
+            17
+          ],
+          [
+            "ShieldQuestion",
+            17
+          ],
+          [
+            "Preview",
+            17
+          ],
+          [
+            "Menu",
+            13
+          ],
+          [
+            "Copy",
+            11
+          ],
+          [
+            "AiStatus",
+            10
+          ],
+          [
+            "Shimmer",
+            10
+          ],
+          [
+            "pre",
+            10
+          ],
+          [
+            "CodeBlock",
+            10
+          ],
+          [
+            "CodeFrame",
+            10
+          ]
+        ],
+        "owners": [
+          [
+            "Row2 ← Transcript",
+            404
+          ],
+          [
+            "AgentTurn2 ← Row2",
+            402
+          ],
+          [
+            "LiveTurn ← AgentTurn2",
+            401
+          ],
+          [
+            "Composer ← ThreadView",
+            143
+          ],
+          [
+            "Icon ← Composer",
+            141
+          ],
+          [
+            "ArrowUp ← Icon",
+            141
+          ],
+          [
+            "Rr ← BotAvatar",
+            81
+          ],
+          [
+            "Tooltip ← ChatHeader",
+            51
+          ],
+          [
+            "Button2 ← ApprovalBar",
+            51
+          ],
+          [
+            "Icon ← Button2",
+            43
+          ],
+          [
+            "Button2 ← Tooltip",
+            34
+          ],
+          [
+            "AnimatePresence ← ThreadView",
+            34
+          ],
+          [
+            "PresenceChild ← ThreadView",
+            34
+          ],
+          [
+            "PopChild ← ThreadView",
+            34
+          ],
+          [
+            "PopChildMeasure ← ThreadView",
+            34
+          ],
+          [
+            "Kbd ← Button2",
+            34
+          ],
+          [
+            "ChevronDown ← Icon",
+            26
+          ],
+          [
+            "ChevronRight ← Icon",
+            23
+          ],
+          [
+            "AnimatePresence ← AiStatus",
+            21
+          ],
+          [
+            "Transcript ← ThreadView",
+            18
+          ],
+          [
+            "Icon ← Transcript",
+            18
+          ],
+          [
+            "ArrowDown ← Icon",
+            18
+          ],
+          [
+            "ThreadView ← MainLayout",
+            17
+          ],
+          [
+            "ChatHeader ← ThreadView",
+            17
+          ],
+          [
+            "BotAvatar ← Tooltip",
+            17
+          ],
+          [
+            "CrumbArrow ← ChatHeader",
+            17
+          ],
+          [
+            "Icon ← CrumbArrow",
+            17
+          ],
+          [
+            "ThreadSwitcher ← ChatHeader",
+            17
+          ],
+          [
+            "Icon ← ThreadSwitcher",
+            17
+          ],
+          [
+            "SquarePen ← Icon",
+            17
+          ],
+          [
+            "PanelRight ← Icon",
+            17
+          ],
+          [
+            "motion.div ← ThreadView",
+            17
+          ],
+          [
+            "ThreadSearch ← ThreadView",
+            17
+          ],
+          [
+            "QuoteSelection ← ThreadView",
+            17
+          ],
+          [
+            "ApprovalBar ← ThreadView",
+            17
+          ],
+          [
+            "motion.section ← ApprovalBar",
+            17
+          ],
+          [
+            "Icon ← ApprovalBar",
+            17
+          ],
+          [
+            "ShieldQuestion ← Icon",
+            17
+          ],
+          [
+            "Preview ← ApprovalBar",
+            17
+          ],
+          [
+            "PresenceChild ← AiStatus",
+            13
+          ]
+        ]
+      },
+      {
+        "streamMs": 13346,
+        "frames": 799,
+        "slowFrames": 0,
+        "worstFrameMs": 33.3,
+        "longAnimationFrames": 0,
+        "longAnimationFrameMs": 0,
+        "loafScriptMs": 0,
+        "loafBlockingMs": 0,
+        "keyLatencyP50": 15.1,
+        "keyLatencyP95": 16.4,
+        "keyLatencyMax": 16.8,
+        "keys": 126,
+        "typed": 126,
+        "commits": 553,
+        "renders": 2985,
+        "topRenders": [
+          [
+            "Row2",
+            403
+          ],
+          [
+            "AgentTurn2",
+            402
+          ],
+          [
+            "LiveTurn",
+            401
+          ],
+          [
+            "Icon",
+            296
+          ],
+          [
+            "Composer",
+            143
+          ],
+          [
+            "ArrowUp",
+            141
+          ],
+          [
+            "Button2",
+            94
+          ],
+          [
+            "Rr",
+            81
+          ],
+          [
+            "AnimatePresence",
+            77
+          ],
+          [
+            "PresenceChild",
+            62
+          ],
+          [
+            "PopChild",
+            62
+          ],
+          [
+            "PopChildMeasure",
+            62
+          ],
+          [
+            "Tooltip",
+            61
+          ],
+          [
+            "motion.span",
+            37
+          ],
+          [
+            "Kbd",
+            34
+          ],
+          [
+            "motion.div",
+            32
+          ],
+          [
+            "BotAvatar",
+            27
+          ],
+          [
+            "ChevronDown",
+            26
+          ],
+          [
+            "ChevronRight",
+            23
+          ],
+          [
+            "Transcript",
+            18
+          ],
+          [
+            "ArrowDown",
+            18
+          ],
+          [
+            "ThreadView",
+            17
+          ],
+          [
+            "ChatHeader",
+            17
+          ],
+          [
+            "CrumbArrow",
+            17
+          ],
+          [
+            "ThreadSwitcher",
+            17
+          ],
+          [
+            "SquarePen",
+            17
+          ],
+          [
+            "PanelRight",
+            17
+          ],
+          [
+            "ThreadSearch",
+            17
+          ],
+          [
+            "QuoteSelection",
+            17
+          ],
+          [
+            "ApprovalBar",
+            17
+          ],
+          [
+            "motion.section",
+            17
+          ],
+          [
+            "ShieldQuestion",
+            17
+          ],
+          [
+            "Preview",
+            17
+          ],
+          [
+            "Menu",
+            13
+          ],
+          [
+            "Copy",
+            11
+          ],
+          [
+            "AiStatus",
+            10
+          ],
+          [
+            "Shimmer",
+            10
+          ],
+          [
+            "pre",
+            10
+          ],
+          [
+            "CodeBlock",
+            10
+          ],
+          [
+            "CodeFrame",
+            10
+          ]
+        ],
+        "owners": [
+          [
+            "Row2 ← Transcript",
+            403
+          ],
+          [
+            "AgentTurn2 ← Row2",
+            402
+          ],
+          [
+            "LiveTurn ← AgentTurn2",
+            401
+          ],
+          [
+            "Composer ← ThreadView",
+            143
+          ],
+          [
+            "Icon ← Composer",
+            141
+          ],
+          [
+            "ArrowUp ← Icon",
+            141
+          ],
+          [
+            "Rr ← BotAvatar",
+            81
+          ],
+          [
+            "Tooltip ← ChatHeader",
+            51
+          ],
+          [
+            "Button2 ← ApprovalBar",
+            51
+          ],
+          [
+            "Icon ← Button2",
+            43
+          ],
+          [
+            "Button2 ← Tooltip",
+            34
+          ],
+          [
+            "AnimatePresence ← ThreadView",
+            34
+          ],
+          [
+            "PresenceChild ← ThreadView",
+            34
+          ],
+          [
+            "PopChild ← ThreadView",
+            34
+          ],
+          [
+            "PopChildMeasure ← ThreadView",
+            34
+          ],
+          [
+            "Kbd ← Button2",
+            34
+          ],
+          [
+            "ChevronDown ← Icon",
+            26
+          ],
+          [
+            "ChevronRight ← Icon",
+            23
+          ],
+          [
+            "AnimatePresence ← AiStatus",
+            21
+          ],
+          [
+            "Transcript ← ThreadView",
+            18
+          ],
+          [
+            "Icon ← Transcript",
+            18
+          ],
+          [
+            "ArrowDown ← Icon",
+            18
+          ],
+          [
+            "ThreadView ← MainLayout",
+            17
+          ],
+          [
+            "ChatHeader ← ThreadView",
+            17
+          ],
+          [
+            "BotAvatar ← Tooltip",
+            17
+          ],
+          [
+            "CrumbArrow ← ChatHeader",
+            17
+          ],
+          [
+            "Icon ← CrumbArrow",
+            17
+          ],
+          [
+            "ThreadSwitcher ← ChatHeader",
+            17
+          ],
+          [
+            "Icon ← ThreadSwitcher",
+            17
+          ],
+          [
+            "SquarePen ← Icon",
+            17
+          ],
+          [
+            "PanelRight ← Icon",
+            17
+          ],
+          [
+            "motion.div ← ThreadView",
+            17
+          ],
+          [
+            "ThreadSearch ← ThreadView",
+            17
+          ],
+          [
+            "QuoteSelection ← ThreadView",
+            17
+          ],
+          [
+            "ApprovalBar ← ThreadView",
+            17
+          ],
+          [
+            "motion.section ← ApprovalBar",
+            17
+          ],
+          [
+            "Icon ← ApprovalBar",
+            17
+          ],
+          [
+            "ShieldQuestion ← Icon",
+            17
+          ],
+          [
+            "Preview ← ApprovalBar",
+            17
+          ],
+          [
+            "PresenceChild ← AiStatus",
+            13
+          ]
+        ]
+      },
+      {
+        "streamMs": 13261,
+        "frames": 794,
+        "slowFrames": 0,
+        "worstFrameMs": 33.4,
+        "longAnimationFrames": 0,
+        "longAnimationFrameMs": 0,
+        "loafScriptMs": 0,
+        "loafBlockingMs": 0,
+        "keyLatencyP50": 14,
+        "keyLatencyP95": 16.1,
+        "keyLatencyMax": 17.1,
+        "keys": 126,
+        "typed": 126,
+        "commits": 554,
+        "renders": 2939,
+        "topRenders": [
+          [
+            "Row2",
+            404
+          ],
+          [
+            "AgentTurn2",
+            402
+          ],
+          [
+            "LiveTurn",
+            401
+          ],
+          [
+            "Icon",
+            290
+          ],
+          [
+            "Composer",
+            142
+          ],
+          [
+            "ArrowUp",
+            141
+          ],
+          [
+            "Button2",
+            89
+          ],
+          [
+            "Rr",
+            78
+          ],
+          [
+            "AnimatePresence",
+            75
+          ],
+          [
+            "PresenceChild",
+            60
+          ],
+          [
+            "PopChild",
+            60
+          ],
+          [
+            "PopChildMeasure",
+            60
+          ],
+          [
+            "Tooltip",
+            57
+          ],
+          [
+            "motion.span",
+            37
+          ],
+          [
+            "Kbd",
+            32
+          ],
+          [
+            "motion.div",
+            31
+          ],
+          [
+            "BotAvatar",
+            26
+          ],
+          [
+            "ChevronDown",
+            25
+          ],
+          [
+            "ChevronRight",
+            22
+          ],
+          [
+            "Transcript",
+            17
+          ],
+          [
+            "ArrowDown",
+            17
+          ],
+          [
+            "ThreadView",
+            16
+          ],
+          [
+            "ChatHeader",
+            16
+          ],
+          [
+            "CrumbArrow",
+            16
+          ],
+          [
+            "ThreadSwitcher",
+            16
+          ],
+          [
+            "SquarePen",
+            16
+          ],
+          [
+            "PanelRight",
+            16
+          ],
+          [
+            "ThreadSearch",
+            16
+          ],
+          [
+            "QuoteSelection",
+            16
+          ],
+          [
+            "ApprovalBar",
+            16
+          ],
+          [
+            "motion.section",
+            16
+          ],
+          [
+            "ShieldQuestion",
+            16
+          ],
+          [
+            "Preview",
+            16
+          ],
+          [
+            "Menu",
+            13
+          ],
+          [
+            "Copy",
+            11
+          ],
+          [
+            "AiStatus",
+            10
+          ],
+          [
+            "Shimmer",
+            10
+          ],
+          [
+            "pre",
+            10
+          ],
+          [
+            "CodeBlock",
+            10
+          ],
+          [
+            "CodeFrame",
+            10
+          ]
+        ],
+        "owners": [
+          [
+            "Row2 ← Transcript",
+            404
+          ],
+          [
+            "AgentTurn2 ← Row2",
+            402
+          ],
+          [
+            "LiveTurn ← AgentTurn2",
+            401
+          ],
+          [
+            "Composer ← ThreadView",
+            142
+          ],
+          [
+            "Icon ← Composer",
+            141
+          ],
+          [
+            "ArrowUp ← Icon",
+            141
+          ],
+          [
+            "Rr ← BotAvatar",
+            78
+          ],
+          [
+            "Tooltip ← ChatHeader",
+            48
+          ],
+          [
+            "Button2 ← ApprovalBar",
+            48
+          ],
+          [
+            "Icon ← Button2",
+            41
+          ],
+          [
+            "Button2 ← Tooltip",
+            32
+          ],
+          [
+            "AnimatePresence ← ThreadView",
+            32
+          ],
+          [
+            "PresenceChild ← ThreadView",
+            32
+          ],
+          [
+            "PopChild ← ThreadView",
+            32
+          ],
+          [
+            "PopChildMeasure ← ThreadView",
+            32
+          ],
+          [
+            "Kbd ← Button2",
+            32
+          ],
+          [
+            "ChevronDown ← Icon",
+            25
+          ],
+          [
+            "ChevronRight ← Icon",
+            22
+          ],
+          [
+            "AnimatePresence ← AiStatus",
+            21
+          ],
+          [
+            "Transcript ← ThreadView",
+            17
+          ],
+          [
+            "Icon ← Transcript",
+            17
+          ],
+          [
+            "ArrowDown ← Icon",
+            17
+          ],
+          [
+            "ThreadView ← MainLayout",
+            16
+          ],
+          [
+            "ChatHeader ← ThreadView",
+            16
+          ],
+          [
+            "BotAvatar ← Tooltip",
+            16
+          ],
+          [
+            "CrumbArrow ← ChatHeader",
+            16
+          ],
+          [
+            "Icon ← CrumbArrow",
+            16
+          ],
+          [
+            "ThreadSwitcher ← ChatHeader",
+            16
+          ],
+          [
+            "Icon ← ThreadSwitcher",
+            16
+          ],
+          [
+            "SquarePen ← Icon",
+            16
+          ],
+          [
+            "PanelRight ← Icon",
+            16
+          ],
+          [
+            "motion.div ← ThreadView",
+            16
+          ],
+          [
+            "ThreadSearch ← ThreadView",
+            16
+          ],
+          [
+            "QuoteSelection ← ThreadView",
+            16
+          ],
+          [
+            "ApprovalBar ← ThreadView",
+            16
+          ],
+          [
+            "motion.section ← ApprovalBar",
+            16
+          ],
+          [
+            "Icon ← ApprovalBar",
+            16
+          ],
+          [
+            "ShieldQuestion ← Icon",
+            16
+          ],
+          [
+            "Preview ← ApprovalBar",
+            16
+          ],
+          [
+            "PresenceChild ← AiStatus",
+            13
+          ]
+        ]
+      }
+    ]
+  },
+  "scroll": {
+    "at": "2026-11-16T07:42:40.884Z",
+    "runs": 3,
+    "long": 600,
+    "speedPxPer16ms": 150,
+    "median": {
+      "up": {
+        "reachedTop": "3/3",
+        "toTopMs": 30219.3,
+        "stalledMs": 0,
+        "stalls": 0,
+        "backJumps": 0,
+        "skips": 0,
+        "slowFrames": 2,
+        "worstFrameMs": 50.1,
+        "p95FrameMs": 16.8,
+        "longAnimationFrames": 0,
+        "longAnimationFrameMs": 0,
+        "loafScriptMs": 0,
+        "taskMs": 6385,
+        "scriptMs": 2559,
+        "styleMs": 474,
+        "layoutMs": 166
+      },
+      "down": {
+        "ms": 30311.3,
+        "backJumps": 0,
+        "slowFrames": 0,
+        "worstFrameMs": 16.8,
+        "p95FrameMs": 16.7,
+        "longAnimationFrames": 0,
+        "longAnimationFrameMs": 0,
+        "loafScriptMs": 0,
+        "taskMs": 9415,
+        "scriptMs": 4449,
+        "styleMs": 409,
+        "layoutMs": 115
+      },
+      "restTaskMsPerS": 80.3,
+      "rows": 606,
+      "domNodes": 32652
+    },
+    "up": [
+      {
+        "ms": 30606,
+        "topAt": 30214.700000011922,
+        "done": true,
+        "stalledMs": 0,
+        "stalls": 0,
+        "frames": 1818,
+        "slowFrames": 3,
+        "worstFrameMs": 50.099999999998545,
+        "p95FrameMs": 16.799999999995634,
+        "loaf": 0,
+        "loafMs": 0,
+        "loafScriptMs": 0,
+        "backJumps": 0,
+        "skips": 0,
+        "info": {
+          "scrollTop": 0,
+          "scrollHeight": 135120,
+          "clientHeight": 629,
+          "rows": 606,
+          "ids": 606,
+          "nodes": 32652
+        },
+        "cost": {
+          "task": 6169,
+          "script": 2500,
+          "style": 474,
+          "layout": 163
+        },
+        "restPerS": 65.4
+      },
+      {
+        "ms": 30632.79999999702,
+        "topAt": 30244.000000002983,
+        "done": true,
+        "stalledMs": 0,
+        "stalls": 0,
+        "frames": 1821,
+        "slowFrames": 1,
+        "worstFrameMs": 50,
+        "p95FrameMs": 16.799999999995634,
+        "loaf": 0,
+        "loafMs": 0,
+        "loafScriptMs": 0,
+        "backJumps": 0,
+        "skips": 0,
+        "info": {
+          "scrollTop": 0,
+          "scrollHeight": 135120,
+          "clientHeight": 629,
+          "rows": 606,
+          "ids": 606,
+          "nodes": 32652
+        },
+        "cost": {
+          "task": 6620,
+          "script": 2662,
+          "style": 503,
+          "layout": 181
+        },
+        "restPerS": 83.3
+      },
+      {
+        "ms": 30610.70000000298,
+        "topAt": 30219.300000008938,
+        "done": true,
+        "stalledMs": 0,
+        "stalls": 0,
+        "frames": 1817,
+        "slowFrames": 2,
+        "worstFrameMs": 50.099999999998545,
+        "p95FrameMs": 16.799999999995634,
+        "loaf": 0,
+        "loafMs": 0,
+        "loafScriptMs": 0,
+        "backJumps": 0,
+        "skips": 0,
+        "info": {
+          "scrollTop": 0,
+          "scrollHeight": 135120,
+          "clientHeight": 629,
+          "rows": 606,
+          "ids": 606,
+          "nodes": 32652
+        },
+        "cost": {
+          "task": 6385,
+          "script": 2559,
+          "style": 452,
+          "layout": 166
+        },
+        "restPerS": 80.3
+      }
+    ],
+    "down": [
+      {
+        "ms": 30328.5,
+        "topAt": 6.600000002981687,
+        "done": true,
+        "stalledMs": 0,
+        "stalls": 0,
+        "frames": 3635,
+        "slowFrames": 2,
+        "worstFrameMs": 50,
+        "p95FrameMs": 16.70000000001164,
+        "loaf": 0,
+        "loafMs": 0,
+        "loafScriptMs": 0,
+        "backJumps": 0,
+        "skips": 0,
+        "info": {
+          "scrollTop": 134491,
+          "scrollHeight": 135120,
+          "clientHeight": 629,
+          "rows": 606,
+          "ids": 606,
+          "nodes": 32652
+        },
+        "cost": {
+          "task": 8829,
+          "script": 4171,
+          "style": 409,
+          "layout": 115
+        }
+      },
+      {
+        "ms": 30299.5,
+        "topAt": 9.299999994036625,
+        "done": true,
+        "stalledMs": 0,
+        "stalls": 0,
+        "frames": 3635,
+        "slowFrames": 0,
+        "worstFrameMs": 16.80000000000291,
+        "p95FrameMs": 16.70000000001164,
+        "loaf": 0,
+        "loafMs": 0,
+        "loafScriptMs": 0,
+        "backJumps": 0,
+        "skips": 0,
+        "info": {
+          "scrollTop": 134491,
+          "scrollHeight": 135120,
+          "clientHeight": 629,
+          "rows": 606,
+          "ids": 606,
+          "nodes": 32652
+        },
+        "cost": {
+          "task": 9453,
+          "script": 4615,
+          "style": 409,
+          "layout": 121
+        }
+      },
+      {
+        "ms": 30311.29999999702,
+        "topAt": 5.000000005959009,
+        "done": true,
+        "stalledMs": 0,
+        "stalls": 0,
+        "frames": 3637,
+        "slowFrames": 0,
+        "worstFrameMs": 16.80000000000291,
+        "p95FrameMs": 16.70000000001164,
+        "loaf": 0,
+        "loafMs": 0,
+        "loafScriptMs": 0,
+        "backJumps": 0,
+        "skips": 0,
+        "info": {
+          "scrollTop": 134491,
+          "scrollHeight": 135120,
+          "clientHeight": 629,
+          "rows": 606,
+          "ids": 606,
+          "nodes": 32652
+        },
+        "cost": {
+          "task": 9415,
+          "script": 4449,
+          "style": 380,
+          "layout": 110
+        }
+      }
+    ]
+  }
+}
