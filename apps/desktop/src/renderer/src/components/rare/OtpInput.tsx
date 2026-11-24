@@ -6,11 +6,13 @@
  * Ported from Rare UI's `components/ui/otp-input.tsx` (https://rareui.com).
  * Copyright (c) 2026 Swami Malode. MIT + Commons Clause + Attribution (apps/desktop/scripts/licenses/RareUI.txt).
  *
- * Unchanged but for the app's `cn`, the first box taking an `id` (a form's label points at it) and the index checks
- * this project's compiler asks for.
+ * Unchanged but for the app's `cn`, the first box taking an `id` (a form's label points at it), the index checks
+ * this project's compiler asks for, and the boxes following Settings › Appearance's shape (circles in the Round look,
+ * with the success ring drawn round them).
  */
 import { useRef, useState, type ClipboardEvent, type ComponentProps, type KeyboardEvent, type PointerEvent } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { useAppearancePrefs } from '../../lib/appearance';
 import { cn } from '../ui/cn';
 
 const PATTERNS = {
@@ -30,7 +32,7 @@ const SUCCESS = "#34C759";
 
 const SIZES = {
   sm: {
-    box: "size-10 rounded-lg",
+    box: "ab-pill size-10 rounded-lg",
     text: "text-base",
     caret: "h-5",
     gap: "gap-1.5",
@@ -38,7 +40,7 @@ const SIZES = {
     radius: 8,
   },
   md: {
-    box: "size-12 rounded-xl",
+    box: "ab-pill size-12 rounded-xl",
     text: "text-lg",
     caret: "h-6",
     gap: "gap-2",
@@ -46,7 +48,7 @@ const SIZES = {
     radius: 12,
   },
   lg: {
-    box: "size-14 rounded-2xl",
+    box: "ab-pill size-14 rounded-2xl",
     text: "text-xl",
     caret: "h-7",
     gap: "gap-2.5",
@@ -135,6 +137,7 @@ export function OtpInput({
       : toSlots(value, length);
   const numeric = type === "numbers";
   const scale = SIZES[size];
+  const round = useAppearancePrefs().shape === "round";
   const caretVisible = focused !== null && !slots[focused];
 
   const commit = (next: string[]) => {
@@ -328,7 +331,7 @@ export function OtpInput({
                     y={1}
                     width={scale.px - 2}
                     height={scale.px - 2}
-                    rx={scale.radius - 1}
+                    rx={round ? scale.px / 2 - 1 : scale.radius - 1}
                     fill="none"
                     stroke={SUCCESS}
                     strokeWidth={2}

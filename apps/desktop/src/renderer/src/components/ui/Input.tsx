@@ -6,14 +6,15 @@ import { Icon } from './Icon';
 /*
  * Rare UI's fields: a filled squircle with no border; the pointer deepens the fill, focus is a quiet ink ring (never a
  * border colour, never the accent: an orange outline read as a stray border, the owner's call 2026-11-18), a wrong
- * value a red one. `FIELD_SHAPE` is the one-line field's size, for callers that draw their own.
+ * value a red one. `FIELD_SHAPE` is the one-line field's size and shape (a pill in the Round look, `ab-pill`), for
+ * callers that draw their own; a textarea keeps its corners.
  */
 export const FIELD_CLASS =
   'squircle w-full border-0 bg-surface-2 text-fg text-copy placeholder:text-muted outline-none ' +
   'transition-[box-shadow,background-color] duration-150 ease-rare hover:bg-surface-3 ' +
   'focus:bg-surface-2 focus:shadow-[0_0_0_1.5px_color-mix(in_srgb,var(--ab-fg)_26%,transparent)] ' +
   'disabled:opacity-50 aria-[invalid=true]:shadow-[0_0_0_2px_color-mix(in_srgb,var(--ab-danger)_70%,transparent)]';
-export const FIELD_SHAPE = 'h-9 rounded-control px-3';
+export const FIELD_SHAPE = 'ab-pill h-9 rounded-control px-3';
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(function Input({ className, ...rest }, ref) {
   return <input ref={ref} data-slot="input" className={cn(FIELD_CLASS, FIELD_SHAPE, className)} {...rest} />;

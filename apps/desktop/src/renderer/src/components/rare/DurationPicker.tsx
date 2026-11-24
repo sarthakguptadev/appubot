@@ -11,12 +11,14 @@
  * padding and a placeholder, and a word segment flips between its options (AM / PM); a `sm` size sits in a form's
  * row; pressing a number opens the editor on it, a full field moves on to the next, Enter saves, and leaving the row
  * saves too; fields are text inputs that take digits only (a number input drops a leading zero's place). Rare UI's
- * radix Slot and react-use-measure are replaced by a motion.button and a ResizeObserver.
+ * radix Slot and react-use-measure are replaced by a motion.button and a ResizeObserver; the row's ends are round in
+ * the Round look (Settings › Appearance), like the app's other fields.
  */
 import { getSvgPath } from 'figma-squircle';
 import { interpolate } from 'flubber';
 import { motion, useMotionValue, useReducedMotion, useSpring, useTransform, useVelocity, type MotionStyle, type MotionValue } from 'motion/react';
 import { useEffect, useLayoutEffect, useRef, useState, type ComponentProps, type FocusEvent, type KeyboardEvent, type ReactNode } from 'react';
+import { useAppearancePrefs } from '../../lib/appearance';
 import { cn } from '../ui/cn';
 
 const PEN_PATH = 'M3.78181 16.3092L3 21L7.69086 20.2182C8.50544 20.0825 9.25725 19.6956 9.84119 19.1116L20.4198 8.53288C21.1934 7.75922 21.1934 6.5049 20.4197 5.73126L18.2687 3.58024C17.495 2.80658 16.2406 2.80659 15.4669 3.58027L4.88841 14.159C4.30447 14.7429 3.91757 15.4947 3.78181 16.3092Z';
@@ -29,8 +31,8 @@ const SWAY_SPRING = { stiffness: 200, damping: 24 };
 const ERROR_SPRING = { stiffness: 700, damping: 9 };
 
 const SIZES = {
-  md: { gap: 8, radius: 12, box: 'h-12', toggle: 'size-12', text: 'text-base', icon: 18, field: 44 },
-  sm: { gap: 6, radius: 10, box: 'h-9', toggle: 'size-9', text: 'text-[13.5px]', icon: 15, field: 34 },
+  md: { gap: 8, radius: 12, pill: 24, box: 'h-12', toggle: 'size-12', text: 'text-base', icon: 18, field: 44 },
+  sm: { gap: 6, radius: 10, pill: 18, box: 'h-9', toggle: 'size-9', text: 'text-[13.5px]', icon: 15, field: 34 },
 } as const;
 export type PickerSize = keyof typeof SIZES;
 
@@ -230,7 +232,7 @@ export function SegmentPicker({
 }: SegmentPickerProps) {
   const scale = SIZES[size];
   const open = scale.gap;
-  const corner = scale.radius;
+  const corner = useAppearancePrefs().shape === 'round' ? scale.pill : scale.radius;
   const [isEditing, setIsEditing] = useState(defaultEditing);
   const [texts, setTexts] = useState<Record<string, string>>(() => Object.fromEntries(segments.map((s) => [s.id, textOf(s, values[s.id])])));
   const inputs = useRef<Record<string, HTMLInputElement | null>>({});

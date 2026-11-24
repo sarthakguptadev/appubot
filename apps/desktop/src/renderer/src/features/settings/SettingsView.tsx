@@ -217,7 +217,7 @@ function SettingsNav() {
             className="min-w-0 flex-1 bg-transparent text-copy font-normal text-fg outline-none placeholder:font-medium placeholder:text-muted [&::-webkit-search-cancel-button]:hidden"
           />
           {searching ? (
-            <button type="button" aria-label={t('settings.search.clear')} onMouseDown={(e) => e.preventDefault()} onClick={() => { setQuery(''); input.current?.focus(); }} className="flex size-5 shrink-0 items-center justify-center rounded text-muted hover:text-fg">
+            <button type="button" aria-label={t('settings.search.clear')} onMouseDown={(e) => e.preventDefault()} onClick={() => { setQuery(''); input.current?.focus(); }} className="ab-pill flex size-5 shrink-0 items-center justify-center rounded text-muted hover:text-fg">
               <Icon icon={X} size={12} />
             </button>
           ) : <Kbd>/</Kbd>}

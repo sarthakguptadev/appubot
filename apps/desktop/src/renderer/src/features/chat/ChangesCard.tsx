@@ -67,7 +67,7 @@ export function ChangesCard({ files, cwd }: { files: FileChange[]; cwd?: string 
                 <DiffStat added={f.added} removed={f.removed} className="ml-auto shrink-0" />
               </button>
               {remote ? null : <Tooltip label={SHOW_IN_FOLDER} side="top">
-                <button type="button" aria-label={SHOW_IN_FOLDER} onClick={() => void native().showInFolder(f.path)} className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted opacity-0 transition-opacity group-hover/file-row:opacity-100 hover:text-fg focus-visible:opacity-100">
+                <button type="button" aria-label={SHOW_IN_FOLDER} onClick={() => void native().showInFolder(f.path)} className="ab-pill flex size-6 shrink-0 items-center justify-center rounded-md text-muted opacity-0 transition-opacity group-hover/file-row:opacity-100 hover:text-fg focus-visible:opacity-100">
                   <Icon icon={FolderOpen} size={14} />
                 </button>
               </Tooltip>}

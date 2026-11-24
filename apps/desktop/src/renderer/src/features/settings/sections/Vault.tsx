@@ -159,7 +159,7 @@ function SecretInput({ item, field, value, onChange, placeholder, mono = true }:
         className={cn('pr-9', mono && 'font-mono text-copy')}
       />
       {saved || value ? (
-        <button type="button" onClick={() => void toggle()} aria-label={shown ? 'Hide' : 'Show'} title={shown ? 'Hide' : 'Show'} className="absolute top-1/2 right-2 flex size-6 -translate-y-1/2 items-center justify-center rounded-md text-muted hover:bg-surface-2 hover:text-fg">
+        <button type="button" onClick={() => void toggle()} aria-label={shown ? 'Hide' : 'Show'} title={shown ? 'Hide' : 'Show'} className="absolute top-1/2 right-2 ab-pill flex size-6 -translate-y-1/2 items-center justify-center rounded-md text-muted hover:bg-surface-2 hover:text-fg">
           <Icon icon={shown ? EyeOff : Eye} size={14} />
         </button>
       ) : null}

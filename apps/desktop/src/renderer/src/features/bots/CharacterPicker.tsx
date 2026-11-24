@@ -25,7 +25,7 @@ type Tab = LookTab;
 /** the look pickers' switcher (New bot, the side panel's avatar): the side panel's own tabs */
 export const LOOK_TABS: { id: LookTab; label: string }[] = [{ id: 'bot', label: 'Shapes' }, { id: 'generate', label: 'Generate' }, { id: 'image', label: 'Image' }];
 
-const TILE = 'flex size-10 shrink-0 items-center justify-center rounded-[12px] outline-none transition-colors duration-100 focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]';
+const TILE = 'ab-pill squircle flex size-10 shrink-0 items-center justify-center rounded-[12px] outline-none transition-colors duration-100 focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]';
 const tileOn = (on: boolean) => (on ? 'bg-[color-mix(in_srgb,var(--ab-fg)_9%,transparent)]' : 'hover:bg-[color-mix(in_srgb,var(--ab-fg)_4.5%,transparent)]');
 
 /** How long Generate may take on the computer (its own limit is 90 s), with room for the trip. */

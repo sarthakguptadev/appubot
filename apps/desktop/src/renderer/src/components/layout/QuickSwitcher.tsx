@@ -416,13 +416,13 @@ export function QuickSwitcher({ open, onClose }: { open: boolean; onClose: () =>
     >
       <div className="hairline-b flex shrink-0 items-center gap-2.5 px-4">
         {page ? (
-          <button type="button" aria-label="Back" onClick={back} className="-ml-1 flex size-6 items-center justify-center rounded-control-sm text-muted outline-none hover:text-fg">
+          <button type="button" aria-label="Back" onClick={back} className="ab-pill squircle -ml-1 flex size-6 items-center justify-center rounded-control-sm text-muted outline-none hover:text-fg">
             <Icon icon={ArrowLeft} size={17} />
           </button>
         ) : (
           <Icon icon={Search} size={17} className="text-muted" />
         )}
-        {page ? <span className="shrink-0 rounded-[6px] bg-[color-mix(in_srgb,var(--ab-fg)_6%,transparent)] px-1.5 py-0.5 text-note font-medium text-fg-2">{page.title}</span> : null}
+        {page ? <span className="ab-pill squircle shrink-0 rounded-[6px] bg-[color-mix(in_srgb,var(--ab-fg)_6%,transparent)] px-1.5 py-0.5 text-note font-medium text-fg-2">{page.title}</span> : null}
         <input
           ref={input}
           autoFocus

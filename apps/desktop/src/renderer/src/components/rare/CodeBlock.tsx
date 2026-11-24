@@ -23,7 +23,7 @@ const CHECK_SPRING = { type: 'spring', duration: 0.4, bounce: 0.35 } as const;
 const COPY_RESET_MS = 1800;
 
 const HEADER_BUTTON =
-  'relative grid size-7 place-items-center rounded-lg text-(--cb-gutter) outline-none transition-[background-color,color] duration-150 ease-out hover:bg-(--cb-hover-wash) hover:text-(--cb-plain) focus-visible:ring-2 focus-visible:ring-(--cb-accent)/60';
+  'ab-pill relative grid size-7 place-items-center rounded-lg text-(--cb-gutter) outline-none transition-[background-color,color] duration-150 ease-out hover:bg-(--cb-hover-wash) hover:text-(--cb-plain) focus-visible:ring-2 focus-visible:ring-(--cb-accent)/60';
 
 /** A header button in the copy button's look (soft wrap, show source): pressed, it takes the accent. */
 export function CodeHeaderButton({ pressed, className, children, ...props }: ComponentProps<'button'> & { pressed?: boolean }) {

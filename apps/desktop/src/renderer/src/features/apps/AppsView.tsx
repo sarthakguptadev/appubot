@@ -227,7 +227,7 @@ function SearchField({ value, onChange }: { value: string; onChange: (v: string)
       />
       {value ? (
         <Tooltip label="Clear">
-          <button type="button" aria-label="Clear search" className="flex size-5 items-center justify-center rounded-md text-muted hover:bg-surface-2 hover:text-fg" onClick={() => onChange('')}>
+          <button type="button" aria-label="Clear search" className="ab-pill flex size-5 items-center justify-center rounded-md text-muted hover:bg-surface-2 hover:text-fg" onClick={() => onChange('')}>
             <Icon icon={X} size={12} />
           </button>
         </Tooltip>

@@ -111,7 +111,7 @@ function InlineField({ value, placeholder, label, max, required, onSave, classNa
           if (e.key === 'Enter' && !e.nativeEvent.isComposing) { e.preventDefault(); end(true); }
           else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); end(false); }
         }}
-        className={cn('no-drag squircle h-7 w-full rounded-control-sm bg-fg/[.06] px-2 text-center outline-none placeholder:text-muted/70 focus:shadow-[inset_0_0_0_1.5px_color-mix(in_srgb,var(--ab-fg)_22%,transparent)]', className)}
+        className={cn('ab-pill no-drag squircle h-7 w-full rounded-control-sm bg-fg/[.06] px-3 text-center outline-none placeholder:text-muted/70 focus:shadow-[inset_0_0_0_1.5px_color-mix(in_srgb,var(--ab-fg)_22%,transparent)]', className)}
       />
     );
   }

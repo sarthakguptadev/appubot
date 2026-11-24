@@ -84,7 +84,7 @@ export function LimitWindowRow({ w, limits, models, now, tight, compact, card }:
       <div className={cn('flex flex-col gap-1 py-1.5', !card && 'px-4 py-2.5')}>
         <div className="flex items-center gap-2 text-note">
           <span className="min-w-0 flex-1 truncate text-fg">{w.label}</span>
-          {tight ? <span className="shrink-0 rounded-[5px] bg-attention/15 px-1 text-[10px] text-attention">tightest</span> : null}
+          {tight ? <span className="ab-pill shrink-0 rounded-[5px] bg-attention/15 px-1 text-[10px] text-attention">tightest</span> : null}
           <span className={cn('shrink-0 tabular-nums', tone === 'ok' ? 'text-fg-2' : TONE_TEXT[tone])}>{out ? (tone === 'extra' ? 'Extra usage' : 'Used up') : limitLeftText(left)}</span>
         </div>
         <LimitMeter left={out ? 0 : left} tone={tone} className="h-[3px] w-full" />
@@ -97,8 +97,8 @@ export function LimitWindowRow({ w, limits, models, now, tight, compact, card }:
       <div className="min-w-0">
         <div className="flex items-center gap-2 text-copy font-medium text-fg">
           <span className="truncate">{w.label}</span>
-          {tone === 'low' ? <span className="shrink-0 rounded-md bg-attention/15 px-1.5 text-[11px] font-normal text-attention">Low</span> : null}
-          {out ? <span className={cn('shrink-0 rounded-md px-1.5 text-[11px] font-normal', tone === 'extra' ? 'bg-attention/15 text-attention' : 'bg-danger/15 text-danger')}>{tone === 'extra' ? 'Extra usage' : 'Used up'}</span> : null}
+          {tone === 'low' ? <span className="ab-pill shrink-0 rounded-md bg-attention/15 px-1.5 text-[11px] font-normal text-attention">Low</span> : null}
+          {out ? <span className={cn('ab-pill shrink-0 rounded-md px-1.5 text-[11px] font-normal', tone === 'extra' ? 'bg-attention/15 text-attention' : 'bg-danger/15 text-danger')}>{tone === 'extra' ? 'Extra usage' : 'Used up'}</span> : null}
         </div>
         {who ? <div className="truncate text-note text-muted">{who}</div> : null}
       </div>
