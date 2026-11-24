@@ -8,7 +8,7 @@ import { checkRole } from '../handlers';
 import { silentLogger } from '../util';
 import { UsageService, readJsonLines } from './usage';
 import {
-  GROK_TICKS_PER_USD, PI_OTHER_MODEL, bucketStarts, codexState, costOf, cacheSavingsOf, modelName, normalizeModel, parseClaudeLine, parseCodexLine,
+  GROK_TICKS_PER_USD, PI_OTHER_MODEL, bucketStarts, codexState, costOf, inBotsRoot, cacheSavingsOf, modelName, normalizeModel, parseClaudeLine, parseCodexLine,
   parseCopilotRow, parseGeminiFile, parseGeminiLine, parseGrokLine, parseOpenCodeMessage, parsePiLine, piState, priceOf, rangeStart, summarize,
   type UsageRecord,
 } from './usageLogs';
@@ -51,6 +51,12 @@ describe('parseClaudeLine', () => {
   it('marks a request made in a bot’s folder', () => {
     expect(parseClaudeLine(claudeLine({ cwd: '/Users/me/AppuBot/appu' }), '/Users/me/AppuBot')?.bot).toBe(true);
     expect(parseClaudeLine(claudeLine({ cwd: '/Users/me/AppuBotOther' }), '/Users/me/AppuBot')?.bot).toBe(false);
+  });
+  it('knows a bot’s folder on Windows whatever its slashes and case', () => {
+    expect(inBotsRoot('c:/users/me/appubot/appu', 'C:\\Users\\me\\AppuBot', 'win32')).toBe(true);
+    expect(inBotsRoot('C:\\Users\\me\\AppuBot\\', 'C:\\Users\\me\\AppuBot', 'win32')).toBe(true);
+    expect(inBotsRoot('C:\\Users\\me\\AppuBotOther', 'C:\\Users\\me\\AppuBot', 'win32')).toBe(false);
+    expect(inBotsRoot('/Users/me/appubot/appu', '/Users/me/AppuBot', 'darwin')).toBe(false);
   });
   it('skips user lines, placeholders and broken lines', () => {
     expect(parseClaudeLine(JSON.stringify({ type: 'user', message: { usage: { input_tokens: 5 } } }))).toBeNull();
