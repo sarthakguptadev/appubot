@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import type { CloudAccountView, CloudInterval, CloudPlanChangePreview, CloudTeamView } from '@appubot/protocol';
-import { CLOUD_KEEP_DAYS, intervalLabel, peopleText, priceText, shortDate, computerDisplayName } from '@appubot/chat-core';
+import { CLOUD_ENDED_KEEP_DAYS, keepDaysText, intervalLabel, peopleText, priceText, shortDate, computerDisplayName } from '@appubot/chat-core';
 import { ChevronRight, CreditCard, ExternalLink, FileText, MoreHorizontal, Users, X } from '../../../components/ui/icons';
 import { Badge, Button, Dialog, Icon, Menu, SETTINGS_SECTION_TITLE, SettingsCard, type MenuItem } from '../../../components/ui';
 import { useNow } from '../../../lib/hooks';
@@ -77,7 +77,7 @@ function phaseParts(phase: CloudPhase, opts: { plan: string; periodEnd?: number;
       fact = { label: 'Payment', value: 'On hold', tone: 'danger', sub: 'Paused until it’s paid' };
       break;
     case 'ending':
-      band = <Band tone="warning" action={fix('Keep my plan')}>The {opts.plan} plan ends on {opts.periodEnd ? shortDate(opts.periodEnd, now) : 'the renewal'}. {opts.team ? 'Its' : 'Your'} bots and files are kept for {CLOUD_KEEP_DAYS} days after, then deleted.</Band>;
+      band = <Band tone="warning" action={fix('Keep my plan')}>The {opts.plan} plan ends on {opts.periodEnd ? shortDate(opts.periodEnd, now) : 'the renewal'}. {opts.team ? 'Its' : 'Your'} bots and files are kept for {keepDaysText(CLOUD_ENDED_KEEP_DAYS)} after, then deleted.</Band>;
       fact = { label: 'Ends on', value: opts.periodEnd ? shortDate(opts.periodEnd, now) : 'At the renewal', tone: 'warning', sub: 'No more charges' };
       break;
     case 'export-only': case 'suspended':
