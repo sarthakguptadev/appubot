@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { APPUBOT_AI_PROVIDER_ID, CLAUDE_MODEL_CATALOG, profileId, providerBase } from '@appubot/protocol';
 import { createAgentRuntime } from './index';
-import { APPROVAL_MODES, BUILTIN_PROVIDERS, adapterCli, agentModeFor, providerSessionMeta, isNoAskMode, permissionChoice, profileSpec, providerModes, toOfferedMode } from './providers';
+import { APPROVAL_MODES, BUILTIN_PROVIDERS, builtinInstallHint, emptyStatus, withBuiltinLogins, adapterCli, agentModeFor, providerSessionMeta, isNoAskMode, permissionChoice, profileSpec, providerModes, toOfferedMode } from './providers';
 
 const CLAUDE = ['default', 'acceptEdits', 'plan', 'auto', 'bypassPermissions'].map((id) => ({ id, name: id }));
 
@@ -128,3 +128,41 @@ describe('providerSessionMeta: Claude Code model catalog', () => {
     expect(providerSessionMeta(codex)).toBeUndefined();
   });
 });
+
+describe('logins every built-in agent offers', () => {
+  const ids = (methods: { id: string }[]) => methods.map((m) => m.id);
+
+  it('always lists Claude Code’s subscription login first, whatever its handshake advertised', () => {
+    // what the user saw: no handshake logins, only the key logins
+    expect(withBuiltinLogins('claude-code', []).map((m) => [m.id, m.name])).toEqual([
+      ['claude-ai-login', 'Claude subscription'], ['claude-token', 'Paste a token'], ['anthropic-api-key', 'API key'],
+    ]);
+    // advertised by the adapter (with its own name): one entry, ours, first; the adapter's others kept after it
+    const advertised = [
+      { id: 'console-login', name: 'Anthropic Console', kind: 'terminal' as const },
+      { id: 'claude-ai-login', name: 'Claude Subscription', kind: 'terminal' as const },
+    ];
+    expect(ids(withBuiltinLogins('claude-code', advertised))).toEqual(['claude-ai-login', 'console-login', 'claude-token', 'anthropic-api-key']);
+    expect(ids(withBuiltinLogins('claude-code@work', []))[0]).toBe('claude-ai-login');
+    expect(ids(emptyStatus(BUILTIN_PROVIDERS[0]!).authMethods)[0]).toBe('claude-ai-login');
+  });
+
+  it('gives every built-in its account login first, and an added agent only its own', () => {
+    expect(ids(withBuiltinLogins('codex', [{ id: 'api-key', name: 'API Key', kind: 'agent' }, { id: 'chat-gpt', name: 'ChatGPT', kind: 'agent' }]))).toEqual(['chat-gpt', 'api-key']);
+    for (const spec of BUILTIN_PROVIDERS) {
+      const first = withBuiltinLogins(spec.id, [])[0];
+      expect(first, spec.id).toMatchObject({ kind: 'terminal' });
+      expect(first?.vars, spec.id).toBeUndefined();
+    }
+    expect(withBuiltinLogins('antigravity-acp', [{ id: 'oauth', name: 'Sign in', kind: 'agent' }])).toEqual([{ id: 'oauth', name: 'Sign in', kind: 'agent' }]);
+  });
+
+  it('knows how each built-in installs on each platform, Grok on Windows included', () => {
+    for (const platform of ['win32', 'darwin', 'linux'] as const) {
+      for (const spec of BUILTIN_PROVIDERS) expect(builtinInstallHint(spec.id, platform), `${spec.id} on ${platform}`).toBeTruthy();
+    }
+    expect(builtinInstallHint('grok', 'win32')).toBe('powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://x.ai/cli/install.ps1 | iex"');
+    expect(builtinInstallHint('grok', 'linux')).toBe('curl -fsSL https://x.ai/cli/install.sh | bash');
+  });
+});
+

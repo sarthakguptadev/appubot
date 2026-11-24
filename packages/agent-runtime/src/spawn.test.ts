@@ -89,6 +89,12 @@ describe('cmd-shims', () => {
     const pnpm = '@SETLOCAL\r\n@IF NOT DEFINED NODE_PATH (\r\n  @SET "NODE_PATH=C:\\x"\r\n)\r\n@IF EXIST "%~dp0\\node.exe" (\r\n  "%~dp0\\node.exe"  "%~dp0\\..\\@openai\\codex\\bin\\codex.js" %*\r\n) ELSE (\r\n  node  "%~dp0\\..\\@openai\\codex\\bin\\codex.js" %*\r\n)';
     expect(parseCmdShim(pnpm)).toEqual({ target: '..\\@openai\\codex\\bin\\codex.js', node: true });
   });
+  it('reads the shim AppuBot writes for an agent it installed: the .exe by its full path, spaces and a doubled % included', () => {
+    expect(parseCmdShim('@echo off\r\n"C:\\Users\\RISEIM~1\\AppData\\Roaming\\AppuBot\\agents\\codex\\0.172.0-win32-x64\\vendor\\x86_64-pc-windows-msvc\\bin\\codex.exe" %*\r\n'))
+      .toEqual({ target: 'C:\\Users\\RISEIM~1\\AppData\\Roaming\\AppuBot\\agents\\codex\\0.172.0-win32-x64\\vendor\\x86_64-pc-windows-msvc\\bin\\codex.exe', node: false });
+    expect(parseCmdShim('@echo off\r\n"C:\\Users\\Ana Lima\\100%%\\copilot.exe" %*\r\n')).toEqual({ target: 'C:\\Users\\Ana Lima\\100%\\copilot.exe', node: false });
+    expect(parseCmdShim('@echo off\r\n"C:\\tools\\run.js" %*\r\n')).toBeUndefined();
+  });
   it('refuses other batch files and shims it cannot run directly', () => {
     expect(parseCmdShim('@echo off\r\n"%NODE_EXE%" "%NPM_CLI_JS%" %*')).toBeUndefined();
     const sh = 'IF EXIST "%dp0%\\/bin/sh.exe" (\r\n  SET "_prog=%dp0%\\/bin/sh.exe"\r\n) ELSE (\r\n  SET "_prog=/bin/sh"\r\n)\r\nendLocal & "%_prog%"  "%dp0%\\x\\run.sh" %*';

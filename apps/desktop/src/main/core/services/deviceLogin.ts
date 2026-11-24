@@ -51,6 +51,8 @@ interface Run {
   timer: ReturnType<typeof setTimeout> | null;
   cancelled: boolean;
   scope: string;
+  /** for this computer's own window: links aren't caught, and none becomes a relay (the agent's listener is right here) */
+  here: boolean;
   /** where the sign-in comes back to on this computer, once a link that does was caught */
   relay?: LoopbackReturn;
   /** the file the run's `BROWSER` writes links to, and how much of it was read */
@@ -144,14 +146,19 @@ export class DeviceLoginService {
 
   status(id: string): DeviceLogin | null { return this.runs.get(id)?.login ?? null; }
 
-  /** `scope`: a team member signs in with their own logins (their home) on a team's computer set to each person's own */
-  async start(id: string, methodId?: string, scope = ''): Promise<DeviceLogin> {
+  /**
+   * `scope`: a team member signs in with their own logins (their home) on a team's computer set to each person's own.
+   * `here`: for this computer's own window, with no terminal (Settings › Agents on Windows, macOS and Linux alike): the
+   * agent's links aren't caught, so it opens its page in this computer's browser itself and its own listener on this
+   * computer takes the return (no relay); the link, code and paste prompt it prints still come to the window.
+   */
+  async start(id: string, methodId?: string, scope = '', here = false): Promise<DeviceLogin> {
     const spec = this.ctx.runtime.getProviders().find((s) => s.id === id);
     if (!spec) throw new RpcError('not_found', `Provider not found: ${id}`);
     const live = this.runs.get(id);
     if (live && (live.login.state === 'starting' || live.login.state === 'waiting')) return live.login;
     const startedAt = Date.now();
-    const blank = (kind: Run['kind']): Run => ({ login: { id, ...(methodId ? { methodId } : {}), state: 'starting', startedAt }, kind, child: null, output: '', timer: null, cancelled: false, scope, urlsRead: 0, urlsTimer: null });
+    const blank = (kind: Run['kind']): Run => ({ login: { id, ...(methodId ? { methodId } : {}), state: 'starting', startedAt }, kind, child: null, output: '', timer: null, cancelled: false, scope, here, urlsRead: 0, urlsTimer: null });
 
     // an ACP agent that signs in by itself (in the browser it opens): its page is handed here
     const agentMethod = this.ctx.deps.deviceLoginCommand ? undefined : this.agentLoginOf(id, methodId, scope);
@@ -172,7 +179,7 @@ export class DeviceLoginService {
     const run = blank(cmd.token ? 'token' : 'cli');
     this.runs.set(id, run);
     const real = withPty(cmd);
-    const browser = this.catchLinks(run);
+    const browser = here ? {} : this.catchLinks(run);
     try {
       run.child = spawnCommand(real.command, real.args, { env: { ...process.env, ...real.env, ...browser, NO_COLOR: '1', TERM: 'dumb' }, stdio: ['pipe', 'pipe', 'pipe'] });
     } catch (e) {
@@ -288,7 +295,7 @@ export class DeviceLoginService {
 
   /** `url` returns to a loopback port here: that's the run's way back (`DeviceLogin.relay`), the first one caught. */
   private noteReturn(run: Run, url: string): Pick<DeviceLogin, 'relay'> | undefined {
-    if (run.relay) return undefined;
+    if (run.relay || run.here) return undefined;
     const back = loopbackReturn(url);
     if (!back) return undefined;
     run.relay = back;

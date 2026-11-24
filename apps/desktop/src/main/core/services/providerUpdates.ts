@@ -15,6 +15,7 @@ import { directExecutable, getPathString, killTree, probeVersion, resolveExecuta
 import type { Provider, ProviderUpdate } from '@appubot/protocol';
 import type { CoreCtx } from '../context';
 import { errMsg, notFound, RpcError } from '../util';
+import { agentBuild, packageUrl } from './nativeInstall';
 
 export const NPM_REGISTRY = 'https://registry.npmjs.org';
 export const BREW_API = 'https://formulae.brew.sh/api';
@@ -81,11 +82,16 @@ export function isNewer(latest: string | undefined, current: string | undefined)
 
 /* ---------- how a CLI updates ---------- */
 
-export type InstallKind = 'brew-cask' | 'brew-formula' | 'npm' | 'other';
+export type InstallKind = 'brew-cask' | 'brew-formula' | 'npm' | 'app' | 'other';
 
-/** How the CLI at `realPath` (symlinks resolved; a Windows npm shim's target) was installed. */
-export function installKind(realPath: string): InstallKind {
+/**
+ * How the CLI at `realPath` (symlinks resolved; a Windows shim's target) was installed: `app` when AppuBot downloaded
+ * it into one of `appDirs` (`nativeInstall.ts`), which its own install updates.
+ */
+export function installKind(realPath: string, appDirs: readonly string[] = []): InstallKind {
   const p = realPath.replace(/\\/g, '/');
+  const folded = (s: string) => (/^[A-Za-z]:\//.test(s) ? s.toLowerCase() : s);
+  if (appDirs.some((d) => folded(p).startsWith(`${folded(d.replace(/\\/g, '/').replace(/\/+$/, ''))}/`))) return 'app';
   if (p.includes('/Caskroom/')) return 'brew-cask';
   if (p.includes('/Cellar/')) return 'brew-formula';
   if (p.includes('/node_modules/')) return 'npm';
@@ -100,8 +106,15 @@ export function updateCommand(u: CliUpdate, kind: InstallKind, bin: string): { c
   return undefined;
 }
 
-/** Where the newest version of a CLI installed this way is published. */
-export function latestSource(u: CliUpdate, kind: InstallKind): { url: string; pick: (body: unknown) => unknown } {
+/**
+ * Where the newest version of a CLI installed this way is published. One AppuBot downloaded: its platform package's
+ * record (`agentBuild`), its platform suffix dropped (Codex's `0.172.0-win32-x64` is 0.172.0).
+ */
+export function latestSource(u: CliUpdate, kind: InstallKind, agent?: string): { url: string; pick: (body: unknown) => unknown } {
+  const build = kind === 'app' && agent ? agentBuild(agent) : undefined;
+  if (build) {
+    return { url: packageUrl(build.pkg, build.tag), pick: (b) => { const v = (b as { version?: unknown })?.version; return typeof v === 'string' ? v.replace(/-(?:win32|darwin|linux)-[\w-]+$/, '') : v; } };
+  }
   if (kind === 'brew-cask' && u.brew) return { url: `${BREW_API}/cask/${u.brew}.json`, pick: (b) => (b as { version?: unknown })?.version };
   if (kind === 'brew-formula' && u.brew) return { url: `${BREW_API}/formula/${u.brew}.json`, pick: (b) => (b as { versions?: { stable?: unknown } })?.versions?.stable };
   return { url: `${NPM_REGISTRY}/${u.pkg}/latest`, pick: (b) => (b as { version?: unknown })?.version };
@@ -168,6 +181,8 @@ interface Entry {
   checkedAt?: number;
   via?: string;
   run?: { command: string; args: string[] };
+  /** AppuBot downloaded it: its own install (`ProvidersService.install`) fetches the newest */
+  app?: boolean;
   error?: string;
 }
 interface LatestCache { [url: string]: { version: string; fetchedAt: number } }
@@ -186,6 +201,12 @@ export class ProviderUpdatesService {
   private get io(): UpdateIo { return { ...defaultUpdateIo, ...this.ctx.deps.updateIo }; }
   private get fetchFn(): typeof fetch { return this.ctx.deps.fetch ?? fetch; }
   private get file(): string { return join(this.ctx.paths.dataDir, 'provider-updates.json'); }
+  /** the folders AppuBot downloads agents into (`ProvidersService.nativeDir`, OpenCode's `free-agent`), links resolved */
+  private appDirs(): string[] {
+    return [join(this.ctx.paths.dataDir, 'agents'), join(this.ctx.paths.dataDir, 'free-agent')].flatMap((d) => {
+      try { return [d, realpathSync(d)]; } catch { return [d]; }
+    });
+  }
 
   /** Check shortly after launch, then every hour. */
   start(): void {
@@ -268,16 +289,16 @@ export class ProviderUpdatesService {
     const cli = await this.io.cli(u.cli);
     // not on PATH: not installed
     if (!cli) { this.entries.delete(spec.id); return; }
-    const kind = installKind(cli.realPath);
-    const how = updateCommand(u, kind, cli.bin);
+    const kind = installKind(cli.realPath, this.appDirs());
+    const how = kind === 'app' ? undefined : updateCommand(u, kind, cli.bin);
     const prev = this.entries.get(spec.id);
     const base: Entry = {
       checkedAt: Date.now(),
       ...(cli.version ? { current: cli.version } : {}),
-      ...(how ? { via: how.label, run: { command: how.command, args: how.args } } : {}),
+      ...(kind === 'app' ? { via: 'AppuBot', app: true } : how ? { via: how.label, run: { command: how.command, args: how.args } } : {}),
     };
     try {
-      const latest = await this.fetchLatest(latestSource(u, kind), force);
+      const latest = await this.fetchLatest(latestSource(u, kind, spec.id), force);
       this.entries.set(spec.id, { ...base, latest });
     } catch (e) {
       this.entries.set(spec.id, { ...base, ...(prev?.latest ? { latest: prev.latest } : {}), error: `Couldn't check for updates: ${errMsg(e)}` });
@@ -343,6 +364,9 @@ export class ProviderUpdatesService {
         ok = false;
         output = errMsg(err);
       }
+    } else if (e.app) {
+      this.ctx.log.info(`provider update: ${id}: AppuBot's own download`);
+      ({ ok, output } = await this.ctx.s.providers.install(id, { quiet: true }).catch((err: unknown) => ({ ok: false, output: errMsg(err) })));
     } else if (e.run) {
       this.ctx.log.info(`provider update: ${id}: ${e.via}`);
       const run = e.run;

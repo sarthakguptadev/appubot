@@ -160,6 +160,16 @@ export function genericModeId(id: string): string {
 const DEVICE_SIGN_IN_AGENTS = ['claude-code', 'codex', 'copilot', 'cursor', 'grok'];
 
 /**
+ * `m` signs one of this computer's own agents in inside the app, with no terminal (Settings › Agents on macOS, Windows
+ * and Linux: `providers.deviceLogin.start` with `here`): the account login of a built-in agent that can (or of its
+ * profile), not a key or a pasted token, which have dialogs of their own.
+ */
+export function signsInHere(p: { id: string; builtin?: boolean; profile?: unknown }, m?: { id: string; vars?: readonly unknown[] }): boolean {
+  if (m?.vars?.length || m?.id === 'claude-token') return false;
+  return (!!p.builtin || !!p.profile) && DEVICE_SIGN_IN_AGENTS.includes(providerBase(p.id));
+}
+
+/**
  * How an agent signs in from another device, with its login run on the computer (`providers.deviceLogin.start`):
  * `code` (Codex: a link and a one-time code to approve anywhere) or `browser` (a page opened in the device's browser,
  * which comes back to the computer: the desktop app catches it, a phone pastes a code or the last page's address).

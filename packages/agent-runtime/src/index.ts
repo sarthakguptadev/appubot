@@ -10,14 +10,14 @@ import { AgentSession, authMethodInfos, type SpawnSpec } from './process';
 import { applyLoginHome, mergeEnv, withPath, withoutEnv } from './spawn';
 import { LOGOUT_ARGS, checkLogin, logoutCli } from './login';
 import { PROFILE_HOME_ENV, providerBase } from '@appubot/protocol';
-import { BUILTIN_PROVIDERS, DEFAULT_AUTH_COMMANDS, NODE_COMMAND, adapterCli, adapterCliName, emptyStatus, mergeBuiltin, nodeRunEnv, probeProvider, profileSpec, providerCli, providerRuntimeEnv, withBuiltinKeyLogins } from './providers';
+import { BUILTIN_PROVIDERS, DEFAULT_AUTH_COMMANDS, NODE_COMMAND, adapterCli, adapterCliName, emptyStatus, mergeBuiltin, nodeRunEnv, probeProvider, profileSpec, providerCli, providerRuntimeEnv, withBuiltinLogins } from './providers';
 import { captureBrowser, clearScratch, quirkCtx, quirksFor } from './quirks';
 import type { AgentRuntime, CreateSessionOptions, LoginEnv, ProviderSpec, ProviderStatus, RuntimeOptions, SessionInfo } from './types';
 
 export * from './types';
 export * from './errors';
 export { elicitationContent, elicitationFields, type ElicitationAnswer, type ElicitationAsk, type ElicitationField, type ElicitationOption, type ElicitationValue } from './elicitation';
-export { APPROVAL_MODES, BUILTIN_PROVIDERS, NODE_COMMAND, RETIRED_PROVIDER_IDS, adapterCli, agentModeFor, builtinKeyLogins, isNoAskMode, mergeBuiltin, permissionChoice, profileSpec, probeVersion, providerModes, resolveAdapterBin, toOfferedMode, withBuiltinKeyLogins } from './providers';
+export { APPROVAL_MODES, BUILTIN_PROVIDERS, NODE_COMMAND, RETIRED_PROVIDER_IDS, adapterCli, agentModeFor, builtinAccountLogin, builtinInstallHint, builtinKeyLogins, builtinLogins, isNoAskMode, mergeBuiltin, permissionChoice, profileSpec, probeVersion, providerModes, resolveAdapterBin, toOfferedMode, withBuiltinLogins } from './providers';
 export { maskEmail } from './login';
 export { resolveExecutable, getPathEntries, getPathString, getLoginShellPath } from './path';
 export { TurnAssembler, extractConfig, mapToolKind, friendlyToolTitle } from './normalize';
@@ -110,7 +110,7 @@ export function createAgentRuntime(opts: RuntimeOptions): AgentRuntime {
     const caps = init.agentCapabilities;
     patchStatus(providerId, {
       installed: true,
-      authMethods: withBuiltinKeyLogins(providerId, authMethodInfos(init.authMethods)),
+      authMethods: withBuiltinLogins(providerId, authMethodInfos(init.authMethods)),
       // an agent without a logout command of its own can still be signed out through ACP when it offers that
       ...(!LOGOUT_ARGS[providerBase(providerId)] ? { canLogOut: !!caps?.auth?.logout } : {}),
       capabilities: {
@@ -187,7 +187,7 @@ export function createAgentRuntime(opts: RuntimeOptions): AgentRuntime {
         onInitialized: (init) => onInitialized(spec.id, init),
         onAuthRequired: (methods, message) => {
           markLoggedOut(spec.id);
-          patchStatus(spec.id, { authMethods: withBuiltinKeyLogins(spec.id, methods), lastError: message });
+          patchStatus(spec.id, { authMethods: withBuiltinLogins(spec.id, methods), lastError: message });
         },
         onExit: (s) => {
           if (s.info.state === 'closed' && s.info.id && sessions.get(s.info.id) === s) sessions.delete(s.info.id);

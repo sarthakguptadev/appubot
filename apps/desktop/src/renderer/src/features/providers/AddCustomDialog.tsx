@@ -62,7 +62,7 @@ function Menu({ go }: { go: (s: Step) => void }) {
 /** OpenCode runs the custom models: switched on when it's installed, else a line saying how to get it. */
 async function makeOpenCodeReady(): Promise<string | undefined> {
   const oc = useStore.getState().providers.find((p) => p.id === 'opencode');
-  if (!oc || !oc.installed) return `Install OpenCode to use them: ${oc?.installHint ?? 'npm i -g opencode-ai'}`;
+  if (!oc || !oc.installed) return 'Install OpenCode to use them: Settings › Agents › OpenCode › Install.';
   if (oc.enabled) return undefined;
   const res = await call('providers.upsert', {
     id: oc.id, name: oc.name, description: oc.description, command: oc.command, args: oc.args, env: oc.env, icon: oc.icon, enabled: true, installHint: oc.installHint,

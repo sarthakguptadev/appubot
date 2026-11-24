@@ -3,7 +3,7 @@ import { providerBase, type AuthMethod, type DeviceLogin, type Provider } from '
 import { deviceSignIn, providerLogin } from '@appubot/chat-core';
 import { Check, Copy, ExternalLink, KeyRound, LogIn, Monitor, Terminal } from '../../components/ui/icons';
 import { Button, Dialog, FIELD_HINT, Field, Input, Menu, Spinner, type ButtonVariant, type MenuItem } from '../../components/ui';
-import { errorMessage, rpc } from '../../lib/gateway';
+import { errorMessage, gateway, rpc } from '../../lib/gateway';
 import { native } from '../../lib/native';
 import { MACHINE, TERMINAL, THIS_MACHINE } from '../../lib/platform';
 import { pushToast, setState, useStore } from '../../lib/store';
@@ -104,11 +104,16 @@ function ClaudeTokenDialog({ provider: p, onClose }: { provider: Provider; onClo
  * - Codex's (and Copilot's) link and one-time code to approve on any device;
  * - a link and a code pasted back (Claude Code's other way).
  * Closing cancels a login still waiting.
+ *
+ * `here`: the same dialog for this computer's own agents (Settings › Agents, `SignInDialog`), with no terminal: the
+ * agent opens its page in this computer's browser itself and takes the return there, while the dialog shows its link,
+ * its code to enter or a field for the code to paste back.
  */
-function DeviceLoginDialog({ provider: p, method, onClose, others = [] }: {
+function DeviceLoginDialog({ provider: p, method, onClose, others = [], here = false }: {
   provider: Provider; method: AuthMethod | undefined; onClose: () => void;
   /** the agent's other ways in (Claude's token, an API key), as quiet links under the sign-in */
   others?: readonly { label: string; onSelect: () => void }[];
+  here?: boolean;
 }) {
   const [login, setLogin] = useState<DeviceLogin | null>(null);
   const [error, setError] = useState<string>();
@@ -125,19 +130,19 @@ function DeviceLoginDialog({ provider: p, method, onClose, others = [] }: {
   const [retry, setRetry] = useState(0);
   /** the login runs but has shown no link, code or prompt for a while (a terminal login that only asks in a menu) */
   const [silent, setSilent] = useState(false);
-  // its progress comes as `provider.login` events from the cloud (subscribed for as long as the dialog is open)
-  useEffect(() => cloudClientIfAny()?.onAny((event, payload) => {
+  // its progress comes as `provider.login` events from the computer running it (subscribed while the dialog is open)
+  useEffect(() => (here ? gateway() : cloudClientIfAny())?.onAny((event, payload) => {
     if (event !== 'provider.login') return;
     const l = payload as DeviceLogin;
     if (l.id !== p.id) return;
     setLogin(l);
-    if (l.state === 'done') pushToast({ title: `${p.name} is signed in on your AppuBot computer`, level: 'success' });
+    if (l.state === 'done') pushToast({ title: here ? `${p.name} is signed in` : `${p.name} is signed in on your AppuBot computer`, level: 'success' });
   }), [p.id]);
   // started once (a second mount in development must not start a second login)
   useEffect(() => {
     if (started.current) return;
     started.current = true;
-    rpc('providers.deviceLogin.start', { id: p.id, ...(method ? { methodId: method.id } : {}) })
+    rpc('providers.deviceLogin.start', { id: p.id, ...(method ? { methodId: method.id } : {}), ...(here ? { here: true } : {}) })
       .then((l) => setLogin((cur) => (cur && cur.startedAt >= l.startedAt && cur.state !== 'starting' ? cur : l)))
       .catch((e: unknown) => setError(errorMessage(e)));
   }, [retry]);
@@ -197,13 +202,14 @@ function DeviceLoginDialog({ provider: p, method, onClose, others = [] }: {
       title={<span className="flex items-center gap-3"><ProviderMark provider={p} size={32} />Sign in to {p.name}</span>}
       description={browser
         ? `Finish signing in in your browser on ${THIS_MACHINE}, with your own account. AppuBot brings it back to your AppuBot computer.`
+        : here && pasteWhat === 'code' ? `Sign in with your own account in the page ${p.name} opened in your browser, and you’re done. If no page opened, open the link, sign in, then paste the code it shows.`
         : pasteWhat === 'code' ? 'Open the link, sign in with your own account, then paste the code it shows.'
           : pasteWhat === 'address' ? 'Open the link and sign in. The last page won’t load: copy its address from the address bar and paste it here.'
             : 'Open the link on this computer or your phone, sign in with your own account and enter the code.'}
       footer={<Button variant={login?.state === 'done' ? 'primary' : 'ghost'} onClick={close}>{login?.state === 'done' ? 'Done' : 'Cancel'}</Button>}
     >
       {login?.state === 'done' ? (
-        <p className="flex items-center gap-2 text-copy text-success"><Check size={16} /> Signed in. Bots on {p.name} work on your AppuBot computer now.</p>
+        <p className="flex items-center gap-2 text-copy text-success"><Check size={16} /> {here ? `Signed in. Bots on ${p.name} can work now.` : `Signed in. Bots on ${p.name} work on your AppuBot computer now.`}</p>
       ) : failed ? (
         <div className="flex flex-col gap-3">
           <p className="selectable text-copy leading-snug text-danger">{error ?? login?.message ?? `${p.name} didn’t start its sign-in.`}</p>
@@ -241,9 +247,11 @@ function DeviceLoginDialog({ provider: p, method, onClose, others = [] }: {
         </div>
       ) : silent ? (
         <div className="flex flex-col gap-3">
-          <p className="text-copy leading-snug text-muted">{p.name} hasn’t given a link or code to sign in with from here. Its login only asks on its own screen.</p>
+          <p className="text-copy leading-snug text-muted">{here ? `${p.name} hasn’t given a link or code to sign in with yet. If a page opened in your browser, finish there; else sign in from ${TERMINAL}.` : `${p.name} hasn’t given a link or code to sign in with from here. Its login only asks on its own screen.`}</p>
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" onClick={() => { close(); void signInOnDesktop(p, p.authMethods.find((m) => !m.vars?.length)); }}>Sign in on its screen</Button>
+            {here
+              ? <Button size="sm" variant="outline" icon={Terminal} onClick={() => { close(); void signInInTerminal(p, method); }}>Use {TERMINAL}</Button>
+              : <Button size="sm" variant="outline" onClick={() => { close(); void signInOnDesktop(p, p.authMethods.find((m) => !m.vars?.length)); }}>Sign in on its screen</Button>}
             <Button size="sm" variant="ghost" onClick={() => setSilent(false)}>Keep waiting</Button>
           </div>
         </div>
@@ -263,6 +271,26 @@ function DeviceLoginDialog({ provider: p, method, onClose, others = [] }: {
       ) : null}
     </Dialog>
   );
+}
+
+/** This computer's agent's login in a terminal window: the way left when its CLI shows nothing the window can use. */
+async function signInInTerminal(p: Provider, m: AuthMethod | undefined): Promise<void> {
+  try {
+    const r = await rpc('providers.authenticate', { id: p.id, methodId: m?.id });
+    pushToast({ title: r.ok ? `Log in to ${p.name}` : 'Finish logging in', body: r.message, level: 'info' });
+  } catch (e) {
+    pushToast({ title: `Couldn’t sign in to ${p.name}`, body: errorMessage(e), level: 'error' });
+  }
+}
+
+/**
+ * Signing one of this computer's own agents in to its account from Settings › Agents, in the app (`DeviceLoginDialog`
+ * with `here`), on macOS, Windows and Linux: Claude Code's subscription (`claude auth login`: its page opens in the
+ * browser and returns to it, or its code is pasted here), Codex's ChatGPT plan and Copilot's GitHub account (a link
+ * and a one-time code), Cursor's and Grok's account (their page). chat-core's `signsInHere` says which logins go this way.
+ */
+export function SignInDialog({ provider, method, onClose }: { provider: Provider; method: AuthMethod | undefined; onClose: () => void }) {
+  return <DeviceLoginDialog provider={provider} method={method} onClose={onClose} here />;
 }
 
 /** The agent's login run on the cloud, shown through Open desktop (a terminal there, or the cloud's browser). */

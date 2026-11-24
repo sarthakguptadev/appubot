@@ -187,8 +187,8 @@ describe('built-in providers', () => {
     ]);
     const grok = BUILTIN_PROVIDERS.find((p) => p.id === 'grok')!;
     expect([grok.command, ...grok.args]).toEqual(['grok', '--permission-mode', 'default', 'agent', '--no-leader', 'stdio']);
-    // xAI's installer is a shell script: no hint on Windows
-    expect(grok.installHint).toBe(process.platform === 'win32' ? undefined : 'curl -fsSL https://x.ai/cli/install.sh | bash');
+    // xAI's own installers: PowerShell on Windows, a shell script elsewhere
+    expect(grok.installHint).toBe(process.platform === 'win32' ? 'powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://x.ai/cli/install.ps1 | iex"' : 'curl -fsSL https://x.ai/cli/install.sh | bash');
     for (const id of RETIRED_PROVIDER_IDS) expect(BUILTIN_PROVIDERS.some((p) => p.id === id)).toBe(false);
   });
 

@@ -58,6 +58,7 @@ import type { AgentSetupService } from './services/agentSetup';
 import type { PromoService } from './services/promo';
 import type { FreeAgentService } from './services/freeAgent';
 import type { installFreeAgent } from './services/freeAgentInstall';
+import type { installNativeAgent } from './services/nativeInstall';
 import type { DeviceLoginService } from './services/deviceLogin';
 
 /** what a native notification came to */
@@ -173,6 +174,8 @@ export interface CoreDeps {
   gitIo?: Partial<GitIo>;
   /** override how OpenCode, the free agent, is downloaded and installed (tests) */
   freeAgentInstall?: typeof installFreeAgent;
+  /** Claude Code's, Codex's and Copilot's own download (`nativeInstall.ts`), swapped in tests */
+  nativeInstall?: typeof installNativeAgent;
   /** override how the ACP registry's npm / Python packages are installed (tests) */
   packageRunner?: Partial<PackageRunner>;
   /** override the home folder searched for agent profiles (`~/.claude-*`, Synara's) and for the agents' logs Usage reads (tests) */
