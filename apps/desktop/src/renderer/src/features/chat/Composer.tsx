@@ -10,10 +10,10 @@ import type { Bot, SlashCommand, Thread } from '@appubot/protocol';
 import { ArrowUp, File, Paperclip, Plus, VoiceWave, X } from '../../components/ui/icons';
 import { Icon, Menu, Tooltip, cn, type MenuItem } from '../../components/ui';
 import { call } from '../../lib/actions';
-import { basename } from '@appubot/chat-core';
+import { basename, mentionChoices, mentionQuery } from '@appubot/chat-core';
 import { isSendKey } from '../../lib/appearance';
 import { native } from '../../lib/native';
-import { getState, pushToast } from '../../lib/store';
+import { getState, pushToast, useStore } from '../../lib/store';
 import { startVoice } from '../voice/useVoiceConversation';
 import { DictateButton } from '../voice/Dictation';
 import { useVoiceRoute } from '../voice/macVoice';
@@ -22,6 +22,7 @@ import { fitImage, isImageFile } from './imageFit';
 import { ModePicker, ThreadModelPicker } from './ComposerBar';
 import { ContextRing } from './ContextRing';
 import { SlashMenu, filterCommands } from './SlashMenu';
+import { MentionMenu } from './MentionMenu';
 
 /** the composer's "/" menu of the agent's commands */
 const SHOW_SLASH_MENU = false;
@@ -32,6 +33,7 @@ const SHOW_SLASH_MENU = false;
  */
 const COMPOSER_PICKERS = false;
 const NO_COMMANDS: SlashCommand[] = [];
+const NO_BOTS: Bot[] = [];
 import { wantCommands } from './threadCommands';
 import { useRemoteComputer } from '../cloud/remoteFiles';
 import { QUOTE_EVENT, type QuoteRequest } from './QuoteSelection';
@@ -264,6 +266,16 @@ export function Composer({ thread, bot, draftKey, placeholder, onSend, autoFocus
   const commands = slash ? filterCommands(thread?.commands ?? [], text) : NO_COMMANDS;
   useEffect(() => setActive(0), [commands.length]);
 
+  // "@" in a bot's chat: the user's other bots, to hand one the message (chat-core handoff.ts); Esc closes the menu
+  // for the @ it was open for
+  const [caret, setCaret] = useState(0);
+  const [dismissed, setDismissed] = useState<number | null>(null);
+  const bots = useStore((s) => s.bots);
+  const at = !plain && bot && !slash ? mentionQuery(text, caret) : null;
+  const mentions = useMemo(() => (at && at.start !== dismissed ? mentionChoices(bots.filter((b) => b.id !== bot?.id), at.query) : NO_BOTS), [at?.start, at?.query, dismissed, bots, bot?.id]);
+  const [mentionActive, setMentionActive] = useState(0);
+  useEffect(() => setMentionActive(0), [mentions.length, at?.query]);
+
   const hasDraft = text.trim().length > 0 || images.length > 0 || paths.length > 0 || files.length > 0 || quotes.length > 0;
   // the bot working doesn't hold a message back: it goes into the turn (Claude Code) or right after it
   const canSend = hasDraft;
@@ -314,10 +326,24 @@ export function Composer({ thread, bot, draftKey, placeholder, onSend, autoFocus
   }, []);
   const plainItems = useMemo(() => addItems?.(insert) ?? [], [addItems, insert]);
   const pick = useCallback((c: SlashCommand) => { setText(`/${c.name} `); ta.current?.focus(); }, []);
+  /** the @ being typed becomes "@Name ", the caret after it */
+  const pickBot = (b: Bot) => {
+    if (!at) return;
+    const head = `${text.slice(0, at.start)}@${b.name} `;
+    setText(head + text.slice(caret).replace(/^[^\s@]*\s*/, ''));
+    setCaret(head.length);
+    requestAnimationFrame(() => { const el = ta.current; if (el) { el.focus(); el.setSelectionRange(head.length, head.length); } });
+  };
   const attachFiles = useCallback((picked: string[]) => { setPaths((cur) => Array.from(new Set([...cur, ...picked]))); }, []);
 
   const onKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.nativeEvent.isComposing) return;
+    if (mentions.length) {
+      if (e.key === 'ArrowDown') { e.preventDefault(); setMentionActive((a) => (a + 1) % mentions.length); return; }
+      if (e.key === 'ArrowUp') { e.preventDefault(); setMentionActive((a) => (a - 1 + mentions.length) % mentions.length); return; }
+      if (e.key === 'Tab' || (e.key === 'Enter' && !e.shiftKey)) { e.preventDefault(); const b = mentions[mentionActive]; if (b) pickBot(b); return; }
+      if (e.key === 'Escape') { e.preventDefault(); setDismissed(at?.start ?? null); return; }
+    }
     if (commands.length) {
       if (e.key === 'ArrowDown') { e.preventDefault(); setActive((a) => (a + 1) % commands.length); return; }
       if (e.key === 'ArrowUp') { e.preventDefault(); setActive((a) => (a - 1 + commands.length) % commands.length); return; }
@@ -398,6 +424,7 @@ export function Composer({ thread, bot, draftKey, placeholder, onSend, autoFocus
     <div onDragOver={(e) => { e.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={onDrop}>
       <div className="relative">
         <SlashMenu items={commands} active={active} onPick={pick} onHover={setActive} />
+        <MentionMenu items={mentions} active={mentionActive} onPick={pickBot} onHover={setMentionActive} />
         {/* Synara's pill: + (files) at the left, the editor, then the mic (dictation) and send (or voice mode) at the right */}
         <div
           className={cn(
@@ -446,7 +473,8 @@ export function Composer({ thread, bot, draftKey, placeholder, onSend, autoFocus
             <textarea
               ref={ta}
               value={text}
-              onChange={(e) => setText(e.target.value)}
+              onChange={(e) => { setText(e.target.value); setCaret(e.target.selectionStart); }}
+              onSelect={(e) => setCaret(e.currentTarget.selectionStart)}
               onKeyDown={onKeyDown}
               onPaste={onPaste}
               rows={1}

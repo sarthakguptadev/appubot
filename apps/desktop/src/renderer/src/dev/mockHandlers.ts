@@ -2,7 +2,7 @@
  * Dev-only: implementations of every gateway method for the mock gateway.
  * Each handler mutates the in-memory db (replacing arrays) and emits the matching events.
  */
-import { appendMemory, cleanFormValues, forgetInMemory, formAnswerText, formProblems, historyPage, memoryTemplate, replaceInMemory, vaultAnswerText, withoutSecrets } from '@appubot/chat-core';
+import { appendMemory, cleanFormValues, forgetInMemory, formAnswerText, formProblems, handoffNext, historyPage, memoryTemplate, replaceInMemory, vaultAnswerText, withoutSecrets } from '@appubot/chat-core';
 import {
   BotSchema, ProviderSchema, RoutineSchema, SettingsSchema, buildPairUrl, currentChat, messagePreview, newId, slugify,
   type Bot, type Channel, type ComputerStatus, type Device, type FileAttachment, type Group, type GroupMessage, type Message, type MethodName, type MethodParams,
@@ -242,7 +242,25 @@ export function createHandlers(g: MockGateway): Handlers {
       const rec = p.voice ? g.files.find((f) => f.id === p.voice!.recordingId) : undefined;
       if (p.voice && !rec) throw notFound('File');
       const voice: Part[] = rec ? [{ type: 'voice', file: rec, durationMs: p.voice!.durationMs, kind: 'recording', transcript: p.text }] : [];
-      return startRun(t.id, p.text, 'desktop', p.images ?? [], voice);
+      // "@Ledger …" in a bot's chat: Ledger takes it (the gateway's HandoffService), its answer comes back here in its name
+      const handoff = t.source === 'channel' ? null : handoffNext({ text: p.text, from: 'user', chatBotId: t.botId, bots: g.db.bots, hop: 0 });
+      if (!handoff?.to.length) return startRun(t.id, p.text, 'desktop', p.images ?? [], voice);
+      const um = userMessage(t.id, p.text, p.images ?? [], 'desktop', voice);
+      g.addMessage(um);
+      g.patchThread(t.id, { lastMessagePreview: messagePreview(um) });
+      const ids = handoff.to.map((b, i) => {
+        const at = Date.now() + 1 + i;
+        const reply: Message = { id: newId('msg'), threadId: t.id, role: 'agent', parts: [], status: 'streaming', via: 'bot', from: { botId: b.id, name: b.name }, createdAt: at, updatedAt: at };
+        g.addMessage(reply);
+        g.later(() => {
+          g.setMessagePart(t.id, reply.id, 0, { type: 'text', text: `Checked it: the numbers add up, and **GST is 18%** as it should be. Nothing for you to do.` });
+          g.completeMessage(t.id, reply.id, 'complete');
+          g.patchThread(t.id, { lastMessagePreview: messagePreview(g.findMessage(t.id, reply.id)!) });
+        }, 2600 + i * 900);
+        return reply.id;
+      });
+      if (handoff.chatBot) simulateReply(g, t.id, newId('msg'), p.text);
+      return { userMessage: um, agentMessageId: ids[0]! };
     },
     'chat.cancel': (p) => {
       g.thread(p.threadId);

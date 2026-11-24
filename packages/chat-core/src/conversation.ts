@@ -234,7 +234,8 @@ export function conversationPreface(messages: readonly Message[], o: PrefaceOpti
     turn.forEach((m, i) => {
       const text = transcriptText(m);
       if (!text) return;
-      const who = m.role === 'user' ? 'User' : o.botName;
+      // another bot's answer to a hand-off in this chat (`Message.from`) under its own name
+      const who = m.role === 'user' ? 'User' : m.from?.name ?? o.botName;
       // a reply that opens with tool lines starts them on their own line
       lines.push(`${i === 0 ? `${head} ` : ''}${who}:${text.startsWith('  ·') ? '\n' : ' '}${text}`);
     });

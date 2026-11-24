@@ -64,8 +64,9 @@ export interface MockOptions {
   computer?: 'on-screen' | 'background' | 'waiting';
   /** `?thread=media` opens Appu's thread of media and odd cases (images, a page, voice, a failed turn); `?thread=routines`
    * its chat where a routine runs every 10 minutes (runs with nothing to say fold into one line); `?thread=work` a long
-   * working turn and one still running (the work trail: add `&work=1`) */
-  thread?: 'media' | 'routines' | 'work' | 'failed';
+   * working turn and one still running (the work trail: add `&work=1`); `?thread=handoff` a chat with Appu where
+   * tasks were handed to Ledger with @Ledger, its answers in its name */
+  thread?: 'media' | 'routines' | 'work' | 'failed' | 'handoff';
   /** `?longname=1`: Appu has a very long name (truncation in the header, roster and composer) */
   longName: boolean;
   /**
@@ -109,7 +110,7 @@ export function readOptions(): MockOptions {
     updateState: (['downloading', 'ready'] as const).find((x) => x === q.get('update')),
     gift: q.get('gift') === '1' ? 'offer' : (['signedout', 'on', 'over'] as const).find((x) => x === q.get('gift')),
     computer: (['on-screen', 'background', 'waiting'] as const).find((x) => x === q.get('computer')),
-    thread: (['media', 'routines', 'work', 'failed'] as const).find((x) => x === q.get('thread')),
+    thread: (['media', 'routines', 'work', 'failed', 'handoff'] as const).find((x) => x === q.get('thread')),
     longName: q.get('longname') === '1',
     profile: q.get('profile')?.trim() || undefined,
     limits: MOCK_LIMITS_STATES.find((x) => x === q.get('limits')),
@@ -414,6 +415,8 @@ export function buildSeed(opts: MockOptions): Seed {
     ...(opts.thread === 'work' ? [thread({ id: IDS.appuWork, botId: IDS.appu, title: 'October expense report', status: 'running', createdAt: ago(20 * MIN), lastActiveAt: ago(MIN) })] : []),
     // `?thread=failed`: a chat whose latest turn failed on its model (the failure card with its fixes)
     ...(opts.thread === 'failed' ? [thread({ id: IDS.appuFailed, botId: IDS.appu, title: 'Plan the offsite', status: 'error', createdAt: ago(6 * MIN), lastActiveAt: ago(MIN) })] : []),
+    // `?thread=handoff`: a chat where Appu and the user handed Ledger tasks with @Ledger
+    ...(opts.thread === 'handoff' ? [thread({ id: IDS.appuHandoff, botId: IDS.appu, title: 'Acme’s October invoice', createdAt: ago(20 * MIN), lastActiveAt: ago(MIN) })] : []),
     thread({ id: IDS.appuMedia, botId: IDS.appu, title: 'Photos, voice notes and a chart of this month’s spending, with a very long title that has to truncate', createdAt: ago(5 * DAY), lastActiveAt: ago(5 * DAY) }),
     thread({ id: IDS.ledgerChat, botId: IDS.ledger, title: 'New chat', createdAt: ago(7 * DAY), lastActiveAt: ago(5 * HOUR) }),
     thread({ id: IDS.expenses, botId: IDS.ledger, title: 'Telegram chat', source: 'channel', channel: 'telegram:4242', createdAt: ago(2 * DAY + 3 * HOUR) }),

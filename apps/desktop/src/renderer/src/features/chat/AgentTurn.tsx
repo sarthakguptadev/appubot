@@ -7,7 +7,7 @@
 // The desktop always shows the answers view now; with Settings › Appearance › Chat shows: Everything, the bot's work
 // reads as a trail above it (WorkTrail.tsx, after MonoCode's), and the reply under the trail stays exactly the same.
 import { memo, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import type { Message, Part } from '@appubot/protocol';
+import type { Bot, Message, Part } from '@appubot/protocol';
 import { BotAvatar, cn } from '../../components/ui';
 import { AiStatus } from '../../components/rare/AiStatus';
 import { syncAnimationsToTimelineOrigin } from '../../lib/animationTimelineSync';
@@ -27,7 +27,7 @@ import { MessageActions } from './MessageActions';
 import { ThinkingRow, ThoughtRow, ToolGroupRow, ToolRow } from './ToolRow';
 import {
   capOpenTools, chunkWork, answerOnly, formatTurnHeaderLabel, layoutTurn, liveAnswerParts, segmentFlow, turnFileChanges, turnHeader, type Chunk, type Indexed,
-  reactionBy, trailItems,
+  linkMentions, reactionBy, trailItems,
 } from '@appubot/chat-core';
 import { useStore } from '../../lib/store';
 import { useMessagesTheme, useWorkTrail } from '../../lib/appearance';
@@ -62,6 +62,8 @@ interface Ctx {
   bubbleRun?: Map<number, BubbleSpot>;
   /** the Messages theme: when the reply ended, shown inside each of its bubbles (none while it streams) */
   stampAt?: number;
+  /** the bots an @Name in its text may be (drawn as the bot's chip, as in a group: MentionChip) */
+  mentions?: readonly Bot[];
 }
 
 /** A text message's corners: round all over; the last bubble of a bot's run ends it on a small tail, its bottom corner on the bot's side tightened. */
@@ -111,11 +113,13 @@ function Block({ item, ctx }: { item: Indexed; ctx: Ctx }): ReactNode {
   const { part, index } = item;
   const isLast = !ctx.settled && index === ctx.lastIndex;
   switch (part.type) {
-    case 'text':
+    case 'text': {
       if (!part.text.trim()) return null;
+      const text = ctx.mentions ? linkMentions(part.text, ctx.mentions) : part.text;
       return ctx.bubble
-        ? <ReplyBubble spot={ctx.bubbleRun?.get(index)} at={ctx.stampAt} actions={ctx.bubbleActions?.(index, part.text)}><ChatMarkdown text={part.text} streaming={isLast} /></ReplyBubble>
-        : <ChatMarkdown text={part.text} streaming={isLast} />;
+        ? <ReplyBubble spot={ctx.bubbleRun?.get(index)} at={ctx.stampAt} actions={ctx.bubbleActions?.(index, part.text)}><ChatMarkdown text={text} streaming={isLast} /></ReplyBubble>
+        : <ChatMarkdown text={text} streaming={isLast} />;
+    }
     case 'thought': return <ThoughtRow text={part.text} />;
     case 'tool_call': return <ToolRow part={part} settled={ctx.settled} interrupted={ctx.interrupted} endedAt={ctx.endedAt} />;
     case 'file': return <FileTile file={part.file} />;
@@ -244,16 +248,17 @@ const WORKING_STATES = {
  * Nothing about what it is doing (the owner's call, 2026-11-15, on seeing "Running nohup google-chrome --no-…" beside
  * it: the answers view names no tool and shows no command).
  */
-const BotWorkingRow = memo(function BotWorkingRow({ threadId, since }: { threadId: string; since: number }) {
+const BotWorkingRow = memo(function BotWorkingRow({ threadId, since, botId }: { threadId: string; since: number; /** another bot working on a task handed to it from this chat (`Message.from`): it waits for you in its own chat */ botId?: string }) {
   const thread = useStore((s) => s.threads.find((t) => t.id === threadId));
-  const bot = useStore((s) => (thread ? s.bots.find((b) => b.id === thread.botId) : undefined));
-  const needsYou = thread?.status === 'waiting';
+  const bot = useStore((s) => s.bots.find((b) => b.id === (botId ?? thread?.botId)));
+  const needsYou = useStore((s) => (botId ? s.threads.some((t) => t.botId === botId && t.source !== 'group' && t.status === 'waiting') : thread?.status === 'waiting'));
   return (
     <AiStatus
       ref={syncAnimationsToTimelineOrigin}
       className="py-1"
       state={needsYou ? 'needs-you' : 'working'}
       states={WORKING_STATES}
+      {...(botId && bot ? { label: needsYou ? `${bot.name} is waiting for you` : `${bot.name} is working` } : {})}
       icon={<BotAvatar bot={bot} size={26} mood={needsYou ? 'needs-you' : 'working'} />}
       iconSize={26}
       time={<LiveElapsed since={since} />}
@@ -271,7 +276,7 @@ function LiveTurn({ msg, ctx, ended, answers, trail }: { msg: Message; ctx: Ctx;
       {ended || answers ? null : <WorkingHeader since={msg.createdAt} />}
       {list.length ? <div className="pb-1"><Flow list={list} ctx={run ? { ...ctx, bubbleRun: run } : ctx} /></div> : null}
       {/* with the work trail on, its status line above says the bot is working */}
-      {ended || (answers && trail) ? null : answers ? <BotWorkingRow threadId={msg.threadId} since={msg.createdAt} /> : <ThinkingRow />}
+      {ended || (answers && trail && !msg.from) ? null : answers ? <BotWorkingRow threadId={msg.threadId} since={msg.createdAt} botId={msg.from?.botId} /> : <ThinkingRow />}
     </div>
   );
 }
@@ -343,6 +348,24 @@ function SettledTurn({ msg, ctx, cwd, endAt, fold, answers, trail }: { msg: Mess
   );
 }
 
+/**
+ * Another bot's answer to a task handed to it from this chat (`@Name`, chat-core handoff.ts): its picture beside it and
+ * its name (in its colour) over it, as a bot's message in a group room (GroupView's RoomMessage); the chat's own bot
+ * wears neither. A bot that's gone keeps its name.
+ */
+function HandoffAnswer({ from, children }: { from: NonNullable<Message['from']>; children: ReactNode }) {
+  const bot = useStore((s) => s.bots.find((b) => b.id === from.botId));
+  return (
+    <div className="flex items-start gap-2">
+      <span className="w-[28px] shrink-0"><BotAvatar bot={bot} size={28} still /></span>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="mb-1 max-w-full truncate pl-1 text-note leading-4 font-semibold" style={{ color: bot ? `color-mix(in srgb, ${bot.color} 82%, var(--ab-fg))` : undefined }}>{from.name}</div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 type Phase = 'live' | 'hold' | FoldPhase;
 
 /**
@@ -386,7 +409,9 @@ export const AgentTurn = memo(function AgentTurn({ msg, botName, cwd }: { msg: M
   else endRef.current ??= msg.updatedAt;
   const endAt = endRef.current ?? msg.updatedAt;
   const live = phase === 'live' || phase === 'hold';
-  const botId = useStore.getState().threads.find((t) => t.id === msg.threadId)?.botId;
+  // a hand-off's answer is the bot's that gave it (`Message.from`), not the chat's own bot's
+  const botId = msg.from?.botId ?? useStore.getState().threads.find((t) => t.id === msg.threadId)?.botId;
+  const bots = useStore((s) => s.bots);
   const ctx: Ctx = {
     settled: !streaming,
     interrupted: msg.status === 'cancelled' || msg.status === 'error',
@@ -397,16 +422,21 @@ export const AgentTurn = memo(function AgentTurn({ msg, botName, cwd }: { msg: M
     botId,
     botColor: useStore.getState().bots.find((b) => b.id === botId)?.color,
     bubble: answers,
+    mentions: bots,
   };
   // `data-quotable`: text selected in a reply can be quoted into the next message (QuoteSelection);
   // `data-image-gallery`: opening one of its images shows them all (imageGallery.ts)
   return (
     <div data-quotable data-image-gallery className="contents">
       {/* one trail across the turn's live and settled layouts, so it folds its work away as the turn ends */}
-      {trail ? <WorkTrail msg={msg} endAt={endAt} /> : null}
+      {trail && !msg.from ? <WorkTrail msg={msg} endAt={endAt} /> : null}
       {live
         ? <LiveTurn msg={msg} ctx={ctx} ended={phase === 'hold'} answers={answers} trail={trail} />
-        : <SettledTurn msg={msg} ctx={ctx} cwd={cwd} endAt={endAt} fold={answers ? 'none' : phase as FoldPhase} answers={answers} trail={trail} />}
+        : msg.from ? (
+          <HandoffAnswer from={msg.from}>
+            <SettledTurn msg={msg} ctx={ctx} cwd={cwd} endAt={endAt} fold="none" answers={answers} trail={trail} />
+          </HandoffAnswer>
+        ) : <SettledTurn msg={msg} ctx={ctx} cwd={cwd} endAt={endAt} fold={answers ? 'none' : phase as FoldPhase} answers={answers} trail={trail} />}
     </div>
   );
 });

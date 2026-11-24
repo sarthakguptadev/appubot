@@ -287,7 +287,8 @@ export class ChatService {
 
   /** `quiet`: no "done" notification when the turn ends (a routine that only keeps its result in the chat) */
   /** `device`: who sent it (the gateway's device id), which a `clientId` is that device's own for */
-  send(p: MethodParams<'chat.send'>, via: Via = 'desktop', opts: { quiet?: boolean; device?: string; from?: Message['from']; preface?: string; hop?: number; routine?: Message['routine'] } = {}): { userMessage: Message; agentMessageId: string } {
+  /** `waits`: it waits for a turn running there instead of cutting in (a task handed over from another chat) */
+  send(p: MethodParams<'chat.send'>, via: Via = 'desktop', opts: { quiet?: boolean; device?: string; from?: Message['from']; preface?: string; hop?: number; routine?: Message['routine']; waits?: boolean } = {}): { userMessage: Message; agentMessageId: string } {
     // a stopped version (the version policy) takes no turns, from the app, Telegram or a routine
     this.ctx.s.appUpdate?.assertWorking();
     // sent again by a device whose connection dropped before the answer (or whose app was closed meanwhile, or after
@@ -336,10 +337,21 @@ export class ChatService {
       return { userMessage: structuredClone(userMsg), agentMessageId: reply.id };
     }
 
+    // "@Ledger check this" in a bot's chat: the other bots it names take it (`HandoffService`), each answer posted here
+    // as that bot's message; the chat's own bot answers only when it is named too. Not a message AppuBot passes on with
+    // words of its own (a hand-off itself, a group's): that one is for the bot it is sent to
+    if ((via === 'desktop' || via === 'mobile') && !opts.preface) {
+      const handed = this.ctx.s.handoffs?.fromUser(thread, userMsg, { images, attachments });
+      if (handed && !handed.chatBot) {
+        if (sentKey) this.sentIds.note(sentKey, { at: now, threadId: thread.id, userMessageId: userMsg.id, agentMessageId: handed.replyId, userMessage: lightMessage(userMsg) });
+        return { userMessage: structuredClone(userMsg), agentMessageId: handed.replyId };
+      }
+    }
+
     // a voice note from Telegram is answered in writing too: only the app's voice mode is a live conversation
     const spoken = !!p.voice && via !== 'channel';
     const job: Job = {
-      userMsg, agentMessageId: newId('msg'), text, images, attachments, via, ...(via !== 'routine' && via !== 'bot' ? { fresh: true } : {}), ...(opts.quiet ? { quiet: true } : {}), ...(spoken ? { spoken } : {}),
+      userMsg, agentMessageId: newId('msg'), text, images, attachments, via, ...(via !== 'routine' && via !== 'bot' && !opts.waits ? { fresh: true } : {}), ...(opts.quiet ? { quiet: true } : {}), ...(spoken ? { spoken } : {}),
       ...(opts.preface ? { preface: opts.preface } : {}), ...(opts.hop !== undefined ? { hop: opts.hop } : {}),
     };
     this.ctx.s.analytics?.capture('message_sent', { via, agent: agentKind(bot.providerId), attachments: attachments.length, images: p.images?.length ?? 0 });
@@ -645,15 +657,20 @@ export class ChatService {
       const sid = await this.ensureSession(run, thread, bot);
       if (run.cancelled) { this.finish(run, 'cancelled', 'cancelled'); return; }
       const blocks = this.buildBlocks(job);
+      let convo: string | null | undefined;
       if (run.needsPreface) {
         run.needsPreface = false;
         // a fresh session: the thread's recent turns when it had some (its own session was lost; a new thread has
         // none, and a turn of AppuBot's own has no message to put them before), and the bot's memory first of all
-        const convo = job.userMsg && conversationPreface(threads.conversationBefore(thread, job.userMsg), { botName: bot.name });
+        convo = job.userMsg && conversationPreface(threads.conversationBefore(thread, job.userMsg), { botName: bot.name });
         if (convo) blocks.unshift({ type: 'text', text: convo });
         const memory = this.ctx.s.bots.memoryPreface(bot);
         if (memory) blocks.unshift({ type: 'text', text: memory });
       }
+      // what it missed of its own chat: tasks handed to other bots there with @Name, and their answers (the recent
+      // turns above, when they came, already hold them)
+      const missed = convo || run.hidden ? null : this.ctx.s.handoffs?.contextFor(thread, job.userMsg ? { beforeId: job.userMsg.id } : { skipId: job.agentMessageId });
+      if (missed) blocks.unshift({ type: 'text', text: missed });
       // before everything else, who it is: for an agent that doesn't read its instructions file by itself
       if (run.needsInstructions) {
         blocks.unshift({ type: 'text', text: renderInstructionsPreface(bot, run.needsInstructions.changed, this.ctx.s.bots.instructionsOptions(bot)) });
