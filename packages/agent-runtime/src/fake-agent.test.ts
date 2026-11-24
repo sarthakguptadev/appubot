@@ -37,7 +37,8 @@ describe('runtime against fake ACP agent', () => {
   beforeAll(() => {
     dir = mkdtempSync(join(tmpdir(), 'appubot-fake-'));
   });
-  afterAll(() => rmSync(dir, { recursive: true, force: true }));
+  // retried: on Windows a terminal's process tree is ended by taskkill, which may still hold the folder for a moment
+  afterAll(() => rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }));
 
   function makeRuntime(env: Record<string, string> = {}, secrets?: Record<string, string>): AgentRuntime {
     ops = [];
@@ -461,7 +462,7 @@ describe.skipIf(process.platform === 'win32')('Google Antigravity (quirks.ts) ag
   let asked: PermissionAsk[];
 
   beforeAll(() => { dir = mkdtempSync(join(tmpdir(), 'appubot-agy-')); });
-  afterAll(() => rmSync(dir, { recursive: true, force: true }));
+  afterAll(() => rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }));
   afterEach(async () => { await rt?.shutdown(); rt = undefined; });
 
   function agy(env: Record<string, string> = {}, answer = '1'): AgentRuntime {

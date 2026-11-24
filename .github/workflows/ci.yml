@@ -39,9 +39,7 @@ jobs:
         working-directory: native/appubot-helper
         run: swift build -c release -q
       - run: pnpm typecheck
-      # Windows only typechecks and builds for now: some tests still assume Mac and Linux paths
-      - if: runner.os != 'Windows'
-        run: pnpm test
+      - run: pnpm test --continue
       - run: pnpm -C apps/desktop exec electron-vite build --logLevel warn
       # our phone apps (not public) share packages/protocol: a maintainer checks them before merging
       - if: github.event_name == 'pull_request' && matrix.name == 'linux'
