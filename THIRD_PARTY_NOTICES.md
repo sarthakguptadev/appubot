@@ -37,7 +37,7 @@ SOFTWARE.
 
 https://github.com/pingdotgg/t3code
 
-Used for: Through Synara and Akeru Bot, both built on it; directly: how the Usage page reads Claude Code, Codex, Grok, OpenCode and Pi history and prices it.
+Used for: Through Synara and Akeru Bot, both built on it; directly: how the Usage page reads Claude Code, Codex, Grok, OpenCode and Pi history and prices it, and how the ⌘K palette matches and ranks what you type.
 
 ```text
 MIT License
