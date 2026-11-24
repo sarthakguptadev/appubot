@@ -588,7 +588,7 @@ export function LoginsGroup({ t }: { t: CloudTeamView }) {
               disabled={!admin || busy}
               onClick={() => { if (!on) void setTeamLogins(team.id, o.id); }}
               className={cn(
-                'ab-press squircle relative flex flex-col items-start gap-2.5 rounded-card p-4 text-left outline-none [--press:.985] focus-visible:ring-2 focus-visible:ring-[var(--ab-ring)]',
+                'ab-press squircle relative flex flex-col items-start gap-2.5 rounded-card p-4 text-left outline-none focus-visible:ring-2 focus-visible:ring-[var(--ab-ring)]',
                 on ? 'bg-[color-mix(in_srgb,var(--ab-accent)_8%,var(--ab-surface))] shadow-[inset_0_0_0_2px_var(--ab-accent)]'
                   : 'bg-surface shadow-raised',
                 admin && !on && 'hover:shadow-raised-hover',

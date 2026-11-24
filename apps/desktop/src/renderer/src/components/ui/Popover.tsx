@@ -81,7 +81,7 @@ export function Popover({ open, onClose, anchor, side = 'bottom', align = 'start
       aria-label={label}
       // placed off-screen until measured (not hidden: its search field takes focus as it opens)
       style={pos ? { top: pos.top, left: pos.left } : { top: -9999, left: -9999 }}
-      className={cn('glass-popover no-drag fixed z-[70] flex max-h-[calc(100vh-16px)] max-w-[calc(100vw-16px)] animate-[pop-in_.3s_var(--ease-spring-soft)] flex-col overflow-hidden', className, leaving && 'ab-leaving')}
+      className={cn('glass-popover no-drag fixed z-[70] flex max-h-[calc(100vh-16px)] max-w-[calc(100vw-16px)] animate-[pop-in_150ms_var(--ease-t3)] flex-col overflow-hidden', className, leaving && 'ab-leaving')}
     >
       {children}
     </div>,

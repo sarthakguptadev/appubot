@@ -1,6 +1,5 @@
 import { useT } from '../../lib/i18n';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { motion } from 'motion/react';
 import { botThreads, type Bot, type Group, type Thread } from '@appubot/protocol';
 import { GROUP_TILE_MAX, GROUP_TILE_TURN_S, buildRoster, groupTileLayout, rosterPreview, threadTitle } from '@appubot/chat-core';
 import { ChevronRight, FolderOpen, Pencil, Pin, Plus, Search, Settings, SquarePen, Trash2, Users } from '../ui/icons';
@@ -13,7 +12,6 @@ import { call, deleteBot, deleteThread, openBot, openBotDetails, openThread, ren
 import { rpc } from '../../lib/gateway';
 import { shortcut } from '../../lib/platform';
 import { useHeldFor } from '../../lib/connectionQuiet';
-import { SPRING } from '../../lib/motion';
 import { SIDEBAR_WIDTH, setState, ui, upsertThreads, useStore } from '../../lib/store';
 import { WhatsNewCard } from '../../features/whatsNew/WhatsNew';
 import { CloudPromoCard } from '../../features/cloud/CloudPromoCard';
@@ -33,20 +31,16 @@ const AVATAR = 36;
 const PINNED_AVATAR = 64;
 const ROW_ON = 'bg-[color-mix(in_srgb,var(--ab-fg)_7.5%,transparent)] shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--ab-fg)_4%,transparent)]';
 const ROW_HOVER = 'hover:bg-[color-mix(in_srgb,var(--ab-fg)_4%,transparent)]';
-const ROW_BUTTON = 'ab-press squircle no-drag relative flex min-w-0 flex-1 items-center gap-2.5 rounded-row p-2 text-left outline-none [--press:.985] focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)]';
+const ROW_BUTTON = 'ab-press squircle no-drag relative flex min-w-0 flex-1 items-center gap-2.5 rounded-row p-2 text-left outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)]';
 const ROW_NAME = 'min-w-0 truncate text-copy leading-[18px] font-semibold tracking-ui text-fg';
 const ROW_PREVIEW = 'truncate text-ui leading-[17px]';
 const PREVIEW_INK = 'text-[color-mix(in_srgb,var(--ab-fg)_52%,transparent)]';
 /** the sidebar's round buttons, one size: search and + in the top strip, Settings at the bottom (Connect apps is as tall) */
-const STRIP_BUTTON = 'ab-press ab-pill squircle no-drag relative grid size-9 shrink-0 place-items-center rounded-control text-fg-2 [--press:.9] hover:text-fg focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]';
+const STRIP_BUTTON = 'ab-press ab-pill squircle no-drag relative grid size-9 shrink-0 place-items-center rounded-control text-fg-2 hover:text-fg focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]';
 
-/**
- * The chosen row's wash: one element for the whole rail (`layoutId`), so opening another bot or group slides it there
- * on a spring, a tile's shape morphing into a row's (Rare UI's moving indicator), instead of one fill going out and
- * another coming in.
- */
+/** The chosen row's wash, in place (T3 Code's sidebar: nothing slides between rows). */
 function RowWash({ radius }: { radius: number }) {
-  return <motion.span layoutId="sidebar-chosen" aria-hidden transition={SPRING.slide} style={{ borderRadius: radius }} className={cn('squircle pointer-events-none absolute inset-0', ROW_ON)} />;
+  return <span aria-hidden style={{ borderRadius: radius }} className={cn('squircle pointer-events-none absolute inset-0', ROW_ON)} />;
 }
 
 /**
@@ -152,7 +146,7 @@ function GroupPinTile({ group, selected }: { group: Group; selected: boolean }) 
         type="button"
         aria-current={selected || undefined}
         onClick={() => ui.selectGroup(group.id)}
-        className="ab-press squircle no-drag relative flex w-full min-w-0 flex-col items-center gap-1.5 rounded-[14px] px-1 pt-2.5 pb-2 outline-none [--press:.97] focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)]"
+        className="ab-press squircle no-drag relative flex w-full min-w-0 flex-col items-center gap-1.5 rounded-[14px] px-1 pt-2.5 pb-2 outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)]"
       >
         <span className="grid place-items-center" style={{ width: PINNED_AVATAR, height: PINNED_AVATAR }}><GroupTile members={members} size={PINNED_AVATAR} /></span>
         <span className="max-w-full min-w-0 truncate text-ui leading-[17px] font-medium text-fg">{group.name}</span>
@@ -252,7 +246,7 @@ function BotTile({ bot, selected, unread, presence }: { bot: Bot; selected: bool
         type="button"
         aria-current={selected || undefined}
         onClick={() => openBot(bot.id)}
-        className="ab-press squircle no-drag relative flex w-full min-w-0 flex-col items-center gap-1.5 rounded-[14px] px-1 pt-2.5 pb-2 outline-none [--press:.97] focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)]"
+        className="ab-press squircle no-drag relative flex w-full min-w-0 flex-col items-center gap-1.5 rounded-[14px] px-1 pt-2.5 pb-2 outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)]"
       >
         <BotAvatar bot={bot} size={PINNED_AVATAR} presence={presence} />
         <span className="flex max-w-full min-w-0 items-center gap-1">
@@ -399,7 +393,7 @@ function ConnectApps() {
       aria-pressed={open}
       onClick={() => (open ? ui.closeApps() : ui.openApps())}
       className={cn(
-        'ab-press ab-pill squircle no-drag flex h-9 min-w-0 flex-1 items-center justify-center gap-2 rounded-control px-3 text-ui font-semibold tracking-ui text-fg [--press:.98] focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-bg),0_0_0_4px_var(--ab-ring)]',
+        'ab-press ab-pill squircle no-drag flex h-9 min-w-0 flex-1 items-center justify-center gap-2 rounded-control px-3 text-ui font-semibold tracking-ui text-fg focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-bg),0_0_0_4px_var(--ab-ring)]',
         RAISED, open && RAISED_ON,
       )}
     >

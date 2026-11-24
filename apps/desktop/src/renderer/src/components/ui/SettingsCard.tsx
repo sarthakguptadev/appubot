@@ -1,4 +1,4 @@
-import { useId, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import type { IconComponent } from './icons';
 import { cn } from './cn';
 import { Icon } from './Icon';
@@ -75,11 +75,10 @@ export function CardSection({ title, action, children, className, bare }: {
   );
 }
 
-/** A handful of choices in place of a select: segments on a track, the chosen one a raised chip that slides to the next pick. */
+/** A handful of choices in place of a select: segments on a track, the chosen one a raised chip. */
 export function SettingsSegmented<T extends string>({ value, onChange, options, label }: {
   value: T; onChange: (v: T) => void; options: { value: T; label: string }[]; label: string;
 }) {
-  const chip = useId();
   return (
     <div role="radiogroup" aria-label={label} className={cn(SEGMENT_TRACK, 'flex w-full sm:inline-flex sm:w-auto')}>
       {options.map((o) => {
@@ -93,7 +92,7 @@ export function SettingsSegmented<T extends string>({ value, onChange, options, 
             className={cn(SEGMENT, SEGMENT_SIZE.md, 'flex-1 sm:flex-none', active ? 'text-fg' : 'text-muted hover:text-fg')}
             onClick={() => onChange(o.value)}
           >
-            {active ? <SegmentChip id={chip} /> : null}
+            {active ? <SegmentChip /> : null}
             <span className="relative">{o.label}</span>
           </button>
         );

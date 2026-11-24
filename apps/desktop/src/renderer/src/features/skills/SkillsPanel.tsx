@@ -119,7 +119,7 @@ export function SkillsPanel() {
             />
           )
         ) : (
-          <ul className="ab-rise-list flex flex-col gap-px">
+          <ul className="flex flex-col gap-px">
             {skills.map((k) => {
               const src = SOURCE[k.source];
               return (

@@ -113,7 +113,7 @@ export function ComputerMenu({ inSettings = false }: {
             type="button"
             aria-label={`Settings for: ${label}`}
             className={cn(
-              'ab-press ab-pill squircle no-drag flex h-10 w-full min-w-0 items-center gap-2.5 rounded-control bg-surface-2 pr-2 pl-3 text-left outline-none [--press:.985]',
+              'ab-press ab-pill squircle no-drag flex h-10 w-full min-w-0 items-center gap-2.5 rounded-control bg-surface-2 pr-2 pl-3 text-left outline-none',
               'hover:bg-surface-3 focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]', p['aria-expanded'] && 'bg-surface-3',
             )}
           >
@@ -140,7 +140,7 @@ export function ComputerMenu({ inSettings = false }: {
           aria-label={`Computer: ${label}`}
           title={label}
           className={cn(
-            'ab-press ab-pill squircle no-drag grid size-9 shrink-0 place-items-center rounded-control bg-surface-2 outline-none [--press:.9]',
+            'ab-press ab-pill squircle no-drag grid size-9 shrink-0 place-items-center rounded-control bg-surface-2 outline-none',
             'hover:bg-surface-3 focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]', p['aria-expanded'] && 'bg-surface-3',
           )}
         >

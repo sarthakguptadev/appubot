@@ -109,7 +109,7 @@ export function VaultSection() {
                 key={t.id} type="button" role="tab" aria-selected={filter === t.id} onClick={() => setFilter(t.id)}
                 className={cn(SEGMENT, SEGMENT_SIZE.md, filter === t.id ? 'text-fg' : 'text-muted hover:text-fg')}
               >
-                {filter === t.id ? <SegmentChip id="vault-filter" /> : null}
+                {filter === t.id ? <SegmentChip /> : null}
                 <span className="relative inline-flex items-center gap-2">{t.label}<span className="font-medium tabular-nums text-muted">{count(t.id)}</span></span>
               </button>
             ))}

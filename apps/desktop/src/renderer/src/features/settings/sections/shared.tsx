@@ -18,7 +18,7 @@ export function SettingsGroup({ title, description, action, children, className,
   bare?: boolean;
 }) {
   return (
-    <section id={title ? settingAnchorId(title) : undefined} className={cn('ab-rise flex scroll-mt-24 flex-col gap-2.5 not-first:mt-8', className)}>
+    <section id={title ? settingAnchorId(title) : undefined} className={cn('flex scroll-mt-24 flex-col gap-2.5 not-first:mt-8', className)}>
       {title ? (
         <div className="flex min-h-7 items-start justify-between gap-4">
           <h2 className={SETTINGS_SECTION_TITLE}>{title}</h2>

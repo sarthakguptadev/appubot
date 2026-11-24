@@ -8,8 +8,8 @@ export type ButtonVariant = 'primary' | 'accent' | 'secondary' | 'ghost' | 'dang
 export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'icon' | 'icon-sm' | 'icon-xs';
 
 /*
- * Rare UI's controls at desktop density (the 2026-11-14 overhaul): filled, no border, a semibold label, and a press
- * that gives a little and springs back (`.ab-press`). Pills, and circles for icon buttons, in the Round look (the
+ * Rare UI's controls at desktop density (the 2026-11-14 overhaul): filled, no border, a semibold label, and T3 Code's
+ * press, to 97% and back (`.ab-press`). Pills, and circles for icon buttons, in the Round look (the
  * default: `ab-pill`, index.css); the squircles below in the Squircle look. Heights
  * 28 / 32 / 36 / 40 / 44 (Rare UI's are 40 / 48 / 56). An outline is a ring, never a border, so every variant is
  * the same size. Double focus ring as before.
@@ -28,9 +28,9 @@ const sizes: Record<ButtonSize, string> = {
   md: 'h-9 px-3.5 text-copy gap-1.5 rounded-control',
   lg: 'h-10 px-4 text-copy gap-2 rounded-control-lg',
   xl: 'h-11 px-5 text-lead gap-2 rounded-control-lg',
-  icon: 'size-9 justify-center rounded-control [--press:.9]',
-  'icon-sm': 'size-8 justify-center rounded-[9px] [--press:.9]',
-  'icon-xs': 'size-7 justify-center rounded-control-sm [--press:.9]',
+  icon: 'size-9 justify-center rounded-control',
+  'icon-sm': 'size-8 justify-center rounded-[9px]',
+  'icon-xs': 'size-7 justify-center rounded-control-sm',
 };
 const iconSizes: Record<ButtonSize, number> = { xs: 13, sm: 15, md: 16, lg: 17, xl: 18, icon: 18, 'icon-sm': 16, 'icon-xs': 14 };
 

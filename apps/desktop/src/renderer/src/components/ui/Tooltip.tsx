@@ -35,7 +35,7 @@ function TooltipBubble({ label, anchor, side }: { label: ReactNode; anchor: DOMR
       ref={ref}
       role="tooltip"
       style={at ? { left: at.left, top: at.top } : { left: 0, top: 0, visibility: 'hidden' }}
-      className="glass-popover pointer-events-none fixed z-[80] max-w-[min(320px,calc(100vw-16px))] animate-[pop-in_.22s_var(--ease-spring-soft)] rounded-control-sm px-2.5 py-1.5 text-note leading-snug font-medium break-words text-fg"
+      className="glass-popover pointer-events-none fixed z-[80] max-w-[min(320px,calc(100vw-16px))] animate-[pop-in_150ms_var(--ease-t3)] rounded-control-sm px-2.5 py-1.5 text-note leading-snug font-medium break-words text-fg"
     >
       {label}
     </div>,

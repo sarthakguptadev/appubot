@@ -48,7 +48,7 @@ export function ThreadsPanel() {
       {/* room under the last row for the support bubble in the window's corner */}
       <div className="min-h-0 flex-1 overflow-y-auto px-2.5 pb-24">
         {threads.length ? (
-          <div role="listbox" aria-label={`${bot.name}’s threads`} className="ab-rise-list [--rise-step:22ms]">
+          <div role="listbox" aria-label={`${bot.name}’s threads`}>
             {threads.map((t) => (
               <ThreadRow
                 key={t.id}

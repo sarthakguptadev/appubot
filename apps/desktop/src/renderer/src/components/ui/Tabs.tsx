@@ -1,9 +1,6 @@
-import { useId } from 'react';
-import { motion } from 'motion/react';
 import type { LucideIcon } from './icons';
 import { cn } from './cn';
 import { Icon } from './Icon';
-import { SPRING } from '../../lib/motion';
 
 export interface TabItem<T extends string> { id: T; label: string; icon?: LucideIcon; badge?: number }
 
@@ -17,15 +14,12 @@ export const SEGMENT =
 export const SEGMENT_SIZE = { sm: 'h-6 px-2.5 text-note', md: 'h-7 px-3 text-ui' } as const;
 
 /**
- * The chosen segment's chip: one element shared by the row (`layoutId`), so picking another slides it there on a
- * spring instead of one fill fading out and another in (Rare UI's moving indicator). `raised`: a lifted chip on a
- * track; else a flat fill, for a row with no track.
+ * The chosen segment's chip, in place: picking another moves it there at once (T3 Code's tabs: nothing slides).
+ * `raised`: a lifted chip on a track; else a flat fill, for a row with no track.
  */
-export function SegmentChip({ id, raised = true }: { id: string; raised?: boolean }) {
+export function SegmentChip({ raised = true }: { raised?: boolean }) {
   return (
-    <motion.span
-      layoutId={id}
-      transition={SPRING.slide}
+    <span
       aria-hidden
       className={cn('ab-pill squircle absolute inset-0 rounded-control-sm', raised ? 'bg-surface shadow-lift dark:bg-[rgba(255,255,255,.12)]' : 'bg-surface-2')}
     />
@@ -34,7 +28,7 @@ export function SegmentChip({ id, raised = true }: { id: string; raised?: boolea
 
 /**
  * Segmented tabs. `track` (default): the choices on a grey track, the current one a raised chip. `plain`: no track,
- * the current one a flat fill, the rest muted. Either way the chip slides to the one picked.
+ * the current one a flat fill, the rest muted.
  */
 export function Tabs<T extends string>({ items, value, onChange, className, size = 'md', iconOnly, variant = 'track' }: {
   items: TabItem<T>[]; value: T; onChange: (v: T) => void; className?: string; size?: 'sm' | 'md';
@@ -43,7 +37,6 @@ export function Tabs<T extends string>({ items, value, onChange, className, size
   variant?: 'track' | 'plain';
 }) {
   const plain = variant === 'plain';
-  const chip = useId();
   return (
     <div role="tablist" className={cn(plain ? 'no-drag inline-flex items-center gap-1' : SEGMENT_TRACK, className)}>
       {items.map((t) => {
@@ -59,7 +52,7 @@ export function Tabs<T extends string>({ items, value, onChange, className, size
             onClick={() => onChange(t.id)}
             className={cn(SEGMENT, SEGMENT_SIZE[size], active ? 'text-fg' : plain ? 'text-muted hover:bg-surface-2 hover:text-fg' : 'text-muted hover:text-fg')}
           >
-            {active ? <SegmentChip id={chip} raised={!plain} /> : null}
+            {active ? <SegmentChip raised={!plain} /> : null}
             <span className="relative inline-flex items-center gap-1.5">
               {t.icon ? <Icon icon={t.icon} size={16} /> : null}
               {t.label && !iconOnly ? <span>{t.label}</span> : null}

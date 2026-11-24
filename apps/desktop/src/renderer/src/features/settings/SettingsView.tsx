@@ -5,7 +5,7 @@ import { ChevronLeft, Search, X } from '../../components/ui/icons';
 import { Icon, Kbd, cn, isDialogOpen } from '../../components/ui';
 import { useHotkey } from '../../lib/hooks';
 import { IS_MAC } from '../../lib/platform';
-import { SPRING } from '../../lib/motion';
+import { EASE_T3_OUT } from '../../lib/motion';
 import { ui, useStore, type SettingsSection } from '../../lib/store';
 import { SETTINGS_NAV_ITEMS, rankSettingsSearch, transferTitle, settingAnchorId, settingsNavItem, settingsPage, settingsTrail, type SettingsNavItem, type SettingsSearchEntry } from './nav';
 import { AboutSection } from './sections/About';
@@ -65,8 +65,8 @@ const PAGES: Record<SettingsSection, ComponentType> = {
 };
 
 /*
- * The nav's rows in Rare UI's manner: 36px squircles, 14px; the chosen one's wash is one element for the whole list
- * (`NavWash`, a `layoutId`), so picking another page slides it there on a spring, and its label turns semibold.
+ * The nav's rows: 36px squircles, 14px; the chosen one gets a wash and a semibold label, in place (T3 Code's: nothing
+ * slides between rows).
  */
 const NAV_ROW =
   'squircle no-drag relative isolate flex h-9 w-full min-w-0 items-center gap-2.5 rounded-control-sm px-2.5 text-left text-copy select-none outline-none ' +
@@ -75,9 +75,9 @@ const NAV_ROW_IDLE = 'text-fg-2 hover:bg-[color-mix(in_srgb,var(--ab-fg)_5%,tran
 const NAV_ROW_ACTIVE = 'font-semibold tracking-ui text-fg [&>svg]:text-fg';
 const NAV_WASH = 'squircle absolute inset-0 -z-10 rounded-control-sm bg-[color-mix(in_srgb,var(--ab-fg)_8%,transparent)]';
 
-/** The chosen row's wash, shared by the list it is in. */
-function NavWash({ id }: { id: string }) {
-  return <motion.span layoutId={id} aria-hidden transition={SPRING.slide} className={NAV_WASH} />;
+/** The chosen row's wash. */
+function NavWash() {
+  return <span aria-hidden className={NAV_WASH} />;
 }
 
 // Cap the result list so a broad query stays a quick scan rather than a wall of rows.
@@ -161,7 +161,7 @@ function SettingsNav() {
               className={cn(NAV_ROW, on ? NAV_ROW_ACTIVE : NAV_ROW_IDLE)}
               onClick={() => ui.openSettings(r.id)}
             >
-              {on ? <NavWash id="settings-nav-chosen" /> : null}
+              {on ? <NavWash /> : null}
               <Icon icon={r.icon} size={16} className="shrink-0" />
               <span className="truncate">{r.label}</span>
               {pages.includes('permissions') && permissionsNeeded ? <span aria-label={t('settings.needsAttention')} className="ml-auto size-1.5 shrink-0 rounded-full bg-attention" /> : null}
@@ -188,7 +188,7 @@ function SettingsNav() {
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => (searchOpen ? closeSearch() : setSearchOpen(true))}
           className={cn(
-            'ab-press ab-pill squircle no-drag mr-2.5 grid size-9 shrink-0 place-items-center rounded-control text-fg-2 outline-none [--press:.9] hover:bg-surface-3 hover:text-fg focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]',
+            'ab-press ab-pill squircle no-drag mr-2.5 grid size-9 shrink-0 place-items-center rounded-control text-fg-2 outline-none hover:bg-surface-3 hover:text-fg focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]',
             searchOpen ? 'bg-surface-3 text-fg' : 'bg-surface-2',
           )}
         >
@@ -325,8 +325,8 @@ function SettingsContent() {
                       on ? 'text-fg' : 'text-muted hover:text-fg',
                     )}
                   >
-                    {/* the open tab's line: one element for the row, so it slides to the tab picked */}
-                    {on ? <motion.span layoutId="settings-tab-line" aria-hidden transition={SPRING.slide} className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-fg" /> : null}
+                    {/* the open tab's line */}
+                    {on ? <span aria-hidden className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-fg" /> : null}
                     {settingsPage(id).label}
                     {id === 'permissions' && permissionsNeeded ? <span aria-label={t('settings.needsAttention')} className="size-1.5 rounded-full bg-attention" /> : null}
                   </button>
@@ -374,7 +374,7 @@ export function SettingsModal() {
           aria-label="Settings"
           tabIndex={-1}
           className="fixed inset-0 z-40 flex min-h-0 min-w-0 overflow-hidden bg-[var(--ab-content)] text-fg outline-none"
-          initial={{ opacity: 0, scale: 0.99 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.99 }} transition={{ duration: 0.16, ease: 'easeOut' }}
+          initial={{ opacity: 0, scale: 0.985 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.985 }} transition={{ duration: 0.15, ease: EASE_T3_OUT }}
         >
           <SettingsNav />
           <SettingsContent />

@@ -102,14 +102,16 @@ function ToastCard({ t, index, y, expanded, frontHeight, paused, onHeight }: Car
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: -16, scale: 0.96 }}
+      // T3 Code's toast: in from the window's right edge, out the same way, fading
+      initial={{ x: 'calc(100% + 16px)' }}
       animate={{
         opacity: index >= SHOWN && !expanded ? 0 : 1,
+        x: 0,
         y,
         scale: expanded ? 1 : 1 - Math.min(index, SHOWN - 1) * 0.05,
       }}
-      exit={{ opacity: 0, scale: 0.96, transition: { duration: 0.18 } }}
-      transition={{ duration: 0.4, ease: EASE_OUT }}
+      exit={{ opacity: 0, x: 'calc(100% + 16px)' }}
+      transition={{ duration: 0.5, ease: EASE_OUT }}
       drag="x"
       dragConstraints={{ left: 0, right: 0 }}
       dragElastic={{ left: 0.05, right: 0.9 }}

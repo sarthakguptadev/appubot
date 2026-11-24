@@ -155,7 +155,7 @@ function Tile({ onRemove, label, children }: { onRemove: () => void; label: stri
  */
 const SEND = cn(
   // Rare UI's send button: an ink circle that gives under the pointer and springs back, faint while there is nothing to send
-  'chat-send ab-press ab-pill squircle flex shrink-0 items-center justify-center rounded-control bg-fg text-[color:var(--ab-inverse)] [--press:.88]',
+  'chat-send ab-press ab-pill squircle flex shrink-0 items-center justify-center rounded-control bg-fg text-[color:var(--ab-inverse)]',
   'focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-bg),0_0_0_4px_var(--ab-ring)] disabled:opacity-20',
 );
 
@@ -168,7 +168,7 @@ function pickBrowserFiles(onFiles: (files: globalThis.File[]) => void): void {
   input.click();
 }
 
-const ADD = 'chat-round ab-press ab-pill squircle flex size-8 shrink-0 items-center justify-center rounded-control bg-surface-2 text-fg/80 [--press:.9] hover:bg-surface-3 hover:text-fg focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)] aria-expanded:bg-surface-3 aria-expanded:text-fg';
+const ADD = 'chat-round ab-press ab-pill squircle flex size-8 shrink-0 items-center justify-center rounded-control bg-surface-2 text-fg/80 hover:bg-surface-3 hover:text-fg focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)] aria-expanded:bg-surface-3 aria-expanded:text-fg';
 
 /**
  * The pill's +: it attaches files and nothing else, so a press opens the file dialog at once. Voice mode and dictation
