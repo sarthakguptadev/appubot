@@ -170,10 +170,16 @@ export class MacLinkService {
     return (f.writable ?? []).filter((w) => f.folders.includes(w));
   }
 
-  /** A lent folder switched to take the bots' changes (create or replace a file), or back to read-only. */
-  setWritable(folder: string, on: boolean): MacLinkStatus {
+  /**
+   * A lent folder switched to take the bots' changes (create or replace a file), or back to read-only. Named by real
+   * path, as `setFolders` keeps it: on Windows the same folder may come written another way (`c:\…`, `/`, a short
+   * `RUNNER~1` name) and is still that folder.
+   */
+  setWritable(typed: string, on: boolean): MacLinkStatus {
     const f = this.file.get();
-    if (!f.folders.includes(folder)) throw new RpcError('invalid_params', `“${folder}” isn’t one of the folders lent.`);
+    let folder = resolve(typed.trim());
+    try { folder = realpathSync.native(folder); } catch { /* gone: the folder as it was lent */ }
+    if (!f.folders.includes(folder)) throw new RpcError('invalid_params', `“${typed}” isn’t one of the folders lent.`);
     const rest = this.writable().filter((w) => w !== folder);
     this.file.update((x) => ({ ...x, writable: on ? [...rest, folder].sort((a, b) => a.localeCompare(b)) : rest }));
     this.file.flush();
