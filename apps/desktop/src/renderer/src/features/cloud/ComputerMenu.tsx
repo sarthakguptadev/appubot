@@ -1,4 +1,4 @@
-import { Check, ChevronsUpDown, Cloud, Laptop, Plus, Settings } from '../../components/ui/icons';
+import { Check, ChevronsUpDown, Cloud, Laptop, Plus } from '../../components/ui/icons';
 import { Icon, Menu, Spinner, cn, type MenuItem } from '../../components/ui';
 import { useMacName } from '../../lib/macName';
 import { ui } from '../../lib/store';
@@ -39,12 +39,12 @@ function CloudMark({ team, size, warn }: { team?: string; size: number; warn?: b
  * `listsThisComputer`), the person's own cloud computer (once they have a plan of their own; greyed while it's being
  * set up), each team's shared computer (§6.11, its cloud in the team's colour), else "Add a cloud computer" (no plan
  * of their own: Billing's plan cards, Personal), a check on the one on screen (no state beside it: only on hold or
- * suspended turns its cloud amber), then Settings…, which opens Billing.
+ * suspended turns its cloud amber). No "Settings…" (the owner's call, 2026-11-24).
  */
 export function ComputerMenu({ inSettings = false }: {
   /**
    * Settings' own switcher (the head of its per-computer half): a full-width row with the whole name, the same
-   * computers to pick from, and no "Settings…" (it is already open). Nothing where there is only this computer.
+   * computers to pick from. Nothing where there is only this computer.
    */
   inSettings?: boolean;
 } = {}) {
@@ -93,7 +93,6 @@ export function ComputerMenu({ inSettings = false }: {
     ...(ownPending ? [{ label: ownComputerName(view), leading: <Spinner size={14} className="shrink-0 text-muted" />, disabled: true, onSelect: () => {} }] : []),
     ...teams.map(row),
     ...(addOwn ? [{ label: ADD_COMPUTER_LABEL, leading: <AddComputerIcon />, onSelect: addComputer }] : []),
-    ...(inSettings ? [] : ['separator' as const, { label: 'Settings…', icon: Settings, onSelect: () => ui.openSettings('billing') }]),
   ];
   const mark = busy ? <Spinner size={inSettings ? 15 : 13} className="shrink-0 text-muted" />
     : onCloud ? <CloudMark team={team ? (shown?.teamName ?? label) : undefined} size={inSettings ? 17 : 16} warn={shown?.warn} />
