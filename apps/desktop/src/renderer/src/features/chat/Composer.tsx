@@ -5,7 +5,7 @@ import { useT } from '../../lib/i18n';
 // and, while the bot works, Stop until something is typed (a message sent then still reaches it mid-task). The row of
 // pickers under it is off (COMPOSER_PICKERS). Enter sends, Shift+Enter breaks the line (or ⌘Enter sends: Settings › Appearance);
 // slash commands, per-chat drafts, pasted/dropped images and files, and attached files carry over.
-import { memo, useCallback, useEffect, useMemo, useRef, useState, type ClipboardEvent, type DragEvent, type KeyboardEvent, type ReactNode, type RefObject } from 'react';
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ClipboardEvent, type DragEvent, type KeyboardEvent, type ReactNode, type RefObject } from 'react';
 import type { Bot, SlashCommand, Thread } from '@appubot/protocol';
 import { ArrowUp, File, Paperclip, Plus, VoiceWave, X } from '../../components/ui/icons';
 import { Icon, Menu, Tooltip, cn, type MenuItem } from '../../components/ui';
@@ -22,7 +22,7 @@ import { fitImage, isImageFile } from './imageFit';
 import { ModePicker, ThreadModelPicker } from './ComposerBar';
 import { ContextRing } from './ContextRing';
 import { SlashMenu, filterCommands } from './SlashMenu';
-import { MentionMenu } from './MentionMenu';
+import { MentionMenu, caretPoint, mentionName, type MentionItem } from './MentionMenu';
 
 /** the composer's "/" menu of the agent's commands */
 const SHOW_SLASH_MENU = false;
@@ -34,6 +34,7 @@ const SHOW_SLASH_MENU = false;
 const COMPOSER_PICKERS = false;
 const NO_COMMANDS: SlashCommand[] = [];
 const NO_BOTS: Bot[] = [];
+const NO_MENTIONS: MentionItem[] = [];
 import { wantCommands } from './threadCommands';
 import { useRemoteComputer } from '../cloud/remoteFiles';
 import { QUOTE_EVENT, type QuoteRequest } from './QuoteSelection';
@@ -60,6 +61,8 @@ export interface ComposerProps {
   footer?: ReactNode;
   /** more rows for the + menu (a group's room: mention a member), given a way to put text into the draft */
   addItems?: (insert: (text: string) => void) => MenuItem[];
+  /** who "@" offers in a group's room: its members (and @everyone when there are several); a bot's chat offers the user's other bots */
+  mentionable?: readonly Bot[];
 }
 
 /** What you sent in this thread, newest first (the text you typed; repeats once): ↑ in an empty box walks back through it. */
@@ -222,7 +225,7 @@ const AddButton = memo(function AddButton({ files = true, extra = [], onFiles, o
   );
 });
 
-export function Composer({ thread, bot, draftKey, placeholder, onSend, autoFocus = true, docked, plain = false, onStop, addItems, onVoiceText, footer }: ComposerProps) {
+export function Composer({ thread, bot, draftKey, placeholder, onSend, autoFocus = true, docked, plain = false, onStop, addItems, onVoiceText, footer, mentionable }: ComposerProps) {
   const t = useT();
   const [text, setText] = useState(() => drafts.get(draftKey) ?? '');
   const [images, setImages] = useState<PendingImage[]>([]);
@@ -266,15 +269,37 @@ export function Composer({ thread, bot, draftKey, placeholder, onSend, autoFocus
   const commands = slash ? filterCommands(thread?.commands ?? [], text) : NO_COMMANDS;
   useEffect(() => setActive(0), [commands.length]);
 
-  // "@" in a bot's chat: the user's other bots, to hand one the message (chat-core handoff.ts); Esc closes the menu
-  // for the @ it was open for
+  // "@" opens a menu at the caret: in a bot's chat the user's other bots, to hand one the message (chat-core
+  // handoff.ts); in a group's room its members and everyone. Esc closes it for the @ it was open for
   const [caret, setCaret] = useState(0);
   const [dismissed, setDismissed] = useState<number | null>(null);
   const bots = useStore((s) => s.bots);
-  const at = !plain && bot && !slash ? mentionQuery(text, caret) : null;
-  const mentions = useMemo(() => (at && at.start !== dismissed ? mentionChoices(bots.filter((b) => b.id !== bot?.id), at.query) : NO_BOTS), [at?.start, at?.query, dismissed, bots, bot?.id]);
+  const candidates = useMemo(() => mentionable ?? (plain || !bot ? NO_BOTS : bots.filter((b) => b.id !== bot.id)), [mentionable, plain, bot, bots]);
+  const everyone = !!mentionable && mentionable.length > 1;
+  const at = candidates.length && !slash ? mentionQuery(text, caret) : null;
+  const mentions = useMemo((): MentionItem[] => {
+    if (!at || at.start === dismissed) return NO_MENTIONS;
+    const q = at.query.toLowerCase();
+    return [
+      ...mentionChoices(candidates, at.query).map((b): MentionItem => ({ kind: 'bot', bot: b })),
+      ...(everyone && ('everyone'.startsWith(q) || 'all'.startsWith(q)) ? [{ kind: 'everyone' } as const] : []),
+    ];
+  }, [at?.start, at?.query, dismissed, candidates, everyone]);
   const [mentionActive, setMentionActive] = useState(0);
   useEffect(() => setMentionActive(0), [mentions.length, at?.query]);
+  /** where the menu floats: over the @ itself, from the composer's left and bottom */
+  const box = useRef<HTMLDivElement>(null);
+  const [menuAt, setMenuAt] = useState({ left: 0, bottom: 0 });
+  const open = mentions.length > 0;
+  useLayoutEffect(() => {
+    const el = ta.current;
+    const wrap = box.current;
+    if (!open || !at || !el || !wrap) return;
+    const p = caretPoint(el, at.start);
+    const w = wrap.getBoundingClientRect();
+    const r = el.getBoundingClientRect();
+    setMenuAt({ left: Math.max(0, Math.min(r.left - w.left + p.left - 10, w.width - 210)), bottom: w.bottom - (r.top + p.top) + 6 });
+  }, [open, at?.start, text]);
 
   const hasDraft = text.trim().length > 0 || images.length > 0 || paths.length > 0 || files.length > 0 || quotes.length > 0;
   // the bot working doesn't hold a message back: it goes into the turn (Claude Code) or right after it
@@ -327,9 +352,9 @@ export function Composer({ thread, bot, draftKey, placeholder, onSend, autoFocus
   const plainItems = useMemo(() => addItems?.(insert) ?? [], [addItems, insert]);
   const pick = useCallback((c: SlashCommand) => { setText(`/${c.name} `); ta.current?.focus(); }, []);
   /** the @ being typed becomes "@Name ", the caret after it */
-  const pickBot = (b: Bot) => {
+  const pickBot = (it: MentionItem) => {
     if (!at) return;
-    const head = `${text.slice(0, at.start)}@${b.name} `;
+    const head = `${text.slice(0, at.start)}@${mentionName(it)} `;
     setText(head + text.slice(caret).replace(/^[^\s@]*\s*/, ''));
     setCaret(head.length);
     requestAnimationFrame(() => { const el = ta.current; if (el) { el.focus(); el.setSelectionRange(head.length, head.length); } });
@@ -422,9 +447,9 @@ export function Composer({ thread, bot, draftKey, placeholder, onSend, autoFocus
 
   return (
     <div onDragOver={(e) => { e.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={onDrop}>
-      <div className="relative">
+      <div ref={box} className="relative">
         <SlashMenu items={commands} active={active} onPick={pick} onHover={setActive} />
-        <MentionMenu items={mentions} active={mentionActive} onPick={pickBot} onHover={setMentionActive} />
+        <MentionMenu items={mentions} active={mentionActive} at={menuAt} onPick={pickBot} onHover={setMentionActive} />
         {/* Synara's pill: + (files) at the left, the editor, then the mic (dictation) and send (or voice mode) at the right */}
         <div
           className={cn(
