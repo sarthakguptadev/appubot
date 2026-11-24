@@ -32,6 +32,11 @@ export const RELEASES: readonly ReleaseNotes[] = [
         description: 'Buttons, fields and chips across the app are now fully round. Prefer the old corners? Pick Squircle in Settings › Appearance.',
       },
       {
+        id: 'agents-anywhere',
+        title: 'Every agent, one click',
+        description: 'Codex, Copilot and OpenCode now install without Node.js, and Claude Code, Cursor and Grok with their makers’ own installers, on Mac, Windows and Linux. Sign in with your Claude, ChatGPT, GitHub, Cursor or Grok account right inside AppuBot.',
+      },
+      {
         id: 'windows-fixes',
         title: 'Better on Windows',
         description: 'Lending folders to another computer now works on Windows, and the usage page counts your bots’ requests as theirs.',
