@@ -24,7 +24,7 @@ function ChoiceButton({ pressed, disabled, shortcut, onClick, children }: { pres
       aria-pressed={pressed}
       disabled={disabled}
       onClick={onClick}
-      className="gen-choice ab-press squircle flex w-full items-start gap-3 rounded-control-lg bg-surface-2 px-3 py-2.5 text-left [--press:.985] enabled:hover:bg-surface-3 disabled:cursor-default"
+      className="gen-choice ab-press squircle flex w-full items-start gap-3 rounded-control-lg bg-surface-2 px-3 py-2.5 text-left enabled:hover:bg-surface-3 disabled:cursor-default"
     >
       <ChoiceMark checked={pressed} className="mt-0.5" />
       <span className="min-w-0 flex-1 text-copy font-medium text-fg">{children}</span>

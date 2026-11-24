@@ -147,7 +147,7 @@ export function RoutinesPanel() {
             />
           )
         ) : (
-          <ul className="ab-rise-list flex flex-col gap-px">
+          <ul className="flex flex-col gap-px">
             {routines.map((r) => (
               <li key={r.id}><RoutineRow r={r} now={now} /></li>
             ))}

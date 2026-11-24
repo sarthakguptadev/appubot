@@ -50,7 +50,7 @@ export function LookTile({ figure, color, selected, size = 36, label, className,
       title={label}
       {...rest}
       style={{ width: tile, height: tile }}
-      className={cn('group/look ab-press relative inline-flex shrink-0 items-center justify-center rounded-[14px] outline-none [--press:.94]', className)}
+      className={cn('group/look ab-press relative inline-flex shrink-0 items-center justify-center rounded-[14px] outline-none', className)}
     >
       <OutlineRing
         figure={figure}

@@ -1,6 +1,5 @@
 import { X } from '../ui/icons';
 import { useEffect, useState } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
 import { Button, Tooltip, cn, type TabItem } from '../ui';
 import { selectSelectedBot, selectSelectedThread, setState, ui, useStore, type RightTab } from '../../lib/store';
 import { BotHero } from '../../features/bots/BotHero';
@@ -98,40 +97,30 @@ export function RightPanel() {
   const width = panelWidth(wanted, windowWidth, sidebar);
   const maxWidth = panelWidth(PANEL_MAX, windowWidth, sidebar);
 
+  // opens and closes at once, like T3 Code's panels
+  if (!open) return null;
   return (
-    // (presenceAffectsLayout off: the panel's every animated element would draw again with each render of this one)
-    <AnimatePresence initial={false} presenceAffectsLayout={false}>
-      {open ? (
-        <motion.aside
-          key="right"
-          initial={{ width: 0, opacity: 0 }}
-          animate={{ width, opacity: 1 }}
-          exit={{ width: 0, opacity: 0 }}
-          transition={{ duration: 0.3, ease: [0.25, 1, 0.5, 1] }}
-          className="app-panel relative flex h-full shrink-0 flex-col pl-1.5"
-        >
-          <div className="content-card flex h-full flex-col overflow-hidden" style={{ width: width - 6 }}>
-            {/* at the window's right edge: clear of Windows' and Linux's window buttons (--wco-right) */}
-            <div className="drag flex h-16 shrink-0 items-center justify-end pr-[calc(10px+var(--wco-right))]">
-              <Tooltip label="Close panel">
-                <Button size="icon-sm" variant="secondary" icon={X} aria-label="Close panel" onClick={() => setState({ rightOpen: false })} className="no-drag" />
-              </Tooltip>
-            </div>
-            {bot && !inGroup ? (
-              <div className="-mt-3 flex shrink-0 flex-col items-center px-4 pb-4">
-                <BotHero bot={bot} working={working} />
-                <div className="mt-3"><PanelTabs items={tops} value={top} onChange={(t) => ui.openRight(t === 'advanced' ? lastAdvanced : t)} /></div>
-                {top === 'advanced' ? (
-                  // 8px into the side padding each way: the five fit on one line at the panel's own width (they wrap in a narrower one)
-                  <div className="-mx-2 mt-1.5 max-w-[calc(100%+16px)]"><PanelTabs small items={ADVANCED} value={tab} onChange={(t) => ui.openRight(t)} /></div>
-                ) : null}
-              </div>
+    <aside style={{ width }} className="app-panel relative flex h-full shrink-0 flex-col pl-1.5">
+      <div className="content-card flex h-full flex-col overflow-hidden" style={{ width: width - 6 }}>
+        {/* at the window's right edge: clear of Windows' and Linux's window buttons (--wco-right) */}
+        <div className="drag flex h-16 shrink-0 items-center justify-end pr-[calc(10px+var(--wco-right))]">
+          <Tooltip label="Close panel">
+            <Button size="icon-sm" variant="secondary" icon={X} aria-label="Close panel" onClick={() => setState({ rightOpen: false })} className="no-drag" />
+          </Tooltip>
+        </div>
+        {bot && !inGroup ? (
+          <div className="-mt-3 flex shrink-0 flex-col items-center px-4 pb-4">
+            <BotHero bot={bot} working={working} />
+            <div className="mt-3"><PanelTabs items={tops} value={top} onChange={(t) => ui.openRight(t === 'advanced' ? lastAdvanced : t)} /></div>
+            {top === 'advanced' ? (
+              // 8px into the side padding each way: the five fit on one line at the panel's own width (they wrap in a narrower one)
+              <div className="-mx-2 mt-1.5 max-w-[calc(100%+16px)]"><PanelTabs small items={ADVANCED} value={tab} onChange={(t) => ui.openRight(t)} /></div>
             ) : null}
-            <div className="min-h-0 flex-1"><Body tab={tab} remote={remote} /></div>
           </div>
-          <ResizeHandle side="left" label="Resize side panel" width={width} min={Math.min(320, maxWidth)} max={maxWidth} onWidth={(w) => setState({ rightWidth: w })} onReset={() => setState({ rightWidth: 380 })} />
-        </motion.aside>
-      ) : null}
-    </AnimatePresence>
+        ) : null}
+        <div className="min-h-0 flex-1"><Body tab={tab} remote={remote} /></div>
+      </div>
+      <ResizeHandle side="left" label="Resize side panel" width={width} min={Math.min(320, maxWidth)} max={maxWidth} onWidth={(w) => setState({ rightWidth: w })} onReset={() => setState({ rightWidth: 380 })} />
+    </aside>
   );
 }

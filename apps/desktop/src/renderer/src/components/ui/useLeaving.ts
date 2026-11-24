@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
-/** How long a menu or popover takes to leave (index.css `.ab-leaving`), in ms. */
-export const LEAVE_MS = 130;
+/** How long a popover takes to leave (index.css `.ab-leaving`), in ms. */
+export const LEAVE_MS = 150;
 
 /**
  * Keeps something that closes on screen while it leaves: `mounted` stays true for `ms` after `open` turns false, and

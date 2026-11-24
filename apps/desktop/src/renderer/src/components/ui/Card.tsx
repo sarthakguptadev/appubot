@@ -7,7 +7,7 @@ export function Card({ interactive, className, ...rest }: HTMLAttributes<HTMLDiv
     <div
       className={cn(
         'squircle rounded-card bg-surface shadow-raised',
-        interactive && 'ab-press [--press:.985] hover:-translate-y-0.5 hover:shadow-raised-hover',
+        interactive && 'ab-press hover:-translate-y-0.5 hover:shadow-raised-hover',
         className,
       )}
       {...rest}

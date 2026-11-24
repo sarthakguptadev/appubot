@@ -13,7 +13,7 @@ import { Button, Icon } from '../../components/ui';
 import { useAppUpdate } from '../../lib/thisMac';
 import { restartToUpdate } from './restartToUpdate';
 
-const CARD = 'ab-rise flex min-w-0 items-center gap-3 rounded-card bg-surface-2 py-2.5 pr-2.5 pl-3';
+const CARD = 'flex min-w-0 items-center gap-3 rounded-card bg-surface-2 py-2.5 pr-2.5 pl-3';
 const RING = 28;
 const STROKE = 2.5;
 

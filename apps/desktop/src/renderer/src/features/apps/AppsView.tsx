@@ -182,7 +182,7 @@ function Directory({ onCategory }: { onCategory: (c: { id: string; name: string 
       {connsError ? <Problem text={`Couldn't load your connections: ${connsError}`} onRetry={() => void loadConnections()} /> : null}
       {lists && slugs.length ? (
         <Section title="Connected" hint="Each app is connected once, for all your bots. Choose which bots use it.">
-          <div className={cn(COLUMNS, 'ab-rise-list gap-3')}>
+          <div className={cn(COLUMNS, 'gap-3')}>
             {connected.loading
               ? slugs.map((s) => <ConnectedSkeleton key={s} />)
               : connected.toolkits.map((t) => <ConnectedCard key={t.slug} toolkit={t} conns={bySlug.get(t.slug) ?? NO_CONNS} />)}

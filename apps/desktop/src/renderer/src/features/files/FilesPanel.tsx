@@ -341,7 +341,7 @@ export function FilesPanel() {
           )
         ) : (
           // one gallery for every picture in the tab; the files by kind, each a row that opens to show them
-          <div data-image-gallery className="ab-rise-list flex flex-col gap-1">
+          <div data-image-gallery className="flex flex-col gap-1">
             {SECTIONS.map((sec) => {
               const items = files.filter((f) => fileKind(f) === sec.kind);
               if (!items.length) return null;

@@ -506,7 +506,7 @@ export function FormCard({ part, botName, botId, botColor, expired }: { part: Qu
                 aria-pressed={picked === s.id}
                 disabled={disabled}
                 onClick={() => { setPicked(s.id); setError(null); }}
-                className="gen-choice ab-press squircle flex w-full items-center gap-3 rounded-control-lg bg-surface-2 px-3 py-2.5 text-left [--press:.985] enabled:hover:bg-surface-3"
+                className="gen-choice ab-press squircle flex w-full items-center gap-3 rounded-control-lg bg-surface-2 px-3 py-2.5 text-left enabled:hover:bg-surface-3"
               >
                 <span aria-hidden className="gen-mark" data-checked={picked === s.id || undefined}><span className="gen-mark-dot" /></span>
                 <span className="flex min-w-0 flex-col">

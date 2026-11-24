@@ -17,36 +17,16 @@
   --animate-spin-stepped: spin 1.3s steps(26, end) infinite;
   --ease-out-quint: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+  /* T3 Code's curve (Tailwind's default): every fade and scale in the app's chrome */
+  --ease-t3: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes caret-blink { to { visibility: hidden; } }
-/* a menu, popover or tooltip arriving (Rare UI's card entrance): a short rise, a little growth, out of a blur */
-@keyframes pop-in { from { opacity: 0; transform: translateY(-5px) scale(.97); filter: blur(4px); } to { opacity: 1; transform: none; filter: blur(0); } }
-/* Lists and pages arrive a row after a row (Rare UI's staggered entrance, lib/motion.ts `reveal` for motion's): `ab-rise`
-   on each sibling, or `ab-rise-list` on their parent; the first twelve wait their turn, the rest come with the twelfth.
-   Only at mount, so a row that turns up later arrives by itself. */
-@keyframes rise-in { from { opacity: 0; transform: translateY(6px); filter: blur(4px); } to { opacity: 1; transform: none; filter: blur(0); } }
-.ab-rise, .ab-rise-list > * {
-  animation: rise-in var(--duration-spring-soft) var(--ease-spring-soft) backwards;
-  animation-delay: calc(var(--rise-i, 0) * var(--rise-step, 35ms));
-}
-:is(.ab-rise, .ab-rise-list > *):nth-child(2) { --rise-i: 1; }
-:is(.ab-rise, .ab-rise-list > *):nth-child(3) { --rise-i: 2; }
-:is(.ab-rise, .ab-rise-list > *):nth-child(4) { --rise-i: 3; }
-:is(.ab-rise, .ab-rise-list > *):nth-child(5) { --rise-i: 4; }
-:is(.ab-rise, .ab-rise-list > *):nth-child(6) { --rise-i: 5; }
-:is(.ab-rise, .ab-rise-list > *):nth-child(7) { --rise-i: 6; }
-:is(.ab-rise, .ab-rise-list > *):nth-child(8) { --rise-i: 7; }
-:is(.ab-rise, .ab-rise-list > *):nth-child(9) { --rise-i: 8; }
-:is(.ab-rise, .ab-rise-list > *):nth-child(10) { --rise-i: 9; }
-:is(.ab-rise, .ab-rise-list > *):nth-child(11) { --rise-i: 10; }
-:is(.ab-rise, .ab-rise-list > *):nth-child(n+12) { --rise-i: 11; }
-@media (prefers-reduced-motion: reduce) {
-  .ab-rise, .ab-rise-list > * { animation: none; }
-}
-/* the way out of a menu or popover (components/ui/useLeaving.ts keeps it mounted for LEAVE_MS): quicker than it came, no travel */
-@keyframes pop-out { to { opacity: 0; transform: scale(.98); filter: blur(3px); } }
-.ab-leaving { animation: pop-out .13s var(--ease-rare-in) forwards !important; pointer-events: none; }
+/* a popover or tooltip arriving (T3 Code's): a fade from 98%, no travel, no blur */
+@keyframes pop-in { from { opacity: 0; transform: scale(.98); } to { opacity: 1; transform: none; } }
+/* the way out of a popover (components/ui/useLeaving.ts keeps it mounted for LEAVE_MS): the way in, backwards */
+@keyframes pop-out { to { opacity: 0; transform: scale(.98); } }
+.ab-leaving { animation: pop-out 150ms var(--ease-t3) forwards !important; pointer-events: none; }
 @keyframes message-enter { from { opacity: 0; transform: translateY(3px) scale(.992); } to { opacity: 1; transform: none; } }
 
 /* A message you just sent eases in (Synara's chat-message-send-enter); transform/opacity only. */
@@ -108,25 +88,18 @@ html:not([data-shape="squircle"]) .chat-composer { border-radius: 22px; }
 .dark ::-webkit-scrollbar-thumb:hover { background-color: rgba(255, 255, 255, .14); }
 
 /* ---------- press ---------- */
-/* What a control does under the pointer (Rare UI's): it gives a little and springs back. `--press` is how far
-   (round icon buttons go further); colours change on a short ease of their own. */
+/* What a control does under the pointer (T3 Code's): it gives a little, to 97%, and comes back the same way; a menu's
+   or popover's trigger stays still. */
 @layer components {
   .ab-press {
-    --_tint: .15s var(--ease-rare);
     transition:
-      background-color var(--_tint), color var(--_tint), border-color var(--_tint), box-shadow var(--_tint), opacity var(--_tint),
-      transform var(--duration-spring) var(--ease-spring);
+      background-color 150ms var(--ease-t3), color 150ms var(--ease-t3), border-color 150ms var(--ease-t3),
+      box-shadow 150ms var(--ease-t3), opacity 150ms var(--ease-t3), transform 150ms var(--ease-t3);
   }
-  /* going down is quick and plain; the spring is the way back */
-  .ab-press:active:not(:disabled) {
-    transform: scale(var(--press, .96));
-    transition:
-      background-color var(--_tint), color var(--_tint), border-color var(--_tint), box-shadow var(--_tint), opacity var(--_tint),
-      transform .1s var(--ease-rare);
-  }
+  .ab-press:active:not(:disabled):not([aria-haspopup]) { transform: scale(.97); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .ab-press:active:not(:disabled) { transform: none; }
+  .ab-press:active:not(:disabled):not([aria-haspopup]) { transform: none; }
 }
 
 /* ---------- glass surfaces ---------- */

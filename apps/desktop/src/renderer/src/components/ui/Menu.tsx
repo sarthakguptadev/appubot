@@ -4,7 +4,6 @@ import type { LucideIcon } from './icons';
 import { cn } from './cn';
 import { Icon } from './Icon';
 import { menuTarget } from './menuKeys';
-import { useLeaving } from './useLeaving';
 
 export interface MenuItem {
   label: string;
@@ -56,7 +55,6 @@ export function Menu({ trigger, items, align = 'end', className, anchorClassName
   scrollAfter?: number;
 }) {
   const [open, setOpen] = useState(false);
-  const { mounted, leaving } = useLeaving(open);
   const anchor = useRef<HTMLSpanElement>(null);
   const menu = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
@@ -120,14 +118,14 @@ export function Menu({ trigger, items, align = 'end', className, anchorClassName
   return (
     <>
       <span ref={anchor} className={cn('inline-flex', anchorClassName)}>{trigger({ onClick: () => setOpen((o) => !o), 'aria-expanded': open, 'aria-haspopup': 'menu' })}</span>
-      {mounted
+      {open
         ? createPortal(
             <div
               ref={menu}
               role="menu"
               onKeyDown={onMenuKey}
               style={{ top: pos?.top ?? -9999, left: pos?.left ?? -9999, maxHeight }}
-              className={cn('glass-popover no-drag fixed z-[60] max-h-[min(420px,calc(100vh-16px))] min-w-[200px] animate-[pop-in_.3s_var(--ease-spring-soft)] overflow-y-auto overscroll-contain rounded-pop p-1.5', className, leaving && 'ab-leaving')}
+              className={cn('glass-popover no-drag fixed z-[60] max-h-[min(420px,calc(100vh-16px))] min-w-[200px] overflow-y-auto overscroll-contain rounded-pop p-1.5', className)}
             >
               {items.map((it, i) =>
                 it === 'separator' ? (

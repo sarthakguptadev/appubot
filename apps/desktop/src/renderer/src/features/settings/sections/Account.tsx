@@ -161,7 +161,7 @@ function WhereGroup() {
               disabled={busy}
               onClick={() => void pick(o.on)}
               className={cn(
-                'ab-press squircle relative flex cursor-pointer flex-col items-start gap-2.5 rounded-card p-4 text-left outline-none [--press:.985] focus-visible:ring-2 focus-visible:ring-[var(--ab-ring)] disabled:cursor-default',
+                'ab-press squircle relative flex cursor-pointer flex-col items-start gap-2.5 rounded-card p-4 text-left outline-none focus-visible:ring-2 focus-visible:ring-[var(--ab-ring)] disabled:cursor-default',
                 on ? 'bg-[color-mix(in_srgb,var(--ab-accent)_8%,var(--ab-surface))] shadow-[inset_0_0_0_2px_var(--ab-accent)]'
                   : 'bg-surface shadow-raised hover:shadow-raised-hover',
               )}

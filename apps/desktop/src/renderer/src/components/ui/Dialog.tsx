@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useSyncExternalStore, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'motion/react';
-import { EXIT, SPRING } from '../../lib/motion';
+import { EASE_T3 } from '../../lib/motion';
 import { X } from './icons';
 import { cn } from './cn';
 import { Button } from './Button';
@@ -101,7 +101,7 @@ function Panel({ onClose, title, description, children, footer, size = 'md', cla
     <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
       <motion.div
         className={cn('absolute inset-0', MODAL_BACKDROP)}
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: EASE_T3 }}
         onMouseDown={onClose}
       />
       <motion.div
@@ -114,10 +114,11 @@ function Panel({ onClose, title, description, children, footer, size = 'md', cla
         aria-describedby={description ? `${id}-description` : undefined}
         tabIndex={-1}
         className={cn(MODAL_SURFACE, 'no-drag relative flex max-h-[calc(100vh-48px)] flex-col overflow-hidden outline-none', sizes[size], className)}
-        // Rare UI's card entrance on a spring, without its blur: a sheet this size would smear, and a filter left on it softens the text
-        initial={{ opacity: 0, y: 10, scale: 0.97 }}
-        animate={{ opacity: 1, y: 0, scale: 1, transition: SPRING.pop }}
-        exit={{ opacity: 0, scale: 0.98, transition: EXIT }}
+        // T3 Code's dialog: a 200ms fade from 98%, the same way out
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.98 }}
+        transition={{ duration: 0.2, ease: EASE_T3 }}
       >
         {title || !hideClose ? (
           // Settings' page header, a step down: the title in the system face, semibold, its line under it
