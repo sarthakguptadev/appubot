@@ -3,7 +3,7 @@
  * image ships no agent CLI (each person installs what they use, into the home folder), but every plan comes with the
  * launch bonus's AppuBot AI (`credit.ts`), a Claude Code profile: without Claude Code itself the first message to a bot
  * failed with "claude was not found on PATH" until the user installed it from Settings › Agents. So a computer with a
- * plan installs it by itself, the same way that Install button does (`ProvidersService.install` → `installOnCloud`:
+ * plan installs it by itself, the same way that Install button does (`ProvidersService.install` → `installHere`:
  * Claude's own `install.sh` into `~/.local`, as user node), in the background, at every start where it is missing (a
  * new computer, and one from before this that never had it); nothing else of the setup waits for it.
  *

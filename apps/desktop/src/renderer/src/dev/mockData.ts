@@ -79,6 +79,12 @@ export interface MockOptions {
    * an API-key sign-in with none, or a computer from before plan limits (no `limits` in its snapshot)
    */
   limits?: MockLimitsState;
+  /**
+   * `?agents=signin`: a fresh Windows PC's Agents page: Claude Code installed but signed out (its logins as the runtime
+   * lists them, the subscription first), Codex not installed (AppuBot downloads it itself); `?agents=installing`: Codex
+   * being installed
+   */
+  agents?: 'signin' | 'installing';
 }
 
 const PANELS: readonly RightTab[] = ['threads', 'bot', 'skills', 'memory', 'routines', 'files', 'computer'];
@@ -114,6 +120,7 @@ export function readOptions(): MockOptions {
     longName: q.get('longname') === '1',
     profile: q.get('profile')?.trim() || undefined,
     limits: MOCK_LIMITS_STATES.find((x) => x === q.get('limits')),
+    agents: (['signin', 'installing'] as const).find((x) => x === q.get('agents')),
   };
 }
 
@@ -389,6 +396,28 @@ const CLAUDE_MODELS = [
   { id: 'claude-sonnet-5', name: 'Sonnet 5' }, { id: 'claude-haiku-4-5', name: 'Haiku 4.5' },
 ];
 
+/** `?agents=`: Claude Code signed out with the runtime's logins, Codex missing (or being installed) */
+function freshAgent(p: Provider, agents: 'signin' | 'installing'): Provider {
+  if (p.id === 'claude-code') {
+    return {
+      ...p, authStatus: 'needs_auth', auth: { state: 'logged_out', checkedAt: T0 }, canLogOut: false, version: '2.1.331', latestVersion: undefined, updateAvailable: undefined, update: undefined,
+      authMethods: [
+        { id: 'claude-ai-login', name: 'Claude subscription', description: 'Sign in with your Claude Pro or Max plan in your browser.', kind: 'terminal' },
+        { id: 'claude-token', name: 'Paste a token', description: 'Run `claude setup-token` on any computer and paste what it prints (a Claude subscription).', kind: 'env_var', vars: [{ name: 'CLAUDE_CODE_OAUTH_TOKEN', label: 'Claude Code token', secret: true, optional: false }] },
+        { id: 'anthropic-api-key', name: 'API key', description: 'An Anthropic Console key (API usage billing).', kind: 'env_var', vars: [{ name: 'ANTHROPIC_API_KEY', label: 'Anthropic API key', secret: true, optional: false }] },
+      ],
+    };
+  }
+  if (p.id === 'codex') {
+    return {
+      ...p, installed: false, authStatus: 'not_installed', auth: undefined, installHint: undefined, version: undefined, latestVersion: undefined, updateAvailable: undefined, update: undefined,
+      authMethods: [{ id: 'chat-gpt', name: 'ChatGPT plan', description: 'Sign in with your ChatGPT account in your browser.', kind: 'terminal' }],
+      ...(agents === 'installing' ? { installing: true } : {}),
+    };
+  }
+  return { ...p };
+}
+
 /** `?profile=`: a Claude Code profile with its own account (`providers.profiles`' Add, signed in) */
 function withProfile(name: string): { provider: Provider } {
   const base = providers.find((p) => p.id === 'claude-code')!;
@@ -450,7 +479,7 @@ export function buildSeed(opts: MockOptions): Seed {
         : opts.longName && b.id === IDS.appu ? { ...b, name: 'Appu the Extraordinarily Thorough Bookkeeping Assistant' }
         : prof && b.id === IDS.appu ? { ...b, providerId: prof.provider.id, modelId: 'claude-sonnet-5' } : { ...b })),
       threads,
-      providers: [...providers.map((p) => ({ ...p })), ...(prof ? [prof.provider] : [])],
+      providers: [...providers.map((p) => (opts.agents ? freshAgent(p, opts.agents) : { ...p })), ...(prof ? [prof.provider] : [])],
       pendingPermissions: opts.approval ? [permissionRequest()] : [],
       computer,
       settings,

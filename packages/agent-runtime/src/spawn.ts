@@ -137,12 +137,15 @@ export function whichSync(name: string, pathValue: string, platform: Platform = 
 /**
  * A cmd-shim (the `.cmd` npm, pnpm and Yarn write for a package's bin): the program it runs, relative to the shim's
  * folder, and whether node runs it. Undefined for any other batch file, and for shims that pass node flags of their
- * own or run something other than node or an `.exe`.
+ * own or run something other than node or an `.exe`. The one-line shim AppuBot writes for an agent it installed
+ * (`"C:\…\codex.exe" %*`, a `%` in the path doubled) names its `.exe` by its full path.
  */
 export function parseCmdShim(text: string): { target: string; node: boolean } | undefined {
   const nodeProg = /SET\s+"_prog=node"/i.test(text);
   for (const raw of text.split(/\r?\n/)) {
     const line = raw.trim();
+    const full = /^@?"([A-Za-z]:\\(?:[^"%]|%%)+\.(?:exe|com))"\s+%\*$/i.exec(line);
+    if (full) return { target: full[1]!.replace(/%%/g, '%'), node: false };
     const m = /"%~?dp0%?\\?([^"%]+)"\s+%\*$/.exec(line);
     if (!m) continue;
     // what runs it: after the last `& ` (the current shim's `endLocal & goto … & "%_prog%" …`), without `@`

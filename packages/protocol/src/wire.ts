@@ -429,7 +429,8 @@ export const Methods = {
   'providers.refresh': { params: z.object({ ids: z.array(Id).optional(), signIn: z.boolean().optional() }).default({}), result: z.array(ProviderSchema) },
   'providers.upsert': { params: ProviderSchema.pick({ id: true, name: true, description: true, command: true, args: true, env: true, icon: true, enabled: true, installHint: true }).partial({ description: true, args: true, env: true, icon: true, enabled: true, installHint: true }), result: ProviderSchema },
   'providers.delete': { params: z.object({ id: Id }), result: z.object({ ok: z.literal(true) }) },
-  'providers.install': { params: z.object({ id: Id }), result: z.object({ ok: z.boolean(), output: z.string() }) },
+  /** `terminal`: the install line was opened in a terminal window, to finish there; else the install ran here and is over */
+  'providers.install': { params: z.object({ id: Id }), result: z.object({ ok: z.boolean(), output: z.string(), terminal: z.boolean().optional() }) },
   /**
    * The ACP registry's agents that can run on this Mac, cached on the Mac (`refresh` fetches it again). `error` when
    * it could not be fetched (the last copy, if any, still comes back).
@@ -472,9 +473,11 @@ export const Methods = {
    * prompt to paste a code into) comes back as `DeviceLogin`; `provider.login` events follow it. Codex: `codex login
    * --device-auth` (link + one-time code). Claude Code: `claude setup-token` under a pseudo-terminal, which prints a
    * link and asks for the code pasted back (`providers.deviceLogin.code`); a token from any computer goes through
-   * `providers.setKeys` instead. One at a time per agent; `cancel` ends it. Phones and the window alike.
+   * `providers.setKeys` instead. One at a time per agent; `cancel` ends it. Phones and the window alike. `here`: the
+   * sign-in is for this computer's own window (Settings › Agents on it): the agent opens its page in this computer's
+   * browser itself and its own listener takes the return, while its link, code and paste prompt still come back.
    */
-  'providers.deviceLogin.start': { params: z.object({ id: Id, methodId: z.string().optional() }), result: DeviceLoginSchema },
+  'providers.deviceLogin.start': { params: z.object({ id: Id, methodId: z.string().optional(), here: z.boolean().optional() }), result: DeviceLoginSchema },
   'providers.deviceLogin.status': { params: z.object({ id: Id }), result: DeviceLoginSchema.nullable() },
   /** the code the login asked to have pasted (Claude Code's "Paste code here") */
   'providers.deviceLogin.code': { params: z.object({ id: Id, code: z.string().trim().min(1).max(2000) }), result: DeviceLoginSchema },

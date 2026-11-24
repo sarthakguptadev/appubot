@@ -359,8 +359,11 @@ export function createHandlers(g: MockGateway): Handlers {
     'providers.install': (p) => {
       const prev = g.db.providers.find((x) => x.id === p.id);
       if (!prev) throw notFound('Provider');
-      g.later(() => putProvider({ ...prev, installed: true, authStatus: 'needs_auth', version: prev.version ?? '0.18.4', lastError: undefined, auth: { state: 'logged_out', checkedAt: Date.now() } }), 1200);
-      return { ok: true, output: `$ ${prev.installHint ?? `install ${prev.command}`}\n\nadded 1 package in 3.1s\n${prev.command} is ready.` };
+      putProvider({ ...prev, installing: true });
+      return new Promise((done) => g.later(() => {
+        putProvider({ ...prev, installing: undefined, installed: true, authStatus: 'needs_auth', version: prev.version ?? '0.18.4', lastError: undefined, auth: { state: 'logged_out', checkedAt: Date.now() } });
+        done({ ok: true, output: `${prev.name} is installed. Sign in to start using it.` });
+      }, 1200));
     },
     'providers.authenticate': (p) => {
       const prev = g.db.providers.find((x) => x.id === p.id);

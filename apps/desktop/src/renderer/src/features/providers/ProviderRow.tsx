@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Download, Globe, KeyRound, LogIn, LogOut, MoreHorizontal, RefreshCw, Terminal } from '../../components/ui/icons';
 import type { AuthMethod, Provider } from '@appubot/protocol';
-import { deviceSignIn, providerLogin } from '@appubot/chat-core';
+import { deviceSignIn, providerLogin, signsInHere } from '@appubot/chat-core';
 import { Badge, Button, Menu, cn, type MenuItem } from '../../components/ui';
 import { call, confirm } from '../../lib/actions';
 import { TERMINAL, THIS_MACHINE } from '../../lib/platform';
@@ -9,7 +9,7 @@ import { useThisComputer } from '../cloud/thisComputer';
 import { pushToast, setState } from '../../lib/store';
 
 import { KeysDialog } from './KeysDialog';
-import { CloudLoginButton, CloudSignInDialog } from '../cloud/CloudAgentLogin';
+import { CloudLoginButton, CloudSignInDialog, SignInDialog } from '../cloud/CloudAgentLogin';
 import { useCloudLink } from '../cloud/cloudClient';
 
 export { ProviderLogo, ProviderMark } from './providerLogos';
@@ -49,6 +49,8 @@ export function ProviderActions({ provider: p, className, compact }: { provider:
   /** on the cloud computer an install goes straight on into the sign-in (one press) */
   const [signIn, setSignIn] = useState(false);
   const [keysFor, setKeysFor] = useState<AuthMethod | null>(null);
+  /** this computer's agent signing in to its account in the app (`SignInDialog`), with the login it runs */
+  const [hereFor, setHereFor] = useState<{ method: AuthMethod | undefined } | null>(null);
   const v = providerLogin(p);
   const methods = p.authMethods;
   // on the cloud computer: Claude Code's token from this Mac, Codex's device code, or the cloud desktop
@@ -60,12 +62,14 @@ export function ProviderActions({ provider: p, className, compact }: { provider:
     // on an AppuBot Cloud computer the install runs there and the call ends when it is done (a minute or two)
     const r = await call('providers.install', { id: p.id }, { errorTitle: `Could not install ${p.name}`, timeoutMs: 15 * 60_000 });
     if (r && onCloud && r.ok && deviceSignIn(p)) { await refreshProviders([p.id]); setSignIn(true); }
-    else if (r && onCloud) pushToast({ title: r.ok ? `${p.name} is installed` : `${p.name} didn't install`, body: r.output.slice(-240), level: r.ok ? 'success' : 'warning' });
-    else if (r) pushToast({ title: r.ok ? `Installing ${p.name}` : 'Install needs attention', body: r.output.slice(-240) || `Follow the steps in ${TERMINAL}, then Refresh.`, level: r.ok ? 'info' : 'warning' });
+    else if (r && r.terminal) pushToast({ title: `Installing ${p.name}`, body: r.output.slice(-240) || `Follow the steps in ${TERMINAL}, then Refresh.`, level: 'info' });
+    // installed by AppuBot itself (its own download or its maker's installer): the row reads "Not logged in" now
+    else if (r) pushToast({ title: r.ok ? `${p.name} is installed` : `${p.name} didn't install`, body: r.output.slice(-240), level: r.ok ? 'success' : 'warning' });
     setBusy(null);
   };
   const login = async (m: AuthMethod | undefined = methods[0]) => {
     if (m?.vars?.length) return setKeysFor(m);
+    if (signsInHere(p, m)) return setHereFor({ method: m });
     setBusy('auth');
     const r = await call('providers.authenticate', { id: p.id, methodId: m?.id }, { errorTitle: `Could not log in to ${p.name}` });
     if (r) pushToast({ title: r.ok ? `Log in to ${p.name}` : 'Finish logging in', body: r.message ?? `Complete the login in ${TERMINAL} or your browser, then Refresh.`, level: 'info' });
@@ -93,7 +97,7 @@ export function ProviderActions({ provider: p, className, compact }: { provider:
   /** each login, for the menu of an agent that has several */
   const loginItems: MenuItem[] = methods.map((m) => ({
     label: m.name,
-    icon: m.vars?.length ? KeyRound : m.kind === 'terminal' ? Terminal : Globe,
+    icon: m.vars?.length ? KeyRound : m.kind === 'terminal' && !signsInHere(p, m) ? Terminal : Globe,
     ...(m.description ? { hint: m.description } : {}),
     onSelect: () => void login(m),
   }));
@@ -136,6 +140,7 @@ export function ProviderActions({ provider: p, className, compact }: { provider:
         />
       ) : null}
       {keysFor ? <KeysDialog provider={p} method={keysFor} onClose={() => setKeysFor(null)} /> : null}
+      {hereFor ? <SignInDialog provider={p} method={hereFor.method} onClose={() => setHereFor(null)} /> : null}
     </div>
   );
 }

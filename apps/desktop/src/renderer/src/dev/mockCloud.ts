@@ -346,7 +346,7 @@ export function createDeviceLoginHandlers(g: MockGateway): DeviceLoginHandlers {
       const first = put({ id: p.id, ...(p.methodId ? { methodId: p.methodId } : {}), state: 'starting', startedAt });
       const back = (host: string, port: number, path: string) => `https://${host}/oauth/authorize?response_type=code&state=mock&redirect_uri=${encodeURIComponent(`http://localhost:${port}${path}`)}`;
       g.later(() => put(claude
-        ? { ...first, state: 'waiting', url: 'https://claude.ai/oauth/authorize?code=true&client_id=mock', prompt: 'Paste code here if prompted', relay: { url: back('claude.com', 53111, '/callback'), port: 53111, path: '/callback' } }
+        ? { ...first, state: 'waiting', url: 'https://claude.ai/oauth/authorize?code=true&client_id=mock', prompt: 'Paste code here if prompted', ...(p.here ? {} : { relay: { url: back('claude.com', 53111, '/callback'), port: 53111, path: '/callback' } }) }
         : codex
           ? { ...first, state: 'waiting', url: 'https://auth.openai.com/codex/device', code: 'K7QM-4XWP', expiresAt: startedAt + 900_000 }
           : { ...first, state: 'waiting', url: back('accounts.google.com', 53112, '/oauth2callback'), relay: { url: back('accounts.google.com', 53112, '/oauth2callback'), port: 53112, path: '/oauth2callback' } }), 900);

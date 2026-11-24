@@ -6,7 +6,7 @@ import { createRequire } from 'node:module';
 import { dirname, isAbsolute, join } from 'node:path';
 import { LOGOUT_ARGS, checkLogin, type CliInvocation, type Login } from './login';
 import { getPathString, resolveExecutable } from './path';
-import { directExecutable, killTree, mergeEnv, processGroup, spawnCommand, withPath } from './spawn';
+import { cmdShimTarget, directExecutable, killTree, mergeEnv, processGroup, spawnCommand, withPath } from './spawn';
 import { APPUBOT_AI_PROVIDER_ID, FREE_AGENT_DESCRIPTION, PROFILE_HOME_ENV, claudeSessionSettings, creditModelAllowed, providerBase, type SessionMode } from '@appubot/protocol';
 import type { ProviderSpec, ProviderStatus } from './types';
 
@@ -52,9 +52,27 @@ function adapterSpec(pkg: string, adapter: AdapterInfo | undefined): Pick<Provid
   return adapter ? { command: NODE_COMMAND, args: [adapter.bin] } : { command: 'npx', args: ['-y', pkg] };
 }
 
-const WIN = process.platform === 'win32';
-/** Homebrew is on this Mac: Codex installs as its cask (no Node needed) */
-const BREW = process.platform === 'darwin' && (existsSync('/opt/homebrew/bin/brew') || existsSync('/usr/local/bin/brew'));
+const POWERSHELL = (script: string): string => `powershell -NoProfile -ExecutionPolicy Bypass -Command "${script}"`;
+
+/**
+ * The line that installs a built-in agent on `platform` by hand: its maker's own installer where there is one
+ * (PowerShell on Windows, `curl … | bash` elsewhere), else its npm package. The desktop doesn't run npm for any of
+ * them: Codex, Copilot and OpenCode publish their native programs per platform, which it downloads itself
+ * (`nativeInstall.ts`), and Claude Code's, Cursor's and Grok's installers need no Node.
+ */
+export function builtinInstallHint(id: string, platform: NodeJS.Platform = process.platform): string | undefined {
+  const win = platform === 'win32';
+  switch (id) {
+    case 'claude-code': return win ? POWERSHELL('irm https://claude.ai/install.ps1 | iex') : 'curl -fsSL https://claude.ai/install.sh | bash';
+    case 'codex': return 'npm i -g @openai/codex';
+    case 'cursor': return win ? POWERSHELL("irm 'https://cursor.com/install?win32=true' | iex") : 'curl https://cursor.com/install -fsS | bash';
+    case 'grok': return win ? POWERSHELL('irm https://x.ai/cli/install.ps1 | iex') : 'curl -fsSL https://x.ai/cli/install.sh | bash';
+    case 'copilot': return 'npm i -g @github/copilot';
+    // OpenCode 2's own package (`opencode-ai` is OpenCode 1)
+    case 'opencode': return 'npm i -g @opencode/cli';
+    default: return undefined;
+  }
+}
 
 /**
  * The agents AppuBot knows: Claude Code and Codex through their bundled ACP adapters, which drive the user's own
@@ -71,8 +89,7 @@ export const BUILTIN_PROVIDERS: ProviderSpec[] = [
     icon: 'sparkles',
     builtin: true,
     enabled: true,
-    // Anthropic's native installer (no Node needed)
-    installHint: WIN ? `powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://claude.ai/install.ps1 | iex"` : 'curl -fsSL https://claude.ai/install.sh | bash',
+    installHint: builtinInstallHint('claude-code'),
   },
   {
     id: 'codex',
@@ -83,14 +100,14 @@ export const BUILTIN_PROVIDERS: ProviderSpec[] = [
     icon: 'code',
     builtin: true,
     enabled: true,
-    installHint: BREW ? 'brew install --cask codex' : 'npm i -g @openai/codex',
+    installHint: builtinInstallHint('codex'),
   },
-  { id: 'cursor', name: 'Cursor', description: "Cursor's agent CLI. Uses your Cursor account.", command: 'cursor-agent', args: ['acp'], env: {}, icon: 'mouse-pointer', builtin: true, enabled: false, installHint: WIN ? `powershell -NoProfile -ExecutionPolicy Bypass -Command "irm 'https://cursor.com/install?win32=true' | iex"` : 'curl https://cursor.com/install -fsS | bash' },
-  { id: 'grok', name: 'Grok', description: "xAI's Grok Build agent. Uses your Grok account or XAI_API_KEY.", command: 'grok', args: ['--permission-mode', 'default', 'agent', '--no-leader', 'stdio'], env: {}, icon: 'zap', builtin: true, enabled: false, ...(WIN ? {} : { installHint: 'curl -fsSL https://x.ai/cli/install.sh | bash' }) },
-  { id: 'copilot', name: 'GitHub Copilot', description: "GitHub's Copilot CLI. Uses your GitHub account's Copilot plan.", command: 'copilot', args: ['--acp'], env: {}, icon: 'github', builtin: true, enabled: false, installHint: 'npm i -g @github/copilot' },
+  { id: 'cursor', name: 'Cursor', description: "Cursor's agent CLI. Uses your Cursor account.", command: 'cursor-agent', args: ['acp'], env: {}, icon: 'mouse-pointer', builtin: true, enabled: false, installHint: builtinInstallHint('cursor') },
+  { id: 'grok', name: 'Grok', description: "xAI's Grok Build agent. Uses your Grok account or XAI_API_KEY.", command: 'grok', args: ['--permission-mode', 'default', 'agent', '--no-leader', 'stdio'], env: {}, icon: 'zap', builtin: true, enabled: false, installHint: builtinInstallHint('grok') },
+  { id: 'copilot', name: 'GitHub Copilot', description: "GitHub's Copilot CLI. Uses your GitHub account's Copilot plan.", command: 'copilot', args: ['--acp'], env: {}, icon: 'github', builtin: true, enabled: false, installHint: builtinInstallHint('copilot') },
   // The free agent (protocol `freeModels.ts`): on by default, since its free models need no account. AppuBot installs
-  // it itself (the desktop's `freeAgentInstall.ts`); the hint is OpenCode 2's own package (`opencode-ai` is OpenCode 1).
-  { id: 'opencode', name: 'OpenCode', description: FREE_AGENT_DESCRIPTION, command: 'opencode', args: ['acp'], env: {}, icon: 'terminal', builtin: true, enabled: true, installHint: 'npm i -g @opencode/cli' },
+  // it itself (the desktop's `freeAgentInstall.ts`).
+  { id: 'opencode', name: 'OpenCode', description: FREE_AGENT_DESCRIPTION, command: 'opencode', args: ['acp'], env: {}, icon: 'terminal', builtin: true, enabled: true, installHint: builtinInstallHint('opencode') },
 ];
 
 /**
@@ -250,7 +267,11 @@ export async function adapterCli(spec: ProviderSpec, baseEnv: NodeJS.ProcessEnv 
   const set = spec.env[cli.env] || baseEnv[cli.env];
   if (set) return set;
   const found = await resolveExecutable(cli.name);
-  return (found && (cli.name === 'claude' ? directExecutable(found) || found : found)) || undefined;
+  if (!found) return undefined;
+  if (cli.name === 'claude') return directExecutable(found) || found;
+  // a shim that runs an `.exe` (the one AppuBot writes for a Codex it installed): the program itself
+  const shim = /\.(cmd|bat)$/i.test(found) ? cmdShimTarget(found) : undefined;
+  return shim && 'exe' in shim ? shim.exe : found;
 }
 
 /**
@@ -337,10 +358,44 @@ export function builtinKeyLogins(providerId: string): ProviderStatus['authMethod
   ];
 }
 
-/** `methods` plus the built-in key logins the agent doesn't advertise itself (none twice). */
-export function withBuiltinKeyLogins(providerId: string, methods: ProviderStatus['authMethods']): ProviderStatus['authMethods'] {
-  const extra = builtinKeyLogins(providerId).filter((k) => !methods.some((m) => m.id === k.id));
-  return extra.length ? [...methods, ...extra] : methods;
+type LoginMethod = ProviderStatus['authMethods'][number];
+
+/**
+ * The account each built-in agent signs in with, its subscription or plan: always offered, first, whatever the
+ * agent's ACP handshake advertised (Claude Code's adapter lists its own subscription login only to clients with
+ * terminal auth, and a status from before the handshake has none). Its id is the agent's own where it has one, so
+ * `authCommand` runs the same CLI login: `claude auth login --claudeai`, `codex login` (`--device-auth` where it
+ * runs in the app), `copilot login`, `cursor-agent login`, `grok login`, `opencode auth login`.
+ */
+const ACCOUNT_LOGINS: Record<string, LoginMethod> = {
+  'claude-code': { id: 'claude-ai-login', name: 'Claude subscription', description: 'Sign in with your Claude Pro or Max plan in your browser.', kind: 'terminal' },
+  codex: { id: 'chat-gpt', name: 'ChatGPT plan', description: 'Sign in with your ChatGPT account in your browser.', kind: 'terminal' },
+  copilot: { id: 'github-login', name: 'GitHub account', description: "Sign in with the GitHub account that has your Copilot plan.", kind: 'terminal' },
+  cursor: { id: 'cursor-login', name: 'Cursor account', description: 'Sign in with your Cursor account in your browser.', kind: 'terminal' },
+  grok: { id: 'grok-login', name: 'Grok account', description: 'Sign in with your Grok account in your browser.', kind: 'terminal' },
+  opencode: { id: 'opencode-login', name: 'Model provider account', description: 'Sign in to a model provider of your own (OpenCode asks which).', kind: 'terminal' },
+};
+
+/** A built-in agent's account login (`ACCOUNT_LOGINS`), or undefined for one AppuBot doesn't build in. */
+export function builtinAccountLogin(providerId: string): LoginMethod | undefined {
+  return ACCOUNT_LOGINS[providerBase(providerId)];
+}
+
+/** Every login AppuBot gives a built-in agent by itself: its account first, then its key logins. */
+export function builtinLogins(providerId: string): ProviderStatus['authMethods'] {
+  const account = builtinAccountLogin(providerId);
+  return [...(account ? [account] : []), ...builtinKeyLogins(providerId)];
+}
+
+/**
+ * `methods` as the app lists them: the agent's account login first (in place of an advertised one with its id),
+ * then what the agent advertised, then the built-in key logins it doesn't advertise itself (none twice).
+ */
+export function withBuiltinLogins(providerId: string, methods: ProviderStatus['authMethods']): ProviderStatus['authMethods'] {
+  const account = builtinAccountLogin(providerId);
+  const own = account ? methods.filter((m) => m.id !== account.id) : methods;
+  const keys = builtinKeyLogins(providerId).filter((k) => !own.some((m) => m.id === k.id));
+  return [...(account ? [account] : []), ...own, ...keys];
 }
 
 export function emptyStatus(spec: ProviderSpec): ProviderStatus {
@@ -348,7 +403,7 @@ export function emptyStatus(spec: ProviderSpec): ProviderStatus {
     ...spec,
     installed: false,
     authStatus: 'unknown',
-    authMethods: builtinKeyLogins(spec.id),
+    authMethods: builtinLogins(spec.id),
     capabilities: { loadSession: false, image: false, audio: false, embeddedContext: false },
   };
 }
@@ -408,7 +463,7 @@ export async function probeProvider(spec: ProviderSpec, prev: ProviderStatus | u
     ...(prev
       ? {
           authStatus: prev.authStatus === 'not_installed' ? 'unknown' : prev.authStatus,
-          authMethods: prev.authMethods,
+          authMethods: withBuiltinLogins(spec.id, prev.authMethods),
           capabilities: prev.capabilities,
           ...(prev.lastError ? { lastError: prev.lastError } : {}),
           // ACP logout, learned at the handshake (an agent with a logout command of its own gets it from its login check)

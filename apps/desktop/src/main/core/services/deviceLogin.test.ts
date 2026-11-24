@@ -82,6 +82,15 @@ describe('DeviceLoginService', () => {
         setTimeout(() => process.exit(4), 20000);
         return;
       }
+      if (mode === 'here') {
+        // for this computer's own window: its BROWSER is the person's own, and a link back here is no relay
+        if (!String(process.env.BROWSER ?? '').includes('login-links')) console.log('   HERE-BRWSR1');
+        console.log('Opening browser to sign in: https://auth.example.test/authorize?redirect_uri=' + encodeURIComponent('http://localhost:4321/callback'));
+        process.stdout.write('Paste code here if prompted > ');
+        process.stdin.on('data', () => { console.log('Signed in.'); process.exit(0); });
+        setTimeout(() => process.exit(4), 20000);
+        return;
+      }
       console.log('Open this link in your browser: https://auth.example.test/device');
       console.log('Enter this one-time code (expires in 15 minutes)');
       console.log('   ABCD-EFGHI');
@@ -146,6 +155,20 @@ describe('DeviceLoginService', () => {
     await until(() => svc.status(id)?.state === 'done' || svc.status(id)?.state === 'failed');
     expect(svc.status(id)).toMatchObject({ state: 'done' });
     await expect(svc.finish(id, `http://localhost:${port}/callback?code=abc&state=s123`)).rejects.toMatchObject({ code: 'invalid_state' });
+  });
+
+  it('runs a login for this computer’s own window in the app: the agent opens its own page, nothing is relayed', async () => {
+    const id = providerId();
+    const svc = core.services.deviceLogin;
+    await svc.start(id, 'here', '', true);
+    await until(() => !!svc.status(id)?.prompt);
+    const login = svc.status(id)!;
+    expect(login).toMatchObject({ state: 'waiting', url: expect.stringContaining('https://auth.example.test/authorize'), code: 'HERE-BRWSR1', prompt: 'Paste code here if prompted >' });
+    expect(login.relay).toBeUndefined();
+    await expect(svc.finish(id, 'http://localhost:4321/callback?code=abc')).rejects.toMatchObject({ code: 'invalid_state' });
+    await svc.code(id, 'the-code-from-the-page');
+    await until(() => svc.status(id)?.state === 'done' || svc.status(id)?.state === 'failed');
+    expect(svc.status(id)).toMatchObject({ state: 'done' });
   });
 
   it('reports a failed login with the CLI’s last words, and a cancel ends a running one', async () => {

@@ -7,6 +7,7 @@ import { call, confirm, toastCallError } from '../../../lib/actions';
 import { updateAgent, updateFailureText, type AgentUpdateResult } from '../../providers/agentUpdates';
 import { optimisticCall } from '../../../lib/optimistic';
 import { THIS_MACHINE } from '../../../lib/platform';
+import { native } from '../../../lib/native';
 import { byId, pushToast, setState, upsertBy, useStore } from '../../../lib/store';
 import { ProviderActions, ProviderMark, ProviderStatusBadge, refreshProviders } from '../../providers/ProviderRow';
 import { AddCustomDialog, type AddCustomStep } from '../../providers/AddCustomDialog';
@@ -19,6 +20,9 @@ import { TailscaleSettingRow } from '../TailscaleSettingRow';
 import { settingAnchorId } from '../nav';
 import { CLOUD_AGENTS_NOTE } from '../../cloud/CloudAgentLogin';
 import { SETTINGS_ROW, SETTINGS_ROW_DESCRIPTION, SETTINGS_ROW_TITLE, SettingsCard, SettingsEmptyState, SettingsGroup } from './shared';
+
+/** where an agent that only installs with npm sends someone without Node.js */
+const NODE_DOWNLOAD = 'https://nodejs.org/en/download';
 
 function upsertParams(p: Provider, patch: Partial<Provider> = {}) {
   const next = { ...p, ...patch };
@@ -173,6 +177,12 @@ function ProviderItem({ provider: p, registry }: { provider: Provider; registry:
         ) : null}
         {missing && p.installHint ? (
           <p className="selectable squircle mt-1.5 truncate rounded-control-sm bg-surface-2 px-2.5 py-1.5 font-mono text-note text-fg-2" title={p.installHint}>{p.installHint}</p>
+        ) : null}
+        {missing && p.installNeeds === 'node' ? (
+          <p className="mt-1.5 text-ui leading-snug text-warning">
+            Needs Node.js, which isn’t on {THIS_MACHINE}.{' '}
+            <button type="button" className="text-fg-2 underline underline-offset-2 hover:text-fg" onClick={() => void native().openExternal(NODE_DOWNLOAD)}>Get Node.js</button>
+          </p>
         ) : null}
         {newer ? <UpdateLine provider={p} newer={newer} /> : null}
         {p.lastError ? <p className="selectable mt-1.5 line-clamp-2 text-ui leading-snug text-danger">{p.lastError}</p> : null}

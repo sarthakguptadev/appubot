@@ -117,8 +117,10 @@ export const ProviderSchema = z.object({
   enabled: z.boolean().default(true),
   installHint: z.string().optional(),      // e.g. "npm i -g @zed-industries/claude-code-acp"
   installed: z.boolean().default(false),
-  /** AppuBot Cloud: `providers.install` is running the agent's installer on the computer right now */
+  /** `providers.install` is installing the agent on the computer right now (its own download or its maker's installer) */
   installing: z.boolean().optional(),
+  /** what the agent's install needs that the computer doesn't have: Node.js, for an agent that only installs with npm */
+  installNeeds: z.literal('node').optional(),
   authStatus: ProviderAuthStatus.default('unknown'),
   /**
    * `kind`: `terminal` logins run in Terminal; `agent` ones the agent does by itself (usually in the browser), after

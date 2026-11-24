@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Provider } from '@appubot/protocol';
-import { PROVIDER_MARKS, agentDisplayName, deviceSignIn, agentProfileLabel, genericModeId, permissionModeKind, providerInitials, providerLogin, providerLoginLine, providerMark, shownMode } from './providers';
+import { PROVIDER_MARKS, agentDisplayName, deviceSignIn, signsInHere, agentProfileLabel, genericModeId, permissionModeKind, providerInitials, providerLogin, providerLoginLine, providerMark, shownMode } from './providers';
 
 type P = Pick<Provider, 'installed' | 'authStatus' | 'auth'>;
 const p = (x: Partial<P>): P => ({ installed: true, authStatus: 'unknown', ...x });
@@ -100,5 +100,21 @@ describe('deviceSignIn', () => {
     expect(deviceSignIn({ id: 'custom', authMethods: [] })).toBeNull();
     // a terminal login runs on the computer, its link or code shown on the device
     expect(deviceSignIn({ id: 'kimi-acp', authMethods: [{ kind: 'terminal' }] })).toBe('browser');
+  });
+});
+
+describe('signsInHere', () => {
+  it('signs a built-in agent in to its account in the app, on every OS, and leaves keys and tokens to their dialogs', () => {
+    const claude = { id: 'claude-code', builtin: true };
+    expect(signsInHere(claude, { id: 'claude-ai-login' })).toBe(true);
+    expect(signsInHere(claude, undefined)).toBe(true);
+    expect(signsInHere({ id: 'codex', builtin: true }, { id: 'chat-gpt' })).toBe(true);
+    expect(signsInHere({ id: 'copilot', builtin: true }, { id: 'github-login' })).toBe(true);
+    expect(signsInHere({ id: 'claude-code@work', profile: { of: 'claude-code' } }, { id: 'claude-ai-login' })).toBe(true);
+    expect(signsInHere(claude, { id: 'claude-token', vars: [{}] })).toBe(false);
+    expect(signsInHere(claude, { id: 'anthropic-api-key', vars: [{}] })).toBe(false);
+    // OpenCode asks which provider in a menu of its own; an added agent keeps its own login
+    expect(signsInHere({ id: 'opencode', builtin: true }, { id: 'opencode-login' })).toBe(false);
+    expect(signsInHere({ id: 'antigravity-acp' }, { id: 'oauth' })).toBe(false);
   });
 });

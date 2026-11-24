@@ -12,6 +12,7 @@ import { checkRole } from '../handlers';
 import { FakeRuntime } from '../testing/fakeRuntime';
 import { silentLogger } from '../util';
 import { REGISTRY_URL } from './acpRegistry';
+import { agentBuild, packageUrl } from './nativeInstall';
 import { BREW_API, CLI_UPDATES, NPM_REGISTRY, compareVersions, installKind, isNewer, latestSource, updateCommand } from './providerUpdates';
 
 describe('versions', () => {
@@ -66,6 +67,19 @@ describe('how a CLI updates', () => {
     expect(latestSource(codex, 'brew-cask').url).toBe(`${BREW_API}/cask/codex.json`);
     expect(latestSource(codex, 'brew-formula').pick({ versions: { stable: '0.47.0' } })).toBe('0.47.0');
     expect(latestSource(claude, 'other').url).toBe(`${NPM_REGISTRY}/@anthropic-ai/claude-code/latest`);
+  });
+
+  it('knows a CLI AppuBot downloaded, and reads its newest version from its platform package', () => {
+    const appDirs = ['/home/me/.config/AppuBot/agents', 'C:\\Users\\Ana Lima\\AppData\\Roaming\\AppuBot\\agents'];
+    expect(installKind('/home/me/.config/AppuBot/agents/codex/0.172.0-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex', appDirs)).toBe('app');
+    // Windows paths compare without case (the shim's target as the runtime reads it)
+    expect(installKind('c:\\users\\ana lima\\appdata\\roaming\\appubot\\agents\\codex\\0.172.0-win32-x64\\vendor\\x86_64-pc-windows-msvc\\bin\\codex.exe', appDirs)).toBe('app');
+    expect(installKind('/home/me/.config/AppuBot/agents-old/codex', appDirs)).toBe('other');
+    expect(updateCommand(codex, 'app', '/home/me/.local/bin/codex')).toBeUndefined();
+    const src = latestSource(codex, 'app', 'codex');
+    expect(src.url).toBe(packageUrl('@openai/codex', agentBuild('codex')!.tag));
+    expect(src.pick({ version: '0.173.0-win32-x64' })).toBe('0.173.0');
+    expect(src.pick({ version: '0.174.0-alpha.1-linux-arm64' })).toBe('0.174.0-alpha.1');
   });
 });
 

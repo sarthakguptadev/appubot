@@ -7,11 +7,12 @@ import { chmodSync, mkdirSync, readFileSync, realpathSync, rmSync, statSync, wri
 import { homedir } from 'node:os';
 import { isAbsolute, join, resolve } from 'node:path';
 import { ACP_REGISTRY, APPUBOT_AI_PROVIDER_ID, DEFAULT_EFFORTS, FREE_MODELS_ACCOUNT, FREE_MODELS_NOTE, creditModelAllowed, isFreeAgent, withoutRetired, PROFILE_HOME_ENV, ProviderSchema, agentChoices, profileId, providerBase, type FoundProfile, type MethodParams, type MethodResult, type Provider, type ProviderAuth } from '@appubot/protocol';
-import { RETIRED_PROVIDER_IDS, cmdLine, providerModes, type ProviderSpec, type ProviderStatus, type SessionInfo, withBuiltinKeyLogins } from '@appubot/agent-runtime';
+import { RETIRED_PROVIDER_IDS, cmdLine, providerModes, resolveExecutable, type ProviderSpec, type ProviderStatus, type SessionInfo, withBuiltinLogins } from '@appubot/agent-runtime';
 import type { CoreCtx } from '../context';
 import { findProfiles, profileSlug } from './providerProfiles';
 import { quietInstall } from './cloudInstall';
 import { installFreeAgent } from './freeAgentInstall';
+import { installNativeAgent, installRoute, type InstallRoute } from './nativeInstall';
 import { defaultUpdateIo } from './providerUpdates';
 import { errMsg, notFound, RpcError, shq } from '../util';
 
@@ -58,8 +59,10 @@ export class ProvidersService {
    * handshake can't tell: `agent-auth.json`, so a restart doesn't forget it
    */
   private seenAuth: Record<string, 'authenticated' | 'needs_auth'> | null = null;
-  /** AppuBot Cloud: agents whose CLI is being installed right now (`installOnCloud`), by provider id */
+  /** agents being installed right now (`installHere`), by provider id */
   private installs = new Map<string, Promise<{ ok: boolean; output: string }>>();
+  /** npm is on this computer's PATH (read at each refresh): an npm-only install line can run */
+  private npm = true;
 
   constructor(private ctx: CoreCtx) {}
 
@@ -127,7 +130,8 @@ export class ProvidersService {
       ...(st ?? {}),
       // spec fields win over stale status fields
       id: spec.id, name: spec.name, command: spec.command, args: spec.args, env: spec.env,
-      icon: spec.icon ?? 'bot', builtin: !!spec.builtin, enabled: spec.enabled !== false, installHint: spec.installHint, profile: spec.profile, profileName: spec.profileName,
+      icon: spec.icon ?? 'bot', builtin: !!spec.builtin, enabled: spec.enabled !== false, profile: spec.profile, profileName: spec.profileName,
+      ...this.installFields(spec),
       capabilities: st?.capabilities ?? NO_CAPS,
       version: st?.version ?? spec.registry?.version,
       // an agent that can't be asked whether it is signed in, not checked yet since the app started: as it was last seen
@@ -139,6 +143,29 @@ export class ProvidersService {
       ...(this.ctx.s.providerUpdates?.fields(spec) ?? {}),
       ...(this.installs.has(spec.id) ? { installing: true } : {}),
     });
+  }
+
+  /** The install line to show (none for an agent AppuBot downloads itself), and Node.js when only npm installs it and npm isn't here. */
+  private installFields(spec: ProviderSpec): Pick<Provider, 'installHint' | 'installNeeds'> {
+    const route = this.installRouteOf(spec);
+    return {
+      installHint: route.kind === 'download' ? undefined : spec.installHint,
+      ...(route.kind === 'needs-node' ? { installNeeds: 'node' as const } : {}),
+    };
+  }
+
+  /**
+   * How `install` gets `spec` onto this computer (`nativeInstall.ts` `installRoute`). An AppuBot Cloud computer runs
+   * the agent's own installer there (`cloudInstall.ts`: npm into the home folder, the makers' scripts), OpenCode's
+   * download aside.
+   */
+  private installRouteOf(spec: ProviderSpec): InstallRoute {
+    if (this.ctx.deps.cloud) {
+      if (isFreeAgent(spec.id)) return { kind: 'download', agent: 'opencode' };
+      const how = quietInstall(spec.installHint, homedir(), 'linux');
+      return how ? { kind: 'installer', ...how } : { kind: 'none' };
+    }
+    return installRoute(providerBase(spec.id), spec.installHint, { home: this.ctx.deps.homeDir ?? homedir(), npm: this.npm, builtin: this.isBuiltinAgent(spec.id) });
   }
 
   /**
@@ -339,6 +366,7 @@ export class ProvidersService {
 
   /** Re-probe install, version and login of all (or some) providers; emits `providers.updated`. */
   async refresh(ids?: string[]): Promise<Provider[]> {
+    this.npm = !!(await resolveExecutable('npm').catch(() => undefined));
     try {
       const known = this.ctx.runtime.getProviders().map((s) => s.id);
       const targets = ids ? ids.filter((id) => known.includes(id)) : known;
@@ -438,7 +466,7 @@ export class ProvidersService {
     if (!spec) throw notFound('Provider', id);
     if (!this.statuses.get(id)?.authMethods.length) await this.probe(id);
     // the built-in key logins count even for a runtime whose status doesn't list them (a device login keeping Claude's token)
-    const method = withBuiltinKeyLogins(id, this.statuses.get(id)?.authMethods ?? []).find((m) => m.id === methodId);
+    const method = withBuiltinLogins(id, this.statuses.get(id)?.authMethods ?? []).find((m) => m.id === methodId);
     if (!method?.vars?.length) throw new RpcError('invalid_params', `${spec.name} has no login "${methodId}" that takes a key.`);
     const keep: Record<string, string> = {};
     for (const v of method.vars) {
@@ -726,51 +754,65 @@ export class ProvidersService {
     return res;
   }
 
-  /** `quiet`: run the agent's own installer here in the background instead of opening Terminal (the free Claude day's setup: `PromoService`) */
-  async install(id: string, opts: { quiet?: boolean } = {}): Promise<{ ok: boolean; output: string }> {
+  /**
+   * Install an agent. AppuBot does it here, in the background, wherever it can (`installRouteOf`): the maker's native
+   * program downloaded, or the maker's installer run with no window; the call ends when it is done and `installing`
+   * rides on the provider meanwhile. Otherwise the install line opens in a terminal (`terminal: true`); an npm line
+   * where Node.js isn't installed says so instead. `quiet` (the free Claude day's setup: `PromoService`) never opens a
+   * terminal.
+   */
+  async install(id: string, opts: { quiet?: boolean } = {}): Promise<{ ok: boolean; output: string; terminal?: boolean }> {
     const spec = this.ctx.runtime.getProviders().find((s) => s.id === id);
     if (!spec) throw notFound('Provider', id);
-    // OpenCode is always installed by AppuBot itself (`freeAgentInstall.ts`): its Terminal line would need npm
-    if (this.ctx.deps.cloud || opts.quiet || isFreeAgent(id)) return this.installOnCloud(spec);
-    if (!spec.installHint) {
+    const route = this.installRouteOf(spec);
+    if (route.kind === 'download' || route.kind === 'installer') return this.installHere(spec, route);
+    if (this.ctx.deps.cloud) return { ok: false, output: `${spec.name} can't be installed on AppuBot Cloud from here yet.` };
+    if (opts.quiet) return { ok: false, output: `${spec.name} can't be installed from here. Install it from Settings › Agents.` };
+    if (route.kind === 'needs-node') {
+      return { ok: false, output: `${spec.name} installs with npm, which comes with Node.js, and Node.js isn't on this computer. Install Node.js from nodejs.org, then press Install again.` };
+    }
+    if (route.kind === 'none') {
       return { ok: false, output: process.platform === 'win32' ? `Install ${spec.name} from its website, then press Refresh.` : 'No install command is known for this agent.' };
     }
-    await this.ctx.deps.openTerminal(spec.installHint);
-    return { ok: true, output: `Opened ${terminalName()} running: ${spec.installHint}` };
+    await this.ctx.deps.openTerminal(route.line);
+    return { ok: true, output: `Opened ${terminalName()} running: ${route.line}`, terminal: true };
   }
 
   /**
-   * AppuBot Cloud: nobody can type into a terminal there, so the agent's own installer runs here, non-interactively,
-   * into the home folder (`cloudInstall.ts`), awaited (the apps give the call 15 minutes) and once per agent at a
-   * time (a second click joins the first). `installing` rides on the provider meanwhile (`provider.updated` at the
-   * start and the end), so every connected app shows it; the refresh after it finds the CLI, and the agent is ready
-   * for its sign-in.
+   * The install AppuBot runs itself, awaited (the apps give the call 15 minutes) and once per agent at a time (a second
+   * click joins the first). `installing` rides on the provider meanwhile (`provider.updated` at the start and the end),
+   * so every connected app shows it; the refresh after it finds the program, and the agent is ready for its sign-in.
    */
-  private installOnCloud(spec: ProviderSpec): Promise<{ ok: boolean; output: string }> {
+  private installHere(spec: ProviderSpec, route: Extract<InstallRoute, { kind: 'download' | 'installer' }>): Promise<{ ok: boolean; output: string }> {
     const running = this.installs.get(spec.id);
     if (running) return running;
-    // OpenCode comes as a download of its own (no npm, no shell); every other agent runs its maker's installer
-    const own = isFreeAgent(spec.id) ? (this.ctx.deps.freeAgentInstall ?? installFreeAgent) : undefined;
-    // a cloud computer is Linux, whatever runs this core
-    const how = own ? undefined : quietInstall(spec.installHint, homedir(), this.ctx.deps.cloud ? 'linux' : process.platform);
-    if (!own && !how) return Promise.resolve({ ok: false, output: this.ctx.deps.cloud ? `${spec.name} can't be installed on AppuBot Cloud from here yet.` : `${spec.name} can't be installed from here. Install it from Settings › Agents.` });
     const emit = () => { const p = this.list().find((x) => x.id === spec.id); if (p) this.ctx.bus.emit('provider.updated', p); };
+    const free = route.kind === 'download' && route.agent === 'opencode';
     const job = (async () => {
-      this.ctx.log.info(`providers: installing ${spec.id} here: ${how ? `${how.command} ${how.args.join(' ')}` : 'its own download'}`);
-      const io = { ...defaultUpdateIo, ...this.ctx.deps.updateIo };
-      const r = own
-        ? await own({ ...this.ctx.s.freeAgent.installPaths(), ...(this.ctx.deps.fetch ? { fetch: this.ctx.deps.fetch } : {}), log: (line) => this.ctx.log.info(`providers: ${spec.id}: ${line}`) }).catch((e: unknown) => ({ ok: false, output: errMsg(e) }))
-        : await io.run(how!.command, how!.args).catch((e: unknown) => ({ ok: false, output: errMsg(e) }));
+      this.ctx.log.info(`providers: installing ${spec.id} here: ${route.kind === 'installer' ? `${route.command} ${route.args.join(' ')}` : `its own download (${route.agent})`}`);
+      const log = (line: string) => this.ctx.log.info(`providers: ${spec.id}: ${line}`);
+      const fetchOpt = this.ctx.deps.fetch ? { fetch: this.ctx.deps.fetch } : {};
+      const failed = (e: unknown) => ({ ok: false, output: errMsg(e) });
+      const r = route.kind === 'installer'
+        ? await ({ ...defaultUpdateIo, ...this.ctx.deps.updateIo }).run(route.command, route.args).catch(failed)
+        : free
+          ? await (this.ctx.deps.freeAgentInstall ?? installFreeAgent)({ ...this.ctx.s.freeAgent.installPaths(), ...fetchOpt, log }).catch(failed)
+          : await (this.ctx.deps.nativeInstall ?? installNativeAgent)(route.agent, { dir: this.nativeDir(route.agent), home: this.ctx.deps.homeDir ?? homedir(), ...fetchOpt, log }).catch(failed);
       await this.refresh([spec.id]).catch((e) => this.ctx.log.warn(`providers: re-checking ${spec.id} failed`, errMsg(e)));
       const installed = !!this.statuses.get(spec.id)?.installed;
       if (!installed) this.ctx.log.warn(`providers: installing ${spec.id} failed`, r.output.slice(-500));
       return installed
-        ? { ok: true, output: own ? `${spec.name} is installed and ready: its free models need no account.` : `${spec.name} is installed. Sign in to start using it.` }
+        ? { ok: true, output: free ? `${spec.name} is installed and ready: its free models need no account.` : `${spec.name} is installed. Sign in to start using it.` }
         : { ok: false, output: r.output.trim() || `${spec.name} didn't install.` };
     })().finally(() => { this.installs.delete(spec.id); emit(); });
     this.installs.set(spec.id, job);
     emit();
     return job;
+  }
+
+  /** where AppuBot keeps the programs it downloads for an agent (OpenCode's: `FreeAgentService.installPaths`) */
+  nativeDir(agent: string): string {
+    return join(this.ctx.paths.dataDir, 'agents', agent);
   }
 
   /**

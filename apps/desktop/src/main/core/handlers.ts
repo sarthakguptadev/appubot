@@ -263,7 +263,7 @@ export function buildHandlers(ctx: CoreCtx): Handlers {
     'providers.setKeys': (p, cx) => s.providers.setKeys(p.id, p.methodId, p.values, scopeOf(cx)),
     'providers.clearKeys': (p, cx) => s.providers.clearKeys(p.id, scopeOf(cx)),
     'providers.logout': (p, cx) => s.providers.logout(p.id, scopeOf(cx)),
-    'providers.deviceLogin.start': (p, cx) => s.deviceLogin.start(p.id, p.methodId, scopeOf(cx)),
+    'providers.deviceLogin.start': (p, cx) => s.deviceLogin.start(p.id, p.methodId, scopeOf(cx), p.here),
     'providers.deviceLogin.status': (p) => s.deviceLogin.status(p.id),
     'providers.deviceLogin.code': (p) => s.deviceLogin.code(p.id, p.code),
     'providers.deviceLogin.cancel': (p) => s.deviceLogin.cancel(p.id),
