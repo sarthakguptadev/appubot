@@ -12,6 +12,31 @@ export const RELEASES: readonly ReleaseNotes[] = [
     version: '2026.1124.2',
     features: [
       {
+        id: 'bot-handoff',
+        title: 'Hand a task to another bot',
+        description: 'In any chat, write @Ledger and the task goes to Ledger, which answers right there in the same chat. Bots can pass work on to each other too, and stop after a few hand-offs until you write again.',
+      },
+      {
+        id: 'mention-menu',
+        title: 'Pick a bot with @',
+        description: 'Type @ in a chat or a group and a list of your bots opens where you are typing. Keep typing to narrow it, and press Enter to pick one.',
+      },
+      {
+        id: 'smarter-palette',
+        title: 'A smarter ⌘K',
+        description: 'The ⌘K palette finds what you mean from the start of each word, forgives a typo, shows what matched in bold and remembers what you picked. It also searches your open chats’ messages, and lets you switch theme, model or reasoning effort without leaving it.',
+      },
+      {
+        id: 'round-controls',
+        title: 'Round all over',
+        description: 'Buttons, fields and chips across the app are now fully round. Prefer the old corners? Pick Squircle in Settings › Appearance.',
+      },
+      {
+        id: 'windows-fixes',
+        title: 'Better on Windows',
+        description: 'Lending folders to another computer now works on Windows, and the usage page counts your bots’ requests as theirs.',
+      },
+      {
         id: 'quick-motion',
         title: 'Quicker, quieter motion',
         description: 'Menus and the side panel open at once. Settings, dialogs, popovers and tooltips fade in quickly, and tabs and lists change in place without sliding.',
