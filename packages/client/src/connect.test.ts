@@ -801,10 +801,10 @@ describe('direct sessions (the same Wi-Fi, no relay)', () => {
 
   test('a computer that isn’t there is given up on, and a probe’s timeout doesn’t wait out the handshake', async () => {
     const w = world({ direct: true, unreachable: true });
-    const s = direct(w, { readyTimeoutMs: 400 });
+    const s = direct(w, { readyTimeoutMs: 60 });
     const t0 = Date.now();
     expect(await checkHealth('http://192.168.1.5:7890', relayFetch(s), 20)).toEqual({ ok: false });
-    expect(Date.now() - t0).toBeLessThan(250);
+    expect(Date.now() - t0).toBeLessThan(55);
     await expect(s.ready).rejects.toMatchObject({ code: 'connect_failed', message: expect.stringMatching(/on this Wi-Fi/) });
   });
 
