@@ -37,7 +37,7 @@ describe('runtime against fake ACP agent', () => {
   beforeAll(() => {
     dir = mkdtempSync(join(tmpdir(), 'appubot-fake-'));
   });
-  // retried: on Windows a terminal's process tree is ended by taskkill, which may still hold the folder for a moment
+  // retried: Windows may hold the folder of a process that just ended for a moment longer
   afterAll(() => rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }));
 
   function makeRuntime(env: Record<string, string> = {}, secrets?: Record<string, string>): AgentRuntime {

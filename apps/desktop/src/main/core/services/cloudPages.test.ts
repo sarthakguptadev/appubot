@@ -6,7 +6,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { existsSync, mkdtempSync, readFileSync, rmSync, statSync, utimesSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { CloudPages, pageHash } from './cloudPages';
 import { cloudEntries, cloudFilesSize, sweepCloudFiles } from './cloudFiles';
 
@@ -39,8 +39,8 @@ describe('CloudPages', () => {
     expect(kept.path).toMatch(/^\/cloud-pages\/own\/p1\?v=k-[\w-]+&h=[0-9a-f]{16}$/);
     const file = join(dataDir, 'cloud-files', 'own', 'p1', '.page.json');
     expect(readFileSync(file, 'utf8')).not.toContain('Revenue');
-    expect(statSync(file).mode & 0o777).toBe(0o600);
-    expect(statSync(join(dataDir, 'cloud-files')).mode & 0o777).toBe(0o700);
+    if (process.platform !== 'win32') expect(statSync(file).mode & 0o777).toBe(0o600);
+    if (process.platform !== 'win32') expect(statSync(join(dataDir, 'cloud-files')).mode & 0o777).toBe(0o700);
     expect(pages.get(undefined, 'p1')).toMatchObject({ path: kept.path, hash: kept.hash });
     expect(pages.serve('own', 'p1')).toBe('<h1>Revenue</h1>');
     expect(pages.serve('team-x', 'p1')).toBeNull();
@@ -93,7 +93,7 @@ describe('sweepCloudFiles', () => {
     at('own', 'old', now - 40 * 86_400_000);
     // shown again: the newest
     pages.get(undefined, 'a');
-    const size = cloudEntries(root, 'own').find((e) => e.dir.endsWith('/c'))!.size;
+    const size = cloudEntries(root, 'own').find((e) => basename(e.dir) === 'c')!.size;
     const r = sweepCloudFiles(root, { maxBytes: size * 2 + 10, now: now + 10 });
     expect(r.removed).toBe(2);
     expect(pages.get(undefined, 'old')).toBeNull();

@@ -80,7 +80,7 @@ describe('vault', () => {
     expect(card).toMatchObject({ hint: '4242', brand: 'Visa', secrets: ['number', 'cvc'] });
 
     const file = join(root, 'data', 'vault.json');
-    expect(statSync(file).mode & 0o777).toBe(0o600);
+    if (process.platform !== 'win32') expect(statSync(file).mode & 0o777).toBe(0o600);
     const raw = readFileSync(file, 'utf8');
     for (const s of ['hunter2', '4242424242424242', '"123"']) expect(raw).not.toContain(s);
     const wire = JSON.stringify([v.list(), v.agentList(ctx())]);
@@ -130,7 +130,7 @@ describe('vault', () => {
     answerNext('Allow');
     const r = await v.key(ctx(), key.id);
     expect(r.envName).toBe('OPENAI_API_KEY');
-    expect(statSync(r.path).mode & 0o777).toBe(0o600);
+    if (process.platform !== 'win32') expect(statSync(r.path).mode & 0o777).toBe(0o600);
     expect(readFileSync(r.path, 'utf8')).toBe("OPENAI_API_KEY='sk-abc$1'\n");
     v.delete(key.id);
     expect(readFileSync(r.path, 'utf8')).toBe('');

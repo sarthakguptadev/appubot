@@ -79,7 +79,8 @@ class FakeAgent {
       process.stdout.write(`Open the following link to authenticate the ACP server: ${SIGN_IN}\n`);
       return new Promise(() => {});
     }
-    const sessionId = `fake-${this.nextId++}`;
+    // unique across processes, as an agent's own ids are: two sessions in one runtime never share one
+    const sessionId = `fake-${process.pid}-${this.nextId++}`;
     this.sessions.set(sessionId, { cwd: params.cwd, cancel: null, model: 'fast', mode: 'default', mcpServers: params.mcpServers });
     setTimeout(() => {
       void this.update(sessionId, {

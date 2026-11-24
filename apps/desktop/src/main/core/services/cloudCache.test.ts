@@ -49,8 +49,8 @@ describe('CloudCache on its own', () => {
     expect(cache.keys().sort()).toEqual(['own', 'team:team_acme']);
     const file = join(dir, 'cloud-cache', 'own.json');
     expect(readFileSync(file, 'utf8')).not.toContain('Ada');
-    expect(statSync(file).mode & 0o777).toBe(0o600);
-    expect(statSync(join(dir, 'cloud-cache')).mode & 0o777).toBe(0o700);
+    if (process.platform !== 'win32') expect(statSync(file).mode & 0o777).toBe(0o600);
+    if (process.platform !== 'win32') expect(statSync(join(dir, 'cloud-cache')).mode & 0o777).toBe(0o700);
   });
 
   it('drops a copy written for another account, and keeps nothing while signed out', () => {
@@ -173,7 +173,7 @@ describe('copies follow the account', () => {
     const file = join(root, 'mac', 'data', 'cloud-view.json');
     expect(existsSync(file)).toBe(true);
     expect(readFileSync(file, 'utf8')).not.toContain('"computer"');
-    expect(statSync(file).mode & 0o777).toBe(0o600);
+    if (process.platform !== 'win32') expect(statSync(file).mode & 0o777).toBe(0o600);
     let asked = 0;
     const launch = () => createCore(base(join(root, 'mac'), { cloudBackendUrl: 'https://cloud.test/', cloudFetch: () => { asked++; return new Promise<Response>(() => undefined); }, windowHidden: () => true, secretBox }));
     // under a minute old: answered as it is, nothing read (the request rules)
