@@ -163,6 +163,41 @@ describe('hand-off in a bot’s chat', () => {
     expect(bots.map((m) => m.from?.name ?? 'Ada')).toEqual(Array.from({ length: HANDOFF_HOPS_MAX }, (_, i) => (i % 2 ? 'Ledger' : 'Ada')));
   });
 
+  it('caps the turns one message sets off when bots name several others, not only how deep they go', async () => {
+    says.Ada = () => '@Ledger and @Cy, over to you';
+    says.Ledger = () => '@Ada and @Cy, as you said';
+    says.Cy = () => '@Ada and @Ledger, as you said';
+    const before = msgs(chat).length;
+    send(chat, 'go');
+    await until(() => msgs(chat).some((m) => m.parts.some((p) => p.type === 'system' && p.text.startsWith('Paused'))), 10_000);
+    await until(() => idle(chat) && !core.services.chat.hasWork(core.services.threads.chatFor(ledger.id).id) && !core.services.chat.hasWork(core.services.threads.chatFor(cy.id).id), 10_000);
+    await new Promise((r) => setTimeout(r, 200));
+    const after = msgs(chat).slice(before);
+    expect(after.filter((m) => m.role === 'agent' && textOf(m)).length).toBeLessThanOrEqual(HANDOFF_HOPS_MAX);
+    expect(after.filter((m) => m.parts.some((p) => p.type === 'system' && p.text.startsWith('Paused')))).toHaveLength(1);
+  });
+
+  it('stops the hand-off from the chat it came from', async () => {
+    send(chat, '@Ledger slow work please');
+    const ledgerChat = core.services.threads.chatFor(ledger.id).id;
+    await until(() => core.services.chat.isBusy(ledgerChat));
+    await core.services.chat.cancel(chat);
+    await until(() => idle(chat) && !core.services.chat.isBusy(ledgerChat));
+    expect(msgs(chat).filter((m) => m.from).at(-1)).toMatchObject({ status: 'cancelled', parts: [] });
+  });
+
+  it('doesn’t send the bot that handed it over on when the hand-off is stopped', async () => {
+    const ledgerChat = core.services.threads.chatFor(ledger.id).id;
+    says.Ada = () => '@Ledger slow work please';
+    send(chat, 'ask Ledger');
+    await until(() => core.services.chat.isBusy(ledgerChat));
+    const adaTurns = heard.Ada.length;
+    await core.services.chat.cancel(ledgerChat);
+    await until(() => idle(chat));
+    await new Promise((r) => setTimeout(r, 200));
+    expect(heard.Ada).toHaveLength(adaTurns);
+  });
+
   it('reads a stopped hand-off as stopped', async () => {
     send(chat, '@Ledger slow work please');
     const ledgerChat = core.services.threads.chatFor(ledger.id).id;

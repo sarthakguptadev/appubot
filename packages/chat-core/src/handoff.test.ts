@@ -18,6 +18,9 @@ describe('hand-offs in a bot\'s chat', () => {
     expect(handoffTargets('run `@Ledger` or\n```\n@Ledger\n```', bots)).toEqual([]);
     expect(handoffTargets('> @Ledger said so\nfine', bots)).toEqual([]);
     expect(handoffTargets('@everyone hi, @all too', bots)).toEqual([]);
+    expect(handoffTargets('@all@all, @everyone@everyone', bots)).toEqual([]);
+    expect(handoffTargets('see youtube.com/@Ledger and @ada@mastodon.social', bots)).toEqual([]);
+    expect(handoffTargets('thanks (@Ledger).', bots)).toEqual([ledger]);
     expect(handoffTargets('nobody named', bots)).toEqual([]);
   });
 

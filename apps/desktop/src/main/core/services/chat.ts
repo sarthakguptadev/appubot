@@ -1553,6 +1553,7 @@ export class ChatService {
 
   async cancel(threadId: string): Promise<{ ok: true }> {
     this.ctx.s.threads.require(threadId);
+    this.ctx.s.handoffs?.stopFor(threadId);
     const run = this.runs.get(threadId);
     if (!run) return { ok: true };
     for (const job of run.queue.splice(0)) {
