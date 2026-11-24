@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import {
-  CLOUD_KEEP_DAYS, personInitials, profilePhoto,
+  CLOUD_ENDED_KEEP_DAYS, keepDaysText, personInitials, profilePhoto,
   DROP_SEAT_QUESTION, TEAM_LOGINS_MEMBER_NOTE, TEAM_LOGINS_OPTIONS, TEAM_LOGINS_TERMS_NOTE, peopleText, priceText, seatDropOffer, shortDate,
   computerDisplayName, teamRoleNote, workPrice,
 } from '@appubot/chat-core';
@@ -635,7 +635,7 @@ export function DangerGroup({ t }: { t: CloudTeamView }) {
           <LinkRow
             lead={null}
             title={`Close ${team.name}`}
-            description={`Cancel the team’s plan in the billing page; it ends at the renewal, and the team’s computer is kept ${CLOUD_KEEP_DAYS} days after that, then deleted.`}
+            description={`Cancel the team’s plan in the billing page; it ends at the renewal, and the team’s computer is kept ${keepDaysText(CLOUD_ENDED_KEEP_DAYS)} after that, then deleted.`}
             action={<Button size="sm" variant="danger" loading={portal} onClick={() => void openBilling(team.id)}>Cancel team plan</Button>}
           />
         ) : null}

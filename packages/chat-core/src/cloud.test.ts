@@ -48,7 +48,7 @@ describe('the computer’s state', () => {
   it('explains each state, and nothing while ok', () => {
     expect(cloudStateText('ok')).toBe('');
     expect(cloudStateText('on-hold')).toMatch(/payment/);
-    expect(cloudStateText('export-only')).toMatch(/7 days, then deleted/);
+    expect(cloudStateText('export-only')).toMatch(/one day, then deleted/);
     expect(cloudStateText('export-only')).not.toMatch(/download/i);
     expect(cloudStateTitle('on-hold')).toBe('Payment on hold');
     expect(cloudStateTitle('export-only')).toBe('Plan ended');

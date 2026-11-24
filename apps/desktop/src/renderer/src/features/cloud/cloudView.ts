@@ -7,7 +7,7 @@
  */
 import type { CloudAccountView, CloudComputer, CloudCredit, CloudInterval, CloudPlanId, CloudPrice, CloudShape, CloudTeam, CloudTeamMember, CloudTeamView, CloudWorkCatalogPlan, SystemInfo } from '@appubot/protocol';
 import {
-  CLOUD_KEEP_DAYS, fitsMembers, inviteStatusText, moneyText, planTitle, priceText, scheduledChangeText,
+  CLOUD_ENDED_KEEP_DAYS, keepDaysText, fitsMembers, inviteStatusText, moneyText, planTitle, priceText, scheduledChangeText,
   scheduledSeatsText, seatsText, shapeText, shortDate, computerDisplayName, teamRoleText, upToMembersText, workPrice,
   personalPaywall as cardsPersonal, workPaywall as cardsWork, paywallIntervals as intervalsOf,
   type PaywallCard, type PaywallKind, TRIAL_BADGE,
@@ -42,7 +42,7 @@ export function phaseWords(p: CloudPhase, v?: CloudAccountView | null, now = Dat
     case 'on-hold': return { label: 'Payment on hold', tone: 'danger', line: ON_HOLD_TEXT };
     case 'ending': return {
       label: 'Ending', tone: 'warning',
-      line: `Your plan ends${sub ? ` on ${shortDate(sub.periodEnd, now)}` : ''}. Your bots and files are kept for ${CLOUD_KEEP_DAYS} days after that, then deleted. Keep your plan in Manage billing.`,
+      line: `Your plan ends${sub ? ` on ${shortDate(sub.periodEnd, now)}` : ''}. Your bots and files are kept for ${keepDaysText(CLOUD_ENDED_KEEP_DAYS)} after that, then deleted. Keep your plan in Manage billing.`,
     };
     case 'export-only': {
       const until = c?.exportUntil ?? v?.account?.exportUntil;
