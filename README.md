@@ -7,10 +7,10 @@
 
 # AppuBot
 
-**The free Grok Bot alternative: a team of AI bots that use the apps on your own computer.**
+**The open source Grok Bot alternative: a team of AI bots that use the apps on your own computer.**
 
 <p>
-A free alternative to Grok Bot, OpenAI dots and Meta Muse for Mac, Windows and Linux.<br>
+A free, open source alternative to Grok Bot, OpenAI dots, Meta Muse and Cue by Manus for Mac, Windows and Linux.<br>
 It runs on the Claude, ChatGPT, Cursor, Grok or Copilot account you already have,<br>
 works on your own computer or around the clock in AppuBot Cloud, and answers you on Telegram.
 </p>
@@ -35,12 +35,13 @@ works on your own computer or around the clock in AppuBot Cloud, and answers you
 <a href="https://appubot.com">appubot.com</a> &nbsp;·&nbsp;
 <a href="https://appubot.com/pricing">AppuBot Cloud</a> &nbsp;·&nbsp;
 <a href="https://appubot.com/compare">Compare</a> &nbsp;·&nbsp;
+<a href="https://appubot.com/compare/grok-bot">Open source Grok Bot alternative, compared</a> &nbsp;·&nbsp;
 <a href="https://appubot.com/faq">FAQ</a>
 </p>
 
-<sub>Free to download · no account, no card · AppuBot Cloud from $19 a month · source available</sub>
+<sub>Free to download · no account, no card · AppuBot Cloud from $19 a month · open source</sub>
 
-<sub>AppuBot is a free alternative to <b>Grok Bot</b>, <b>OpenAI dots</b> and <b>Meta Muse</b>, and to <b>MausBot</b>, <b>OpenBot</b>, <b>OpenClaw</b>, <b>Hermes Agent</b>, <b>Manus</b> and <b>Claude Cowork</b>: bring your own AI (Claude Code, Codex, Cursor, Grok, GitHub Copilot or OpenCode), local-first, with computer use in your real apps.</sub>
+<sub>AppuBot is an open source Grok Bot alternative: a free alternative to <b>Grok Bot</b>, <b>OpenAI dots</b>, <b>Meta Muse</b> and <b>Cue by Manus</b>, and to <b>MausBot</b>, <b>OpenBot</b>, <b>OpenClaw</b>, <b>Hermes Agent</b>, <b>Manus</b> and <b>Claude Cowork</b>: bring your own AI (Claude Code, Codex, Cursor, Grok, GitHub Copilot or OpenCode), local-first, with computer use in your real apps. An independent project, not affiliated with xAI, OpenAI, Meta or Manus.</sub>
 
 </div>
 
@@ -329,7 +330,7 @@ It stays on your computer. What leaves is what a bot sends to its AI provider, s
 <details>
 <summary><b>Is AppuBot open source?</b></summary>
 <br>
-Its code is public here, source-available under the PolyForm Shield License: you may read it, build it, change it and send us improvements, but not use it to make a competing product. See <a href="#licence">Licence</a>.
+Yes. Its code is public here under the PolyForm Shield License: you may read it, build it, change it and send us improvements, but not use it to make a competing product. See <a href="#licence">Licence</a>.
 </details>
 
 <details>
@@ -500,7 +501,7 @@ The phone apps, AppuBot Cloud and AppuBot's servers are run by us. If something'
 
 ## Licence
 
-AppuBot's code is source-available under the [PolyForm Shield License 1.0.0](LICENSE.md). You may use, study and change it for anything except making a product that competes with AppuBot. That includes free products, and anything offered as a substitute for AppuBot.
+AppuBot is open source under the [PolyForm Shield License 1.0.0](LICENSE.md). You may use, study and change it for anything except making a product that competes with AppuBot. That includes free products, and anything offered as a substitute for AppuBot.
 
 - The AppuBot name, logo and icon aren't covered: see [TRADEMARKS.md](TRADEMARKS.md).
 - `apps/desktop/src/renderer/src/components/rare` is Rare UI by Swami Malode, under its own licence in that folder.
