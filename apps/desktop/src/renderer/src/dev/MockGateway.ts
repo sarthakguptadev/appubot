@@ -223,6 +223,7 @@ export class MockGateway implements GatewayLike {
     if (this.opts.thread === 'routines') void openThread(IDS.appuRoutines);
     if (this.opts.thread === 'work') void openThread(IDS.appuWork);
     if (this.opts.thread === 'failed') void openThread(IDS.appuFailed);
+    if (this.opts.thread === 'handoff') void openThread(IDS.appuHandoff);
     const panel = this.opts.panel;
     if (panel) setState({ rightOpen: true, rightTab: panel });
     if (this.opts.page === 'apps') ui.openApps();

@@ -270,7 +270,7 @@ function RoomComposer({ group, chatId, working, members }: { group: Group; chatI
   // the group's goal in this thread, if one is on or just ended
   const goal = groupChats(group).find((c) => c.id === chatId)?.goal;
   const asker = useStore((s) => (pending.length ? s.bots.find((b) => b.id === pending[0]!.botId) : undefined));
-  // the + menu: name a member (they answer it) or everyone
+  // the + menu: name a member (they answer it) or everyone (typing @ offers the same, at the caret: Composer's menu)
   const mentionItems = useCallback((insert: (text: string) => void): MenuItem[] => [
     ...members.map((b) => ({ label: `Ask ${b.name}`, leading: <BotAvatar bot={b} size={16} still />, onSelect: () => insert(`@${b.name} `) })),
     ...(members.length > 1 ? [{ label: 'Ask everyone', icon: Users, onSelect: () => insert('@everyone ') }] : []),
@@ -288,6 +288,7 @@ function RoomComposer({ group, chatId, working, members }: { group: Group; chatI
           plain
           onStop={working ? () => void stopGroup(group.id) : undefined}
           addItems={mentionItems}
+          mentionable={members}
           footer={<GroupModelPicker group={group} />}
           onVoiceText={(text) => void sendGroupMessage(group.id, chatId, text)}
           onSend={async (text) => { await sendGroupMessage(group.id, chatId, text); return true; }}
