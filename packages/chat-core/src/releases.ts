@@ -9,6 +9,26 @@ import type { ReleaseNotes } from './whatsNew';
  */
 export const RELEASES: readonly ReleaseNotes[] = [
   {
+    version: '2026.1124.2',
+    features: [
+      {
+        id: 'quick-motion',
+        title: 'Quicker, quieter motion',
+        description: 'Menus and the side panel open at once. Settings, dialogs, popovers and tooltips fade in quickly, and tabs and lists change in place without sliding.',
+      },
+      {
+        id: 'computer-menu',
+        title: 'A tidier computer menu',
+        description: 'The computer menu at the top of the sidebar now lists just your computers. Settings is still at the bottom of the sidebar.',
+      },
+      {
+        id: 'cloud-one-day',
+        title: 'An ended cloud plan',
+        description: 'When a cloud plan ends, its computer is now kept for one day before it is deleted, so download anything you need right away.',
+      },
+    ],
+  },
+  {
     version: '2026.1124.1',
     features: [
       {
