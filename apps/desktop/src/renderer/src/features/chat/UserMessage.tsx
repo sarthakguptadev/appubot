@@ -4,11 +4,11 @@
 // left. Under it only the bot's reaction and, for a routine's prompt, "Routine" (it reads as yours otherwise).
 // In the Messages theme (lib/appearance.ts) the bubble is the theme's own (`Bubble`: neutral, a tail, the time and
 // ticks inside) and the bot's reaction sits on its bottom edge.
-import { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import type { Message, Part } from '@appubot/protocol';
 import { AlertCircle, Bot as BotIcon, Clock, Repeat } from '../../components/ui/icons';
 import { Icon } from '../../components/ui';
-import { SENDING_QUIET_MS, sendLook, sentBubble, splitFileLines } from '@appubot/chat-core';
+import { SENDING_QUIET_MS, linkMentions, sendLook, sentBubble, splitFileLines } from '@appubot/chat-core';
 import { useStore } from '../../lib/store';
 import { useMessagesTheme } from '../../lib/appearance';
 import { Bubble } from './Bubble';
@@ -85,7 +85,10 @@ export const UserMessage = memo(function UserMessage({ msg, botName }: { msg: Me
   const botColor = useStore((s) => s.bots.find((b) => b.id === s.threads.find((t) => t.id === msg.threadId)?.botId)?.color);
   const bubble = sentBubble(botColor ?? '#8e8e93');
   const raw = msg.parts.map((p) => (p.type === 'text' ? p.text : '')).join('\n');
-  const { body, paths } = splitFileLines(raw);
+  const { body: words, paths } = splitFileLines(raw);
+  // @Name of one of the bots (a task handed to it: chat-core handoff.ts) as that bot's chip, as in a group room
+  const bots = useStore((s) => s.bots);
+  const body = useMemo(() => linkMentions(words, bots), [words, bots]);
   const images = msg.parts.filter((p): p is Extract<Part, { type: 'image' }> => p.type === 'image');
   const files = msg.parts.filter((p): p is Extract<Part, { type: 'file' }> => p.type === 'file');
   const voices = msg.parts.filter((p): p is VoicePart => p.type === 'voice');

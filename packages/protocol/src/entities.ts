@@ -582,7 +582,11 @@ export const MessageSchema = z.object({
   error: z.string().optional(),
   /** `bot`: sent by another bot (`message_bot`, or a bot's message in a group), named in `from` */
   via: z.enum(['desktop', 'mobile', 'routine', 'channel', 'system', 'bot']).default('desktop'),
-  /** the bot that sent this message (`via: 'bot'`) */
+  /**
+   * the bot that sent this message (`via: 'bot'`); on an agent message, the other bot whose answer it is: a hand-off in a
+   * bot's chat (`@Name`, chat-core handoff.ts), drawn with that bot's avatar and name. An app from before hand-offs
+   * reads such a reply as the chat's own bot's.
+   */
   from: z.object({ botId: Id, name: z.string() }).optional(),
   /**
    * the routine that sent this prompt (`via: 'routine'`), by id and its name then: the chat shows it as one compact line

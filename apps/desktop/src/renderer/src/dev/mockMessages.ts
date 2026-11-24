@@ -493,6 +493,27 @@ Categorised 38 transactions with rules/categories.yaml
   Other      ₹3,100
 Wrote reports/expenses-2026-10.pdf (61.4 KB)`;
 
+/**
+ * `?thread=handoff`: the user hands Ledger a check with @Ledger in a chat with Appu, and Ledger's answer comes back in
+ * its own name; Appu carries on from it, hands Ledger a follow-up itself, and picks that answer up too.
+ */
+function handoffThread(id: string): Message[] {
+  const ledger = { via: 'bot' as const, from: { botId: IDS.ledger, name: 'Ledger' } };
+  return [
+    msg('m_ho_1', id, 'user', ago(18 * MIN), [text('Acme’s October retainer invoice just came in, it’s in Downloads. File it with the others?')]),
+    msg('m_ho_2', id, 'agent', ago(18 * MIN) + 20_000, [text('Filed as `Invoices/2026-10/Acme-retainer.pdf`: ₹1,41,600, due 8 Nov.')]),
+    msg('m_ho_3', id, 'user', ago(12 * MIN), [text('@Ledger check this invoice: is the GST right?')]),
+    msg('m_ho_4', id, 'agent', ago(12 * MIN) + 45_000, [text('Not quite. Acme is in Bengaluru like you, so it’s an intra-state supply: it should be **9% CGST + 9% SGST** (₹10,800 each), not 18% IGST. The total is right, but you can’t claim the credit as billed. Ask them for a corrected invoice before you pay.')], ledger),
+    msg('m_ho_5', id, 'user', ago(5 * MIN), [text('Thanks. Draft a short note asking Acme for a corrected one.')]),
+    msg('m_ho_6', id, 'agent', ago(5 * MIN) + 25_000, [
+      text('Here’s a draft, going on Ledger’s check:\n\n> Hi Priya, thanks for the October invoice. As we’re both in Karnataka, could you reissue it with CGST and SGST at 9% each instead of IGST? Happy to pay as soon as it’s in.'),
+      text('@Ledger once the corrected invoice arrives, add it to October’s GSTR-1.'),
+    ]),
+    msg('m_ho_7', id, 'agent', ago(4 * MIN), [text('Will do: it goes into October’s GSTR-1 when it arrives, and I’ll remind you before the 11 Nov deadline.')], ledger),
+    msg('m_ho_8', id, 'agent', ago(4 * MIN) + 15_000, [text('All set: Ledger will file it with October’s return. Say the word and I’ll send the note from Mail.')]),
+  ];
+}
+
 function workThread(id: string): Message[] {
   const t0 = ago(14 * MIN);
   let k = 0;
@@ -553,6 +574,7 @@ export function buildMessages(opts: MockOptions): Record<string, Message[]> {
     [IDS.appuMedia]: mediaThread(IDS.appuMedia),
     [IDS.appuRoutines]: routinesThread(IDS.appuRoutines),
     ...(opts.thread === 'work' ? { [IDS.appuWork]: workThread(IDS.appuWork) } : {}),
+    ...(opts.thread === 'handoff' ? { [IDS.appuHandoff]: handoffThread(IDS.appuHandoff) } : {}),
     ...(opts.thread === 'failed' ? {
       [IDS.appuFailed]: [
         msg('m_failed_1', IDS.appuFailed, 'user', ago(2 * MIN), [text('Plan a two-day offsite for 40 people near Goa in early December.')]),

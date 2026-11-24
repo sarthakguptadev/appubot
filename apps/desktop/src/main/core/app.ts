@@ -28,6 +28,7 @@ import { SkillsService } from './services/skills';
 import { TeachService } from './services/teach';
 import { RoutinesService } from './services/routines';
 import { GroupsService } from './services/groups';
+import { HandoffService } from './services/handoffs';
 import { GoalsService } from './services/goals';
 import { ChannelsService } from './services/channels';
 import { ComposioService } from './services/composio';
@@ -135,6 +136,7 @@ export function createCore(deps: CoreDeps): Core {
   s.teach = new TeachService(ctx);
   s.routines = new RoutinesService(ctx);
   s.groups = new GroupsService(ctx);
+  s.handoffs = new HandoffService(ctx);
   s.goals = new GoalsService(ctx);
   s.channels = new ChannelsService(ctx);
   s.cloudExport = new CloudExportService(ctx);
@@ -238,6 +240,7 @@ export function createCore(deps: CoreDeps): Core {
       await step('teach', () => s.teach.shutdown());
       await step('routines', () => s.routines.stop());
       s.groups.shutdown();
+      s.handoffs.shutdown();
       s.goals.shutdown();
       await step('channels', () => s.channels.stop(false));
       await step('apps', () => s.composio.shutdown());

@@ -18,6 +18,7 @@ import type { TeachService } from './services/teach';
 import type { SkillsService } from './services/skills';
 import type { RoutinesService } from './services/routines';
 import type { GroupsService } from './services/groups';
+import type { HandoffService } from './services/handoffs';
 import type { GoalsService } from './services/goals';
 import type { ChannelsService } from './services/channels';
 import type { ComposioService } from './services/composio';
@@ -317,6 +318,8 @@ export interface Services {
   routines: RoutinesService;
   /** groups of bots talking with each other (`services/groups.ts`) */
   groups: GroupsService;
+  /** a task handed to another bot with @Name in a bot's chat, its answer posted back there (`services/handoffs.ts`) */
+  handoffs: HandoffService;
   /** goals bots work toward on their own (`services/goals.ts`) */
   goals: GoalsService;
   channels: ChannelsService;

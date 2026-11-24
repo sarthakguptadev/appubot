@@ -118,6 +118,11 @@ export const GROUP_MESSAGES_MAX = 2000;
 export const BOT_MESSAGE_WAIT_MS = 15 * 60_000;
 /** how many times two bots may answer each other in one exchange before the caller is told to stop */
 export const BOT_MESSAGE_HOPS_MAX = 6;
+/**
+ * how many messages bots may hand each other in a bot's chat after the user's last (`@Name` in a reply: chat-core
+ * `handoffNext`) before AppuBot stops passing them on
+ */
+export const HANDOFF_HOPS_MAX = 6;
 
 /** A group's threads, oldest first: its own list, else its first thread (the group's id) as from before threads. */
 export function groupChats(g: Pick<Group, 'id' | 'chats' | 'createdAt' | 'lastActiveAt' | 'lastMessagePreview'>): GroupChat[] {

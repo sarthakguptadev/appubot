@@ -5,6 +5,7 @@
 export * from './format';
 export * from './schedule';
 export * from './groups';
+export * from './handoff';
 export * from './botNames';
 export * from './goals';
 export * from './diff';
