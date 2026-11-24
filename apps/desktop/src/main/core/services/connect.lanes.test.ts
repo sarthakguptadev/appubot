@@ -238,9 +238,11 @@ describe('the relay’s one socket, shared by every phone', () => {
     const gotB = await phoneB.get(2, file.url, b.token, 30_000);
     const tookB = Date.now() - t0;
     expect(gotB.body.length).toBe(big.length);
-    // in turn with A's three, B's one gets half the uplink: 12 MB at 6 MB/s, not a quarter of it (8 s)
-    expect(tookB).toBeLessThan(3500);
     for (const r of await Promise.all(startA)) expect(r.body.length).toBe(big.length);
+    const tookAll = Date.now() - t0;
+    // in turn with A's three, B's one gets half the uplink and is done about halfway through; with a quarter of it, it
+    // would finish with A's. Timed against the whole, so a slower machine (Windows' runner) moves both alike
+    expect(tookB).toBeLessThan(tookAll * 0.75);
   }, 30_000);
 });
 

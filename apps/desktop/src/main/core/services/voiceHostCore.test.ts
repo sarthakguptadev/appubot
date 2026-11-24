@@ -125,7 +125,7 @@ describe('VoiceHostCore', () => {
     expect(f.heard).toEqual([pcm16.length]);
     expect(f.configs[0]).toEqual({
       featConfig: { sampleRate: STT_RATE, featureDim: 80 },
-      modelConfig: { nemoCtc: { model: '/m/indic/model.int8.onnx' }, tokens: '/m/indic/tokens.txt', numThreads: 2, provider: 'cpu', debug: 0 },
+      modelConfig: { nemoCtc: { model: join('/m', 'indic', 'model.int8.onnx') }, tokens: join('/m', 'indic', 'tokens.txt'), numThreads: 2, provider: 'cpu', debug: 0 },
     });
     // no language to set: another one changes nothing
     await core.handle({ id: 2, type: 'warm', kind: 'stt', engine: 'nemo-ctc', language: 'en', addonPath: base.addonPath, modelDir: '/m/indic' });
@@ -165,7 +165,7 @@ describe('VoiceHostCore', () => {
     const pcm16 = new Int16Array(60 * STT_RATE).fill(9000);
     const at = { addonPath: base.addonPath };
     await core.handle({ id: 1, type: 'transcribe', engine: 'cohere', language: 'de', pcm16, ...at, modelDir: '/m/cohere' });
-    expect(f.configs[0]).toMatchObject({ modelConfig: { cohereTranscribe: { encoder: '/m/cohere/encoder.int8.onnx', decoder: '/m/cohere/decoder.int8.onnx', language: 'de', usePunct: 1, useItn: 1 }, tokens: '/m/cohere/tokens.txt' } });
+    expect(f.configs[0]).toMatchObject({ modelConfig: { cohereTranscribe: { encoder: join('/m', 'cohere', 'encoder.int8.onnx'), decoder: join('/m', 'cohere', 'decoder.int8.onnx'), language: 'de', usePunct: 1, useItn: 1 }, tokens: join('/m', 'cohere', 'tokens.txt') } });
     // no piece longer than one pass, nothing padded
     expect(f.heard.length).toBe(3);
     expect(f.heard.reduce((a, b) => a + b, 0)).toBe(pcm16.length);
@@ -174,12 +174,12 @@ describe('VoiceHostCore', () => {
     await core.handle({ id: 2, type: 'transcribe', engine: 'cohere', language: '', pcm16: new Int16Array(10), ...at, modelDir: '/m/cohere' });
     expect((f.configs[1] as { modelConfig: { cohereTranscribe: { language: string } } }).modelConfig.cohereTranscribe.language).toBe('en');
     await core.handle({ id: 3, type: 'warm', kind: 'stt', engine: 'qwen3', language: 'fr', ...at, modelDir: '/m/qwen' });
-    expect(f.configs[2]).toMatchObject({ modelConfig: { qwen3Asr: { convFrontend: '/m/qwen/conv_frontend.onnx', encoder: '/m/qwen/encoder.int8.onnx', decoder: '/m/qwen/decoder.int8.onnx', tokenizer: '/m/qwen/tokenizer' } } });
+    expect(f.configs[2]).toMatchObject({ modelConfig: { qwen3Asr: { convFrontend: join('/m', 'qwen', 'conv_frontend.onnx'), encoder: join('/m', 'qwen', 'encoder.int8.onnx'), decoder: join('/m', 'qwen', 'decoder.int8.onnx'), tokenizer: join('/m', 'qwen', 'tokenizer') } } });
     // it takes no language: another changes nothing
     await core.handle({ id: 4, type: 'warm', kind: 'stt', engine: 'qwen3', language: 'en', ...at, modelDir: '/m/qwen' });
     expect(f.calls.filter((c) => c === 'setConfig').length).toBe(1);
     await core.handle({ id: 5, type: 'warm', kind: 'stt', engine: 'sense-voice', language: '', ...at, modelDir: '/m/sv' });
-    expect(f.configs.at(-1)).toMatchObject({ modelConfig: { senseVoice: { model: '/m/sv/model.int8.onnx', language: 'auto', useInverseTextNormalization: 1 }, tokens: '/m/sv/tokens.txt' } });
+    expect(f.configs.at(-1)).toMatchObject({ modelConfig: { senseVoice: { model: join('/m', 'sv', 'model.int8.onnx'), language: 'auto', useInverseTextNormalization: 1 }, tokens: join('/m', 'sv', 'tokens.txt') } });
   });
 
   it('puts silence before the words when asked (Underdog Bark)', async () => {
@@ -197,7 +197,7 @@ describe('VoiceHostCore', () => {
     expect(r).toEqual({ id: 1, text: 'Hallo zusammen. (de, 3 chunks)' });
     expect(f.heard).toEqual([2 * STT_RATE + STREAMING_TAIL_SEC * STT_RATE]);
     expect(f.calls).toEqual(['createOnline']);
-    expect(f.configs[0]).toMatchObject({ modelConfig: { transducer: { encoder: '/m/nemotron/encoder.int8.onnx' }, tokens: '/m/nemotron/tokens.txt' }, decodingMethod: 'greedy_search' });
+    expect(f.configs[0]).toMatchObject({ modelConfig: { transducer: { encoder: join('/m', 'nemotron', 'encoder.int8.onnx') }, tokens: join('/m', 'nemotron', 'tokens.txt') }, decodingMethod: 'greedy_search' });
     // its language is per stream: another one needs no new recognizer
     const auto = await core.handle({ id: 2, type: 'transcribe', engine: 'nemo-streaming', language: '', pcm16: new Int16Array(10), addonPath: base.addonPath, modelDir: '/m/nemotron' });
     expect(auto).toMatchObject({ text: 'Hallo zusammen. (auto, 3 chunks)' });

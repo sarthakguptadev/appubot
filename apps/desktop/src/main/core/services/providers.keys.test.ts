@@ -53,7 +53,7 @@ describe('agent keys', () => {
     expect(runtime.hooks.secretEnv?.('gem')).toEqual({ GEMINI_API_KEY: 'sk-123' });
 
     const file = join(root, 'data', 'agent-keys.json');
-    expect(statSync(file).mode & 0o777).toBe(0o600);
+    if (process.platform !== 'win32') expect(statSync(file).mode & 0o777).toBe(0o600);
     expect(JSON.parse(readFileSync(file, 'utf8'))).toEqual({ gem: { GEMINI_API_KEY: 'sk-123' } });
     const listed = core.services.providers.list().find((p) => p.id === 'gem')!;
     expect(listed.keysSaved).toEqual(['GEMINI_API_KEY']);

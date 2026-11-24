@@ -110,7 +110,7 @@ describe('setting a computer up', () => {
 
     const creds = join(home, '.git-credentials');
     expect(readFileSync(creds, 'utf8')).toBe(`https://u:p@gitlab.com\nhttps://ada-l:${TOKEN}@github.com\n`);
-    expect(statSync(creds).mode & 0o777).toBe(0o600);
+    if (process.platform !== 'win32') expect(statSync(creds).mode & 0o777).toBe(0o600);
     const config = readFileSync(join(home, '.gitconfig'), 'utf8');
     expect(config).toMatch(/\[credential "https:\/\/github\.com"\]\s+helper = store/);
     expect(config).toMatch(/insteadOf = git@github\.com:/);
@@ -163,7 +163,7 @@ describe('setting a computer up', () => {
     const out = await core.services.github.setup({ email: 'ada@example.com', sshKey: true });
     expect(out.sshKey).toMatch(/^ssh-ed25519 \S+ ada@example\.com/);
     const key = join(home, '.ssh', 'id_ed25519');
-    expect(statSync(key).mode & 0o777).toBe(0o600);
+    if (process.platform !== 'win32') expect(statSync(key).mode & 0o777).toBe(0o600);
     const before = readFileSync(key, 'utf8');
     await core.services.github.setup({ sshKey: true });
     expect(readFileSync(key, 'utf8')).toBe(before);

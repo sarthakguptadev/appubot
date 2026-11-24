@@ -35,7 +35,10 @@ describe('LimitsService', () => {
     root = mkdtempSync(join(tmpdir(), 'appubot-limits-'));
     const bin = join(root, 'bin');
     mkdirSync(bin);
-    for (const cli of ['claude', 'codex']) writeFileSync(join(bin, cli), '#!/bin/sh\nexit 0\n', { mode: 0o755 });
+    for (const cli of ['claude', 'codex']) {
+      if (process.platform === 'win32') writeFileSync(join(bin, `${cli}.cmd`), '@exit /b 0\r\n');
+      else writeFileSync(join(bin, cli), '#!/bin/sh\nexit 0\n', { mode: 0o755 });
+    }
     process.env.PATH = `${bin}${delimiter}${pathBefore ?? ''}`;
     home = join(root, 'home');
     mkdirSync(home, { recursive: true });
@@ -81,7 +84,7 @@ describe('LimitsService', () => {
     expect(calls).toEqual({ claude: 1, codex: 1, go: 0, cursor: 1, kimi: 1 });
     // kept for the next launch, readable by this user alone
     const file = join(root, 'data', 'provider-limits.json');
-    expect(statSync(file).mode & 0o777).toBe(0o600);
+    if (process.platform !== 'win32') expect(statSync(file).mode & 0o777).toBe(0o600);
     expect(readFileSync(file, 'utf8')).toContain('"five_hour"');
   });
 

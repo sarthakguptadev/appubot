@@ -66,7 +66,7 @@ describe('each person uses their own logins', () => {
     expect(s.providers.secretEnv('claude-code')).toEqual({ ANTHROPIC_API_KEY: 'team-key' });
     expect(s.providers.list(memberScope('acc_ada')).find((p) => p.id === 'claude-code')!.keysSaved).toEqual(['ANTHROPIC_API_KEY']);
     expect(s.providers.list(memberScope('acc_bo')).find((p) => p.id === 'claude-code')!.keysSaved).toEqual([]);
-    expect((statSync(s.logins.dirOf(memberScope('acc_ada'))).mode & 0o777)).toBe(0o700);
+    if (process.platform !== 'win32') expect((statSync(s.logins.dirOf(memberScope('acc_ada'))).mode & 0o777)).toBe(0o700);
     // a turn: the agent starts with the person's home and scope, and their keys
     const r = s.chat.send({ botId: adaBot.id, text: 'hi', attachments: [], images: [] });
     await until(() => runtime.created.some((c) => c.env?.APPUBOT_BOT_ID === adaBot.id));

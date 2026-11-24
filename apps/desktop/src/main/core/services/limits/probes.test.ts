@@ -31,7 +31,7 @@ describe('Cursor', () => {
     expect(cursorAuthFile({}, '/h', 'darwin')).toBe('/h/.cursor/auth.json');
     expect(cursorAuthFile({ XDG_CONFIG_HOME: '/x' }, '/h', 'linux')).toBe('/x/cursor/auth.json');
     expect(cursorAuthFile({}, '/h', 'linux')).toBe('/h/.config/cursor/auth.json');
-    expect(cursorAuthFile({ APPDATA: 'C:\\Users\\a\\AppData\\Roaming' }, 'C:\\Users\\a', 'win32')).toContain(join('Cursor', 'auth.json'));
+    expect(cursorAuthFile({ APPDATA: 'C:\\Users\\a\\AppData\\Roaming' }, 'C:\\Users\\a', 'win32')).toBe('C:\\Users\\a\\AppData\\Roaming\\Cursor\\auth.json');
   });
 
   it('asks the dashboard with the file’s token, says none without one and refused on a 401', async () => {
