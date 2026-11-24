@@ -92,7 +92,8 @@ describe('providers.install on a cloud computer', () => {
     const second = core.services.providers.install('codex');
     await new Promise((r) => setTimeout(r, 10));
     expect(ran).toHaveLength(1);
-    expect(ran[0]).toEqual({ command: 'bash', args: ['-lc', `npm install -g --prefix ${join(homedir(), '.local')} --no-fund --no-audit @openai/codex`] });
+    // the line itself is pinned above; the home is this computer's (a Windows one where these tests run there)
+    expect(ran[0]).toEqual({ command: 'bash', args: ['-lc', cloudInstallLine('npm i -g @openai/codex', homedir())] });
     expect(codex().installing).toBe(true);
     expect(events.some((p) => p.id === 'codex' && p.installing)).toBe(true);
     release!();

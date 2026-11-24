@@ -16,12 +16,14 @@ import type { CoreDeps } from '../context';
 import { FakeRelay } from '../testing/fakeRelay';
 import { FakeRuntime } from '../testing/fakeRuntime';
 import { RpcError, silentLogger } from '../util';
+import { inFolder } from './macFiles';
 import { inside, refusal, REPLACED_DIR } from './macLink';
 
 const cores: Core[] = [];
 const relays: FakeRelay[] = [];
 const roots: string[] = [];
-const newRoot = (name: string) => { const r = realpathSync(mkdtempSync(join(tmpdir(), `appubot-${name}-`))); roots.push(r); return r; };
+/** by real path as the lending computer reads it (`/private/var` on a Mac, long names for Windows' `RUNNER~1`) */
+const newRoot = (name: string) => { const r = realpathSync.native(mkdtempSync(join(tmpdir(), `appubot-${name}-`))); roots.push(r); return r; };
 afterEach(async () => {
   for (const c of cores.splice(0)) await c.stop();
   for (const r of relays.splice(0)) await r.close();
@@ -105,6 +107,15 @@ describe('what is lent', () => {
     expect(refusal('/Users/ada/Library/Mobile Documents/com~apple~CloudDocs/a.txt', icloud)).toBeNull();
     expect(refusal('/Users/ada/Library/Keychains/x', { home, folders: ['/Users/ada/Library'], never: [] })).toMatch(/never lent/);
   });
+
+  it('is read on the reading end as the lending computer writes its paths, a Windows one with either slash and any case', () => {
+    expect(inFolder('/Users/ada/Documents/a.md', '/Users/ada/Documents')).toBe(true);
+    expect(inFolder('/Users/ada/DocumentsOld/a.md', '/Users/ada/Documents')).toBe(false);
+    expect(inFolder('c:/users/ada/documents/a.md', 'C:\\Users\\Ada\\Documents')).toBe(true);
+    expect(inFolder('C:\\Users\\Ada\\Documents', 'C:\\Users\\Ada\\Documents\\')).toBe(true);
+    expect(inFolder('D:\\a.md', 'C:\\')).toBe(false);
+    expect(inFolder('\\\\nas\\share\\a.md', '\\\\NAS\\share')).toBe(true);
+  });
 });
 
 describe('a computer’s folders, read from another', () => {
@@ -150,7 +161,9 @@ describe('a computer’s folders, read from another', () => {
     await expect(files.agentList(ctx, join(home, 'Library'))).rejects.toThrow(/isn’t lent/);
     await expect(files.agentFetch(ctx, join(home, '.config', 'settings.json'))).rejects.toThrow(/isn’t lent/);
     await expect(files.agentFetch(ctx, join(mac.ctx.paths.dataDir, 'mac-link.json'))).rejects.toThrow(/outside|never lent/);
-    await expect(files.agentFetch(ctx, '/etc/hosts')).rejects.toThrow(/outside/);
+    const elsewhere = join(newRoot('elsewhere'), 'hosts');
+    writeFileSync(elsewhere, '127.0.0.1 localhost\n');
+    await expect(files.agentFetch(ctx, elsewhere)).rejects.toThrow(/outside/);
     await expect(files.agentFetch(ctx, join(home, 'Documents', 'nope.txt'))).rejects.toThrow(/Nothing is at/);
     await expect(files.agentFetch(ctx, join(home, 'Documents'))).rejects.toThrow(/is a folder/);
     // a search never surfaces them either

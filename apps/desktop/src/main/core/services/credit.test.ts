@@ -56,7 +56,7 @@ describe('the included credit on a cloud computer', () => {
     expect(JSON.stringify(s().system.info())).not.toContain('ck_first');
     const file = join(root, 'data', 'cloud-credit.json');
     expect(readFileSync(file, 'utf8')).toContain('ck_first');
-    expect(statSync(file).mode & 0o777).toBe(0o600);
+    if (process.platform !== 'win32') expect(statSync(file).mode & 0o777).toBe(0o600);
     await s().providers.refresh([APPUBOT_AI_PROVIDER_ID]);
     const ai = s().providers.list().find((p) => p.id === APPUBOT_AI_PROVIDER_ID)!;
     expect(ai).toMatchObject({ name: 'AppuBot AI', authStatus: 'authenticated', auth: { state: 'logged_in', account: 'Claude launch bonus' }, profile: { of: 'claude-code', source: 'credit' } });

@@ -73,7 +73,10 @@ describe('DeviceLoginService', () => {
         });
         server.listen(0, '127.0.0.1', () => {
           const back = encodeURIComponent('http://localhost:' + server.address().port + '/callback');
-          require('node:child_process').execFileSync(process.env.BROWSER, ['https://auth.example.test/authorize?response_type=code&state=s123&redirect_uri=' + back]);
+          const page = 'https://auth.example.test/authorize?response_type=code&state=s123&redirect_uri=' + back;
+          // Windows has no BROWSER that catches a page: its agents print the link, which is read instead
+          if (process.platform === 'win32') console.log('Open this page to sign in: ' + page);
+          else require('node:child_process').execFileSync(process.env.BROWSER, [page]);
           console.log('Waiting for the browser...');
         });
         setTimeout(() => process.exit(4), 20000);

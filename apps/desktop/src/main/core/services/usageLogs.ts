@@ -11,7 +11,6 @@
  * updates carry a turn's usage per model with xAI's own cost; OpenCode's assistant messages and Pi's entries may carry
  * a cost of their own (zero means unknown). Gemini CLI's and Copilot's readers are AppuBot's own.
  */
-import { sep } from 'node:path';
 import type { UsageAgentRow, UsageBucket, UsageModelRow, UsageRange, UsageScope, UsageSummary, UsageTotals } from '@appubot/protocol';
 
 /** One model request, as read from a log. */
@@ -42,11 +41,19 @@ const tsOf = (v: unknown): number | undefined => {
   return Number.isFinite(t) ? t : undefined;
 };
 
-/** whether `cwd` is inside the bots' folder */
-export function inBotsRoot(cwd: unknown, botsRoot: string | undefined): boolean {
+/**
+ * Whether `cwd` is inside the bots' folder. On Windows a folder is the same whatever its case, and agents log it their
+ * own way (`C:\Users\…` or `c:/Users/…`), so both are compared as Windows does.
+ */
+export function inBotsRoot(cwd: unknown, botsRoot: string | undefined, platform: NodeJS.Platform = process.platform): boolean {
   if (!botsRoot || typeof cwd !== 'string') return false;
-  const root = botsRoot.endsWith(sep) ? botsRoot : botsRoot + sep;
-  return cwd === botsRoot || cwd.startsWith(root);
+  const norm = (p: string) => {
+    const s = platform === 'win32' ? p.replace(/\\/g, '/').toLowerCase() : p;
+    return s.length > 1 && s.endsWith('/') ? s.slice(0, -1) : s;
+  };
+  const root = norm(botsRoot);
+  const dir = norm(cwd);
+  return dir === root || dir.startsWith(root.endsWith('/') ? root : `${root}/`);
 }
 
 /* ---------------- Claude Code ---------------- */

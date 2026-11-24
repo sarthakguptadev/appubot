@@ -43,9 +43,11 @@ function make(o: { signedIn?: boolean; cloud?: CloudDeps; day?: Partial<CloudPro
     if (path === '/v1/promo/start') return json(backend.day.open ? backend.place : { enabled: false, promo: backend.day.id });
     return json({ error: { code: 'not_found', message: 'Not found.' } }, 404);
   }) as typeof fetch;
+  // Claude Code's own install line on this OS (a cloud computer is Linux)
+  const installHint = process.platform === 'win32' && !o.cloud ? 'powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://claude.ai/install.ps1 | iex"' : 'curl -fsSL https://claude.ai/install.sh | bash';
   const core = createCore({
     paths: { dataDir, botsRoot: join(root, 'bots'), filesDir: join(dataDir, 'files'), logsDir: join(root, 'logs'), bridgePath: '/nonexistent/bridge.mjs' },
-    runtime: (hooks) => { runtime = new FakeRuntime(hooks); const real = runtime.getProviders.bind(runtime); runtime.getProviders = () => real().map((p) => (p.id === 'claude-code' ? { ...p, installHint: 'curl -fsSL https://claude.ai/install.sh | bash' } : p)); return runtime; },
+    runtime: (hooks) => { runtime = new FakeRuntime(hooks); const real = runtime.getProviders.bind(runtime); runtime.getProviders = () => real().map((p) => (p.id === 'claude-code' ? { ...p, installHint } : p)); return runtime; },
     openExternal: () => undefined, openTerminal: () => { throw new Error('no terminal in a quiet install'); }, nativeNotify: async () => ({ shown: false, error: 'test' }),
     version: '2026.1110.1', hostName: 'Test Mac', log: silentLogger, validate: true, port: 0, quiet: true,
     computerBackends: () => [], helperTransport: () => null, cloudBackendUrl: 'https://cloud.test', cloudFetch,
@@ -114,7 +116,7 @@ describe('the free Claude day on a Mac', () => {
     expect(s.credit.status()).toBeUndefined(); // never an amount
     const file = join(w.root, 'data', 'cloud-credit.json');
     expect(readFileSync(file, 'utf8')).toContain('cp_day_token');
-    expect(statSync(file).mode & 0o777).toBe(0o600);
+    if (process.platform !== 'win32') expect(statSync(file).mode & 0o777).toBe(0o600);
     expect(JSON.stringify(s.system.info())).not.toContain('cp_day_token');
     expect(w.runtime.hooks.secretEnv?.(APPUBOT_AI_PROVIDER_ID)).toMatchObject({ ANTHROPIC_BASE_URL: 'https://cloud.test/v1/ai', ANTHROPIC_AUTH_TOKEN: 'cp_day_token', ANTHROPIC_MODEL: MODEL });
     const gift = s.providers.list().find((p) => p.id === APPUBOT_AI_PROVIDER_ID)!;

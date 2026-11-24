@@ -155,7 +155,7 @@ export class MacFilesService {
     const roots = LinkRootsSchema.parse(await this.ask(LINK_ROOTS_PATH, {}));
     if (!roots.saves) throw new RpcError('unavailable', tooOld);
     const typed = p.path.trim();
-    const folder = roots.folders.find((f) => typed === f.path || typed.startsWith(f.path.endsWith('/') ? f.path : `${f.path}/`));
+    const folder = roots.folders.find((f) => inFolder(typed, f.path));
     if (folder && !folder.writable) throw new RpcError('forbidden', `${folder.name} is read-only: the user hasn’t let bots save changes there. They can switch it on in AppuBot → Settings › Transfer › Files on that computer.`);
     const res = await this.request('POST', LINK_PUT_PATH, { path: p.path }, FILE_SILENCE_MS, body);
     if (res.status !== 200) throw this.refused(res, link, tooOld);
@@ -216,6 +216,21 @@ export function unreachableText(name: string, e: unknown): string {
   const code = e instanceof GatewayError ? e.code : '';
   if (code === 'busy') return `AppuBot Connect is busy right now, so ${name} couldn’t be reached. Try again in a minute.`;
   return `${name} isn’t reachable right now: it may be asleep, offline, or AppuBot isn’t open on it. Tell the user; its files can be read once it is on. (${errMsg(e)})`;
+}
+
+/**
+ * `path` is `folder` or inside it, as the lending computer reads its own paths: one on Windows (`C:\…`, `\\server\…`)
+ * takes either slash and any case, whatever this computer is.
+ */
+export function inFolder(path: string, folder: string): boolean {
+  const windows = /^(?:[a-z]:[\\/]|\\\\)/i.test(folder);
+  const norm = (p: string) => {
+    const s = windows ? p.replace(/\\/g, '/').toLowerCase() : p;
+    return s.length > 1 && s.endsWith('/') ? s.slice(0, -1) : s;
+  };
+  const dir = norm(folder);
+  const p = norm(path);
+  return p === dir || p.startsWith(dir.endsWith('/') ? dir : `${dir}/`);
 }
 
 function decodeName(v: string | undefined): string {

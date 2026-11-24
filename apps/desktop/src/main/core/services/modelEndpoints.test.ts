@@ -99,7 +99,7 @@ describe('model endpoints', () => {
     expect((await s.endpoints.probe({ id: hosted.id, baseUrl: hosted.baseUrl })).ok).toBe(true);
 
     const file = join(root, 'data', 'model-endpoints.json');
-    expect(statSync(file).mode & 0o777).toBe(0o600);
+    if (process.platform !== 'win32') expect(statSync(file).mode & 0o777).toBe(0o600);
     expect(readFileSync(file, 'utf8')).toContain('sk-good');
 
     const env = runtime.hooks.secretEnv?.('opencode');

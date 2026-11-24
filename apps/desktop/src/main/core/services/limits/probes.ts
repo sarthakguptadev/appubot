@@ -31,7 +31,7 @@
 import { execFile, spawn, type ChildProcess } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { join, posix, resolve, win32 } from 'node:path';
 import { launchSpec, killTree } from '@appubot/agent-runtime';
 import type { ClaudeUsageResponse } from '@appubot/chat-core';
 import { loadSqlite } from '../usageSqlite';
@@ -281,11 +281,11 @@ export const CURSOR_API_ENDPOINT = 'https://api2.cursor.sh';
 const CURSOR_USAGE_PATH = '/aiserver.v1.DashboardService/GetCurrentPeriodUsage';
 const CURSOR_PLAN_PATH = '/aiserver.v1.DashboardService/GetPlanInfo';
 
-/** where the Cursor CLI keeps its sign-in off the Keychain */
+/** where the Cursor CLI keeps its sign-in off the Keychain, written as that OS writes paths */
 export function cursorAuthFile(env: NodeJS.ProcessEnv, homeDir: string, platform: NodeJS.Platform): string {
-  if (platform === 'win32') return join(env.APPDATA?.trim() || join(homeDir, 'AppData', 'Roaming'), 'Cursor', 'auth.json');
-  if (platform === 'darwin') return join(homeDir, '.cursor', 'auth.json');
-  return join(env.XDG_CONFIG_HOME?.trim() || join(homeDir, '.config'), 'cursor', 'auth.json');
+  if (platform === 'win32') return win32.join(env.APPDATA?.trim() || win32.join(homeDir, 'AppData', 'Roaming'), 'Cursor', 'auth.json');
+  if (platform === 'darwin') return posix.join(homeDir, '.cursor', 'auth.json');
+  return posix.join(env.XDG_CONFIG_HOME?.trim() || posix.join(homeDir, '.config'), 'cursor', 'auth.json');
 }
 
 /** the Cursor CLI's access token: the login Keychain on macOS (read with the tool the CLI writes it with), else its file */
