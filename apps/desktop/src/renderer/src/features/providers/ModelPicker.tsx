@@ -99,7 +99,7 @@ function FastToggle({ on, onToggle }: { on: boolean; onToggle: (next: boolean) =
       title={on ? 'Fast mode on' : 'Fast mode off'}
       onClick={() => onToggle(!on)}
       className={cn(
-        'rounded-md p-1 transition-colors outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]',
+        'ab-pill rounded-md p-1 transition-colors outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]',
         on ? 'bg-accent-soft text-accent' : 'text-muted hover:bg-surface-2 hover:text-fg',
       )}
     >
@@ -225,7 +225,7 @@ function EffortFooter({ efforts, value, defaultEffort, onPick, fast }: {
           title={resettable ? `Back to ${defaultName}` : undefined}
           disabled={none || !resettable}
           onClick={() => onPick(defaultEffort)}
-          className="justify-self-end rounded-md p-1 text-muted transition-colors outline-none hover:bg-surface-2 hover:text-fg focus-visible:shadow-[0_0_0_2px_var(--ab-ring)] disabled:pointer-events-none disabled:opacity-35"
+          className="ab-pill justify-self-end rounded-md p-1 text-muted transition-colors outline-none hover:bg-surface-2 hover:text-fg focus-visible:shadow-[0_0_0_2px_var(--ab-ring)] disabled:pointer-events-none disabled:opacity-35"
         >
           <Icon icon={Undo} size={13} />
         </button>
@@ -256,7 +256,7 @@ export const CHROME_TRIGGER = cn(
  * The field trigger (bot editor, Settings): the app's input as a pill, its choice from the left, the chevron at the
  * end. It fills its wrapper; a wrapper of auto width (Settings' rows) makes it hug what it says.
  */
-export const FIELD_TRIGGER = cn(FIELD_CLASS, 'flex h-9 w-full min-w-0 items-center gap-2 overflow-hidden rounded-control ps-3 pe-2.5 text-left whitespace-nowrap');
+export const FIELD_TRIGGER = cn(FIELD_CLASS, 'ab-pill flex h-9 w-full min-w-0 items-center gap-2 overflow-hidden rounded-control ps-3 pe-2.5 text-left whitespace-nowrap');
 
 /**
  * The agents' tab row: it scrolls sideways when the tabs don't fit, with an arrow at the end that has more (shown on
@@ -589,7 +589,7 @@ export function ModelPicker({
                     aria-pressed={fav}
                     onClick={(e) => { e.stopPropagation(); toggleFav(r.key); }}
                     className={cn(
-                      'flex size-6 shrink-0 items-center justify-center rounded-md transition-[opacity,color] outline-none hover:text-fg focus-visible:opacity-100',
+                      'ab-pill flex size-6 shrink-0 items-center justify-center rounded-md transition-[opacity,color] outline-none hover:text-fg focus-visible:opacity-100',
                       // always shown, as in Synara: muted, the favourites filled in the accent
                       fav ? 'text-accent' : 'text-muted/70 hover:text-fg',
                     )}

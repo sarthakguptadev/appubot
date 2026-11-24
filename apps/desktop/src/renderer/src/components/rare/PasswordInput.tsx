@@ -34,8 +34,8 @@ const REVEAL: Transition = { duration: 0.32, ease: [0.22, 1, 0.36, 1] };
 const BLINK: Transition = { duration: 1.1, times: [0, 0.5, 0.5, 1], repeat: Infinity, ease: 'linear' };
 
 const SIZES = {
-  md: { field: 'h-12 rounded-xl', text: 'text-base', pad: 'pl-4', left: 'left-4', toggle: 'mr-1.5 size-9', eye: 'size-5', caret: 'h-5', mark: 'h-6' },
-  sm: { field: 'h-9 rounded-[10px]', text: 'text-[13px]', pad: 'pl-3', left: 'left-3', toggle: 'mr-1 size-7', eye: 'size-4', caret: 'h-4', mark: 'h-5' },
+  md: { field: 'ab-pill h-12 rounded-xl', text: 'text-base', pad: 'pl-4', left: 'left-4', toggle: 'mr-1.5 size-9', eye: 'size-5', caret: 'h-5', mark: 'h-6' },
+  sm: { field: 'ab-pill h-9 rounded-[10px]', text: 'text-[13px]', pad: 'pl-3', left: 'left-3', toggle: 'mr-1 size-7', eye: 'size-4', caret: 'h-4', mark: 'h-5' },
 } as const;
 
 const corner = (y: number) => 12 + (y - 12) * 0.64;
@@ -282,7 +282,7 @@ export function PasswordInput({
           onPointerDown={(event) => event.preventDefault()}
           onClick={toggle}
           className={cn(
-            'grid shrink-0 place-items-center rounded-lg text-black/50 outline-none transition-colors hover:text-black focus-visible:ring-2 focus-visible:ring-[#FC4C01]/50 dark:text-white/50 dark:hover:text-white',
+            'ab-pill grid shrink-0 place-items-center rounded-lg text-black/50 outline-none transition-colors hover:text-black focus-visible:ring-2 focus-visible:ring-[#FC4C01]/50 dark:text-white/50 dark:hover:text-white',
             scale.toggle,
           )}
         >

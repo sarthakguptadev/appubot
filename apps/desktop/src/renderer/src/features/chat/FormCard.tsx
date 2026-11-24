@@ -105,7 +105,7 @@ function FileInput({ field, id, value, onChange, invalid, disabled }: { field: F
       {value ? (
         <span className="flex min-w-0 items-center gap-1 text-ui text-fg">
           <span className="truncate" title={value}>{fileValueName(value)}</span>
-          <button type="button" aria-label="Remove file" disabled={disabled} onClick={() => onChange('')} className="grid size-5 shrink-0 place-items-center rounded-md text-muted hover:text-fg"><Icon icon={X} size={12} /></button>
+          <button type="button" aria-label="Remove file" disabled={disabled} onClick={() => onChange('')} className="ab-pill grid size-5 shrink-0 place-items-center rounded-md text-muted hover:text-fg"><Icon icon={X} size={12} /></button>
         </span>
       ) : null}
       {problem ? <span className="text-note text-danger">{problem}</span> : null}

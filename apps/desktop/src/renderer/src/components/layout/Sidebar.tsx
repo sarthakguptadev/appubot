@@ -293,7 +293,7 @@ function ThreadRow({ t, rowClass, onScreen, unread, waiting, renaming, onRename,
             if (e.key === 'Enter') { e.preventDefault(); save(); }
             else if (e.key === 'Escape') { e.preventDefault(); cancel(); }
           }}
-          className="no-drag h-6 w-full rounded-md bg-surface-2 px-1.5 text-ui text-fg outline-none shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--ab-fg)_22%,transparent)]"
+          className="ab-pill squircle no-drag h-6 w-full rounded-md bg-surface-2 px-2 text-ui text-fg outline-none shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--ab-fg)_22%,transparent)]"
         />
       </li>
     );

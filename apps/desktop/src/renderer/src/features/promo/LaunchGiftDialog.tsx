@@ -178,7 +178,7 @@ function TopBar({ promo, onClose }: { promo: PromoStatus; onClose?: () => void }
     <div className={cn('relative flex h-16 shrink-0 items-center gap-2.5 pr-[calc(14px+var(--wco-right))]', IS_MAC ? 'pl-[97px]' : 'pl-5')}>
       <Logo size={22} className="rounded-[6px]" />
       <span className="text-copy font-medium text-fg">{LAUNCH_GIFT.eyebrow}</span>
-      {ends ? <span className="rounded-[6px] bg-accent-soft px-2 py-0.5 text-note font-medium text-accent">{ends}</span> : null}
+      {ends ? <span className="ab-pill squircle rounded-[6px] bg-accent-soft px-2 py-0.5 text-note font-medium text-accent">{ends}</span> : null}
       <div className="flex-1" />
       {onClose ? <Button variant="ghost" size="icon" className="no-drag" aria-label={LAUNCH_GIFT.later} title={LAUNCH_GIFT.later} onClick={onClose}><X size={16} /></Button> : null}
     </div>
@@ -202,7 +202,7 @@ function Page({ hero, tracker, title, body, children, actions, note }: { hero?: 
   );
 }
 
-const QUIET = 'no-drag rounded-control-sm px-2 py-1 text-ui text-muted transition-colors hover:text-fg disabled:opacity-50';
+const QUIET = 'ab-pill squircle no-drag rounded-control-sm px-2 py-1 text-ui text-muted transition-colors hover:text-fg disabled:opacity-50';
 
 /** the three steps: done ones checked (and a way back), this one in the accent */
 function Tracker({ step, onPick, locked }: { step: GiftStep; onPick: (s: GiftStep) => void; locked?: boolean }) {
@@ -290,7 +290,7 @@ function GiftTicket({ promo }: { promo: PromoStatus }) {
           <div className="mt-0.5 truncate text-ui text-muted">{LAUNCH_GIFT.eyebrow}</div>
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
-          {['Unlimited', 'Free'].map((chip) => <span key={chip} className="rounded-[7px] bg-accent-soft px-2.5 py-1 text-note font-medium text-accent">{chip}</span>)}
+          {['Unlimited', 'Free'].map((chip) => <span key={chip} className="ab-pill squircle rounded-[7px] bg-accent-soft px-2.5 py-1 text-note font-medium text-accent">{chip}</span>)}
         </div>
       </div>
       <div className="flex items-center gap-3 border-t border-[var(--ab-hairline)] px-4 py-3">

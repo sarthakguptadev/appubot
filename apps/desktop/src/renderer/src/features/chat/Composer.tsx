@@ -146,7 +146,7 @@ function Tile({ onRemove, label, children }: { onRemove: () => void; label: stri
   return (
     <div className="group/tile relative size-16 shrink-0 overflow-hidden rounded-control border border-border-subtle bg-surface-2" title={label}>
       {children}
-      <button type="button" aria-label={`Remove ${label}`} onClick={onRemove} className="absolute top-1 right-1 flex size-5 items-center justify-center rounded-md bg-[color:var(--ab-popover)] text-muted shadow-sm hover:text-fg">
+      <button type="button" aria-label={`Remove ${label}`} onClick={onRemove} className="ab-pill absolute top-1 right-1 flex size-5 items-center justify-center rounded-md bg-[color:var(--ab-popover)] text-muted shadow-sm hover:text-fg">
         <Icon icon={X} size={11} />
       </button>
     </div>
@@ -469,7 +469,7 @@ export function Composer({ thread, bot, draftKey, placeholder, onSend, autoFocus
                 {quotes.map((q) => (
                   <div key={q} className="group/quote flex items-start gap-2 rounded-control border-l-2 border-[var(--ab-accent)] bg-surface-2 py-1.5 pr-1.5 pl-2.5">
                     <p className="line-clamp-2 min-w-0 flex-1 text-ui leading-snug text-fg-2">{q}</p>
-                    <button type="button" aria-label="Remove quote" onClick={() => setQuotes((c) => c.filter((x) => x !== q))} className="flex size-5 shrink-0 items-center justify-center rounded-md text-muted hover:text-fg">
+                    <button type="button" aria-label="Remove quote" onClick={() => setQuotes((c) => c.filter((x) => x !== q))} className="ab-pill flex size-5 shrink-0 items-center justify-center rounded-md text-muted hover:text-fg">
                       <Icon icon={X} size={11} />
                     </button>
                   </div>

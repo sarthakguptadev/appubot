@@ -110,7 +110,7 @@ export function NewBotDialog({ open, onClose }: { open: boolean; onClose: () => 
               placeholder="Name your bot"
               aria-label="Name"
               maxLength={60}
-              className="squircle h-9 w-full rounded-control bg-transparent px-10 text-center text-lead text-fg outline-none transition-colors duration-150 placeholder:text-muted hover:bg-fg/[.04] focus:bg-fg/[.05]"
+              className="ab-pill squircle h-9 w-full rounded-control bg-transparent px-10 text-center text-lead text-fg outline-none transition-colors duration-150 placeholder:text-muted hover:bg-fg/[.04] focus:bg-fg/[.05]"
             />
             <button
               type="button"

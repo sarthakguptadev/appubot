@@ -169,7 +169,7 @@ function LimitsCard({ l, now, wide }: { l: ProviderLimits; now: number; wide: bo
       <div className="flex items-center gap-2.5 px-4 py-3">
         <AgentGlyph agent={agent} size={16} />
         <span className="truncate text-copy font-medium text-fg">{agentDisplayName(agent, providers)}</span>
-        {l.plan ? <span className="shrink-0 rounded-md bg-[color-mix(in_srgb,var(--ab-fg)_7%,transparent)] px-1.5 py-px text-[11px] text-fg-2">{l.plan}</span> : null}
+        {l.plan ? <span className="ab-pill shrink-0 rounded-md bg-[color-mix(in_srgb,var(--ab-fg)_7%,transparent)] px-1.5 py-px text-[11px] text-fg-2">{l.plan}</span> : null}
         {whole && whole.tone !== 'ok' ? <span className={cn('shrink-0 text-[11px]', TONE_TEXT[whole.tone])}>{whole.tone === 'low' ? 'Running low' : whole.tone === 'extra' ? 'On extra usage' : 'Used up'}</span> : null}
         <span className="ml-auto min-w-0 truncate text-note text-muted">{sub}</span>
       </div>

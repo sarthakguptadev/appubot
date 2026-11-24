@@ -60,7 +60,7 @@ function AllowedUsers({ channel, first }: { channel: Channel; first: boolean }) 
               <button
                 type="button"
                 aria-label={`Remove ${u}`}
-                className="flex size-5 items-center justify-center rounded-md text-muted hover:bg-surface-2 hover:text-fg"
+                className="ab-pill flex size-5 items-center justify-center rounded-md text-muted hover:bg-surface-2 hover:text-fg"
                 onClick={() => void configure({ id: channel.id, allowedUsers: channel.allowedUsers.filter((x) => x !== u) })}
               >
                 <Icon icon={X} size={12} />

@@ -55,7 +55,7 @@ export function RoutineFoldLine({ fold, children }: { fold: RoutineFold; childre
         <button type="button" aria-expanded={open} onClick={() => setOpen((o) => !o)} className={LINE} aria-label={`${a11y}. ${open ? 'Hide' : 'Show'} the runs`}>
           <Icon icon={Repeat} size={13} className="shrink-0" />
           <span className="truncate tabular-nums">{label}</span>
-          {reply ? <span className="squircle max-w-32 shrink-0 truncate rounded-md bg-surface-2 px-1.5 text-note text-fg-2">{reply}</span> : null}
+          {reply ? <span className="ab-pill squircle max-w-32 shrink-0 truncate rounded-md bg-surface-2 px-1.5 text-note text-fg-2">{reply}</span> : null}
           <Chevron open={open} />
         </button>
       </div>
