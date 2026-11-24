@@ -25,6 +25,7 @@ jobs:
         include:
           - { name: linux, runner: ubuntu-latest }
           - { name: mac, runner: macos-15 }
+          - { name: windows, runner: windows-latest }
     steps:
       - uses: actions/checkout@v7
         with:
@@ -38,7 +39,9 @@ jobs:
         working-directory: native/appubot-helper
         run: swift build -c release -q
       - run: pnpm typecheck
-      - run: pnpm test
+      # Windows only typechecks and builds for now: some tests still assume Mac and Linux paths
+      - if: runner.os != 'Windows'
+        run: pnpm test
       - run: pnpm -C apps/desktop exec electron-vite build --logLevel warn
       # our phone apps (not public) share packages/protocol: a maintainer checks them before merging
       - if: github.event_name == 'pull_request' && matrix.name == 'linux'
@@ -46,3 +49,17 @@ jobs:
           if git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep -q '^packages/protocol/'; then
             echo "::notice::This changes packages/protocol. A maintainer will check it against the phone apps before merging."
           fi
+
+  # the one check main requires: passes only when every check above passed, so checks can be added or renamed here
+  # without touching the branch rule
+  ci:
+    name: CI
+    needs: [check]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - if: needs.check.result != 'success'
+        run: |
+          echo "::error::A check failed or was cancelled (${{ needs.check.result }})."
+          exit 1
+      - run: echo "Every check passed."
