@@ -9,6 +9,21 @@ import type { ReleaseNotes } from './whatsNew';
  */
 export const RELEASES: readonly ReleaseNotes[] = [
   {
+    version: '2026.1124.1',
+    features: [
+      {
+        id: 'apps-at-once',
+        title: 'Apps open at once',
+        description: 'The Apps page shows your connected apps and the catalog straight away, then checks for changes behind them. The Connect apps button’s logos come with AppuBot, so they show without waiting.',
+      },
+      {
+        id: 'connect-after-wake',
+        title: 'Back in touch after a wake',
+        description: 'After your computer wakes or changes network, AppuBot reconnects to AppuBot Connect right away when the link went quiet, so your phone reaches it sooner.',
+      },
+    ],
+  },
+  {
     version: '2026.1123.1',
     features: [
       {
