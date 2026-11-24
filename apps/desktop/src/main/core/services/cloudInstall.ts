@@ -9,19 +9,19 @@
  * `~/.local/bin` is on the gateway's PATH (headless.ts), so the runtime finds the CLI as soon as it is there. Windows
  * hints (PowerShell) and Homebrew ones have no Linux meaning: undefined, and the app says so.
  */
-import { join } from 'node:path';
+import { posix } from 'node:path';
 
 /** where agents install on a cloud computer, under its home */
 export const CLOUD_AGENT_PREFIX = '.local';
 
 const shq = (s: string): string => (/^[A-Za-z0-9_\-./:=@%+,]+$/.test(s) ? s : `'${s.replace(/'/g, `'\\''`)}'`);
 
-/** The shell line (bash -lc) that installs this agent into `home`, or undefined when its hint can't run on Linux. */
+/** The shell line (bash -lc) that installs this agent into `home` (a Linux path), or undefined when its hint can't run on Linux. */
 export function cloudInstallLine(installHint: string | undefined, home: string): string | undefined {
   const hint = installHint?.trim();
   if (!hint) return undefined;
   const npm = /^npm (?:i|install) -g ((?:@[\w.-]+\/)?[\w.-]+(?:@[\w.^~<>=-]+)?)$/.exec(hint);
-  if (npm) return `npm install -g --prefix ${shq(join(home, CLOUD_AGENT_PREFIX))} --no-fund --no-audit ${shq(npm[1]!)}`;
+  if (npm) return `npm install -g --prefix ${shq(posix.join(home, CLOUD_AGENT_PREFIX))} --no-fund --no-audit ${shq(npm[1]!)}`;
   if (/^curl [^|;&`$]*\| *bash$/.test(hint)) return hint;
   return undefined;
 }

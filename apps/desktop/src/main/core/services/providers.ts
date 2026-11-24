@@ -751,7 +751,8 @@ export class ProvidersService {
     if (running) return running;
     // OpenCode comes as a download of its own (no npm, no shell); every other agent runs its maker's installer
     const own = isFreeAgent(spec.id) ? (this.ctx.deps.freeAgentInstall ?? installFreeAgent) : undefined;
-    const how = own ? undefined : quietInstall(spec.installHint, homedir());
+    // a cloud computer is Linux, whatever runs this core
+    const how = own ? undefined : quietInstall(spec.installHint, homedir(), this.ctx.deps.cloud ? 'linux' : process.platform);
     if (!own && !how) return Promise.resolve({ ok: false, output: this.ctx.deps.cloud ? `${spec.name} can't be installed on AppuBot Cloud from here yet.` : `${spec.name} can't be installed from here. Install it from Settings › Agents.` });
     const emit = () => { const p = this.list().find((x) => x.id === spec.id); if (p) this.ctx.bus.emit('provider.updated', p); };
     const job = (async () => {
