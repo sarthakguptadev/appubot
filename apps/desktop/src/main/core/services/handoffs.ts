@@ -11,7 +11,7 @@
  * however long the turn takes; one cut off by AppuBot stopping reads as stopped.
  */
 import { newId, type Message, type Part, type Thread } from '@appubot/protocol';
-import { HANDOFF_PAUSED_NOTE, handoffContext, handoffNext, renderHandoffBack, renderHandoffPrompt, replyTextOf, type GroupBot } from '@appubot/chat-core';
+import { HANDOFF_HOPS_MAX, HANDOFF_PAUSED_NOTE, handoffContext, handoffNext, renderHandoffBack, renderHandoffPrompt, replyTextOf, type GroupBot } from '@appubot/chat-core';
 import type { CoreCtx } from '../context';
 import type { FileRecord } from '../store';
 import { errMsg } from '../util';
@@ -30,6 +30,8 @@ interface Pending {
   hop: number;
   /** the chat's own bot handed it over (its answer goes back to it) */
   askedByChatBot: boolean;
+  /** the named bot's own chat, where its turn runs (Stop in the chat it came from stops it there) */
+  targetThreadId?: string;
 }
 
 /** A bot's chat with the user, where hand-offs happen (not a Telegram chat, a group's thread or a routine's). */
@@ -115,7 +117,7 @@ export class HandoffService {
         via,
         { quiet: true, waits: true, preface, hop: o.hop - 1, ...(fromBot ? { from: fromBot } : {}) },
       );
-      this.pending.set(r.agentMessageId, p);
+      this.pending.set(r.agentMessageId, { ...p, targetThreadId: target.id });
     } catch (e) {
       this.settle(p, [{ type: 'text', text: `(couldn't hand it to ${to.name}: ${errMsg(e)})` }], 'complete');
     }
@@ -139,7 +141,8 @@ export class HandoffService {
 
   /** The bot handed a task answered: its answer goes into the chat as its message, then on to whoever takes it next. */
   private answered(p: Pending, e: TurnCompleted): void {
-    if (e.status === 'cancelled') { this.settle(p, [], 'cancelled'); this.carryOn(p.threadId); return; }
+    // stopped: nobody carries on from an answer that never came (the user stopped it, so the chain ends here)
+    if (e.status === 'cancelled') { this.settle(p, [], 'cancelled'); this.back.delete(p.threadId); return; }
     // what it said (its text, the files and pictures it sent), never its tools
     const said = e.message.parts.filter((x) => (x.type === 'text' && x.text.trim()) || x.type === 'file' || x.type === 'image');
     const parts: Part[] = said.length ? said : [{ type: 'text', text: replyTextOf(e.message) || '(no answer)' }];
@@ -167,11 +170,42 @@ export class HandoffService {
     if (bot) this.route(thread, { id: bot.id, name: bot.name }, replyTextOf(e.message), hop, false);
   }
 
+  /**
+   * Stop pressed in a bot's chat: the hand-offs it waits on stop too, in the named bots' own chats, and the chat's own
+   * bot doesn't carry on from them.
+   */
+  stopFor(threadId: string): void {
+    this.back.delete(threadId);
+    for (const p of this.pending.values()) {
+      if (p.threadId !== threadId || !p.targetThreadId) continue;
+      this.ctx.s.chat.cancel(p.targetThreadId).catch((e) => this.ctx.log.warn('stopping a hand-off failed', errMsg(e)));
+    }
+  }
+
+  /**
+   * The chat's bot messages since the user's last (answers on their way and turns carrying on included), and whether
+   * AppuBot already said it stopped passing them on. Counted across every branch, so a message naming several bots
+   * can't multiply the turns one message of the user's sets off: `HANDOFF_HOPS_MAX` in all.
+   */
+  private sinceUser(threadId: string): { bots: number; paused: boolean } {
+    const all = this.ctx.s.threads.messages(threadId, { limit: LOOK_BACK });
+    let bots = 0;
+    let paused = false;
+    for (let i = all.length - 1; i >= 0 && all[i]!.role !== 'user'; i--) {
+      const m = all[i]!;
+      if (m.parts.some((x) => x.type === 'system' && x.text === HANDOFF_PAUSED_NOTE)) paused = true;
+      if (m.role === 'agent' && (m.status === 'streaming' || m.parts.some((x) => x.type !== 'system' && x.type !== 'question'))) bots++;
+    }
+    return { bots, paused };
+  }
+
   /** A bot's message in a chat (`hop` deep), passed on to the bots it names, or back to the chat's own bot. */
   private route(thread: Thread, from: GroupBot, text: string, hop: number, askedByChatBot: boolean): void {
-    const step = handoffNext({ text, from: from.id, chatBotId: thread.botId, bots: this.bots(), hop, askedByChatBot });
-    if (step.paused) { this.ctx.s.chat.appendPart(thread.id, { type: 'system', text: HANDOFF_PAUSED_NOTE, level: 'info' }); return; }
-    for (const to of step.to) this.handOff(thread, to, { from, text, hop: hop + 1, askedByChatBot: from.id === thread.botId });
+    const so = this.sinceUser(thread.id);
+    const step = handoffNext({ text, from: from.id, chatBotId: thread.botId, bots: this.bots(), hop: Math.max(hop, so.bots), askedByChatBot });
+    if (step.paused) { if (!so.paused) this.ctx.s.chat.appendPart(thread.id, { type: 'system', text: HANDOFF_PAUSED_NOTE, level: 'info' }); return; }
+    // the bots still to go before the cap: a message naming more than that hands to the first of them
+    for (const to of step.to.slice(0, Math.max(1, HANDOFF_HOPS_MAX - so.bots))) this.handOff(thread, to, { from, text, hop: hop + 1, askedByChatBot: from.id === thread.botId });
     if (step.chatBot) this.back.set(thread.id, Math.max(this.back.get(thread.id) ?? 0, hop + 1));
     this.carryOn(thread.id);
   }

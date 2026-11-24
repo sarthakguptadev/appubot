@@ -15,14 +15,16 @@ export { HANDOFF_HOPS_MAX };
 type Said = Pick<Message, 'role' | 'parts' | 'from'>;
 
 /**
- * Where a name is no address: code (fenced and inline) and quoted lines ("> …", words quoted from a reply), and
- * @everyone / @all, which a chat with one bot doesn't hand to every bot there is.
+ * Where a name is no address: code (fenced and inline), quoted lines ("> …", words quoted from a reply), links and
+ * handles (youtube.com/@Ledger, @ada@mastodon.social), and @everyone / @all (every one of them, `@all@all` too), which
+ * a chat with one bot doesn't hand to every bot there is.
  */
 function addressable(text: string): string {
   return text
     .replace(/```[\s\S]*?(?:```|$)|`[^`\n]*`/g, ' ')
     .split('\n').filter((line) => !/^\s*>/.test(line)).join('\n')
-    .replace(/(^|[^\w@])@(?:everyone|all)\b/gi, '$1');
+    .replace(/\S*\/@\S*|@[\w.-]+@\S*/g, ' ')
+    .replace(/@(?:everyone|all)\b/gi, ' ');
 }
 
 /** The bots a message in a bot's chat names (`@Name`, as in a group), each once, in the order named. */
