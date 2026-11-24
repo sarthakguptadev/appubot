@@ -84,7 +84,7 @@ export function ReactionButton({ msg, className }: { msg: Message; className?: s
           aria-label="React"
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
-          className="inline-flex size-6 items-center justify-center rounded-md text-muted transition-colors hover:bg-fg/5 hover:text-fg focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]"
+          className="ab-pill inline-flex size-6 items-center justify-center rounded-md text-muted transition-colors hover:bg-fg/5 hover:text-fg focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]"
         >
           <Icon icon={Smile} size={14} />
         </button>

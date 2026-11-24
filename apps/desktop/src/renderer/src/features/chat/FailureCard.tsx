@@ -55,7 +55,7 @@ export function FailureCard({ msg, botName }: { msg: Message; botName: string })
         </div>
         {fixes.includes('model') && thread ? (
           // the chat's own picker, here: a pick goes to this chat at once, and Try again sends on it
-          <div className="flex items-center justify-between gap-3 rounded-control bg-[color-mix(in_srgb,var(--ab-fg)_5%,transparent)] py-1 pr-1.5 pl-3">
+          <div className="ab-pill squircle flex items-center justify-between gap-3 rounded-control bg-[color-mix(in_srgb,var(--ab-fg)_5%,transparent)] py-1 pr-1.5 pl-3">
             <span className="shrink-0 text-ui text-muted">Model</span>
             <ThreadModelPicker thread={thread} side="top" align="end" className="min-w-0 [&>button]:text-ui [&_.truncate]:min-w-0 [&_.truncate]:shrink" />
           </div>

@@ -163,7 +163,7 @@ function ProviderItem({ provider: p, registry }: { provider: Provider; registry:
             aria-expanded={showCommand}
             aria-label={showCommand ? 'Hide command' : 'Show command'}
             title={showCommand ? 'Hide command' : 'Show command'}
-            className="inline-flex size-5 shrink-0 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface-2 hover:text-fg focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]"
+            className="ab-pill inline-flex size-5 shrink-0 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface-2 hover:text-fg focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]"
           >
             <Icon icon={ChevronRight} size={12} className={cn('transition-transform duration-150', showCommand && 'rotate-90')} />
           </button>}

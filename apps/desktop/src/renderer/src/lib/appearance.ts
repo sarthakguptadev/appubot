@@ -35,8 +35,9 @@ const THEME_KEY = 'appubot:app-theme';
 const BACKGROUND_KEY = 'appubot:background';
 const SHAPE_KEY = 'appubot:shape';
 /**
- * How buttons and the other small controls are cut: `round` (the default) makes them pills, and circles where they are
- * square; `squircle` keeps the rounded squares they were until 2026-11-17. Cards, fields and menus are the same in both.
+ * How buttons, one-line fields, chips and the other small controls are cut: `round` (the default) makes them pills, and
+ * circles where they are square; `squircle` keeps the rounded squares they were until 2026-11-17. Cards, menus, rows
+ * and multi-line fields are the same in both.
  */
 export type ControlShape = 'round' | 'squircle';
 export const DEFAULT_SHAPE: ControlShape = 'round';

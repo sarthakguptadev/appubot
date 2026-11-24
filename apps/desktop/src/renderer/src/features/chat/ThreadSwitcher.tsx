@@ -52,7 +52,7 @@ export function ThreadRow({ t, active, onScreen, unread, waiting, now, renaming,
               if (e.key === 'Enter') { e.preventDefault(); save(); }
               else if (e.key === 'Escape') { e.preventDefault(); cancel(); }
             }}
-            className="h-8 w-full rounded-md bg-surface-2 px-2 text-copy text-fg outline-none shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--ab-fg)_22%,transparent)]"
+            className="ab-pill squircle h-8 w-full rounded-md bg-surface-2 px-3 text-copy text-fg outline-none shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--ab-fg)_22%,transparent)]"
           />
         </div>
       ) : (

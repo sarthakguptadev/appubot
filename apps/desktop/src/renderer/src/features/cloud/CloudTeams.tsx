@@ -362,7 +362,7 @@ function TabButton({ on, onClick, label, count }: { on: boolean; onClick: () => 
       role="tab"
       aria-selected={on}
       onClick={onClick}
-      className={cn('h-7 rounded-md px-2.5 text-copy transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[var(--ab-ring)]', on ? 'bg-surface-3 text-fg' : 'text-muted hover:text-fg')}
+      className={cn('ab-pill squircle h-7 rounded-md px-2.5 text-copy transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[var(--ab-ring)]', on ? 'bg-surface-3 text-fg' : 'text-muted hover:text-fg')}
     >
       {label}<span className="ml-1.5 text-muted tabular-nums">{count}</span>
     </button>
@@ -547,9 +547,9 @@ export function InviteDialog({ view, t, open, onClose }: { view: CloudAccountVie
 
 function Chip({ label, bad, title, onRemove }: { label: string; bad?: boolean; title?: string; onRemove: () => void }) {
   return (
-    <span title={title} className={cn('inline-flex h-6 max-w-full items-center gap-1 rounded-md pr-0.5 pl-2 text-ui', bad ? 'bg-warning-soft text-warning' : 'bg-surface-3 text-fg')}>
+    <span title={title} className={cn('ab-pill squircle inline-flex h-6 max-w-full items-center gap-1 rounded-md pr-0.5 pl-2 text-ui', bad ? 'bg-warning-soft text-warning' : 'bg-surface-3 text-fg')}>
       <span className="truncate">{label}</span>
-      <button type="button" aria-label={`Remove ${label}`} onClick={(e) => { e.stopPropagation(); onRemove(); }} className="flex size-5 items-center justify-center rounded text-current opacity-60 hover:opacity-100">
+      <button type="button" aria-label={`Remove ${label}`} onClick={(e) => { e.stopPropagation(); onRemove(); }} className="ab-pill flex size-5 items-center justify-center rounded text-current opacity-60 hover:opacity-100">
         <Icon icon={X} size={11} />
       </button>
     </span>

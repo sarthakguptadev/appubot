@@ -111,7 +111,7 @@ export function AgentsStep({ onNext, onBack }: { onNext: () => void; onBack: () 
       {!list.length ? <div className="py-8 text-center text-copy text-muted">Looking for AI apps on {THIS_MACHINE}…</div> : null}
       <div className="mt-4 flex items-center justify-center gap-1 text-ui text-muted">
         {hidden > 0 ? (
-          <button type="button" onClick={() => setMore(true)} className="flex items-center gap-1 rounded-control-sm px-2 py-1 transition-colors hover:text-fg">
+          <button type="button" onClick={() => setMore(true)} className="ab-pill squircle flex items-center gap-1 rounded-control-sm px-2 py-1 transition-colors hover:text-fg">
             {hidden} more <Icon icon={ChevronDown} size={13} />
           </button>
         ) : null}
@@ -119,7 +119,7 @@ export function AgentsStep({ onNext, onBack }: { onNext: () => void; onBack: () 
         <button
           type="button" disabled={checking}
           onClick={async () => { setChecking(true); await refreshProviders(); setChecking(false); }}
-          className="flex items-center gap-1 rounded-control-sm px-2 py-1 transition-colors hover:text-fg disabled:opacity-60"
+          className="ab-pill squircle flex items-center gap-1 rounded-control-sm px-2 py-1 transition-colors hover:text-fg disabled:opacity-60"
         >
           <Icon icon={RefreshCw} size={12} className={cn(checking && 'animate-spin')} />
           {checking ? 'Checking…' : 'Check again'}
@@ -155,7 +155,7 @@ function AgentCard({ provider: p, selected, onPick }: { provider: Provider; sele
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span className="truncate text-copy font-medium text-fg">{p.name}</span>
-          {p.id === 'claude-code' ? <span className="rounded-[5px] bg-surface-2 px-1.5 py-px text-[11px] font-medium text-fg-2">Recommended</span> : null}
+          {p.id === 'claude-code' ? <span className="ab-pill rounded-[5px] bg-surface-2 px-2 py-px text-[11px] font-medium text-fg-2">Recommended</span> : null}
         </div>
         <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-note">
           <span className={cn('size-1.5 shrink-0 rounded-full', ok ? 'bg-success' : v.kind === 'logged_out' ? 'bg-attention' : 'bg-surface-3')} />

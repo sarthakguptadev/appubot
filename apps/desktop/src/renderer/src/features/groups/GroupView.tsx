@@ -90,7 +90,7 @@ function MessageDetails({ m }: { m: GroupMessage }) {
     <span className="shrink-0 self-center opacity-0 transition-opacity group-hover/msg:opacity-100 focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100">
       <Menu
         align={m.from.kind === 'user' ? 'end' : 'start'}
-        trigger={(props) => <button {...props} type="button" aria-label="Message details" className="grid size-6 place-items-center rounded-md text-muted hover:bg-fg/5 hover:text-fg"><Icon icon={MoreHorizontal} size={15} /></button>}
+        trigger={(props) => <button {...props} type="button" aria-label="Message details" className="ab-pill grid size-6 place-items-center rounded-md text-muted hover:bg-fg/5 hover:text-fg"><Icon icon={MoreHorizontal} size={15} /></button>}
         items={[
           { label: m.from.kind === 'user' ? 'You' : groupAuthorName(m.from), hint: timeOf(m.createdAt), onSelect: () => {}, disabled: true },
           'separator',
