@@ -503,9 +503,10 @@ The phone apps, AppuBot Cloud and AppuBot's servers are run by us. If something'
 
 AppuBot is open source under the [Apache License 2.0](LICENSE). You may use, change and share the code for any purpose, in your own products too, as long as you pass on the licence and keep the notices in [NOTICE](NOTICE).
 
-Copyright 2026 Sarthak Gupta. The licence does not cover three things:
+Copyright 2026 Sarthak Gupta. The licence does not cover these things:
 
 - The AppuBot name, logo, app icon and robot face are not licensed. All rights reserved: see [TRADEMARKS.md](TRADEMARKS.md).
+- The maker's photo (`apps/desktop/src/renderer/src/assets/sarthak.jpg`) and the AppuBot Cloud picture (`apps/desktop/src/renderer/src/assets/cloud-promo.webp`) are not licensed. All rights reserved.
 - `apps/desktop/src/renderer/src/components/rare` is Rare UI by Swami Malode, under its own licence in that folder, not the Apache License. It may not be sold, or given out apart from an application.
 - Other third-party code keeps its own licence, and other companies' names and logos belong to their owners: see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
