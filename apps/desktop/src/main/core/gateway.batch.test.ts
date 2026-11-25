@@ -307,7 +307,9 @@ describe('what never waits for the window', () => {
       p.ws.send(batch);
       await p.until(() => p.items.filter((x) => x.f.type === 'res').length === 3);
       expect(p.items.filter((x) => x.f.type === 'res').map((x) => x.f.id)).toEqual(['a', 'b', 'c']);
-      expect(p.frames.length - before).toBe(p === onConnect ? 1 : 3);
+      // the frames the answers came in: an event that happens to arrive meanwhile (the other phone coming online) is
+      // a frame of its own on every route, and says nothing about how the answers were sent
+      expect(new Set(p.items.filter((x) => x.f.type === 'res').map((x) => x.frame)).size).toBe(p === onConnect ? 1 : 3);
     }
     for (const p of [onConnect, here]) p.close();
   });
