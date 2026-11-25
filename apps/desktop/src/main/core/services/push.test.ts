@@ -21,7 +21,6 @@ import { publicDevice } from './devices';
 import { RETRY_MS, pushTargets, pushText, type PushNotice } from './push';
 
 const RELAY = 'http://relay.test';
-const realImmediate = setImmediate;
 
 /** The relay's push endpoint, as the real one answers; `answer` decides each POST that verified. */
 class FakeRelay {
@@ -197,17 +196,15 @@ describe('the device record', () => {
 describe('the queue', () => {
   let relay: FakeRelay;
   beforeEach(() => { relay = new FakeRelay(); });
-  // the fake relay checks signatures with WebCrypto, which settles on real time: wait for each request to finish
+  // the fake relay checks signatures with WebCrypto, which settles on real time, however long that takes on this
+  // machine: a request that is out is waited for itself (never for a number of turns), then whatever it left due now
+  // goes out the same way
   let current: Core;
   const settle = async (ms = 0) => {
     await vi.advanceTimersByTimeAsync(ms);
-    for (let i = 0; i < 1000; i++) {
-      if (!current.services.push.busy) {
-        await new Promise((r) => realImmediate(r));
-        await vi.advanceTimersByTimeAsync(0);
-        if (!current.services.push.busy) return;
-      }
-      await new Promise((r) => realImmediate(r));
+    while (current.services.push.busy) {
+      await current.services.push.idle();
+      await vi.advanceTimersByTimeAsync(0);
     }
   };
   // through the relay as it is at the time of each call (a test may swap its fetch)
