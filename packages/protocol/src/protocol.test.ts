@@ -1,6 +1,6 @@
 import { test } from 'vitest';
 import assert from 'node:assert/strict';
-import { BATCH_FEATURE, BATCH_ITEMS_MAX, BatchFrameSchema, ClientFrameSchema, GATEWAY_FEATURES, ServerFrameSchema, ConnectFrameSchema, HelloErrorFrameSchema, HelloFrameSchema, MIN_PROTOCOL_VERSION, PROTOCOL_VERSION, protocolMatch, buildPairUrl, parsePairUrl, applyDelta, SettingsSchema, stripMarkdown, currentChat, botThreads, appOn, appsOn, withAppOn, Methods, Events, MessageSchema, BotSchema, AppsStatusSchema, AppToolkitSchema, AppConnectionSchema } from './index';
+import { BATCH_FEATURE, BATCH_ITEMS_MAX, BatchFrameSchema, ClientFrameSchema, GATEWAY_FEATURES, ServerFrameSchema, ConnectFrameSchema, HelloErrorFrameSchema, HelloFrameSchema, MIN_PROTOCOL_VERSION, PROTOCOL_VERSION, protocolMatch, buildPairUrl, parsePairUrl, applyDelta, stripMarkdown, currentChat, botThreads, appOn, appsOn, withAppOn, Methods, Events, MessageSchema, BotSchema, AppsStatusSchema, AppToolkitSchema, AppConnectionSchema } from './index';
 
 test('pair url round-trips', () => {
   const url = buildPairUrl({ hosts: ['100.91.133.6', 'mac.tail.ts.net'], port: 7890, code: '123456', hostName: 'Mac' });
