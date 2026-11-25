@@ -303,7 +303,6 @@ describe('what never waits for the window', () => {
     const onConnect = await Phone.open({ connect: true, features: [BATCH_FEATURE] });
     const here = await Phone.open({ features: [BATCH_FEATURE] });
     for (const p of [onConnect, here]) {
-      const before = p.frames.length;
       p.ws.send(batch);
       await p.until(() => p.items.filter((x) => x.f.type === 'res').length === 3);
       expect(p.items.filter((x) => x.f.type === 'res').map((x) => x.f.id)).toEqual(['a', 'b', 'c']);
