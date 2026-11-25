@@ -37,19 +37,19 @@ const app = (id: string, name: string, url: string, description: string, categor
   ({ slug: `${id}${DIRECT_APP_SUFFIX}`, name, url, auth: 'oauth', description, categories, logo: id, ...more });
 
 export const DIRECT_APPS: readonly DirectAppDef[] = [
-  app('paypal', 'PayPal', 'https://mcp.paypal.com/mcp', 'Invoices, orders, payments, refunds and disputes in your PayPal account.', ['payment-processing'], { insteadOf: 'paypal' }),
-  app('wordpress', 'WordPress.com', 'https://public-api.wordpress.com/wpcom/v2/mcp/v1', 'Posts, pages, comments and stats of your WordPress.com sites.', ['content-&-files', 'website-&-app-building'], { insteadOf: 'wordpress_com', logo: 'wordpress_com' }),
-  app('helpscout', 'Help Scout', 'https://mcp.helpscout.net/mcp', 'Conversations, customers and help articles in your Help Scout inbox.', ['customer-support', 'communication'], { insteadOf: 'help_scout', logo: 'help_scout' }),
-  app('zapier', 'Zapier', 'https://mcp.zapier.com/api/mcp/mcp', 'The actions you have set up in Zapier, across the apps Zapier connects.', ['productivity']),
-  app('krisp', 'Krisp', 'https://mcp.krisp.ai/mcp', 'Your meetings in Krisp: notes, transcripts and action items.', ['transcription']),
-  app('fastmail', 'Fastmail', 'https://api.fastmail.com/mcp', 'Mail, calendars and contacts in your Fastmail account.', ['email']),
-  app('axiom', 'Axiom', 'https://mcp.axiom.co/mcp', 'Logs, traces and queries over your Axiom datasets.', ['server-monitoring', 'developer-tools']),
-  app('upstash', 'Upstash', 'https://mcp.upstash.com/mcp', 'Your Upstash Redis, QStash and vector databases.', ['databases', 'developer-tools']),
-  app('clerk', 'Clerk', 'https://mcp.clerk.com/mcp', 'Users, organizations and applications in your Clerk account.', ['security-&-identity-tools', 'developer-tools']),
-  app('dodopayments', 'Dodo Payments', 'https://mcp.dodopayments.com/mcp', 'Payments, subscriptions, refunds and customers in Dodo Payments.', ['payment-processing']),
-  app('morningstar', 'Morningstar', 'https://mcp.morningstar.com/mcp', 'Fund, stock and market research from your Morningstar account.', ['business-intelligence']),
-  app('microsoftlearn', 'Microsoft Learn', 'https://learn.microsoft.com/api/mcp', "Search Microsoft's official documentation and code samples.", ['developer-tools'], { auth: 'none', logo: 'microsoft' }),
-  app('cloudflaredocs', 'Cloudflare Docs', 'https://docs.mcp.cloudflare.com/mcp', "Search Cloudflare's developer documentation.", ['developer-tools'], { auth: 'none', logo: 'cloudflare' }),
+  app('paypal', 'PayPal', 'https://mcp.paypal.com/mcp', 'PayPal for a business: invoices, orders, refunds, disputes and shipment tracking.', ['payment-processing'], { insteadOf: 'paypal' }),
+  app('wordpress', 'WordPress.com', 'https://public-api.wordpress.com/wpcom/v2/mcp/v1', 'Write and edit posts and pages on a WordPress.com site, and read its comments and traffic.', ['content-&-files', 'website-&-app-building'], { insteadOf: 'wordpress_com', logo: 'wordpress_com' }),
+  app('helpscout', 'Help Scout', 'https://mcp.helpscout.net/mcp', 'Pull up support conversations, customer details and Docs articles from Help Scout.', ['customer-support', 'communication'], { insteadOf: 'help_scout', logo: 'help_scout' }),
+  app('zapier', 'Zapier', 'https://mcp.zapier.com/api/mcp/mcp', 'Thousands of other apps, through the Zapier actions you choose to switch on.', ['productivity']),
+  app('krisp', 'Krisp', 'https://mcp.krisp.ai/mcp', "What was said in your meetings: Krisp's notes, transcripts and to-dos.", ['transcription']),
+  app('fastmail', 'Fastmail', 'https://api.fastmail.com/mcp', 'Search, read and send your Fastmail email, with its contacts and calendars.', ['email']),
+  app('axiom', 'Axiom', 'https://mcp.axiom.co/mcp', 'Query logs, traces and metrics in Axiom, and look into its datasets.', ['server-monitoring', 'developer-tools']),
+  app('upstash', 'Upstash', 'https://mcp.upstash.com/mcp', 'Work with your Upstash Redis databases, queues, workflows and vector search.', ['databases', 'developer-tools']),
+  app('clerk', 'Clerk', 'https://mcp.clerk.com/mcp', 'Set up sign-in for an app and manage its users with Clerk, SDK snippets included.', ['security-&-identity-tools', 'developer-tools']),
+  app('dodopayments', 'Dodo Payments', 'https://mcp.dodopayments.com/mcp', 'Take payments, manage subscriptions and issue refunds in Dodo Payments.', ['payment-processing']),
+  app('morningstar', 'Morningstar', 'https://mcp.morningstar.com/mcp', "Morningstar's data and research on funds, stocks and other securities.", ['business-intelligence']),
+  app('microsoftlearn', 'Microsoft Learn', 'https://learn.microsoft.com/api/mcp', 'Answers from the docs on learn.microsoft.com, with code samples for Azure, .NET and more.', ['developer-tools'], { auth: 'none', logo: 'microsoft' }),
+  app('cloudflaredocs', 'Cloudflare Docs', 'https://docs.mcp.cloudflare.com/mcp', 'Look things up in the developer docs for Workers, R2, DNS and the rest of Cloudflare.', ['developer-tools'], { auth: 'none', logo: 'cloudflare' }),
 ];
 
 /** a browser sign-in may sit open while the person finds their password */
