@@ -26,7 +26,7 @@ works on your own computer or around the clock in AppuBot Cloud, and answers you
 <p>
 <a href="https://github.com/sarthakguptadev/AppuBot/releases/latest"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/sarthakguptadev/AppuBot/readme-assets/version-dark.png"><img src="https://raw.githubusercontent.com/sarthakguptadev/AppuBot/readme-assets/version-light.png" alt="Latest version" height="30"></picture></a>
 <a href="https://github.com/sarthakguptadev/AppuBot/releases"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/sarthakguptadev/AppuBot/readme-assets/downloads-dark.png"><img src="https://raw.githubusercontent.com/sarthakguptadev/AppuBot/readme-assets/downloads-light.png" alt="Downloads" height="30"></picture></a>
-<a href="LICENSE.md"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/sarthakguptadev/AppuBot/readme-assets/license-dark.png"><img src="https://raw.githubusercontent.com/sarthakguptadev/AppuBot/readme-assets/license-light.png" alt="Licence: PolyForm Shield 1.0.0" height="30"></picture></a>
+<a href="LICENSE"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/sarthakguptadev/AppuBot/readme-assets/license-dark.png"><img src="https://raw.githubusercontent.com/sarthakguptadev/AppuBot/readme-assets/license-light.png" alt="Licence: Apache 2.0" height="30"></picture></a>
 <a href="https://x.com/AppuBot_"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/sarthakguptadev/AppuBot/readme-assets/x-appubot-dark.png"><img src="https://raw.githubusercontent.com/sarthakguptadev/AppuBot/readme-assets/x-appubot-light.png" alt="@AppuBot_ on X" height="30"></picture></a>
 <a href="https://x.com/sarthakguptadev"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/sarthakguptadev/AppuBot/readme-assets/x-sarthakguptadev-dark.png"><img src="https://raw.githubusercontent.com/sarthakguptadev/AppuBot/readme-assets/x-sarthakguptadev-light.png" alt="@sarthakguptadev, the maker, on X" height="30"></picture></a>
 </p>
@@ -330,7 +330,7 @@ It stays on your computer. What leaves is what a bot sends to its AI provider, s
 <details>
 <summary><b>Is AppuBot open source?</b></summary>
 <br>
-Yes. Its code is public here under the PolyForm Shield License: you may read it, build it, change it and send us improvements, but not use it to make a competing product. See <a href="#licence">Licence</a>.
+Yes. Its code is public here under the Apache License 2.0: you may read it, build it, change it and use it in your own work, paid work included. The AppuBot name and logo are not part of that, and one folder of components keeps its own licence. See <a href="#licence">Licence</a>.
 </details>
 
 <details>
@@ -501,11 +501,16 @@ The phone apps, AppuBot Cloud and AppuBot's servers are run by us. If something'
 
 ## Licence
 
-AppuBot is open source under the [PolyForm Shield License 1.0.0](LICENSE.md). You may use, study and change it for anything except making a product that competes with AppuBot. That includes free products, and anything offered as a substitute for AppuBot.
+AppuBot is open source under the [Apache License 2.0](LICENSE). You may use, change and share the code for any purpose, in your own products too, as long as you pass on the licence and keep the notices in [NOTICE](NOTICE).
 
-- The AppuBot name, logo and icon aren't covered: see [TRADEMARKS.md](TRADEMARKS.md).
-- `apps/desktop/src/renderer/src/components/rare` is Rare UI by Swami Malode, under its own licence in that folder.
-- Other third-party code keeps its own licence: see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Copyright 2026 Sarthak Gupta. The licence does not cover these things:
+
+- The AppuBot name, logo, app icon and robot face are not licensed. All rights reserved: see [TRADEMARKS.md](TRADEMARKS.md).
+- The maker's photo (`apps/desktop/src/renderer/src/assets/sarthak.jpg`) and the AppuBot Cloud picture (`apps/desktop/src/renderer/src/assets/cloud-promo.webp`) are not licensed. All rights reserved.
+- `apps/desktop/src/renderer/src/components/rare` is Rare UI by Swami Malode, under its own licence in that folder, not the Apache License. It may not be sold, or given out apart from an application.
+- Other third-party code keeps its own licence, and other companies' names and logos belong to their owners: see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+Versions up to 2026.1124.2 were released under the PolyForm Shield License 1.0.0, which still applies to those versions. The Apache License applies from the change that put it here.
 
 <br>
 

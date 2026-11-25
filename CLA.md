@@ -1,6 +1,6 @@
 # AppuBot Contributor Licence Agreement
 
-Version 1.0
+Version 1.1
 
 Thank you for helping improve AppuBot. This agreement is between you and Sarthak Gupta, the maker of AppuBot ("we", "us"). It covers every contribution you send us. You agree to it by sending a contribution: there is nothing to sign.
 
@@ -19,7 +19,7 @@ You keep the copyright in your Contributions. Nothing in this agreement transfer
 
 ## 3. Copyright licence to us
 
-You grant us, and anyone who receives software from us, a perpetual, worldwide, non-exclusive, free of charge, royalty-free, irrevocable licence to use, copy, change, publish, distribute, sublicense and sell your Contributions and works based on them, under any licence terms we choose, including the PolyForm Shield License, any open source licence, and closed, paid or white-label products.
+You grant us, and anyone who receives software from us, a perpetual, worldwide, non-exclusive, free of charge, royalty-free, irrevocable licence to use, copy, change, publish, distribute, sublicense and sell your Contributions and works based on them, under any licence terms we choose, including the Apache License 2.0, any other open source licence, and closed, paid or white-label products.
 
 ## 4. Patent licence to us
 

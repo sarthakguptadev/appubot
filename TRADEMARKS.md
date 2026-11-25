@@ -1,6 +1,6 @@
 # AppuBot trademarks
 
-The code in this repository is source-available under the PolyForm Shield License 1.0.0 ([LICENSE](LICENSE.md)). That licence covers the code only. It gives no rights to the AppuBot name or brand.
+The code in this repository is open source under the Apache License 2.0 ([LICENSE](LICENSE)). That licence covers the code only. It gives no rights to the AppuBot name or brand: its section 6 says so, and [NOTICE](NOTICE) says the same.
 
 ## What is ours
 
