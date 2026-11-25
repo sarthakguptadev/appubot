@@ -14,7 +14,7 @@ import {
   cloudPhase, hasComputer, teamAsView, type CloudPhase,
 } from '@appubot/chat-core';
 import type { BadgeTone } from '../../components/ui';
-import { COMPUTER_NAME, ON_HOLD_TEXT, SOLD_OUT_TEXT, YOUR_COMPUTER, YOUR_COMPUTER_CAP, exportOnlyText } from './names';
+import { COMPUTER_NAME, SOLD_OUT_TEXT, YOUR_COMPUTER, YOUR_COMPUTER_CAP, exportOnlyText, onHoldText } from './names';
 
 /** The account's phase, read the same way by the Mac's core (chat-core `cloudOnly.ts`). */
 export { cloudPhase, hasComputer, canWork, teamAsView, type CloudPhase } from '@appubot/chat-core';
@@ -39,7 +39,7 @@ export function phaseWords(p: CloudPhase, v?: CloudAccountView | null, now = Dat
       label: 'Payment failed', tone: 'warning',
       line: `The last payment didn’t go through${sub?.pastDueEndsAt ? `. Update your card by ${shortDate(sub.pastDueEndsAt, now)} to keep it running` : '. Update your card in Manage billing to keep it running'}.`,
     };
-    case 'on-hold': return { label: 'Payment on hold', tone: 'danger', line: ON_HOLD_TEXT };
+    case 'on-hold': return { label: 'Payment on hold', tone: 'danger', line: onHoldText(c?.exportUntil ?? v?.account?.exportUntil, now) };
     case 'ending': return {
       label: 'Ending', tone: 'warning',
       line: `Your plan ends${sub ? ` on ${shortDate(sub.periodEnd, now)}` : ''}. Your bots and files are kept for ${keepDaysText(CLOUD_ENDED_KEEP_DAYS)} after that, then deleted. Keep your plan in Manage billing.`,
