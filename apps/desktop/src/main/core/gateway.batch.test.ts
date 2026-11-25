@@ -188,7 +188,13 @@ describe('a streaming reply over AppuBot Connect', () => {
     };
     const lat = { legacy: latency(legacy), batched: latency(batched) };
     expect(lat.batched.length).toBe(n);
-    expect(rate.legacy / rate.batched).toBeGreaterThanOrEqual(3);
+    // fewer frames, by the rule that holds on any machine: the older phone gets a frame per event, the batching one a
+    // frame per window at most (a timer never fires early). How many times fewer that comes to depends on how late this
+    // machine's timers fire (each one about 15 ms late and it drops under 3 times), so that is a measurement, printed
+    // with APPUBOT_BENCH=1, not a check
+    expect(eventsIn(legacy, a.legacy, b.legacy)).toBe(b.legacy - a.legacy);
+    expect(b.batched - a.batched).toBeLessThanOrEqual(Math.ceil((b.t - a.t) / WINDOW) + 1);
+    expect(b.batched - a.batched).toBeLessThan(b.legacy - a.legacy);
     // what batching adds is the window at most (timers on a busy test machine get some slack at the tail)
     expect(pct(lat.batched, 50) - pct(lat.legacy, 50)).toBeLessThanOrEqual(WINDOW);
     expect(pct(lat.batched, 99) - pct(lat.legacy, 99)).toBeLessThanOrEqual(WINDOW + 40);
@@ -301,7 +307,9 @@ describe('what never waits for the window', () => {
       p.ws.send(batch);
       await p.until(() => p.items.filter((x) => x.f.type === 'res').length === 3);
       expect(p.items.filter((x) => x.f.type === 'res').map((x) => x.f.id)).toEqual(['a', 'b', 'c']);
-      expect(p.frames.length - before).toBe(p === onConnect ? 1 : 3);
+      // the frames the answers came in: an event that happens to arrive meanwhile (the other phone coming online) is
+      // a frame of its own on every route, and says nothing about how the answers were sent
+      expect(new Set(p.items.filter((x) => x.f.type === 'res').map((x) => x.frame)).size).toBe(p === onConnect ? 1 : 3);
     }
     for (const p of [onConnect, here]) p.close();
   });

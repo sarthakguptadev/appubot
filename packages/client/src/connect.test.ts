@@ -13,6 +13,17 @@ import { asyncCipher } from './testing/asyncCipher';
 
 const ROOM = 'abcdefghijklmnopqrstuvwxyz';
 const tick = (ms = 0) => new Promise((r) => setTimeout(r, ms));
+/**
+ * On the fake clock (`vi.useFakeTimers()`): time passes, from one timer to the next, until `p` settles. Tests that turn
+ * on which of two timeouts comes first run on it, so the answer never depends on how fast this machine is.
+ */
+async function through<T>(p: Promise<T>): Promise<T> {
+  let settled = false;
+  const done = () => { settled = true; };
+  p.then(done, done);
+  while (!settled) await vi.advanceTimersToNextTimerAsync();
+  return p;
+}
 
 /**
  * An in-memory relay plus the Mac behind it: the phone's transport gets the relay's text answer, its binary goes to
@@ -204,7 +215,7 @@ function session(w: ReturnType<typeof world>, extra: Partial<ConstructorParamete
   return new RelaySession({ connectId: ROOM, macKey: w.macKey, WebSocketImpl: w.WebSocketImpl, relayUrl: 'wss://relay.test', idleMs: 0, ...extra });
 }
 
-afterEach(() => { closeRelaySessions(); vi.restoreAllMocks(); });
+afterEach(() => { closeRelaySessions(); vi.restoreAllMocks(); vi.useRealTimers(); });
 
 describe('RelaySession', () => {
   test('joins the room, says hello and waits for the Mac’s READY', async () => {
@@ -384,29 +395,35 @@ describe('RelaySession: integrity and limits', () => {
   });
 
   test('without the Mac’s acks the body stops at the window; a silent session is dropped as dead', async () => {
+    // on the fake clock: sealing and carrying a window of body takes this machine as long as it takes, and none of that
+    // counts toward the 80 ms of silence after which the session is given up on
+    vi.useFakeTimers();
     const w = world({ noAck: true, hang: true });
     const s = session(w, { requestTimeoutMs: 80 });
-    await s.ready;
-    // caught from the start: on a loaded machine the session can fail before the checks below are reached
+    await through(s.ready);
     const outcome = s.request({ method: 'POST', path: '/echo' }, new Uint8Array(CHANNEL_WINDOW * 2)).then(() => null, (e: unknown) => e);
-    await vi.waitFor(() => expect(w.seen.bodyBytes).toBeGreaterThan(CHANNEL_WINDOW - CHANNEL_CHUNK));
-    await tick(20);
+    await vi.advanceTimersByTimeAsync(40);
+    expect(w.seen.bodyBytes).toBeGreaterThan(CHANNEL_WINDOW - CHANNEL_CHUNK);
     expect(w.seen.bodyBytes).toBeLessThanOrEqual(CHANNEL_WINDOW);
+    expect(s.state).toBe('ready');
     // nothing at all came back since: the session is the problem, not the request
-    expect(await outcome).toMatchObject({ code: 'closed' });
+    expect(await through(outcome)).toMatchObject({ code: 'closed' });
     expect(s.state).toBe('closed');
   });
 
   test('a request the Mac goes quiet on times out alone, and the Mac is told to stop', async () => {
+    // on the fake clock: the socket's answers come back well inside the request's 120 ms whatever this machine is doing,
+    // so the session is never taken for dead here
+    vi.useFakeTimers();
     const w = world({ hang: true });
     const s = session(w, { requestTimeoutMs: 120 });
     const ws = s.openSocket('/ws');
-    await new Promise<void>((r) => { ws.onopen = () => r(); });
+    await through(new Promise<void>((r) => { ws.onopen = () => r(); }));
     const req = s.request({ method: 'GET', path: '/echo' });
     // the session itself is alive: the gateway socket keeps talking
     const chatter = setInterval(() => ws.send(JSON.stringify({ type: 'req', id: 'p', method: 'system.ping' })), 20);
     try {
-      await expect(req).rejects.toMatchObject({ code: 'timeout' });
+      await expect(through(req)).rejects.toMatchObject({ code: 'timeout' });
     } finally {
       clearInterval(chatter);
     }
@@ -800,13 +817,14 @@ describe('direct sessions (the same Wi-Fi, no relay)', () => {
   });
 
   test('a computer that isn’t there is given up on, and a probe’s timeout doesn’t wait out the handshake', async () => {
+    // on the fake clock: how long the probe took is then its own 20 ms, not this machine's timers
+    vi.useFakeTimers();
     const w = world({ direct: true, unreachable: true });
-    // margins wide enough for Windows' coarse (~15ms) timers: the probe still ends long before the handshake would
     const s = direct(w, { readyTimeoutMs: 400 });
     const t0 = Date.now();
-    expect(await checkHealth('http://192.168.1.5:7890', relayFetch(s), 20)).toEqual({ ok: false });
-    expect(Date.now() - t0).toBeLessThan(250);
-    await expect(s.ready).rejects.toMatchObject({ code: 'connect_failed', message: expect.stringMatching(/on this Wi-Fi/) });
+    expect(await through(checkHealth('http://192.168.1.5:7890', relayFetch(s), 20))).toEqual({ ok: false });
+    expect(Date.now() - t0).toBeLessThan(30);
+    await expect(through(s.ready)).rejects.toMatchObject({ code: 'connect_failed', message: expect.stringMatching(/on this Wi-Fi/) });
   });
 
   test('a probe given up on with total silence from the Mac ends a half-open session, so the next one dials afresh', async () => {

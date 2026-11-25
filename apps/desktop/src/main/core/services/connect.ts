@@ -227,6 +227,10 @@ export class ConnectService {
   private probe: ReturnType<typeof setTimeout> | null = null;
   /** when the oldest ping the relay hasn't answered went (0: it has answered everything; any message counts) */
   private awaiting = 0;
+  /** the time in the last ping sent: each one's is later than the one before, so an echo says which ping it answers */
+  private pingStamp = 0;
+  /** the ping whose echo a probe (`check`) waits for (0: none) */
+  private probing = 0;
   /** this socket's relay echoes pings (one that never has isn't held to it) */
   private echoes = false;
   private attempt = 0;
@@ -555,6 +559,8 @@ export class ConnectService {
       this.streams.get(f.streamId)?.close(false);
     } else if (f.type === RelayFrame.PING) {
       this.echoes = true;
+      const stamp = parseAck(f.payload);
+      if (this.probing && stamp !== null && stamp >= this.probing) this.probing = 0;
     }
   }
 
@@ -607,6 +613,7 @@ export class ConnectService {
   private startHeartbeat(ws: WebSocket): void {
     this.stopHeartbeat();
     this.awaiting = 0;
+    this.probing = 0;
     this.echoes = false;
     const pingMs = this.ctx.deps.connect?.pingMs ?? PING_MS;
     const timeoutMs = this.ctx.deps.connect?.pingTimeoutMs ?? PING_TIMEOUT_MS;
@@ -637,11 +644,13 @@ export class ConnectService {
     this.heartbeat = this.probe = null;
   }
 
-  /** A PING with the time in it (8 bytes): the relay sends it back as is. */
-  private ping(): void {
+  /** A PING with the time in it (8 bytes): the relay sends it back as is. Returns that time. */
+  private ping(): number {
     const now = Date.now();
     if (!this.awaiting) this.awaiting = now;
-    this.sendFrame(encodeRelayFrame(RelayFrame.PING, 0, ackPayload(now)));
+    this.pingStamp = Math.max(now, this.pingStamp + 1);
+    this.sendFrame(encodeRelayFrame(RelayFrame.PING, 0, ackPayload(this.pingStamp)));
+    return this.pingStamp;
   }
 
   /** The relay must answer a ping within PROBE_MS, or the socket is dropped and dialled again. */
@@ -649,13 +658,13 @@ export class ConnectService {
     if (this.probe) return;
     // a relay that has never echoed can't be asked: start over
     if (!this.echoes) { this.lost(ws, why); return; }
-    this.ping();
-    // the oldest ping still unanswered, this one at the latest: read back, since ping() stamps its own time and a
-    // clock read here could be a millisecond earlier, leaving the probe waiting for an answer to nothing
-    const sent = this.awaiting;
+    // only the echo of this ping (or of a later one) answers. Anything that was already on its way when the computer
+    // woke or the network changed, an earlier ping's echo included, says nothing about the socket now
+    const asked = this.ping();
+    this.probing = asked;
     this.probe = setTimeout(() => {
       this.probe = null;
-      if (this.sock === ws && this.awaiting && this.awaiting <= sent) this.lost(ws, `${why}; the relay didn’t answer`);
+      if (this.sock === ws && this.probing === asked) this.lost(ws, `${why}; the relay didn’t answer`);
     }, this.ctx.deps.connect?.probeMs ?? PROBE_MS);
     this.probe.unref?.();
   }

@@ -1472,7 +1472,10 @@ export class ChatService {
     if (this.ctx.s.appUpdate?.stopped) throw new RpcError('update_required', this.ctx.s.appUpdate.stopped.message);
     if (!this.ctx.s.system.cloudWorking()) throw new RpcError('unavailable', 'This AppuBot computer is paused');
     const agentMessageId = newId('msg');
-    this.start(threadId, { agentMessageId, text, images: [], attachments: [], via: 'system', after: Date.now(), quiet: true });
+    // after whatever the thread holds now (the notice or the answer this turn follows), which may be stamped ahead of
+    // the clock: messages made within the same millisecond are stamped one after another
+    const newest = this.ctx.s.threads.messages(threadId, { limit: 1 }).at(-1)?.createdAt ?? 0;
+    this.start(threadId, { agentMessageId, text, images: [], attachments: [], via: 'system', after: Math.max(Date.now(), newest), quiet: true });
     return agentMessageId;
   }
 

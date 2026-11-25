@@ -101,6 +101,8 @@ export class PushService {
   private nonce: string | null = null;
   private timer: ReturnType<typeof setTimeout> | null = null;
   private sending = false;
+  /** the pass over the queue that is running, until its request is answered and dealt with */
+  private flushing: Promise<void> | null = null;
   private stopped = false;
   /** the relay refused this computer (blocked, pushes off, no Firebase account): nothing is sent until then */
   private heldUntil = 0;
@@ -138,6 +140,8 @@ export class PushService {
   /** Waiting notices, and whether a request is out (tests). */
   get pending(): number { return this.queue.length + (this.sending ? 1 : 0); }
   get busy(): boolean { return this.sending; }
+  /** Settles when the request that is out (if one is) has been answered and dealt with (tests wait on it). */
+  idle(): Promise<void> { return this.flushing ?? Promise.resolve(); }
 
   stop(): void {
     this.stopped = true;
@@ -159,7 +163,11 @@ export class PushService {
   private schedule(delay: number): void {
     if (this.stopped || this.sending) return;
     if (this.timer) clearTimeout(this.timer);
-    this.timer = setTimeout(() => { this.timer = null; void this.flush(); }, Math.max(0, delay));
+    this.timer = setTimeout(() => {
+      this.timer = null;
+      const pass = this.flush().finally(() => { if (this.flushing === pass) this.flushing = null; });
+      this.flushing = pass;
+    }, Math.max(0, delay));
     this.timer.unref?.();
   }
 
