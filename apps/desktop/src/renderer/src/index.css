@@ -216,14 +216,6 @@ html[data-glass="off"] body { background-image: none; }
   .shimmer-group { animation: none; mask-image: none; }
 }
 
-/* signature hero glow (orange → amber → periwinkle → near white) */
-.hero-glow {
-  position: absolute; pointer-events: none; border-radius: 9999px; filter: blur(64px);
-  background: radial-gradient(closest-side, #F9730C 0%, #FFB053 38%, #A5BBFC 72%, rgba(244,247,255,0) 100%);
-  opacity: .45;
-}
-.dark .hero-glow { opacity: .28; }
-
 .stream-caret {
   display: inline-block; width: 2px; height: 1.05em; margin-left: 2px; vertical-align: -0.15em;
   background: var(--ab-accent); border-radius: 1px; animation: var(--animate-caret);

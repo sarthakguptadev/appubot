@@ -4,7 +4,7 @@ import { parseComputerMessage, type CloudDesktopLink, type ScreenControl, type V
 import { errorMessage } from '../../lib/gateway';
 import { pushToast } from '../../lib/store';
 import { desktopLink, useCloud } from './cloudAccount';
-import { AUTO_START, RECONNECT_GIVE_UP, autoStart, rateOver, reconnectDelayMs, stepQuality, type AutoState } from './desktopQuality';
+import { RECONNECT_GIVE_UP, autoStart, rateOver, reconnectDelayMs, stepQuality, type AutoState } from './desktopQuality';
 import { CLIPBOARD_MAX, PREVIEW_LEVELS, PREVIEW_PACE_MS, XK_CONTROL_L, controlUntil, localControl, shortcutKeysym, type ScreenPhase } from './screenView';
 import { ViewerChannel } from './viewerChannel';
 import { ScreenWants } from './screenWants';

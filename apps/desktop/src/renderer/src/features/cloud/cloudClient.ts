@@ -617,41 +617,6 @@ async function connected(client: GatewayLike, timeoutMs = CLOUD_READY_TIMEOUT_MS
   });
 }
 
-export interface ExportProgress { step: 'waking' | 'packing' | 'downloading' | 'done'; name?: string; size?: number }
-
-/**
- * "Download my bots": the cloud computer zips `~/AppuBot` and its store (secrets left out, `cloud.export`), then the
- * zip comes back through the channel and is saved where the user picks (the browser engine's download).
- */
-export async function downloadCloudBots(onProgress: (p: ExportProgress) => void, team?: string): Promise<void> {
-  const client = await ensureClient(team);
-  onProgress({ step: 'waking' });
-  await connected(client);
-  lookedNow();
-  onProgress({ step: 'packing' });
-  const zip = await client.call('cloud.export', {}, { timeoutMs: 10 * 60_000 });
-  onProgress({ step: 'downloading', name: zip.name, size: zip.size });
-  const path = `/files/${encodeURIComponent(zip.fileId)}?download=1`;
-  let blob: Blob;
-  const viaChannel = made?.fetch;
-  if (viaChannel) {
-    const r = await viaChannel(path, { headers: { authorization: `Bearer ${made!.info.token}` } });
-    if (!r.ok) throw new Error(`The download failed (${r.status}).`);
-    blob = await r.blob();
-  } else {
-    blob = new Blob([`AppuBot export (preview): ${zip.name}`], { type: 'application/zip' });
-  }
-  const href = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = href;
-  a.download = zip.name;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(href), 60_000);
-  onProgress({ step: 'done', name: zip.name, size: zip.size });
-}
-
 /** The cloud client if made (for the agents' sign-in, which listens to its events). */
 export function cloudClientIfAny(): GatewayLike | null { return cloudGateway(); }
 

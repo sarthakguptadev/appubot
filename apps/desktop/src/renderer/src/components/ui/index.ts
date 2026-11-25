@@ -7,9 +7,7 @@ export { Switch } from './Switch';
 export { Card } from './Card';
 export { Badge, StatusDot, type BadgeTone } from './Badge';
 export { Kbd } from './Kbd';
-export { Avatar } from './Avatar';
 export { BotAvatar, type BotPresence } from './BotAvatar';
-export { HeroGlow } from './HeroGlow';
 export { Logo, LogoMark } from './Logo';
 export { Dialog, isDialogOpen, useDialogOpen, useModalPresence, MODAL_BACKDROP, MODAL_SURFACE, type DialogProps } from './Dialog';
 export { Menu, MENU_ITEM, MENU_ITEM_IDLE, MENU_ITEM_DANGER, MENU_SEPARATOR, type MenuItem } from './Menu';
@@ -24,6 +22,5 @@ export {
 export { CachedImg } from './CachedImg';
 export { RevealImg } from './RevealImg';
 export { DatePicker, TimePicker } from './TimeDate';
-export { FitText } from './FitText';
 export { Checkbox } from './Checkbox';
 export { MarkdownEditor } from './MarkdownEditor';

@@ -1,7 +1,7 @@
 import { BarChart3, Blocks, CreditCard, Download, FileText, HardDrive, Info, KeyRound, Mic, MousePointerClick, Plug, Send, MonitorSmartphone, ShieldCheck, SlidersHorizontal, Sparkles, Sun, Upload, User, Users, type LucideIcon } from '../../components/ui/icons';
 import type { SettingsSection } from '../../lib/store';
 import { ACP_REGISTRY } from '@appubot/protocol';
-import { COMPUTER_USE, IS_MAC, PLATFORM } from '../../lib/platform';
+import { COMPUTER_USE, IS_MAC } from '../../lib/platform';
 import { machineParams, t } from '../../lib/i18n';
 
 /*

@@ -28,7 +28,6 @@ interface StoredItem extends Omit<VaultItem, 'secrets'> {
   secrets: Partial<Record<VaultSecretField, Sealed>>;
 }
 
-const KIND_NAME: Record<VaultKind, string> = { login: 'login', card: 'card', contact: 'contact info', apiKey: 'API key' };
 const FIELD_NAME: Record<string, string> = {
   username: 'username', password: 'password', number: 'card number', cvc: 'security code', expiry: 'expiry date', cardholder: 'cardholder name',
   fullName: 'name', email: 'email', phone: 'phone number', company: 'company', address1: 'address', address2: 'address (line 2)',

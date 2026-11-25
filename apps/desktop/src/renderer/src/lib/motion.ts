@@ -15,9 +15,6 @@ import type { Transition } from 'motion/react';
 /** ease-out for anything that isn't a spring (fades, colour) */
 export const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 export const EASE_IN = [0.4, 0, 1, 1] as const;
-export const EASE_IN_OUT = [0.65, 0, 0.35, 1] as const;
-/** iOS's sheet curve */
-export const EASE_SHEET = [0.32, 0.72, 0, 1] as const;
 /** T3 Code's curve (Tailwind's default and `ease-in-out`), for the chrome; index.css has it as `--ease-t3` */
 export const EASE_T3 = [0.4, 0, 0.2, 1] as const;
 /** Tailwind's `ease-out`, T3 Code's for Settings */
@@ -53,10 +50,4 @@ export const swap = (dir: 1 | -1 = 1) => ({
   initial: { opacity: 0, y: 7 * dir, filter: 'blur(4px)' },
   animate: { opacity: 1, y: 0, filter: 'blur(0px)', transition: SPRING.swap },
   exit: { opacity: 0, y: -7 * dir, filter: 'blur(4px)', transition: EXIT },
-}) as const;
-
-/** A row of a list arriving after the ones before it. */
-export const reveal = (index: number, step = 0.035) => ({
-  initial: { opacity: 0, y: 6, filter: 'blur(4px)' },
-  animate: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { ...SPRING.pop, delay: Math.min(index, 12) * step } },
 }) as const;

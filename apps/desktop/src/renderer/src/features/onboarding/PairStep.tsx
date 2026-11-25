@@ -1,9 +1,8 @@
 import { useEffect, type ReactNode } from 'react';
 import { motion } from 'motion/react';
-import { ArrowRight, ArrowUpRight, Check, RefreshCw, ShieldCheck, Smartphone } from '../../components/ui/icons';
+import { ArrowRight, Check, RefreshCw, ShieldCheck, Smartphone } from '../../components/ui/icons';
 import { Button, Card, Icon, Spinner, cn } from '../../components/ui';
 import { PhoneAppCodes } from '../settings/PhoneApps';
-import { native } from '../../lib/native';
 import { MACHINE } from '../../lib/platform';
 import { useStore } from '../../lib/store';
 import { countdown, usePairingSession } from '../settings/PairingView';

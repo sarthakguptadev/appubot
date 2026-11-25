@@ -5,7 +5,6 @@
  * delete). The browser does the paying and signing in; the app only opens the links the Mac's core hands it.
  */
 import { create } from 'zustand';
-import { computerDisplayName } from '@appubot/chat-core';
 import type { CloudAccountView, CloudBackupList, CloudConnection, CloudRepairKind, CloudRepairResponse, CloudDesktopLink, CloudAccessLog, CloudGatewayMethods, CloudInterval, CloudPlanChangePreview, CloudPlanChangeResponse, CloudPlanId, CloudTeam, CloudTeamLogins, CloudTeamRole, MethodParams, MethodResult } from '@appubot/protocol';
 import { GatewayError, errorMessage, localGateway, type CallOptions } from '../../lib/gateway';
 import { native } from '../../lib/native';
@@ -100,8 +99,6 @@ async function act<T>(key: string, errorTitle: string, fn: () => Promise<T>): Pr
   }
 }
 
-const take = (view: CloudAccountView | undefined): void => { if (view) useCloud.setState({ view, supported: true }); };
-
 /** The browser sign-in (PKCE): the Mac opens the page; main finishes it when the browser comes back (`appubot://cloud/signed-in`, electron/cloudLinks.ts). */
 export function signInToCloud(): Promise<unknown> {
   return act('signIn', 'Couldn’t start signing in', () => cloudCall('cloudAccount.signIn', {}));
@@ -139,12 +136,6 @@ useCloud.subscribe((st, before) => {
   if (Date.now() > pick.until || hasPersonalPlan(st.view)) return;
   void buyCloud(pick.plan, pick.interval, pick.members);
 });
-
-/** The web account page (the plan picker, Change plan; a team's page for `team`) in the browser: plan changes are made there. */
-export async function openAccountPage(team?: string): Promise<void> {
-  const r = await act(busyKey('accountPage', team), 'Couldn’t open your account page', () => cloudCall('cloudAccount.accountPage', target(team)));
-  if (r) await native().openExternal(r.url);
-}
 
 /** What a plan change would do (the charge now, when it applies, the computer's size; a team's seats). */
 export function previewPlanChange(plan: CloudPlanId, interval: CloudInterval, team?: string, seats?: number): Promise<CloudPlanChangePreview | undefined> {

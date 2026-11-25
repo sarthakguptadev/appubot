@@ -5,10 +5,10 @@
  * switcher and the chat's notice all say the same thing. Prices, plan names and shapes come from the backend's
  * catalog: nothing here names one, and nothing here is a limit (plans have none).
  */
-import type { CloudAccountView, CloudComputer, CloudCredit, CloudInterval, CloudPlanId, CloudPrice, CloudShape, CloudTeam, CloudTeamMember, CloudTeamView, CloudWorkCatalogPlan, SystemInfo } from '@appubot/protocol';
+import type { CloudAccountView, CloudCredit, CloudInterval, CloudPlanId, CloudPrice, CloudTeam, CloudTeamMember, CloudTeamView, CloudWorkCatalogPlan, SystemInfo } from '@appubot/protocol';
 import {
-  CLOUD_ENDED_KEEP_DAYS, keepDaysText, fitsMembers, inviteStatusText, moneyText, planTitle, priceText, scheduledChangeText,
-  scheduledSeatsText, seatsText, shapeText, shortDate, computerDisplayName, teamRoleText, upToMembersText, workPrice,
+  CLOUD_ENDED_KEEP_DAYS, keepDaysText, inviteStatusText, moneyText, planTitle, priceText, scheduledChangeText,
+  scheduledSeatsText, seatsText, shapeText, shortDate, computerDisplayName, teamRoleText, workPrice,
   personalPaywall as cardsPersonal, workPaywall as cardsWork, paywallIntervals as intervalsOf,
   type PaywallCard, type PaywallKind, TRIAL_BADGE,
   cloudPhase, hasComputer, teamAsView, type CloudPhase,
@@ -129,14 +129,6 @@ export function cloudLacks(system: Pick<SystemInfo, 'cloud'> | null | undefined)
   return { voice: true, power: true, permissions: true, teach: false, agentCursor: true, vaultCards: true, background: true };
 }
 
-/** "3 Dec, 14:05": an access-log or wake time. */
-export function whenText(ts: number, now = Date.now()): string {
-  const d = new Date(ts);
-  const time = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
-  const today = new Date(now).toDateString() === d.toDateString();
-  return today ? `Today, ${time}` : `${shortDate(ts, now)}, ${time}`;
-}
-
 // ---------------------------------------------------------------------------------------------------------------
 // The paywall (Personal | Work, Monthly | Yearly, the website's cards): every price from the backend's catalog.
 
@@ -148,16 +140,6 @@ export { BEST_VALUE, WORK_CREDIT_ROW, creditRowText, planMove, planMoveLabel } f
 export const personalPaywall = (v: CloudAccountView | null | undefined, interval: CloudInterval): PaywallCard[] => cardsPersonal(v?.catalog, interval);
 /** The Work plans the catalog sells at an interval for a team of `members`. */
 export const workPaywall = (v: CloudAccountView | null | undefined, interval: CloudInterval, members: number): PaywallCard[] => cardsWork(v?.catalog, interval, members);
-
-/** Billing's one line under a plan: "Launch bonus: $7 of $12 left, resets 5 Dec" (whole dollars; used rounds down). */
-export function creditLeftLine(c: CloudCredit, now = Date.now()): string {
-  if (c.ended) return 'Launch bonus: ended';
-  const budget = Math.round(c.budgetCents / 100);
-  const used = Math.floor(Math.min(c.usedCents, c.budgetCents) / 100);
-  const resets = `resets ${shortDate(c.resetsAt, now)}`;
-  if (c.exhausted || used >= budget) return `Launch bonus: all ${moneyText(budget * 100, c.currency)} used, ${resets}`;
-  return `Launch bonus: ${moneyText((budget - used) * 100, c.currency)} of ${moneyText(budget * 100, c.currency)} left, ${resets}`;
-}
 
 /** The intervals the paywall can sell for a kind (the switch shows only those). */
 export const paywallIntervals = (v: CloudAccountView | null | undefined, kind: PaywallKind): CloudInterval[] => intervalsOf(v?.catalog, kind);

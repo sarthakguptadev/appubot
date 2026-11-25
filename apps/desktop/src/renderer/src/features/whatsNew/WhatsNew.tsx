@@ -100,18 +100,6 @@ export function useWhatsNewAutoOpen(): void {
   }, [now]);
 }
 
-/** What's new still has notes to announce, or is open: the cloud intro waits for it (it goes first after an update). */
-export function useWhatsNewPending(): boolean {
-  const pending = useWhatsNew((s) => !!s.card || s.view !== null);
-  return pending && AUTO_OPEN;
-}
-
-/** The sidebar's card above its bottom row, while there's an update to announce. */
-/** The sidebar's What's new card is up (the cloud card waits for it). */
-export function useWhatsNewCardShown(): boolean {
-  return useWhatsNew((s) => !!s.card?.features[0]);
-}
-
 export function WhatsNewCard() {
   const card = useWhatsNew((s) => s.card);
   const lead = card?.features[0];

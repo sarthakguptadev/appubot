@@ -173,8 +173,3 @@ export async function resolveExecutable(name: string): Promise<string | undefine
   }
   return undefined;
 }
-
-/** test hook */
-export function _resetPathCacheForTests(): void {
-  loginPathPromise = undefined;
-}

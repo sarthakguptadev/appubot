@@ -9,21 +9,21 @@ import { mergeIconParts, type IconPart } from './iconParts';
 import { CallEnd01Icon, ClipboardPasteIcon, DiceFaces03Icon } from '@hugeicons/core-free-icons';
 import {
   AccessIcon, Target02Icon, ArrowExpand01Icon, PersonStandingIcon, HardDriveIcon, RoboticIcon, CreditCardIcon, ContactBookIcon, LockPasswordIcon, AiBrain01Icon, Alert02Icon, Analytics01Icon, AlertCircleIcon, ArrowDown01Icon, ArrowDown02Icon, ArrowLeft01Icon, ArrowLeft02Icon,
-  ArrowRight01Icon, ArrowRight02Icon, ArrowUp01Icon, ArrowUp02Icon, ArrowUpRight01Icon, Attachment01Icon, BellIcon,
-  BookOpen01Icon, BubbleChatAddIcon, BubbleChatIcon, Camera01Icon, Cancel01Icon, CancelCircleIcon, CheckListIcon,
-  CheckmarkCircle02Icon, CircleIcon, Clock01Icon, ComputerIcon, ComputerPhoneSyncIcon, ComputerScreenShareIcon,
+  ArrowRight01Icon, ArrowRight02Icon, ArrowUp01Icon, ArrowUp02Icon, Attachment01Icon, BellIcon,
+  BookOpen01Icon, BubbleChatIcon, Cancel01Icon, CancelCircleIcon, CheckListIcon,
+  CheckmarkCircle02Icon, Clock01Icon, ComputerIcon, ComputerPhoneSyncIcon, ComputerScreenShareIcon,
   ComputerTerminal01Icon, Copy01Icon, Delete02Icon, Download04Icon, Upload04Icon, File01Icon, FileEditIcon, FlashIcon,
-  FolderOpenIcon, FolderSearchIcon, GlobalSearchIcon, Globe02Icon, HammerIcon, Image01Icon, InformationCircleIcon, InternetIcon, CleanIcon,
-  Key01Icon, LaptopIcon, LinkSquare02Icon, Loading03Icon, Login03Icon, Logout03Icon, MagicWand01Icon, Mic02Icon, Moon02Icon,
-  MoreHorizontalIcon, Mortarboard02Icon, MouseLeftClick01Icon, PauseIcon, PencilEdit01Icon, PencilEdit02Icon,
-  Pin02Icon, PlayIcon, Plug01Icon, PlusSignIcon, PuzzleIcon, QrCodeIcon, RadioButtonIcon, ReloadIcon, RepeatIcon,
+  FolderOpenIcon, FolderSearchIcon, Globe02Icon, HammerIcon, Image01Icon, InformationCircleIcon, InternetIcon, CleanIcon,
+  Key01Icon, LaptopIcon, LinkSquare02Icon, Login03Icon, Logout03Icon, MagicWand01Icon, Mic02Icon, Moon02Icon,
+  MoreHorizontalIcon, Mortarboard02Icon, MouseLeftClick01Icon, PencilEdit01Icon, PencilEdit02Icon,
+  Pin02Icon, PlayIcon, Plug01Icon, PlusSignIcon, PuzzleIcon, QrCodeIcon, ReloadIcon, RepeatIcon,
   Refresh01Icon, Search01Icon, SecurityCheckIcon, SecurityIcon, SecurityWarningIcon, SentIcon,
-  Settings02Icon, SmileIcon, SidebarLeftIcon, SidebarRightIcon, SmartPhone01Icon, SparklesIcon, SquareIcon, StarIcon, StopIcon, Sun03Icon,
+  Settings02Icon, SmileIcon, SmartPhone01Icon, SparklesIcon, SquareIcon, StarIcon, StopIcon, Sun03Icon,
   TelegramIcon, Tick02Icon, UndoIcon, TimeScheduleIcon, TouchInteraction01Icon, UnfoldMoreIcon, Wifi01Icon, WifiOff01Icon, FilterHorizontalIcon,
-  LiveStreaming01Icon, Archive02Icon, Move01Icon, ToggleOnIcon, Wrench01Icon, BulbIcon,
+  ToggleOnIcon, Wrench01Icon, BulbIcon,
   KeyboardIcon, Navigation03Icon, SquareTerminalIcon, TextWrapIcon, FileEmpty02Icon, ViewIcon, ViewOffSlashIcon,
-  MusicNote01Icon, Video01Icon, Message01Icon, Mail01Icon, MicOff02Icon, VolumeHighIcon, AudioLinesIcon, SourceCodeIcon,
-  CloudIcon, CloudServerIcon, ScrollTextIcon, MinusSignIcon, UserGroupIcon, UserIcon, UserAdd01Icon, UserRemove01Icon, Building03Icon, Crown02Icon,
+  MusicNote01Icon, Video01Icon, Message01Icon, Mail01Icon, MicOff02Icon, AudioLinesIcon, SourceCodeIcon,
+  CloudIcon, ScrollTextIcon, MinusSignIcon, UserGroupIcon, UserIcon, UserAdd01Icon, Crown02Icon,
 } from '@hugeicons/core-free-icons';
 
 export { HugeiconsIcon, type IconSvgElement };
@@ -98,8 +98,6 @@ export const Settings = createIcon(Settings02Icon, 'Settings');
 export const Search = createIcon(Search01Icon, 'Search');
 export const Smile = createIcon(SmileIcon, 'Smile');
 export const MoreHorizontal = createIcon(MoreHorizontalIcon, 'MoreHorizontal');
-export const PanelRight = createIcon(SidebarRightIcon, 'PanelRight');
-export const PanelLeft = createIcon(SidebarLeftIcon, 'PanelLeft');
 export const ChevronDown = createIcon(ArrowDown01Icon, 'ChevronDown');
 export const ChevronUp = createIcon(ArrowUp01Icon, 'ChevronUp');
 export const ChevronLeft = createIcon(ArrowLeft01Icon, 'ChevronLeft');
@@ -109,7 +107,6 @@ export const ArrowLeft = createIcon(ArrowLeft02Icon, 'ArrowLeft');
 export const ArrowRight = createIcon(ArrowRight02Icon, 'ArrowRight');
 export const ArrowUp = createIcon(ArrowUp02Icon, 'ArrowUp');
 export const ArrowDown = createIcon(ArrowDown02Icon, 'ArrowDown');
-export const ArrowUpRight = createIcon(ArrowUpRight01Icon, 'ArrowUpRight');
 export const ExternalLink = createIcon(LinkSquare02Icon, 'ExternalLink');
 export const RefreshCw = createIcon(ReloadIcon, 'RefreshCw');
 export const Dice = createIcon(DiceFaces03Icon, 'Dice');
@@ -138,43 +135,34 @@ export const Eye = createIcon(ViewIcon, 'Eye');
 export const EyeOff = createIcon(ViewOffSlashIcon, 'EyeOff');
 export const PenLine = createIcon(PencilEdit02Icon, 'PenLine');
 export const SquarePen = createIcon(PencilEdit02Icon, 'SquarePen');
-export const MessageSquarePlus = createIcon(BubbleChatAddIcon, 'MessageSquarePlus');
 export const Send = createIcon(SentIcon, 'Send');
 export const Paperclip = createIcon(Attachment01Icon, 'Paperclip');
-export const Camera = createIcon(Camera01Icon, 'Camera');
 export const Mic = createIcon(Mic02Icon, 'Mic');
 export const MicOff = createIcon(MicOff02Icon, 'MicOff');
 export const PhoneOff = createIcon(CallEnd01Icon, 'PhoneOff');
-export const Volume2 = createIcon(VolumeHighIcon, 'Volume2');
 export const AudioLines = createIcon(AudioLinesIcon, 'AudioLines');
 export const Play = createIcon(PlayIcon, 'Play');
-export const Pause = createIcon(PauseIcon, 'Pause');
 export const Square = createIcon(SquareIcon, 'Square');
 export const Stop = createIcon(StopIcon, 'Stop');
 export const Pin = createIcon(Pin02Icon, 'Pin');
 /** outlined; filled with `fill-current` on its paths (a favourite) */
 export const Star = createIcon(StarIcon, 'Star');
-export const Archive = createIcon(Archive02Icon, 'Archive');
 export const Wand2 = createIcon(MagicWand01Icon, 'Wand2');
 export const Sparkles = createIcon(SparklesIcon, 'Sparkles');
 export const Zap = createIcon(FlashIcon, 'Zap');
 export const SlidersHorizontal = createIcon(FilterHorizontalIcon, 'SlidersHorizontal');
 export const Plug = createIcon(Plug01Icon, 'Plug');
-export const Move = createIcon(Move01Icon, 'Move');
 export const ToggleLeft = createIcon(ToggleOnIcon, 'ToggleLeft');
 export const Wrench = createIcon(Wrench01Icon, 'Wrench');
 export const BarChart3 = createIcon(Analytics01Icon, 'BarChart3');
 
 /* ---------- status ---------- */
-export const Loader = createIcon(Loading03Icon, 'Loader');
 export const Info = createIcon(InformationCircleIcon, 'Info');
 export const AlertCircle = createIcon(AlertCircleIcon, 'AlertCircle');
 export const AlertTriangle = createIcon(Alert02Icon, 'AlertTriangle');
 export const CheckCircle2 = createIcon(CheckmarkCircle02Icon, 'CheckCircle2');
 export const CircleCheck = CheckCircle2;
 export const XCircle = createIcon(CancelCircleIcon, 'XCircle');
-export const Circle = createIcon(CircleIcon, 'Circle');
-export const CircleDot = createIcon(RadioButtonIcon, 'CircleDot');
 export const ShieldCheck = createIcon(SecurityCheckIcon, 'ShieldCheck');
 export const ShieldAlert = createIcon(SecurityWarningIcon, 'ShieldAlert');
 export const ShieldQuestion = createIcon(SecurityIcon, 'ShieldQuestion');
@@ -196,7 +184,6 @@ export const FolderSearch = createIcon(FolderSearchIcon, 'FolderSearch');
 export const Globe = createIcon(Globe02Icon, 'Globe');
 // the globe for small slots (the work trail's 14px): one meridian and the equator, where Globe's four lines blur together
 export const GlobeSimple = createIcon(InternetIcon, 'GlobeSimple');
-export const GlobalSearch = createIcon(GlobalSearchIcon, 'GlobalSearch');
 export const ImageIcon = createIcon(Image01Icon, 'ImageIcon');
 export const Image = ImageIcon;
 export const BookOpen = createIcon(BookOpen01Icon, 'BookOpen');
@@ -231,7 +218,6 @@ export const ComputerUse: IconComponent = forwardRef<SVGSVGElement, IconProps>(f
   return <Navigation03 ref={ref} style={{ transform: 'scaleX(-1)', ...style }} {...rest} />;
 });
 ComputerUse.displayName = 'ComputerUse';
-export const Radio = createIcon(LiveStreaming01Icon, 'Radio');
 export const QrCode = createIcon(QrCodeIcon, 'QrCode');
 export const Telegram = createIcon(TelegramIcon, 'Telegram');
 export const Lightbulb = createIcon(BulbIcon, 'Lightbulb');
@@ -246,15 +232,12 @@ export const MonitorSmartphone = createIcon(ComputerPhoneSyncIcon, 'MonitorSmart
 export const Smartphone = createIcon(SmartPhone01Icon, 'Smartphone');
 /** AppuBot Cloud: the managed computer (features/cloud) */
 export const Cloud = createIcon(CloudIcon, 'Cloud');
-export const CloudServer = createIcon(CloudServerIcon, 'CloudServer');
 export const Minus = createIcon(MinusSignIcon, 'Minus');
 export const Users = createIcon(UserGroupIcon, 'Users');
 /** a chief bot */
 export const Crown = createIcon(Crown02Icon, 'Crown');
 export const User = createIcon(UserIcon, 'User');
 export const UserPlus = createIcon(UserAdd01Icon, 'UserPlus');
-export const UserMinus = createIcon(UserRemove01Icon, 'UserMinus');
-export const Building = createIcon(Building03Icon, 'Building');
 export const ScrollText = createIcon(ScrollTextIcon, 'ScrollText');
 
 /* ---------- appearance ---------- */

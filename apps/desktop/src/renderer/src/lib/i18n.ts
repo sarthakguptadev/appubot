@@ -61,8 +61,6 @@ function apply(): void {
   }
 }
 
-export function languageSetting(): LanguageSetting { return setting; }
-
 export function setLanguage(next: LanguageSetting): void {
   setting = next;
   try { if (next === 'auto') localStorage.removeItem(KEY); else localStorage.setItem(KEY, next); } catch { /* storage unavailable */ }

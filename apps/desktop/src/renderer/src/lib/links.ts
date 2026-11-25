@@ -4,8 +4,6 @@
 export const X_HANDLE = '@AppuBot_';
 export const X_URL = 'https://x.com/AppuBot_';
 
-/** Where to get the phone app: the site's phone cards (the App Store for iPhone, Google Play for Android). */
-export const PHONE_APP_URL = 'https://appubot.com/download#phone';
 /** the phone apps themselves (the same links as the website's): drawn as codes by `PhoneAppCodes`. The App Store link names no country, so it opens each person's own store. */
 export const IOS_APP_URL = 'https://apps.apple.com/app/id6829390070';
 export const ANDROID_APP_URL = 'https://play.google.com/store/apps/details?id=com.appubot.app';

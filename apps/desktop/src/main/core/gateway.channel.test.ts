@@ -13,7 +13,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { WebSocket } from 'ws';
 import {
-  CONNECT_PEER_HEADER, Msg, SECURE_PEER_HEADER, SecureChannel, bytesText, jsonBytes, phoneHandshake, textBytes,
+  CONNECT_PEER_HEADER, Msg, SECURE_PEER_HEADER, SecureChannel, bytesText, jsonBytes, textBytes,
   type ChannelMessage,
 } from '@appubot/protocol';
 import { Auth, MAX_PAIR_FAILURES, MAX_PAIR_FAILURES_TOTAL } from './auth';

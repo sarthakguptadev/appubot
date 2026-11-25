@@ -41,10 +41,6 @@ function makeCore(): Core {
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-const until = async (test: () => boolean, ms = 4000) => {
-  const end = Date.now() + ms;
-  while (!test()) { if (Date.now() > end) throw new Error('timed out'); await sleep(5); }
-};
 
 async function deviceToken(core: Core, ip: string): Promise<{ token: string; deviceId: string }> {
   const { code } = await core.services.devices.startPairing(120);

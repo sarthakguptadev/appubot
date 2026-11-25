@@ -121,11 +121,6 @@ export function parseDetail(detail: string | undefined): Record<string, unknown>
   } catch { return { value: detail }; }
 }
 
-export function splitCombo(combo: string): { key: string; modifiers: string[] } {
-  const parts = combo.split('+').map((s) => s.trim()).filter(Boolean);
-  const key = parts.pop() ?? '';
-  return { key, modifiers: parts.map(normMod) };
-}
 const normMod = (m: string): string => {
   const x = m.toLowerCase();
   if (x === 'command' || x === 'meta' || x === 'super' || x === 'cmd') return 'cmd';

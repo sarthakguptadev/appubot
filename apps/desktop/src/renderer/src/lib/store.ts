@@ -1,7 +1,6 @@
 import { loadMacRemembered, type RememberedMap } from './rememberedData';
 import { create } from 'zustand';
 import type {
-  BotShape,
   AppsStatus, Bot, Channel, Character, ComputerFrame, ComputerStatus, Device, EventPayload, FileAttachment, Message, NotificationAccess, PairingInfo,
   PermissionRequest, Provider, Routine, Settings, Skill, Snapshot, SystemInfo, TeachSession, Thread, VoiceStatus, ProviderLimits, Group, GroupMessage,
 } from '@appubot/protocol';

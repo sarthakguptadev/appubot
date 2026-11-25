@@ -17,7 +17,7 @@ import { createWriteStream, existsSync, mkdirSync, readFileSync, readdirSync, re
 import { homedir } from 'node:os';
 import { inflateRawSync } from 'node:zlib';
 import { basename, dirname, join, normalize, sep } from 'node:path';
-import { BotBundleManifestSchema, BotSchema, CharacterSchema, FileAttachmentSchema, MessageSchema, RoutineSchema, ThreadSchema, newId, type Bot, type BotBundleManifest, type BotExportInclude, type BotExportIncluded, type BotImportResult, type Character, type Exportable, type ExportableBot, type FileAttachment, type Message, type SharedSkill, type SharedSkillText, type Thread } from '@appubot/protocol';
+import { BotBundleManifestSchema, BotSchema, CharacterSchema, MessageSchema, RoutineSchema, ThreadSchema, newId, type Bot, type BotBundleManifest, type BotExportInclude, type BotExportIncluded, type BotImportResult, type Character, type Exportable, type ExportableBot, type FileAttachment, type Message, type SharedSkill, type SharedSkillText, type Thread } from '@appubot/protocol';
 import type { CoreCtx } from '../context';
 import type { FileRecord } from '../store';
 import { errMsg, RpcError } from '../util';

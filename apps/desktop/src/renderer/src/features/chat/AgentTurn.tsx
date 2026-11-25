@@ -295,10 +295,6 @@ function SettledTurn({ msg, ctx, cwd, endAt, fold, answers, trail }: { msg: Mess
   const header = turnHeader(msg, endAt);
   const label = formatTurnHeaderLabel(header);
   const answerText = L.answer.map((x) => (x.part.type === 'text' ? x.part.text : '')).filter((t) => t.trim()).join('\n\n');
-  // a voice reply (or any card) is a reply too: only a turn with nothing at all to show "did not reply"
-  const silent = !L.hasWork && !answerText && !L.answer.some((x) => x.part.type !== 'text') && !L.pinned.length;
-  // failed before doing or saying anything: one line says so, with why ("Interrupted after 2s · …" above it repeated it)
-  const failedSilently = msg.status === 'error' && silent;
   const folded = { ...ctx, folded: true };
   // the work trail's status line says how the turn ended (Stopped, Interrupted …): no second line for it
   const trailShown = useMemo(() => trail && trailItems(msg.parts, { settled: true }).length > 0, [trail, msg.parts]);

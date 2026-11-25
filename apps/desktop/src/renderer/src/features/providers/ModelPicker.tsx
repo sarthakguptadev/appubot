@@ -18,7 +18,7 @@ import { useStore } from '../../lib/store';
 import { ProviderLogo, RegistryIcon } from './providerLogos';
 import { fetchedChoices, prefetchChoices, useChoices } from './useChoices';
 import { ModelLimitBadge, ModelLimitsCard, PlanLineRow, TONE_TEXT } from './LimitMeter';
-import { refreshLimits, useLimits, useNow } from './useLimits';
+import { refreshLimits, useNow } from './useLimits';
 
 type Option = { id: string; name: string; description?: string };
 export interface ModelPick { providerId?: string; modelId?: string; effort?: string; fast?: boolean }

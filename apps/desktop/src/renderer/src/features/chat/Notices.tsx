@@ -36,14 +36,3 @@ export function Notice({ part }: { part: P<'system'> }) {
     </p>
   );
 }
-
-/** Fills the reply slot when a turn failed without saying anything (Akeru's BotTurnFailureRow, MIT). */
-export function FailureRow({ botName, reason }: { botName: string; reason?: string }) {
-  const why = reason?.trim().replace(/\.$/, '');
-  return (
-    <p className="flex items-start gap-2 text-ui leading-5 text-muted">
-      <Icon icon={AlertCircle} size={14} className="mt-[3px] text-danger" />
-      <span className="selectable min-w-0 break-words">{botName} did not reply.{why ? ` ${why}.` : ''}</span>
-    </p>
-  );
-}

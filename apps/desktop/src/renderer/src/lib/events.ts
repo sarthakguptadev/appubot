@@ -1,4 +1,4 @@
-import { applyDelta, currentGroupChat, groupChatOf, groupChats, messagePreview, setPart, type EventName, type EventPayload, type Message, type Part, type Snapshot } from '@appubot/protocol';
+import { applyDelta, groupChatOf, groupChats, messagePreview, setPart, type EventName, type EventPayload, type Message, type Part, type Snapshot } from '@appubot/protocol';
 import { FRAME_RING, arriveMessage, byId, dropThreads, getState, groupThreadOf, hydrate, isChannelThread, isGroupThread, pushToast, seenOnScreen, setState, threadOnScreen, toastHere, ui, updateMessage, upsertBy, upsertThread } from './store';
 import { absorbSent, isLocalId } from './outbox';
 import { layOverStore, noteServerEvent } from './optimistic';
