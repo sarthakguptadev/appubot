@@ -5,7 +5,7 @@ import { ui, useStore } from '../../lib/store';
 import { openBilling, useCloud } from './cloudAccount';
 import { useCloudLink } from './cloudClient';
 import { cloudPhase } from './cloudView';
-import { ON_HOLD_TEXT, YOUR_COMPUTER_CAP, exportOnlyText } from './names';
+import { YOUR_COMPUTER_CAP, exportOnlyText, onHoldText } from './names';
 
 /**
  * Which notice the cloud's chat shows now (null: none), so ThreadView can slot it with the others. Waking or
@@ -28,11 +28,12 @@ export function useCloudNoticeKind(): 'on-hold' | 'past-due' | 'export-only' | n
 export function CloudStateNotice() {
   const kind = useCloudNoticeKind();
   const busy = useCloud((s) => s.busy);
+  const keptUntil = useCloud((s) => s.view?.computer?.exportUntil ?? s.view?.account?.exportUntil);
   switch (kind) {
     case null: return null;
     case 'on-hold':
       return (
-        <NoticeCard tone="danger" icon={CreditCard} title="Payment on hold" detail={ON_HOLD_TEXT}>
+        <NoticeCard tone="danger" icon={CreditCard} title="Payment on hold" detail={onHoldText(keptUntil)}>
           <Button size="sm" variant="primary" loading={!!busy.portal} onClick={() => void openBilling()}>Manage billing</Button>
         </NoticeCard>
       );

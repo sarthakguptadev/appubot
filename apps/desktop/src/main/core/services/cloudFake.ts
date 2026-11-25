@@ -257,9 +257,9 @@ export class CloudFakeBackend {
     const withPlan = { ...base, plan: p.plan, interval: p.interval, region: 'us' as const };
     switch (this.state) {
       case 'past-due': return { ...withPlan, status: 'past_due', subscription: sub('past_due', { pastDueEndsAt: now + 2 * DAY }) };
-      case 'on-hold': return { ...withPlan, status: 'on_hold', subscription: sub('on_hold') };
+      case 'on-hold': return { ...withPlan, status: 'on_hold', subscription: sub('on_hold'), exportUntil: now + DAY };
       case 'cancelling': return { ...withPlan, status: 'cancelling', subscription: sub('active', { cancelAtPeriodEnd: true }) };
-      case 'export-only': return { ...withPlan, status: 'ended', exportUntil: now + 5 * DAY };
+      case 'export-only': return { ...withPlan, status: 'ended', exportUntil: now + DAY };
       case 'suspended': return { ...withPlan, status: 'suspended', subscription: sub('active') };
       default: return { ...withPlan, status: 'active', subscription: sub('active') };
     }
@@ -322,7 +322,7 @@ export class CloudFakeBackend {
     }
     if (awake) out.awake = awake;
     if (state === 'on-hold') out.resetsAt = now + 25 * DAY;
-    if (this.state === 'export-only') out.exportUntil = now + 5 * DAY;
+    if (this.state === 'export-only' || this.state === 'on-hold') out.exportUntil = now + DAY;
     if (state === 'provisioning') { out.progress = 'Creating your computer'; }
     if (state === 'failed') out.message = 'Setting up didn’t finish. We’re on it; write to sarthak@appubot.com if it takes more than a day.';
     if (!['none', 'provisioning', 'failed', 'deleted'].includes(state)) {

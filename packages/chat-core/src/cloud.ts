@@ -109,12 +109,12 @@ export function shortDate(ts: number, now = Date.now(), locale?: string): string
 // The computer's state
 
 /** how long a computer stopped on hold (a payment that didn't go through) is kept before it is deleted (the backend's `retention.keepDays`) */
-export const CLOUD_KEEP_DAYS = 7;
+export const CLOUD_KEEP_DAYS = 1;
 /** how long a computer stopped by an ended plan is kept before it is deleted (the backend's `retention.endedKeepDays`) */
 export const CLOUD_ENDED_KEEP_DAYS = 1;
 /** "one day", "7 days" */
 export const keepDaysText = (days: number): string => (days === 1 ? 'one day' : `${days} days`);
-export const ON_HOLD_TEXT = `Your AppuBot computer is paused: the payment didn’t go through. Your bots and files are kept for ${CLOUD_KEEP_DAYS} days; update your card in Settings › Billing in AppuBot on your computer to carry on.`;
+export const ON_HOLD_TEXT = `Your AppuBot computer is paused: the payment didn’t go through. Your bots and files are kept for ${keepDaysText(CLOUD_KEEP_DAYS)}, then deleted; update your card in Settings › Billing in AppuBot on your computer to carry on.`;
 /** said on every device (a stopped computer's reply, pushes, Telegram), so it names no price or purchase */
 export const EXPORT_ONLY_TEXT = `Your plan has ended, so your AppuBot computer is stopped. Its bots and files are kept for ${keepDaysText(CLOUD_ENDED_KEEP_DAYS)}, then deleted.`;
 

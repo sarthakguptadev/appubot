@@ -179,9 +179,9 @@ function computerFor(s: MockCloudState): CloudComputer | undefined {
     case 'running': case 'past-due': case 'ending': return { state: 'running', ...withPlan, awake: awake(37.5), computer: machine };
     case 'asleep': case 'scheduled': return { state: 'asleep', ...withPlan, awake: awake(37.5), computer: machine };
     case 'waking': return { state: 'waking', ...withPlan, awake: awake(37.5), computer: machine };
-    case 'on-hold': return { state: 'on-hold', ...withPlan, awake: awake(12), resetsAt: now + 25 * DAY, computer: machine };
+    case 'on-hold': return { state: 'on-hold', ...withPlan, awake: awake(12), resetsAt: now + 25 * DAY, exportUntil: now + DAY, computer: machine };
     case 'suspended': return { state: 'suspended', ...withPlan, awake: awake(12), computer: machine };
-    case 'export-only': return { state: 'export-only', ...withPlan, exportUntil: now + 23 * DAY, computer: machine };
+    case 'export-only': return { state: 'export-only', ...withPlan, exportUntil: now + DAY, computer: machine };
   }
 }
 
@@ -227,7 +227,7 @@ function personalView(s: PersonalState): CloudAccountView {
       trialDays: subscribed ? 0 : mockTrialDays(),
       ...(subscribed ? {
         status, plan: currentPlan, interval: currentInterval, region: 'us' as const,
-        ...(s === 'export-only' ? { exportUntil: now + 23 * DAY } : { subscription }),
+        ...(s === 'export-only' ? { exportUntil: now + DAY } : { subscription }),
       } : {}),
     },
     computer: computerFor(s),

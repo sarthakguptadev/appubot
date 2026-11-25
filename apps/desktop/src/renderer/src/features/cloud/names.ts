@@ -18,7 +18,10 @@ export function teamComputerLong(teamName: string | undefined): string {
   return n ? `${n}’s ${COMPUTER_NAME}` : `The team’s ${COMPUTER_NAME}`;
 }
 
-export const ON_HOLD_TEXT = `${YOUR_COMPUTER_CAP} is paused: the payment didn’t go through. Your bots and files are kept for ${CLOUD_KEEP_DAYS} days; update your card in Settings › Billing to carry on.`;
+/** a payment on hold: the stopped computer is kept a day, then deleted (`until`: that day, when the backend said it) */
+export function onHoldText(until?: number, now = Date.now()): string {
+  return `${YOUR_COMPUTER_CAP} is paused: the payment didn’t go through. Your bots and files are kept ${until ? `until ${shortDate(until, now)}` : `for ${keepDaysText(CLOUD_KEEP_DAYS)}`}, then deleted; update your card in Settings › Billing to carry on.`;
+}
 
 /** the plan has ended: "Your Pro plan has ended…" (the plan's name when known); the stopped computer is kept a day, then deleted */
 export function exportOnlyText(planName?: string, until?: number, now = Date.now()): string {
