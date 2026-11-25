@@ -64,7 +64,7 @@ export function turnFailure(error: string | undefined, who: { botName: string; a
     case 'limit':
       return { ...base, title: `${agent} has reached its limit`, body: 'It comes back when the limit resets. Until then, another model or AI can carry on.', fixes: ['model', ...retry] };
     case 'context':
-      return { ...base, title: 'This thread got too long for the model', body: `Start a new thread (${who.botName} keeps its memory), or pick a model with more room.`, fixes: ['new-thread', 'model'] };
+      return { ...base, title: 'This thread has more in it than the model can read', body: `A new thread starts short, and ${who.botName} brings its memory along. A model that reads more at once can also take this one.`, fixes: ['new-thread', 'model'] };
     case 'sign-in':
       return { ...base, title: `${agent} needs you to sign in`, body: `Sign in again, or pick another AI for ${who.botName}.`, fixes: ['agents', 'model', ...retry], agentsLabel: 'Sign in' };
     case 'network':
