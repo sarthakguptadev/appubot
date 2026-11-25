@@ -281,6 +281,16 @@ async function channelPhone(core: Core, sock: FakeChannelSocket, ip = '192.168.1
 }
 
 const ping = (phone: LinkPhone, id: number, reqId: string) => phone.ping(id, reqId);
+/**
+ * The phone hears that it came online (`device.updated`, which follows every paired phone's sign-in a moment after
+ * the hello). A test that makes the phone fall behind waits for it first: whichever frame comes next pauses the phone's
+ * sockets, and that has to be the answer the test asks for, not this.
+ */
+const heardOnline = (phone: LinkPhone, id: number) => phone.next((m) => {
+  if (m.kind !== Msg.WS_TEXT || m.id !== id) return false;
+  const text = bytesText(m.payload);
+  return text.includes('"event":"device.updated"') && text.includes('"online":true');
+});
 
 describe('a phone that falls behind', () => {
   it('has its gateway sockets paused until it catches up, so the gateway sees the backlog; its keys go with the stream', async () => {
@@ -290,6 +300,7 @@ describe('a phone that falls behind', () => {
     const sock = new FakeChannelSocket();
     const phone = await channelPhone(core, sock);
     expect(await phone.signIn(1, token, deviceId)).toContain('"ok":true');
+    await heardOnline(phone, 1);
 
     const pause = vi.spyOn(WebSocket.prototype, 'pause');
     const resume = vi.spyOn(WebSocket.prototype, 'resume');
@@ -351,6 +362,7 @@ describe('a phone that falls behind', () => {
     const sock = new FakeChannelSocket();
     const phone = await channelPhone(core, sock);
     expect(await phone.signIn(1, token, deviceId)).toContain('"ok":true');
+    await heardOnline(phone, 1);
     // behind: socket 1's next answer pauses the phone's sockets
     sock.bufferedAmount = 2 * 1024 * 1024;
     ping(phone, 1, 'a');
@@ -375,6 +387,7 @@ describe('a phone that falls behind', () => {
     const phone = await channelPhone(core, sock);
     expect(await phone.signIn(1, token, deviceId)).toContain('"ok":true');
     await until(() => core.gateway.onlineDevices().has(deviceId));
+    await heardOnline(phone, 1);
     await sleep(50); // the first ping's answer
     sock.bufferedAmount = 2 * 1024 * 1024;
     ping(phone, 1, 'a');
