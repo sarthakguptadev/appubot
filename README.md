@@ -1,11 +1,11 @@
+<h1 align="center">
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/readme/bots-dark.webp">
-  <img src="assets/readme/bots-light.webp" alt="AppuBot's bots: Appu, the orange one, with four more" width="100%">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/readme/header-dark.svg">
+  <img src="assets/readme/header-light.svg" alt="AppuBot: a team of AI bots that use the apps on your own computer" width="100%">
 </picture>
+</h1>
 
 <div align="center">
-
-# AppuBot
 
 **The open source Grok Bot alternative: a team of AI bots that use the apps on your own computer.**
 
@@ -16,12 +16,25 @@ works on your own computer or around the clock in AppuBot Cloud, and answers you
 </p>
 
 <p>
-<a href="https://github.com/sarthakguptadev/AppuBot/releases/latest/download/AppuBot-arm64.dmg"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/sarthakguptadev/AppuBot/readme-assets/mac-dark.png"><img src="https://raw.githubusercontent.com/sarthakguptadev/AppuBot/readme-assets/mac-light.png" alt="Download for macOS" height="44"></picture></a>
-<a href="https://github.com/sarthakguptadev/AppuBot/releases/latest/download/AppuBot-Setup-x64.exe"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/sarthakguptadev/AppuBot/readme-assets/windows-dark.png"><img src="https://raw.githubusercontent.com/sarthakguptadev/AppuBot/readme-assets/windows-light.png" alt="Download for Windows" height="44"></picture></a>
-<a href="#download"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/sarthakguptadev/AppuBot/readme-assets/linux-dark.png"><img src="https://raw.githubusercontent.com/sarthakguptadev/AppuBot/readme-assets/linux-light.png" alt="Download for Linux" height="44"></picture></a>
-<a href="https://apps.apple.com/app/id6829390070"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/sarthakguptadev/AppuBot/readme-assets/appstore-dark.png"><img src="https://raw.githubusercontent.com/sarthakguptadev/AppuBot/readme-assets/appstore-light.png" alt="Download on the App Store" height="44"></picture></a>
-<a href="https://play.google.com/store/apps/details?id=com.appubot.app"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/sarthakguptadev/AppuBot/readme-assets/googleplay-dark.png"><img src="https://raw.githubusercontent.com/sarthakguptadev/AppuBot/readme-assets/googleplay-light.png" alt="Get it on Google Play" height="44"></picture></a>
+<a href="https://github.com/sarthakguptadev/AppuBot/releases/latest/download/AppuBot-arm64.dmg"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/sarthakguptadev/AppuBot/readme-assets/mac-dark.png"><img src="https://raw.githubusercontent.com/sarthakguptadev/AppuBot/readme-assets/mac-light.png" alt="Download for macOS" height="56"></picture></a>
+<a href="https://github.com/sarthakguptadev/AppuBot/releases/latest/download/AppuBot-Setup-x64.exe"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/sarthakguptadev/AppuBot/readme-assets/windows-dark.png"><img src="https://raw.githubusercontent.com/sarthakguptadev/AppuBot/readme-assets/windows-light.png" alt="Download for Windows" height="56"></picture></a>
+<a href="#download"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/sarthakguptadev/AppuBot/readme-assets/linux-dark.png"><img src="https://raw.githubusercontent.com/sarthakguptadev/AppuBot/readme-assets/linux-light.png" alt="Download for Linux" height="56"></picture></a>
 </p>
+<p>
+<a href="https://apps.apple.com/app/id6829390070"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/sarthakguptadev/AppuBot/readme-assets/appstore-dark.png"><img src="https://raw.githubusercontent.com/sarthakguptadev/AppuBot/readme-assets/appstore-light.png" alt="Download on the App Store" height="56"></picture></a>
+<a href="https://play.google.com/store/apps/details?id=com.appubot.app"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/sarthakguptadev/AppuBot/readme-assets/googleplay-dark.png"><img src="https://raw.githubusercontent.com/sarthakguptadev/AppuBot/readme-assets/googleplay-light.png" alt="Get it on Google Play" height="56"></picture></a>
+</p>
+
+</div>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/readme/plans-dark.svg">
+  <img src="assets/readme/plans-light.svg" alt="AppuBot runs on the plan you already have: Claude, ChatGPT, Cursor, Grok, GitHub Copilot or OpenCode. No new subscription and no API keys" width="100%">
+</picture>
+
+<div align="center">
+
+<sub>These names say what AppuBot works with, nothing more. AppuBot is an independent project, not affiliated with or endorsed by Anthropic, OpenAI, Anysphere, xAI, GitHub or Anomaly, or by the maker of any other product named on this page. Their names and trademarks belong to them.</sub>
 
 <p>
 <a href="https://github.com/sarthakguptadev/AppuBot/releases/latest"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/sarthakguptadev/AppuBot/readme-assets/version-dark.png"><img src="https://raw.githubusercontent.com/sarthakguptadev/AppuBot/readme-assets/version-light.png" alt="Latest version" height="30"></picture></a>
@@ -47,16 +60,13 @@ works on your own computer or around the clock in AppuBot Cloud, and answers you
 
 <br>
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/readme/app-dark.webp">
-  <img src="assets/readme/app-light.webp" alt="The AppuBot app: Appu, Ledger, Scout, Pixel and Echo in the sidebar, and the Launch team room where they get a Friday launch ready together" width="100%">
-</picture>
+<img src="assets/readme/app.svg" alt="The AppuBot app: Appu, Ledger, Scout, Pixel and Echo in the sidebar, and the Launch team room where they get a Friday launch ready together" width="100%">
 <p align="center"><sub>Five bots in one room get a launch ready: the thread, the graphic, the ad budget and the creators.</sub></p>
 
 ## Contents
 
 - **Start here:** [Get started in 3 steps](#get-started-in-3-steps) · [Download](#download) · [What AppuBot does](#what-appubot-does)
-- **See it work:** [What you can ask](#what-you-can-ask) · [A day with AppuBot](#a-day-with-appubot) · [A look around](#a-look-around)
+- **See it work:** [What you can ask](#what-you-can-ask) · [A day with AppuBot](#a-day-with-appubot)
 - **Learn more:** [How it works](#how-it-works) · [Your AI, your choice](#your-ai-your-choice) · [Telegram](#talk-to-your-bots-on-telegram) · [Safety and privacy](#safety-and-privacy) · [AppuBot Cloud](#appubot-cloud)
 - **Decide:** [AppuBot vs Grok Bot, OpenAI dots and Meta Muse](#appubot-vs-grok-bot-openai-dots-and-meta-muse) · [Questions](#questions)
 - **For developers:** [Download or build it yourself?](#download-or-build-it-yourself) · [Build from source](#build-from-source) · [Partners](#partners) · [Contributing](#contributing) · [Licence](#licence)
@@ -77,16 +87,35 @@ That's it. Add more bots, teach them tasks, give them routines and connect Teleg
 
 AppuBot gives you a team of AI bots, each with its own name, job and AI. They run on your own computer, where your files and signed-in apps already are, or on an AppuBot Cloud computer when you want them working while yours is off.
 
+<img src="assets/readme/work.svg" alt="Appu is asked for the October expense report, fixes the categories, rebuilds the PDF and sends the file back" width="100%">
+
+**Works in your real apps.** A bot opens an app and clicks, types and scrolls in its window: Excel, Numbers, Finder, Safari, your accounting software. Its cursor moves on your screen, so you can watch it work and take over any time. Appu rebuilds the October expense report and sends the PDF.
+
+<img src="assets/readme/apps.svg" alt="Apps the bots work in. On your computer: Excel, Numbers, Finder, Safari and any app with a window. Connected: Gmail, Google Calendar, Notion, Slack, GitHub, Google Drive, Linear and 1,700 more" width="100%">
+
+**Connected apps.** Gmail, Notion, Slack, GitHub, Google Calendar and 1,700 more, chosen per bot. Connect once, then choose which bots get each app.
+
+<img src="assets/readme/team.svg" alt="The Launch team room: Echo asks Pixel to put the graphic on the first post, Pixel does it, and Appu reports that everything is set for Friday" width="100%">
+
+**As many bots as you like.** Each with its own job, model, memory and chats. Put several in a room and they hand work to each other. Every bot gets its own name, look, job and AI.
+
+<img src="assets/readme/approvals.svg" alt="Appu wants to run a command that deletes a folder, and waits: Allow once, Always allow or Reject" width="100%">
+
+**Approvals, not surprises.** Anything important waits for your OK, however long you take. Changes, saved logins and risky commands wait for your OK.
+
+<img src="assets/readme/skills.svg" alt="Appu’s skills: Teach a task, a skill it was taught, one it wrote and one it has built in" width="100%">
+
+**Teach a task once.** Do it while AppuBot watches. Your bot saves it as a skill and does it the same way next time. Skills it learned by watching you, or wrote itself.
+
+<img src="assets/readme/routines.svg" alt="A routine: Morning inbox digest, weekdays at 9:00 AM. And Appu’s memory as a plain note you can open and change" width="100%">
+
+**Routines on a schedule.** Every hour, every weekday or whenever you choose. A morning inbox digest, every weekday at 9. **Memory you can read and edit.** Your rates, your accountant, how you like your replies. Plain notes you can open and change.
+
+And the rest:
+
 <table>
-<tr><td width="30%"><b>🖱️ Works in your real apps</b></td><td>A bot opens an app and clicks, types and scrolls in its window: Excel, Numbers, Finder, Safari, your accounting software. Its cursor moves on your screen, so you can watch it work and take over any time.</td></tr>
-<tr><td><b>🔑 Your own AI account</b></td><td>Each bot runs on Claude Code, Codex (ChatGPT), GitHub Copilot, Cursor, Grok or OpenCode, with the account you're already signed in to. No new subscription and no API keys.</td></tr>
-<tr><td><b>👥 As many bots as you like</b></td><td>Each with its own job, model, memory and chats. Put several in a room and they hand work to each other.</td></tr>
+<tr><td width="30%"><b>🔑 Your own AI account</b></td><td>Each bot runs on Claude Code, Codex (ChatGPT), GitHub Copilot, Cursor, Grok or OpenCode, with the account you're already signed in to. No new subscription and no API keys.</td></tr>
 <tr><td><b>💬 Message them on Telegram</b></td><td>Each bot can be a Telegram bot of its own. Text, photos, voice notes and files reach your computer; replies, questions and files come back in the chat.</td></tr>
-<tr><td><b>🎓 Teach a task once</b></td><td>Do it while AppuBot watches. Your bot saves it as a skill and does it the same way next time.</td></tr>
-<tr><td><b>⏰ Routines on a schedule</b></td><td>Every hour, every weekday or whenever you choose.</td></tr>
-<tr><td><b>🧠 Memory you can read and edit</b></td><td>Your rates, your accountant, how you like your replies. Plain notes you can open and change.</td></tr>
-<tr><td><b>✋ Approvals, not surprises</b></td><td>Anything important waits for your OK, however long you take.</td></tr>
-<tr><td><b>🔌 Connected apps</b></td><td>Gmail, Notion, Slack, GitHub, Google Calendar and 1,700 more, chosen per bot.</td></tr>
 <tr><td><b>🎙️ Talk by voice</b></td><td>Voice mode, menu bar calls, dictation and Telegram voice notes, with speech handled on your own computer.</td></tr>
 <tr><td><b>📎 Files in, files out</b></td><td>PDFs, spreadsheets, photos and recordings in; invoices, exports and charts out, in the app or on Telegram.</td></tr>
 <tr><td><b>💻 A terminal of its own</b></td><td>Bots can run commands, scripts and tools on your computer, with risky ones waiting for your OK.</td></tr>
@@ -98,7 +127,9 @@ AppuBot gives you a team of AI bots, each with its own name, job and AI. They ru
 
 Talk to a bot the way you'd talk to a colleague. A few things people hand over:
 
-### 💰 Money and paperwork
+<details open>
+<summary><b>💰 Money and paperwork</b></summary>
+
 
 | You say | Your bot |
 | --- | --- |
@@ -107,7 +138,12 @@ Talk to a bot the way you'd talk to a colleague. A few things people hand over:
 | *"Download this quarter's bank statements and put them in the Tax folder."* | Signs in with your saved login, after asking you, downloads each statement and files it by month. |
 | *"Which subscriptions did I pay for last month?"* | Goes through your statements or email receipts and gives you a list with totals. |
 
-### 📧 Email, calendar and messages
+
+</details>
+
+<details>
+<summary><b>📧 Email, calendar and messages</b></summary>
+
 
 | You say | Your bot |
 | --- | --- |
@@ -115,7 +151,12 @@ Talk to a bot the way you'd talk to a colleague. A few things people hand over:
 | *"Reply to the three people asking for a meeting and offer Tuesday afternoon."* | Checks your calendar, drafts each reply and waits for your OK before sending. |
 | *"Find the contract Priya sent in March and send it to my accountant."* | Searches your email, finds the attachment and sends it to the address it remembers. |
 
-### 🔍 Research
+
+</details>
+
+<details>
+<summary><b>🔍 Research</b></summary>
+
 
 | You say | Your bot |
 | --- | --- |
@@ -123,7 +164,12 @@ Talk to a bot the way you'd talk to a colleague. A few things people hand over:
 | *"Find 20 cafés in Bangalore that might stock our coffee, with their Instagram."* | Searches the web and saves a spreadsheet you can open. |
 | *"Read these 12 PDFs and tell me what they say about refunds."* | Reads each file and answers with quotes and page numbers. |
 
-### 📣 Sales and marketing
+
+</details>
+
+<details>
+<summary><b>📣 Sales and marketing</b></summary>
+
 
 | You say | Your bot |
 | --- | --- |
@@ -131,7 +177,12 @@ Talk to a bot the way you'd talk to a colleague. A few things people hand over:
 | *"Add everyone who signed up today to the CRM."* | Opens your CRM in its own window and types each one in. |
 | *"Each Monday, tell me how last week's ads did."* | Runs a routine that reads your ad dashboards and sends you the numbers. |
 
-### 🗂️ Files and your computer
+
+</details>
+
+<details>
+<summary><b>🗂️ Files and your computer</b></summary>
+
 
 | You say | Your bot |
 | --- | --- |
@@ -139,13 +190,20 @@ Talk to a bot the way you'd talk to a colleague. A few things people hand over:
 | *"Turn this voice note into a to-do list."* | Listens to the recording and writes the list. |
 | *"Clean up my Desktop: put files into folders by type."* | Moves the files into folders and shows you where everything went. |
 
-### 👩‍💻 For developers
+
+</details>
+
+<details>
+<summary><b>👩‍💻 For developers</b></summary>
+
 
 | You say | Your bot |
 | --- | --- |
 | *"Fix the failing test and open a pull request."* | Runs your tests in its terminal, makes the fix and opens the pull request with your GitHub account. |
 | *"Every night, update the dependencies and tell me if anything breaks."* | Runs a routine and reports in the morning. |
 | *"Check the staging site in Safari and send me screenshots of anything broken."* | Clicks through the site in a real browser and sends what it finds. |
+
+</details>
 
 <sub>Examples of what people ask. What a bot can do depends on the AI it uses, the apps you've connected and what you allow.</sub>
 
@@ -158,35 +216,6 @@ Talk to a bot the way you'd talk to a colleague. A few things people hand over:
 | **12:00** | Scout finishes the competitor research you asked for and drops the spreadsheet in the chat. |
 | **15:00** | Pixel wants to post the launch graphic. You get an approval on your phone and tap Allow. |
 | **18:00** | Your laptop is closed. With AppuBot Cloud, Echo keeps answering on Telegram and the evening routine still runs. |
-
-## A look around
-
-<table>
-<tr>
-<td width="50%"><img src="assets/readme/approvals.webp" alt="Appu asks to change its own permissions, to use a saved login for the GST portal, and to run a command, each with Allow and Decline"></td>
-<td width="50%"><img src="assets/readme/work.webp" alt="Appu reports that the October expense report is ready and attaches the PDF"></td>
-</tr>
-<tr>
-<td><sub><b>Approvals, not surprises.</b> Changes, saved logins and risky commands wait for your OK.</sub></td>
-<td><sub><b>Real work, real files.</b> Appu rebuilds the October expense report and sends the PDF.</sub></td>
-</tr>
-<tr>
-<td><img src="assets/readme/skills.webp" alt="Appu's skills: Teach a task, plus skills it was taught, wrote and has built in"></td>
-<td><img src="assets/readme/routines.webp" alt="Appu's routines: a morning inbox digest on weekdays at 9:00"></td>
-</tr>
-<tr>
-<td><sub><b>Teach a task once.</b> Skills it learned by watching you, or wrote itself.</sub></td>
-<td><sub><b>Routines.</b> A morning inbox digest, every weekday at 9.</sub></td>
-</tr>
-<tr>
-<td><img src="assets/readme/apps.webp" alt="The Apps page: Gmail and GitHub connected, and Google Calendar, Slack, Google Drive, Linear and more to add"></td>
-<td><img src="assets/readme/newbot.webp" alt="Create new bot: a name, a shape and a colour"></td>
-</tr>
-<tr>
-<td><sub><b>Connected apps.</b> Connect once, then choose which bots get each app.</sub></td>
-<td><sub><b>A team of your own.</b> Every bot gets its own name, look, job and AI.</sub></td>
-</tr>
-</table>
 
 ## Download
 
@@ -213,16 +242,7 @@ AppuBot updates itself. It looks for new versions in the background, downloads t
 
 ## How it works
 
-```mermaid
-flowchart LR
-  A[You: app, phone or Telegram] --> B[Your bot: job, memory, skills]
-  B --> C[Your AI: Claude Code, Codex, Copilot, Cursor, Grok or OpenCode]
-  C --> D[Tools: computer use, terminal, files, apps]
-  D --> E{Important step?}
-  E -->|yes| F[Waits for your OK]
-  E -->|no| G[Does it and reports back]
-  F --> G
-```
+<img src="assets/readme/how.svg" alt="How AppuBot works, in five steps. 1: you ask, in the app, by voice, on your phone or on Telegram. 2: your bot adds its job, its memory and the skills you taught it. 3: your AI thinks, on the account you’re signed in to. 4: tools click and type in apps, a terminal and your files. 5: big steps wait for your OK, and you can watch or stop any time" width="100%">
 
 1. **You ask** in the app, from your phone, by voice or on Telegram.
 2. **Your bot** adds what it knows: its job, its memory about you and the skills you taught it.
@@ -248,6 +268,8 @@ You can add more than one account of the same AI, say a work and a personal Clau
 
 ## Talk to your bots on Telegram
 
+<img src="assets/readme/logos/telegram.svg" alt="Telegram" width="72" align="right">
+
 1. On Telegram, make a bot with [@BotFather](https://t.me/BotFather) and copy its token.
 2. In AppuBot, open **Settings › Channels**, paste the token and choose which of your bots it is.
 3. Message it. Approve your Telegram account with the code shown on your computer, once.
@@ -267,6 +289,8 @@ Now text, photos, voice notes and files reach that bot on your computer, and its
 Found a security problem? See [SECURITY.md](SECURITY.md).
 
 ## AppuBot Cloud
+
+<img src="assets/readme/cloud.svg" alt="AppuBot is free on your own Mac, Windows or Linux computer, with no account and no card. AppuBot Cloud is optional and paid: a cloud computer of their own for your bots, on while your laptop is off" width="100%">
 
 The app is free on your own computer, and stays that way. AppuBot Cloud is the optional extra: a cloud computer of their own for your bots, with a live desktop you can watch or take over, so they keep working while your laptop is off. It works from the desktop app or from just your phone.
 
