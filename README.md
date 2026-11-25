@@ -510,7 +510,7 @@ Copyright 2026 Sarthak Gupta. The licence does not cover these things:
 - `apps/desktop/src/renderer/src/components/rare` is Rare UI by Swami Malode, under its own licence in that folder, not the Apache License. It may not be sold, or given out apart from an application.
 - Other third-party code keeps its own licence, and other companies' names and logos belong to their owners: see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
-Versions up to 2026.1124.2 were released under the PolyForm Shield License 1.0.0, which still applies to those versions. The Apache License applies from the change that put it here.
+Every version of AppuBot, from the first release on, is available under the Apache License 2.0, whatever licence came with it. The same exceptions apply to every version.
 
 <br>
 
