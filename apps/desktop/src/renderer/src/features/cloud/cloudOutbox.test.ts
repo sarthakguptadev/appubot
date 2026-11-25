@@ -3,8 +3,8 @@ import type { Message } from '@appubot/protocol';
 import { GatewayError, type GatewayLike } from '../../lib/gateway';
 import {
   SEND_WAIT_MS, absorbSent, discardSend, dropSendsFor, failWaiting, hasPending, localMessage, pumpOutbox, resetOutbox, restoreSends, retrySend,
-  enqueueSend, setOutboxChat, setOutboxLink, useCloudOutbox, whenCloudReady, type QueuedSend,
-} from './cloudOutbox';
+  enqueueSend, setOutboxChat, setOutboxLink, useOutbox, whenCloudReady, type QueuedSend,
+} from '../../lib/outbox';
 
 /** a cloud client whose `chat.send` answers what each test says */
 function fakeClient(answer: (p: { clientId?: string; text: string }) => Promise<unknown>) {
@@ -45,7 +45,7 @@ beforeEach(() => {
 afterEach(() => { vi.useRealTimers(); });
 
 const flush = async () => { for (let i = 0; i < 5; i++) await Promise.resolve(); };
-const sends = () => useCloudOutbox.getState().sends;
+const sends = () => useOutbox.getState().sends;
 
 describe('the cloud outbox', () => {
   it('shows a message at once, waits for the computer (waking it), and sends it with its clientId once it is up', async () => {

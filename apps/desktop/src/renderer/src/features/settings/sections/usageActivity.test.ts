@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ACTIVITY_KEEP_DAYS, activityDays, dayKey, mergeDays, readLedger, type DayLedger } from './usageActivity';
+import { ACTIVITY_KEEP_DAYS, activityDays, dayKey, mergeDays, readLedger, type DayLedger } from '@appubot/chat-core';
 
 const DAY = 86_400_000;
 // a Saturday at noon, local time

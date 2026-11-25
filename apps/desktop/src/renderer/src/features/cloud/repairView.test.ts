@@ -6,7 +6,7 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CloudComputer, CloudRepair } from '@appubot/protocol';
-import { fixOffer, repairCard, unreachableFixes, updateLine } from './repairView';
+import { fixOffer, repairCard, unreachableFixes, updateLine } from '@appubot/chat-core';
 import { FixComputerGroup, RepairProgress } from './FixComputer';
 
 const NOW = Date.parse('2026-11-05T15:00:00');

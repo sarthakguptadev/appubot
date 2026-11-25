@@ -8,7 +8,7 @@
  * skills, characters, voice, plan limits, the computer's status without its live parts), the files list, the screens'
  * last answers (`remembered`: Usage, Storage; lib/remembered.ts), the place
  * (the bot on screen, each bot's open thread), the latest `CACHE_MESSAGES` messages of the `CACHE_THREADS` most
- * recently active chats loaded here, and the messages still on their way (`QueuedSend`, cloudOutbox.ts). Never
+ * recently active chats loaded here, and the messages still on their way (`QueuedSend`, lib/outbox.ts). Never
  * approvals, pairing codes, screenshots, or big inline pictures. Pure, so it is tested without a window.
  *
  * Chats are kept light: a tool call's long outputs are cut to `TOOL_TEXT_MAX` and its `rawOutput` (the same output
@@ -20,7 +20,7 @@
 import type { ComputerStatus, Message, Part, ToolContent, Thread } from '@appubot/protocol';
 import type { ToolCallPart } from '@appubot/chat-core';
 import type { AppState, Conversation } from '../../lib/store';
-import { LOCAL_PREFIX, isLocalId, type QueuedSend } from './cloudOutbox';
+import { LOCAL_PREFIX, isLocalId, type QueuedSend } from '../../lib/outbox';
 
 const VERSION = 1;
 /** recent chats whose messages are kept, and how many of each */

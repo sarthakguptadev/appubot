@@ -9,7 +9,7 @@ import { useHeldFor } from '../../lib/connectionQuiet';
 /**
  * A slim line at the top of the chat card when a cloud computer's saved copy is on screen and the computer hasn't
  * answered in 30 s (cloudCacheData.ts `syncStripView`), with Try again. Everything under it stays usable: messages queue
- * (cloudOutbox.ts) and say themselves when they can't go.
+ * (lib/outbox.ts) and say themselves when they can't go.
  */
 export function CloudSyncStrip() {
   const link = useCloudLink();

@@ -375,7 +375,7 @@ export function mergeConversation(threadId: string, messages: Message[], page?: 
   setState((s) => {
     let cur = s.convo[threadId] ?? emptyConversation();
     // a newest page that doesn't reach what we had (reconnected after a long gap, an old saved copy): start over from
-    // it, keeping only the messages still on their way from here (features/cloud/cloudOutbox.ts)
+    // it, keeping only the messages still on their way from here (outbox.ts)
     const lastHad = [...cur.ids].reverse().map((id) => cur.byId[id]!).find((m) => m && !isLocalCopy(m.id));
     if (page?.newest && lastHad && messages.length && page.hasMore && compareMessages(messages[0]!, lastHad) > 0) {
       const locals = Object.fromEntries(Object.entries(cur.byId).filter(([id]) => isLocalCopy(id)));
@@ -407,7 +407,7 @@ export function mergeConversation(threadId: string, messages: Message[], page?: 
   });
 }
 
-/** A message still on its way from this window (its local copy: features/cloud/cloudOutbox.ts `local:` ids). */
+/** A message still on its way from this window (its local copy: outbox.ts `local:` ids). */
 const isLocalCopy = (id: string): boolean => id.startsWith('local:');
 
 /**

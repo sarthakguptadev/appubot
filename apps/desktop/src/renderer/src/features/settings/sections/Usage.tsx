@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { USAGE_RANGES, agentDisplayName, agentLimits, cacheHitRate, clockHours, extraUsageText, formatTokens, formatUsd, intlLocale, limitsSourcesText, limitsStatusText, updatedAgoText, usageSourceNames } from '@appubot/chat-core';
+import { USAGE_RANGES, agentDisplayName, agentLimits, cacheHitRate, clockHours, extraUsageText, formatTokens, formatUsd, intlLocale, limitsSourcesText, limitsStatusText, updatedAgoText, usageSourceNames, ACTIVITY_KEY, activityDays, dayKey, mergeDays, readLedger } from '@appubot/chat-core';
 import type { ProviderLimits, UsageBucket, UsageRange, UsageSummary, UsageTotals } from '@appubot/protocol';
 import { agentChoices, providerBase } from '@appubot/protocol';
 import { RefreshCw } from '../../../components/ui/icons';
@@ -17,7 +17,6 @@ import { LimitMeter, LimitWindowRow, TONE_TEXT } from '../../providers/LimitMete
 import { fetchedChoices } from '../../providers/useChoices';
 import { refreshLimits, useAllLimits, useNow } from '../../providers/useLimits';
 import { USAGE_ACTIVITY_TITLE, USAGE_BY_AGENT_TITLE, USAGE_BY_MODEL_TITLE, USAGE_LIMITS_TITLE, USAGE_TITLE } from '../nav';
-import { ACTIVITY_KEY, activityDays, dayKey, mergeDays, readLedger } from './usageActivity';
 import { SETTINGS_ROW, SettingsCard, SettingsEmptyState, SettingsGroup, SettingsSegmented, SectionLoading } from './shared';
 
 /*

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fileKind, fileKindLabel, fileRuns, fileTitle, viewKind, VIEW_TEXT_MAX } from './fileKinds';
+import { fileKind, fileKindLabel, fileRuns, fileTitle, viewKind, VIEW_TEXT_MAX } from '@appubot/chat-core';
 
 const f = (name: string, mimeType: string, caption?: string) => ({ name, mimeType, ...(caption ? { caption } : {}) });
 

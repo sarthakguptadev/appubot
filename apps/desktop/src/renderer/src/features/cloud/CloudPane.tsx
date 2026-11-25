@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { CloudRepairKind } from '@appubot/protocol';
-import { REPAIR_OPTIONS, UNREACHABLE_FIX_HINT } from '@appubot/chat-core';
+import { REPAIR_OPTIONS, UNREACHABLE_FIX_HINT, fixOffer, unreachableFixes } from '@appubot/chat-core';
 import { Cloud, Laptop, RefreshCw, RotateCw, Settings, Wrench } from '../../components/ui/icons';
 import { Button, Icon } from '../../components/ui';
 import { MACHINE } from '../../lib/platform';
@@ -9,7 +9,6 @@ import { useCloud } from './cloudAccount';
 import { switchComputer, useCloudLink } from './cloudClient';
 import { cloudPhase, phaseWords, teamAsView } from './cloudView';
 import { RepairDialog, RepairProgress } from './FixComputer';
-import { fixOffer, unreachableFixes } from './repairView';
 import { YOUR_COMPUTER } from './names';
 import { useHeldFor } from '../../lib/connectionQuiet';
 
