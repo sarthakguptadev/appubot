@@ -21,6 +21,8 @@ Follow [Build from source](README.md#build-from-source) in the README. You need 
 - For a change people will see, add a screenshot or a short recording.
 - Match the code around your change: its naming, its style and the libraries it already uses. Ask before adding a new dependency.
 
+You don't have to run the whole suite while you work. For one package, run `pnpm -C packages/chat-core test`. For a single test file, add its path, for example `pnpm -C apps/desktop test src/renderer/src/components/ui/menuKeys.test.ts`. The tests and the typecheck run on a Mac, Windows or Linux without opening the app. If `pnpm install` warns `Failed to create bin ... appubot-mcp-bridge`, that warning is harmless and goes away once you run `pnpm -C packages/mcp-bridge build`.
+
 ## Things to keep in mind
 
 - **The shared protocol.** `packages/protocol` is also used by our phone apps, which aren't public. We check a change there against them before merging, so those pull requests can take a little longer.
