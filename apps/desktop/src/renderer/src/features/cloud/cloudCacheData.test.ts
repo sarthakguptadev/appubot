@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Bot, ComputerStatus, Message, Thread } from '@appubot/protocol';
 import type { AppState, Conversation } from '../../lib/store';
 import { CACHE_CHAT_MAX_CHARS, CACHE_MESSAGES, QUEUED_MAX_AGE_MS, TOOL_TEXT_MAX, keepInMemory, keptMessages, lighten, quietComputer, recentChats, restoreComputer, serializeComputer, syncStripView } from './cloudCacheData';
-import type { QueuedSend } from './cloudOutbox';
+import type { QueuedSend } from '../../lib/outbox';
 
 const NOW = 1_800_000_000_000;
 

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { CloudRepairKind } from '@appubot/protocol';
-import { REPAIR_OPTIONS, UNREACHABLE_FIX_HINT, WATCHING_KEEPS_AWAKE } from '@appubot/chat-core';
+import { REPAIR_OPTIONS, UNREACHABLE_FIX_HINT, WATCHING_KEEPS_AWAKE, unreachableFixes } from '@appubot/chat-core';
 import { Cloud, Maximize2, Moon, RefreshCw, RotateCw, Wrench } from '../../components/ui/icons';
 import { Button, Icon, Spinner, cn } from '../../components/ui';
 import { useStore } from '../../lib/store';
@@ -9,7 +9,6 @@ import { switchComputer, useCloudLink } from './cloudClient';
 import { cloudPhase, teamAsView, type CloudPhase } from './cloudView';
 import { ScreenSurface, openCloudDesktop, useScreenTitle } from './DesktopView';
 import { RepairDialog } from './FixComputer';
-import { unreachableFixes } from './repairView';
 import { releaseScreen, retryScreen, useCloudDesktop, useScreen, wantScreen } from './screenSession';
 import { mayStream, screenCaption, screenCard, type ScreenCard, type ScreenPhase } from './screenView';
 

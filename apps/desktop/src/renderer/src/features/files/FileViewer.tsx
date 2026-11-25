@@ -7,7 +7,7 @@
 import { useEffect, useState } from 'react';
 import { create } from 'zustand';
 import type { FileAttachment } from '@appubot/protocol';
-import { parseCsv } from '@appubot/chat-core';
+import { parseCsv, fileTitle, viewKind, type ViewKind } from '@appubot/chat-core';
 import { Download, ExternalLink, FolderSearch } from '../../components/ui/icons';
 import { Button, Dialog, Spinner } from '../../components/ui';
 import { native } from '../../lib/native';
@@ -18,7 +18,6 @@ import { VoiceNote as RareVoiceNote } from '../../components/rare/VoiceNote';
 import { seedOf } from '../voice/VoiceNote';
 import { PageViewerBody } from '../chat/PagePart';
 import { downloadRemoteFile, useFileSrc, useRemoteComputer } from '../cloud/remoteFiles';
-import { fileTitle, viewKind, type ViewKind } from './fileKinds';
 
 export const useFileViewer = create<{ file: FileAttachment | null }>(() => ({ file: null }));
 export const closeFileViewer = (): void => useFileViewer.setState({ file: null });

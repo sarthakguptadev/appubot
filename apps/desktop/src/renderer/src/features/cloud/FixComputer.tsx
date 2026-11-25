@@ -2,13 +2,13 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { CloudBackup, CloudComputer, CloudRepair, CloudRepairKind } from '@appubot/protocol';
 import {
   FIX_DESCRIPTION, FIX_TITLE, REPAIR_KINDS, REPAIR_OPTIONS, RESET_CONFIRM_WORD, backupLabel, defaultResetBackup, resetWarning, upToDateText,
+  fixOffer, repairCard, updateLine,
 } from '@appubot/chat-core';
 import { AlertTriangle, Check, CheckCircle2, RefreshCw, RotateCcw, Wrench, XCircle, type IconComponent } from '../../components/ui/icons';
 import { Button, Dialog, Field, Icon, Input, SETTINGS_ROW, SETTINGS_ROW_DESCRIPTION, SETTINGS_ROW_TITLE, Spinner, cn } from '../../components/ui';
 import { useNow } from '../../lib/hooks';
 import { SettingRow, SettingsGroup } from '../settings/sections/shared';
 import { busyKey, fixStart, loadBackups, repairComputer, useCloud } from './cloudAccount';
-import { fixOffer, repairCard, updateLine } from './repairView';
 
 /*
  * Fix your computer (plan §6.9, D34): Update, Recover and Reset for the person's AppuBot computer (a team's for its

@@ -5,7 +5,7 @@
 // voice note player right in the list; only a document is a row with a file's name, its kind and size.
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { FileAttachment } from '@appubot/protocol';
-import { bytes } from '@appubot/chat-core';
+import { bytes, fileKind, fileKindLabel, fileTitle, type FileKind } from '@appubot/chat-core';
 import { BarChart3, ChevronRight, Download, ExternalLink, File, FileText, FolderSearch, Image, Music, Paperclip, Play, Video, type IconComponent } from '../../components/ui/icons';
 import { Button, EmptyState, Icon, RevealImg, Spinner, Tooltip, cn } from '../../components/ui';
 import { PanelHeader, ROW_HOVER } from '../../components/layout/PanelChrome';
@@ -21,7 +21,6 @@ import { galleryProps, openGalleryAt } from '../chat/imageGallery';
 import { usePageSrc } from '../chat/PagePart';
 import { useCloudFiles } from '../cloud/cloudClient';
 import { downloadRemoteFile, progressLabel, useFileProgress, useFileSrc, useRemoteComputer } from '../cloud/remoteFiles';
-import { fileKind, fileKindLabel, fileTitle, type FileKind } from './fileKinds';
 import { openInApp } from './FileViewer';
 import { activeComputer } from '../../lib/gateway';
 import { remember } from '../../lib/remembered';

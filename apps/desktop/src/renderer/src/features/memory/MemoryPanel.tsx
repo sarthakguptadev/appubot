@@ -9,7 +9,7 @@ import { useRemoteComputer } from '../cloud/remoteFiles';
 import { getState, selectSelectedBot, selectSelectedThread, useStore } from '../../lib/store';
 import { activeComputer } from '../../lib/gateway';
 import { remember } from '../../lib/remembered';
-import { MEMORY_CAP_LABEL, memoryStats } from './memoryStats';
+import { MEMORY_CAP_LABEL, memoryStats } from '@appubot/chat-core';
 import { MarkdownEditor } from '../../components/ui/MarkdownEditor';
 
 /** a bot's memory as last read on a cloud computer (`remembered`, kept in its sealed saved copy; this Mac's own is read

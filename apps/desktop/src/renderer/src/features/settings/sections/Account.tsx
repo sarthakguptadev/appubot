@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { computerDisplayName, repairActive } from '@appubot/chat-core';
+import { computerDisplayName, repairActive, fixOffer } from '@appubot/chat-core';
 import type { CloudAccountView, CloudComputer, CloudTeamView } from '@appubot/protocol';
 import { ChevronDown, ChevronRight, Cloud, Laptop, LogOut } from '../../../components/ui/icons';
 import {
@@ -16,7 +16,6 @@ import { CloudSignIn } from '../../cloud/CloudSignIn';
 import { InvitesGroup, PersonAvatar } from '../../cloud/CloudTeams';
 import { CloudTile, MacTile, RowIcon } from '../../cloud/PlanParts';
 import { FixComputerGroup } from '../../cloud/FixComputer';
-import { fixOffer } from '../../cloud/repairView';
 import { cloudPhase, hasPersonalPlan, ownComputerName, phaseWords, planName, teamAsView, type CloudPhase } from '../../cloud/cloudView';
 import { useCloudRefresh } from '../../cloud/useCloudRefresh';
 import { YOUR_COMPUTER } from '../../cloud/names';

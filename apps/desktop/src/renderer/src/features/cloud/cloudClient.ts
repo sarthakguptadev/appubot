@@ -36,7 +36,7 @@ import { cloudCacheKey, launchComputer, lostCloudCaches, savedCloudComputer, wor
 import { cloudOnlyNow } from './cloudOnly';
 import { keepInMemory, restoreComputer, serializeComputer, type RestoredComputer } from './cloudCacheData';
 import { cloudWelcomedKeys, markCloudWelcomed } from './CloudWelcome';
-import { dropSendsFor, failWaiting, hasPending, pumpOutbox, restoreSends, sendsFor, setOutboxLink, useCloudOutbox } from './cloudOutbox';
+import { dropSendsFor, failWaiting, hasPending, pumpOutbox, restoreSends, sendsFor, setOutboxLink, useOutbox } from '../../lib/outbox';
 
 export { IDLE_CLOSE_MS };
 
@@ -292,7 +292,7 @@ let selfClosed = false;
  */
 function closeCloud(): void {
   const key = made ? cloudCacheKey(made.info.team) : null;
-  if (hasPending(useCloudOutbox.getState().sends, key)) { scheduleCheck(); return; }
+  if (hasPending(useOutbox.getState().sends, key)) { scheduleCheck(); return; }
   if (made && made.client.state !== 'idle' && made.client.state !== 'closed') made.client.close();
 }
 
@@ -406,7 +406,7 @@ function saveSoon(): void {
 /** Forget the copies of computers that aren't the person's any more (memory; the core drops the files itself). */
 function pruneCopies(view: ReturnType<typeof useCloud.getState>['view']): void {
   if (!view) return;
-  const keys = [...new Set([...copies.keys(), ...Object.values(useCloudOutbox.getState().sends).map((q) => q.key)])];
+  const keys = [...new Set([...copies.keys(), ...Object.values(useOutbox.getState().sends).map((q) => q.key)])];
   const gone = lostCloudCaches({
     signedIn: view.signedIn, read: !!view.readAt && !view.error,
     accountStatus: view.account?.status ?? null, ownState: view.computer?.state ?? null,
@@ -425,7 +425,7 @@ export function watchCloudCopies(): () => void {
     prev = next;
     if (screenKey()) saveSoon();
   });
-  const offSends = useCloudOutbox.subscribe((st, before) => { if (st.sends !== before.sends && screenKey()) saveSoon(); });
+  const offSends = useOutbox.subscribe((st, before) => { if (st.sends !== before.sends && screenKey()) saveSoon(); });
   const offView = useCloud.subscribe((st, before) => { if (st.view !== before.view) pruneCopies(st.view); });
   // (the window hiding writes it at once: watchCloudVisibility)
   return () => { offStore(); offSends(); offView(); };
