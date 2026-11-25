@@ -7,7 +7,7 @@
   "desktopName": "appubot.desktop",
   "author": "AppuBot",
   "homepage": "https://appubot.com",
-  "license": "UNLICENSED",
+  "license": "Apache-2.0",
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",
