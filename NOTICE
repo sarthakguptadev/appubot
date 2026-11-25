@@ -16,10 +16,9 @@ What the licence does not cover
    apps/desktop/src/renderer/src/assets/app-icon.png) are not licensed under
    the Apache License. All rights reserved. See TRADEMARKS.md.
 
-2. Two pictures. The maker's photograph,
-   apps/desktop/src/renderer/src/assets/sarthak.jpg, and the AppuBot Cloud
-   picture, apps/desktop/src/renderer/src/assets/cloud-promo.webp, are not
-   licensed under the Apache License. All rights reserved.
+2. One picture. The AppuBot Cloud picture,
+   apps/desktop/src/renderer/src/assets/cloud-promo.webp, is not licensed
+   under the Apache License. All rights reserved.
 
 3. Rare UI. The components in apps/desktop/src/renderer/src/components/rare
    are Rare UI by Swami Malode (https://rareui.com), used with his permission
