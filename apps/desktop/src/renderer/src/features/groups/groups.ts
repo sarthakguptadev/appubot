@@ -2,10 +2,9 @@
 // message arrives: lib/events.ts swaps it by clientId), making and changing groups. The computer tells who is working
 // (`Group.working`) and what the bots say (`group.message`).
 import { currentGroupChat, groupChats, type Group, type GroupMessage, type MethodParams } from '@appubot/protocol';
-import { groupLead, type GroupBot } from '@appubot/chat-core';
 import { rpc } from '../../lib/gateway';
 import { toastCallError } from '../../lib/actions';
-import { byId, getState, setState, ui, upsertBy, useStore } from '../../lib/store';
+import { byId, getState, setState, ui, upsertBy } from '../../lib/store';
 
 let seq = 0;
 
@@ -111,12 +110,4 @@ export function deleteGroup(g: Group): void {
       } catch (e) { toastCallError(e, 'Couldn’t delete the group'); }
     },
   });
-}
-
-/** A group's members as bots (the ones still here), and its lead. */
-export function useGroupMembers(g: Group | undefined): { members: GroupBot[]; lead: GroupBot | undefined } {
-  const bots = useStore((s) => s.bots);
-  if (!g) return { members: [], lead: undefined };
-  const members = g.botIds.map((id) => bots.find((b) => b.id === id)).filter((b): b is NonNullable<typeof b> => !!b).map((b) => ({ id: b.id, name: b.name, chief: b.chief }));
-  return { members, lead: groupLead(g, members) };
 }

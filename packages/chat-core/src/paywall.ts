@@ -11,7 +11,7 @@
  * `paywallCss`: the same CSS for every surface, scoped to `.pw`). Pure: no DOM, no React.
  */
 import type { CloudCatalog, CloudInterval, CloudPlanId, CloudPrice, CloudShape } from '@appubot/protocol';
-import { CLOUD_TEAM_MEMBERS, cloudCreditUsd } from '@appubot/protocol';
+import { CLOUD_TEAM_MEMBERS } from '@appubot/protocol';
 import { fitsMembers, moneyText, upToMembersText, workPrice, YEARLY_SAVING } from './cloud';
 import { PROVIDER_MARKS } from './providers';
 

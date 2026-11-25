@@ -47,7 +47,7 @@ import {
   rpcErrorCode,
   type AuthMethodInfo,
 } from './errors';
-import { TurnAssembler, bridgeToolFromInput, bridgeToolName, extractConfig, mapCommands } from './normalize';
+import { TurnAssembler, bridgeToolFromInput, bridgeToolName, extractConfig } from './normalize';
 import type { ExtractedConfig } from './normalize';
 import { APPROVAL_MODES, agentModeFor, providerModes, providerSessionMeta } from './providers';
 import { APPUBOT_AI_PROVIDER_ID, CREDIT_MODELS_TEXT, creditModelAllowed, hasPermissionModes, type SessionMode, type SessionModel } from '@appubot/protocol';

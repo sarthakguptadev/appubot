@@ -112,7 +112,6 @@ export interface CorePaths {
 export interface ImageCodec {
   encode(base64: string, o: { maxDim: number; quality: number }): { data: string; mimeType: string; width: number; height: number } | null;
 }
-export const identityCodec: ImageCodec = { encode: () => null };
 
 /**
  * A picture of the whole screen for live view (`services/liveView.ts`) where the Mac's native helper isn't there (the

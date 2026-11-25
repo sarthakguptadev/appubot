@@ -4,7 +4,7 @@
  * reads what's over 5 min old) or the Refresh button is pressed (`'force'`). A computer from before plan limits
  * (`limitsSupported` false) is never asked.
  */
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { ProviderLimits } from '@appubot/protocol';
 import { call } from '../../lib/actions';
 import { getState, setState, useStore } from '../../lib/store';
@@ -31,12 +31,6 @@ export function refreshLimits(mode: 'stale' | 'force' = 'stale', ids?: string[])
     .finally(() => { if (inflight === p) inflight = null; });
   inflight = p;
   return p;
-}
-
-/** One agent's limits from the store (undefined for an agent without any, or a computer from before). */
-export function useLimits(providerId: string | undefined): ProviderLimits | undefined {
-  const limits = useStore((s) => s.limits);
-  return useMemo(() => (providerId ? limits.find((l) => l.providerId === providerId) : undefined), [limits, providerId]);
 }
 
 /** Every agent's limits, and a stale read asked once when the caller mounts (`on`). */

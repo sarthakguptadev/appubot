@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { computerDisplayName, repairActive } from '@appubot/chat-core';
 import type { CloudAccountView, CloudComputer, CloudTeamView } from '@appubot/protocol';
-import { ChevronDown, ChevronRight, Cloud, Laptop, LogOut, Users } from '../../../components/ui/icons';
+import { ChevronDown, ChevronRight, Cloud, Laptop, LogOut } from '../../../components/ui/icons';
 import {
   Badge, Button, Icon, SETTINGS_ROW, SETTINGS_ROW_DESCRIPTION, SETTINGS_ROW_TITLE, Spinner, cn, type BadgeTone,
 } from '../../../components/ui';
@@ -21,7 +21,7 @@ import { cloudPhase, hasPersonalPlan, ownComputerName, phaseWords, planName, tea
 import { useCloudRefresh } from '../../cloud/useCloudRefresh';
 import { YOUR_COMPUTER } from '../../cloud/names';
 import { ACCOUNT_COMPUTERS_TITLE, ACCOUNT_WHERE_TITLE, ACCOUNT_YOU_TITLE, FIX_COMPUTER_TITLE, settingAnchorId } from '../nav';
-import { SectionLoading, SettingRow, SettingsEmptyState, SettingsGroup } from './shared';
+import { SectionLoading, SettingsEmptyState, SettingsGroup } from './shared';
 
 /*
  * Settings › Account (the redesign, PROPOSAL.md §3.2): who you are (the email, Sign out), your computers (the AppuBot

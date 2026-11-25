@@ -9,7 +9,7 @@ import {
   IMPORT_FILE_NAME, IMPORT_SOURCES, IMPORT_TEXT_MAX, ImportError, importMemoryText, importName, importPrompt, importSource, importSummary, parseImport,
   type ImportBot, type ImportFile,
 } from '@appubot/chat-core';
-import { BOT_COLORS, BOT_SHAPES_V1, BotShape, type Bot } from '@appubot/protocol';
+import { BOT_COLORS, BOT_SHAPES_V1, type Bot } from '@appubot/protocol';
 import { BotAvatar, Button, Checkbox, Icon, Spinner, cn } from '../../../components/ui';
 import { AlertTriangle, ClipboardPaste, RotateCw, Upload } from '../../../components/ui/icons';
 import { CodeFrame } from '../../../components/rare/CodeBlock';

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { currentChat, type PermissionRequest } from '@appubot/protocol';
 import { screenWaitText, threadTitle } from '@appubot/chat-core';
-import { Bell, Clock, ComputerUse, Eye, MonitorSmartphone, Plus, ShieldQuestion, X } from '../../components/ui/icons';
+import { Bell, Clock, ComputerUse, Eye, MonitorSmartphone, Plus, ShieldQuestion } from '../../components/ui/icons';
 import { Button, EmptyState, Icon, cn } from '../../components/ui';
 import { openThread, sendMessage } from '../../lib/actions';
 import { rpc } from '../../lib/gateway';

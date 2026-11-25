@@ -5,12 +5,12 @@
  * preview. Saved characters rename or delete from their right-click, in place. A computer that predates characters
  * gets the shapes only.
  */
-import { useEffect, useMemo, useLayoutEffect, useRef, useState, type DragEvent, type KeyboardEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type DragEvent, type KeyboardEvent } from 'react';
 import { importSvg } from '@appubot/chat-core';
 import { BOT_COLORS, BotShape, botShapesOf, CHARACTER_NAME_MAX, CHARACTER_PROMPT_MAX, newId, type Character, type CharacterDraft } from '@appubot/protocol';
-import { ChevronLeft, ChevronRight, Image, Pencil, Plus, Sparkles, X } from '../../components/ui/icons';
+import { Image, Pencil, Sparkles, X } from '../../components/ui/icons';
 import { PanelTabs } from '../../components/ui/PanelTabs';
-import { BotAvatar, Button, Icon, Input, SETTINGS_CARD, Tabs, cn } from '../../components/ui';
+import { BotAvatar, Button, Icon, Input, SETTINGS_CARD, cn } from '../../components/ui';
 import { GatewayError, errorMessage, rpc } from '../../lib/gateway';
 import { setState, useStore } from '../../lib/store';
 import { SHAPE_LABEL } from './botForm';
@@ -24,9 +24,6 @@ export type LookTab = 'bot' | 'generate' | 'image';
 type Tab = LookTab;
 /** the look pickers' switcher (New bot, the side panel's avatar): the side panel's own tabs */
 export const LOOK_TABS: { id: LookTab; label: string }[] = [{ id: 'bot', label: 'Shapes' }, { id: 'generate', label: 'Generate' }, { id: 'image', label: 'Image' }];
-
-const TILE = 'ab-pill squircle flex size-10 shrink-0 items-center justify-center rounded-[12px] outline-none transition-colors duration-100 focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]';
-const tileOn = (on: boolean) => (on ? 'bg-[color-mix(in_srgb,var(--ab-fg)_9%,transparent)]' : 'hover:bg-[color-mix(in_srgb,var(--ab-fg)_4.5%,transparent)]');
 
 /** How long Generate may take on the computer (its own limit is 90 s), with room for the trip. */
 const GENERATE_WAIT_MS = 110_000;

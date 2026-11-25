@@ -4,7 +4,6 @@
   "private": true,
   "type": "module",
   "description": "Stdio MCP server spawned by ACP agents; forwards computer-use and user-facing tools to the AppuBot gateway.",
-  "main": "./src/index.ts",
   "bin": {
     "appubot-mcp-bridge": "./dist/bridge.mjs"
   },

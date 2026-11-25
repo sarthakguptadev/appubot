@@ -4,7 +4,6 @@
 import { motion } from 'motion/react';
 import type { ReactNode } from 'react';
 import type { IconComponent } from '../../components/ui/icons';
-import { Check } from '../../components/ui/icons';
 import { Icon, Spinner, cn } from '../../components/ui';
 
 /**
@@ -44,18 +43,5 @@ export function NoticeCard({ icon, tone, spinning, title, detail, children }: {
       </div>
       {children ? <div className="flex shrink-0 items-center gap-1">{children}</div> : null}
     </motion.div>
-  );
-}
-
-/** One thing the system has to allow, as a quiet chip: its icon until it's granted, then a small check. */
-export function NoticeChip({ ok, icon, label }: { ok: boolean; icon: IconComponent; label: string }) {
-  return (
-    <span className={cn(
-      'ab-pill squircle inline-flex h-[22px] items-center gap-1.5 rounded-[7px] bg-surface-2 px-2 text-note font-medium',
-      ok ? 'text-muted' : 'text-fg-2',
-    )}>
-      <Icon icon={ok ? Check : icon} size={12} strokeWidth={ok ? 2.4 : 2} className={cn('shrink-0', ok ? 'text-success' : 'text-muted')} />
-      {label}
-    </span>
   );
 }

@@ -10,8 +10,8 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { FormField, FormValue, Part } from '@appubot/protocol';
 import { appOn, isDirectApp } from '@appubot/protocol';
 import {
-  activeSlugs, appCardState, appCardText, botCardDoneText, fileValue, fileValueName, formAnswerRows, formChangeRows, formDeclinedText, formDeclineLabel, formEyebrow, formProblems,
-  codeLength, formSubmitLabel, formTitle, initialFormValues, isAllowCard, ratingMax, TELEGRAM_CARD_STEPS, cronToHuman, type FormValues,
+  activeSlugs, appCardState, appCardText, fileValue, fileValueName, formAnswerRows, formChangeRows, formDeclinedText, formDeclineLabel, formEyebrow, formProblems,
+  codeLength, formSubmitLabel, formTitle, initialFormValues, ratingMax, TELEGRAM_CARD_STEPS, cronToHuman, type FormValues,
 } from '@appubot/chat-core';
 import type { FormChange } from '@appubot/protocol';
 import { ArrowRight, CalendarClock, Check, Contact, Target, CreditCard, FileText, KeyRound, LockKeyhole, Paperclip, Plug, Send, ShieldCheck, Star, X } from '../../components/ui/icons';

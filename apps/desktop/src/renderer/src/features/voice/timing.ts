@@ -1,7 +1,6 @@
 // How long a spoken turn takes, stage by stage, from the moment voice mode notices you stopped (`endQuietMs` after
 // your last sound): your words heard, sent, the bot's first words, the first piece queued to read, its first sound.
-// One line per turn goes to the voice log (`voiceLog.ts`, always printed); with `appubot.voiceDebug` = 1 in
-// localStorage voice mode also shows the last turns, the last `KEEP` of which stay in memory for that readout.
+// One line per turn goes to the voice log (`voiceLog.ts`, always printed); the last `KEEP` turns stay in memory.
 import { create } from 'zustand';
 import { voiceLog } from './voiceLog';
 
@@ -23,14 +22,9 @@ export interface TurnTiming {
 }
 
 const KEEP = 20;
-const DEBUG_KEY = 'appubot.voiceDebug';
 const LABELS: Record<TimingMark, string> = { heard: 'heard', sent: 'sent', firstText: 'first words', firstPiece: 'first piece', firstAudio: 'first sound' };
 
 export const useVoiceTimings = create<{ turns: TurnTiming[] }>(() => ({ turns: [] }));
-
-export function voiceDebugOn(): boolean {
-  try { return localStorage.getItem(DEBUG_KEY) === '1'; } catch { return false; }
-}
 
 /** One turn as a line: each stage's time since the turn's end was noticed, and the whole wait since you stopped. */
 export function formatTiming(t: TurnTiming): string {

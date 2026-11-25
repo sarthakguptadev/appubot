@@ -32,11 +32,6 @@ export function remember(key: string, value: unknown, from = activeComputer()): 
   if (from === 'local') saveMac(next);
 }
 
-/** Forget this Mac's remembered answers (and the window's). */
-export function forgetMacRemembered(): void {
-  try { localStorage.removeItem(MAC_KEY); } catch { /* fine */ }
-}
-
 /**
  * The screen's data: the remembered answer at once (with when it was read), a fresh one asked for on mount and when
  * `key` changes, and `reload` for a Read again button. `loading` is true while an ask runs.

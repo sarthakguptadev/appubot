@@ -1,6 +1,6 @@
 import { X } from '../ui/icons';
 import { useEffect, useState } from 'react';
-import { Button, Tooltip, cn, type TabItem } from '../ui';
+import { Button, Tooltip, type TabItem } from '../ui';
 import { selectSelectedBot, selectSelectedThread, setState, ui, useStore, type RightTab } from '../../lib/store';
 import { BotHero } from '../../features/bots/BotHero';
 import { BotPanel } from '../../features/bots/BotPanel';

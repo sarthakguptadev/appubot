@@ -23,7 +23,7 @@ import {
   type MethodParams, type MethodResult, type Message, type Part, type Snapshot, type Thread,
 } from '@appubot/protocol';
 import { GatewayError, type ConnectionState, type GatewayLike } from '../lib/gateway';
-import { getState, setState, ui } from '../lib/store';
+import { setState, ui } from '../lib/store';
 import { openBot, openThread } from '../lib/actions';
 import { GROUP_ID, buildSeed, readOptions, seedFiles, seedMemory, type MockOptions } from './mockData';
 import { IDS } from './mockIds';

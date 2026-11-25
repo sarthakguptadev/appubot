@@ -8,7 +8,7 @@ import { currentGroupChat, groupChatOf, groupChats, stripMarkdown, type Bot, typ
 import { conversationSeparators, groupAuthorName, linkMentions, splitFileLines } from '@appubot/chat-core';
 import { Separator } from '../chat/Transcript';
 import { PathChip } from '../chat/MediaParts';
-import { ChevronDown, Copy, Monitor, MoreHorizontal, SquarePen, Trash2, Users } from '../../components/ui/icons';
+import { Copy, Monitor, MoreHorizontal, SquarePen, Trash2, Users } from '../../components/ui/icons';
 import { BotAvatar, Button, Icon, Menu, Tooltip, cn, type MenuItem } from '../../components/ui';
 import { GroupTile } from '../../components/layout/Sidebar';
 import { setState, ui, useStore } from '../../lib/store';

@@ -65,7 +65,6 @@ const START: Record<NetRoute, number> = { local: 0, lan: 0, tailscale: 1, connec
  * round trip (over AppuBot Connect's relay, half a second or more) and would otherwise cap the pictures a second
  */
 export const WINDOWS: Record<NetRoute, number> = { local: 2, lan: 2, tailscale: 3, connect: 4, cloud: 4 };
-export const WINDOW = WINDOWS.local;
 /** at most this many pictures a second to one device */
 const MAX_FPS = 20;
 /** how often a still screen is looked at again (the helper answers "unchanged" in a millisecond) */

@@ -15,7 +15,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { create } from 'zustand';
 import type { Part } from '@appubot/protocol';
-import { Dialog, Spinner } from '../../components/ui';
+import { Spinner } from '../../components/ui';
 import { localGatewayUrl, rpc } from '../../lib/gateway';
 import { LruStore } from '../../lib/lruStore';
 import { native } from '../../lib/native';
@@ -194,18 +194,6 @@ export function PagePart({ part }: { part: PagePart }) {
         <PageFrame src={src} title={part.title} fileId={tag} heightKey={key} />
       )}
     </div>
-  );
-}
-
-/**
- * A page opened by itself (the Files tab, where a visual is a tile): the same frame, live, in a dialog under its
- * title. The chat's own card has no such thing: there the page is already whole.
- */
-export function PageViewer({ file, title, onClose }: { file: { id: string; name: string } | null; title: string; onClose: () => void }) {
-  return (
-    <Dialog open={!!file} onClose={onClose} size="xl" title={title} bodyClassName="p-0!">
-      {file ? <PageViewerBody file={file} title={title} /> : null}
-    </Dialog>
   );
 }
 

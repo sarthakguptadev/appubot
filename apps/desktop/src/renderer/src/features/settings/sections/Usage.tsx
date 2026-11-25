@@ -9,7 +9,6 @@ import { GitHubActivity, type ActivityDay } from '../../../components/rare/GitHu
 import { call } from '../../../lib/actions';
 import { rpc } from '../../../lib/gateway';
 import { remember, useRemembered } from '../../../lib/remembered';
-import { THIS_MACHINE } from '../../../lib/platform';
 import { useThisComputer } from '../../cloud/thisComputer';
 import { useStore } from '../../../lib/store';
 import { AgentGlyph } from '../../providers/ModelPicker';
