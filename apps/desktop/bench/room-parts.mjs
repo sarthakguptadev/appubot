@@ -4,11 +4,11 @@
 // put the real messages back one by one.
 //
 //   node bench/room-parts.mjs <out dir> [--theme light|dark] [--size 1080x680] [--query <extra mock query>]
-import { createServer } from 'node:http';
-import { readFileSync, existsSync, writeFileSync, statSync, mkdirSync } from 'node:fs';
-import { dirname, extname, join, resolve } from 'node:path';
+import { existsSync, writeFileSync, mkdirSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Cdp, launchChrome, sleep } from './lib/cdp.mjs';
+import { serveDir } from './lib/serve.mjs';
 
 const DESKTOP = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = join(DESKTOP, 'bench/.out');
@@ -24,15 +24,7 @@ const TALL = 1900;
 const PORT = 5297;
 mkdirSync(outDir, { recursive: true });
 
-const TYPES = { '.js': 'text/javascript', '.css': 'text/css', '.html': 'text/html', '.svg': 'image/svg+xml', '.png': 'image/png', '.wasm': 'application/wasm', '.woff2': 'font/woff2', '.jpg': 'image/jpeg', '.json': 'application/json' };
-const server = createServer((req, res) => {
-  const url = new URL(req.url, 'http://x');
-  const file = join(OUT, decodeURIComponent(url.pathname));
-  if (!file.startsWith(OUT) || !existsSync(file) || statSync(file).isDirectory()) { res.writeHead(404); res.end(); return; }
-  res.writeHead(200, { 'content-type': TYPES[extname(file)] ?? 'application/octet-stream' });
-  res.end(readFileSync(file));
-});
-await new Promise((r) => server.listen(PORT, '127.0.0.1', r));
+const server = await serveDir(OUT, PORT);
 const chrome = await launchChrome({ width: W, height: TALL });
 const browser = await Cdp.attach((await (await fetch(`http://127.0.0.1:${chrome.port}/json/version`)).json()).webSocketDebuggerUrl);
 
