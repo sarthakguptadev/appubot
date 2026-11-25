@@ -27,7 +27,7 @@ import { MessageActions } from './MessageActions';
 import { ThinkingRow, ThoughtRow, ToolGroupRow, ToolRow } from './ToolRow';
 import {
   capOpenTools, chunkWork, answerOnly, formatTurnHeaderLabel, layoutTurn, liveAnswerParts, segmentFlow, turnFileChanges, turnHeader, type Chunk, type Indexed,
-  linkMentions, reactionBy, trailItems,
+  linkMentions, reactionBy,
 } from '@appubot/chat-core';
 import { useStore } from '../../lib/store';
 import { useMessagesTheme, useWorkTrail } from '../../lib/appearance';
@@ -296,8 +296,6 @@ function SettledTurn({ msg, ctx, cwd, endAt, fold, answers, trail }: { msg: Mess
   const label = formatTurnHeaderLabel(header);
   const answerText = L.answer.map((x) => (x.part.type === 'text' ? x.part.text : '')).filter((t) => t.trim()).join('\n\n');
   const folded = { ...ctx, folded: true };
-  // the work trail's status line says how the turn ended (Stopped, Interrupted …): no second line for it
-  const trailShown = useMemo(() => trail && trailItems(msg.parts, { settled: true }).length > 0, [trail, msg.parts]);
 
   return (
     <div className={cn('group/turn flex flex-col', answers ? 'pb-3.5' : 'pb-2')}>

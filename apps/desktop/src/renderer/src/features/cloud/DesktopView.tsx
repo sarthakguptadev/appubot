@@ -120,7 +120,6 @@ function Viewer({ teach, signIn }: { teach: boolean; signIn?: string }) {
   const open = useCloudDesktop((s) => s.open);
   const phase = useScreen((s) => s.phase);
   const why = useScreen((s) => s.why);
-  const speaks = useScreen((s) => s.speaks);
   const control = useScreen((s) => s.control);
   const mine = useScreen((s) => s.mine);
   const deadline = useScreen((s) => s.deadline);
