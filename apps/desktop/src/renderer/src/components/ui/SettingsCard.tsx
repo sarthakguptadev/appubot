@@ -1,7 +1,8 @@
-import type { ReactNode } from 'react';
+import { useRef, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react';
 import type { IconComponent } from './icons';
 import { cn } from './cn';
 import { Icon } from './Icon';
+import { radioTarget } from './menuKeys';
 import { SEGMENT, SEGMENT_SIZE, SEGMENT_TRACK, SegmentChip } from './Tabs';
 
 /*
@@ -79,8 +80,25 @@ export function CardSection({ title, action, children, className, bare }: {
 export function SettingsSegmented<T extends string>({ value, onChange, options, label }: {
   value: T; onChange: (v: T) => void; options: { value: T; label: string }[]; label: string;
 }) {
+  const groupRef = useRef<HTMLDivElement>(null);
+  const onSegmentKey = (e: ReactKeyboardEvent) => {
+    const at = options.findIndex((o) => o.value === value);
+    const next = radioTarget(e.key, at, options.length);
+    if (next === null) return;
+    const target = options[next];
+    if (!target) return;
+    e.preventDefault();
+    onChange(target.value);
+    groupRef.current?.querySelectorAll('button')[next]?.focus();
+  };
   return (
-    <div role="radiogroup" aria-label={label} className={cn(SEGMENT_TRACK, 'flex w-full sm:inline-flex sm:w-auto')}>
+    <div
+      ref={groupRef}
+      role="radiogroup"
+      aria-label={label}
+      className={cn(SEGMENT_TRACK, 'flex w-full sm:inline-flex sm:w-auto')}
+      onKeyDown={onSegmentKey}
+    >
       {options.map((o) => {
         const active = o.value === value;
         return (
@@ -89,6 +107,7 @@ export function SettingsSegmented<T extends string>({ value, onChange, options, 
             type="button"
             role="radio"
             aria-checked={active}
+            tabIndex={active ? 0 : -1}
             className={cn(SEGMENT, SEGMENT_SIZE.md, 'flex-1 sm:flex-none', active ? 'text-fg' : 'text-muted hover:text-fg')}
             onClick={() => onChange(o.value)}
           >
