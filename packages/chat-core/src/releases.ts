@@ -9,6 +9,66 @@ import type { ReleaseNotes } from './whatsNew';
  */
 export const RELEASES: readonly ReleaseNotes[] = [
   {
+    version: '2026.1126.1',
+    features: [
+      {
+        id: 'mid-job-notes',
+        title: 'Bots keep you posted',
+        description: 'During a long job a bot now tells you what it is doing in a short line or two, and answers a question you ask mid-job without dropping the job. Where an AI can’t read a message mid-job, yours waits until it finishes instead of cutting the job short, and the chat says so.',
+      },
+      {
+        id: 'follow-ups',
+        title: 'Next steps under a reply',
+        description: 'The suggestions under a bot’s reply are no longer the same five every time: you get two to five that still apply. A bot can add next steps of its own too, such as “Email it to the team”. Tap one to send it.',
+      },
+      {
+        id: 'several-accounts',
+        title: 'Several accounts of one app',
+        description: 'Connect two Gmails, or a second account of any app, and the first one stays. Both are listed under Connect apps, you choose which is the default, and you can tell a bot which account to use.',
+      },
+      {
+        id: 'apps-popup',
+        title: 'Connect apps opens over your chat',
+        description: 'Connect apps is now a popup instead of a separate page, so your chat stays where it was. Your connected apps are inside it, one click away.',
+      },
+      {
+        id: 'opencode-tools',
+        title: 'OpenCode bots get AppuBot’s tools',
+        description: 'Bots on OpenCode 2.2 or later can now use the computer, send files and pages to the chat, ask you questions, and reach your connected apps, the vault, memory and goals. OpenCode 2 had hidden these from the bot.',
+      },
+      {
+        id: 'round-rows',
+        title: 'Rows and menus are round too',
+        description: 'Rows, menus and icon tiles now match the round buttons: pills and circles with Shape set to Round, and as before with Squircle. Small boxes with tight corners now have the same corner as cards.',
+      },
+      {
+        id: 'segmented-keys',
+        title: 'Arrow keys in Settings',
+        description: 'In Settings, the arrow keys move between the choices of a setting, and Home and End jump to the first and the last.',
+      },
+      {
+        id: 'steadier-connect',
+        title: 'Quicker to notice a lost connection',
+        description: 'After your computer wakes or changes network, AppuBot Connect notices a dead connection within seconds instead of sometimes taking most of a minute. When bots hand a task back and forth quickly, their messages stay in the order they were written.',
+      },
+      {
+        id: 'cloud-payment-day',
+        title: 'A payment that didn’t go through',
+        description: 'When a payment for AppuBot Cloud doesn’t go through, the app now says your bots and files are kept for one day and then deleted, with the date.',
+      },
+      {
+        id: 'clearer-words',
+        title: 'Clearer words',
+        description: 'Thirteen apps under Connect apps have new descriptions, and the note for a thread that has grown too long for its model says more plainly what to do.',
+      },
+      {
+        id: 'apache-licence',
+        title: 'Open source under Apache 2.0',
+        description: 'AppuBot’s code, every version from the first release on, is now available under the Apache License 2.0.',
+      },
+    ],
+  },
+  {
     version: '2026.1124.2',
     features: [
       {
