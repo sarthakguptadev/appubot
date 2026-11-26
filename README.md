@@ -412,7 +412,6 @@ More answers in the <a href="https://appubot.com/faq">FAQ</a>.
 | Signed and notarized | ✅ | ❌ macOS and Windows warn you about an unknown developer |
 | Updates itself | ✅ | ❌ pull, reinstall and rebuild for every release |
 | Mac permissions | Granted once | May need granting again after a rebuild |
-| Apps directory | Refreshed every release | The copy in the source |
 | Installers for Mac, Windows and Linux | ✅ all six | Only what you package and sign yourself |
 | Help from us | ✅ | Best effort |
 

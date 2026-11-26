@@ -1,6 +1,7 @@
 /**
  * Builds the apps directory shipped with the app (src/main/core/services/composioDirectory.json) from Composio's
- * platform API with the maker's own key. Run before every release (the release skill does):
+ * platform API with the maker's own key. Run by hand when the list should change, then commit the file: releases ship
+ * it as it is and never fetch it.
  *   pnpm -C apps/desktop apps-directory
  * The key (ak_…, dashboard.composio.dev → Platform → API Keys) is kept in the login Keychain, never in the repo:
  *   security add-generic-password -U -a "$USER" -s appubot-composio-api-key -w

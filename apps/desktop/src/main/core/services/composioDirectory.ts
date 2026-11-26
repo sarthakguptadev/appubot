@@ -1,7 +1,8 @@
 /**
- * The apps directory (Composio's toolkits), built before a release with the maker's own Composio key
- * (`pnpm -C apps/desktop apps-directory`, scripts/composio-directory.mts) and shipped in the app as
- * composioDirectory.json: users sign in to their own account, which has no API to list the directory.
+ * The apps directory (Composio's toolkits), shipped in the app as composioDirectory.json exactly as it is in the source:
+ * neither a release nor the app fetches it. It is refreshed by hand with the maker's own Composio key
+ * (`pnpm -C apps/desktop apps-directory`, scripts/composio-directory.mts) and committed; users sign in to their own
+ * account, which has no API to list the directory.
  */
 import type { AppAuthKind, AppCategory, AppToolkit } from '@appubot/protocol';
 import { KEY_SCHEMES, OAUTH_SCHEMES, type ComposioApi, type ComposioToolkitInfo } from './composioApi';

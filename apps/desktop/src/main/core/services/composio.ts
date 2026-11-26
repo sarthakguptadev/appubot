@@ -1,6 +1,6 @@
 /**
  * Apps: the user's own Composio account ("Composio for You"), signed in with OAuth in the browser. The directory of
- * toolkits ships with the app (composioDirectory.json, built before a release with the maker's key). Connections are
+ * toolkits ships with the app as it is in the source (composioDirectory.json; nothing fetches it). Connections are
  * made once for every bot, through Composio's MCP (`COMPOSIO_MANAGE_CONNECTIONS`, its link page in the browser), and each bot reaches the connected
  * apps it may use (`appsOn`: all of them unless turned off for that bot) through the bridge's apps tools, which come
  * here: search, input schemas and execute, filtered and checked against that bot's apps on every call. The tokens

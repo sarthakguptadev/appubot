@@ -67,39 +67,8 @@ jobs:
           fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
-  # the apps directory shipped with the app, listed fresh from Composio with the maker's key (secret COMPOSIO_API_KEY);
-  # if that fails, the builds keep the one in the source
-  directory:
-    needs: prepare
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          ref: ${{ inputs.ref }}
-          persist-credentials: false
-          show-progress: false
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v7
-        with: { node-version: 24, cache: pnpm }
-      - env:
-          ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
-        run: pnpm install --frozen-lockfile --filter @appubot/desktop... > "$RUNNER_TEMP/install.log" 2>&1 || { echo "::warning::Couldn't install for the apps directory"; exit 1; }
-      - env:
-          COMPOSIO_API_KEY: ${{ secrets.COMPOSIO_API_KEY }}
-        run: |
-          if [ -z "$COMPOSIO_API_KEY" ]; then echo "::warning::COMPOSIO_API_KEY isn't set: the apps directory in the source is used"; exit 1; fi
-          pnpm -C apps/desktop apps-directory > "$RUNNER_TEMP/directory.log" 2>&1 || { echo "::warning::Couldn't list Composio's apps: the apps directory in the source is used"; exit 1; }
-          tail -n 1 "$RUNNER_TEMP/directory.log" | sed 's| → .*||'
-      - uses: actions/upload-artifact@v7
-        with:
-          name: apps-directory
-          retention-days: 1
-          if-no-files-found: error
-          path: apps/desktop/src/main/core/services/composioDirectory.json
-
   build:
-    needs: [prepare, directory]
+    needs: prepare
     timeout-minutes: 90
     strategy:
       fail-fast: true
@@ -156,11 +125,6 @@ jobs:
         run: |
           swift build -c release -q > "$RUNNER_TEMP/swift.log" 2>&1 || { cat "$RUNNER_TEMP/swift.log"; exit 1; }
           codesign --force --sign - .build/release/appubot-helper .build/release/appubot-notify
-      - uses: actions/download-artifact@v8
-        continue-on-error: true
-        with:
-          name: apps-directory
-          path: apps/desktop/src/main/core/services
       # the build's last step fetches Electron's release from GitHub for the Chromium notices, which answers 504 now and then
       # our releases only send usage analytics: the PostHog key is built in here, never kept in the source
       - env:
@@ -240,7 +204,7 @@ jobs:
           fetch-depth: 0
           sparse-checkout: apps/desktop/scripts/merge-update-info.mjs
           sparse-checkout-cone-mode: false
-      # the builds' installers only (the apps directory artifact went into the builds, not the release)
+      # the builds' installers only
       - uses: actions/download-artifact@v8
         with: { path: dist, pattern: '{mac,win,linux}-*' }
       # one update file per OS: latest-mac.yml lists both Macs, latest.yml both .exe (x64 first); the dmg blockmaps stay
