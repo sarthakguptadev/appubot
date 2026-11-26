@@ -419,15 +419,16 @@ function ConnectedLink() {
   const { toolkits } = useConnectedApps();
   const here = useConnectedView();
   if (here || !conns?.length) return null;
-  const working = activeSlugs(conns).length;
+  const working = activeSlugs(conns);
   return (
     <button
       type="button"
       onClick={() => ui.openApps('connected')}
       className="no-drag ab-pill squircle -mt-0.5 inline-flex h-7 shrink-0 items-center gap-2 rounded-control-sm pr-1.5 pl-2 text-ui text-muted transition-colors hover:bg-surface-2 hover:text-fg focus-visible:outline-none focus-visible:shadow-[inset_0_0_0_1.5px_color-mix(in_srgb,var(--ab-fg)_35%,transparent)]"
     >
-      <AppLogoStack toolkits={toolkits} ring="var(--ab-content)" />
-      <span className="tabular-nums">{working ? `${working} connected` : 'Signed out'}</span>
+      {/* the logos of the apps it counts: a signed-out one shows only when nothing else is connected */}
+      <AppLogoStack toolkits={working.length ? toolkits.filter((t) => working.includes(t.slug)) : toolkits} ring="var(--ab-content)" />
+      <span className="tabular-nums">{working.length ? `${working.length} connected` : 'Signed out'}</span>
       <Icon icon={ChevronRight} size={14} />
     </button>
   );
