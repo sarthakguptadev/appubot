@@ -148,14 +148,17 @@ describe('a streaming reply over AppuBot Connect', () => {
     const { sid, messageId } = await startTurn(legacy);
     await sleep(WINDOW * 2);
 
-    // a reply streaming at an agent's pace (a few tokens every 8 ms), the context ring and a tool step moving with it
+    // a reply streaming at an agent's pace (a few tokens every 8 ms), the context ring and a tool step moving with it.
+    // It returns how much later than asked its longest 8 ms sleep woke: how long this process stood still while it
+    // streamed (a CI runner that stops for a moment), which every timer here, the outbox's included, waited out too
     const sentAt = new Map<number, number>();
     let n = 0;
     let used = 10_000;
     const op = runtime.hooks.onTurnOp.bind(runtime.hooks, sid);
-    const stream = async (ms: number, tick?: () => void) => {
+    const stream = async (ms: number, tick?: () => void): Promise<number> => {
       const end = performance.now() + ms;
       let k = 0;
+      let stood = 0;
       while (performance.now() < end) {
         sentAt.set(n, performance.now());
         op({ op: 'delta', partIndex: 1, partType: 'text', delta: `t${n};` });
@@ -164,14 +167,17 @@ describe('a streaming reply over AppuBot Connect', () => {
         if (k % 30 === 0) op({ op: 'usage', used: (used += 2_000), size: 200_000 });
         if (k % 60 === 0) op({ op: 'part', partIndex: 2, part: { type: 'tool_call', toolCallId: 'tool', title: `Step ${k}`, kind: 'read', status: 'in_progress', content: [], locations: [] } });
         tick?.();
+        const asleep = performance.now();
         await sleep(8);
+        stood = Math.max(stood, performance.now() - asleep - 8);
       }
+      return stood;
     };
     const mark = () => ({ legacy: legacy.frames.length, batched: batched.frames.length, local: local.frames.length, t: performance.now() });
 
     // 1. streaming alone: frames per second, and how long each token took to arrive
     const a = mark();
-    await stream(2_000);
+    const stood = await stream(2_000);
     await sleep(WINDOW + 60);
     const b = mark();
     const secs = (b.t - a.t) / 1000;
@@ -195,9 +201,11 @@ describe('a streaming reply over AppuBot Connect', () => {
     expect(eventsIn(legacy, a.legacy, b.legacy)).toBe(b.legacy - a.legacy);
     expect(b.batched - a.batched).toBeLessThanOrEqual(Math.ceil((b.t - a.t) / WINDOW) + 1);
     expect(b.batched - a.batched).toBeLessThan(b.legacy - a.legacy);
-    // what batching adds is the window at most (timers on a busy test machine get some slack at the tail)
+    // what batching adds is the window at most (timers on a busy test machine get some slack at the tail). A token
+    // queued just before the process stood still waits that long for its window to end, while the older phone may
+    // already have had it, so the tail also allows the longest time this process stood still while it streamed
     expect(pct(lat.batched, 50) - pct(lat.legacy, 50)).toBeLessThanOrEqual(WINDOW);
-    expect(pct(lat.batched, 99) - pct(lat.legacy, 99)).toBeLessThanOrEqual(WINDOW + 40);
+    expect(pct(lat.batched, 99) - pct(lat.legacy, 99)).toBeLessThanOrEqual(WINDOW + 40 + stood);
 
     // 2. while it streams: answers come as fast as before, live pictures at once
     const pings: Record<'legacy' | 'batched', number[]> = { legacy: [], batched: [] };
