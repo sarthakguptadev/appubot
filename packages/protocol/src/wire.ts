@@ -717,6 +717,8 @@ export const Methods = {
    */
   'apps.connect': { params: z.object({ slug: z.string().min(1), open: z.enum(['computer', 'caller']).optional() }), result: z.object({ redirectUrl: z.string().optional() }) },
   'apps.disconnect': { params: z.object({ connectedAccountId: z.string().min(1), slug: z.string().min(1) }), result: z.object({ ok: z.literal(true) }) },
+  /** of an app with several accounts, the one the bots' calls use when they name none (`apps.updated` follows) */
+  'apps.setDefault': { params: z.object({ connectedAccountId: z.string().min(1), slug: z.string().min(1) }), result: z.object({ ok: z.literal(true) }) },
 
   /* devices & pairing */
   'devices.list': { params: Empty, result: z.array(DeviceSchema) },

@@ -215,12 +215,37 @@ export async function startConnect(t: AppToolkit): Promise<boolean> {
   return !!res;
 }
 
+/** What an account of an app is called where they are listed: who it is, else the name it was given, else its place. */
+export function accountName(c: Pick<AppConnection, 'label' | 'alias'>, index: number): string {
+  return c.label ?? c.alias ?? `Account ${index + 1}`;
+}
+
+/** Of an app with several accounts, make this one the one the bots use when they aren't told which. */
+export async function makeDefault(t: Pick<AppToolkit, 'name'>, c: AppConnection): Promise<void> {
+  if (await call('apps.setDefault', { connectedAccountId: c.connectedAccountId, slug: c.slug }, { errorTitle: `Couldn't change ${t.name}'s default account` })) await loadConnections();
+}
+
+/** Remove one account of an app that has several; the others stay. */
+export function removeAccount(t: Pick<AppToolkit, 'name'>, c: AppConnection, name: string): void {
+  confirm({
+    title: `Remove ${name}?`,
+    body: `Your bots lose access to this ${t.name} account, and so does anything else using your Composio account. ${t.name}'s other accounts stay connected.`,
+    confirmLabel: 'Remove',
+    danger: true,
+    onConfirm: async () => {
+      await call('apps.disconnect', { connectedAccountId: c.connectedAccountId, slug: c.slug }, { errorTitle: `Couldn't remove ${name}` });
+      await loadConnections();
+    },
+  });
+}
+
 export function disconnect(t: Pick<AppToolkit, 'name'>, conns: AppConnection[]): void {
+  const several = conns.filter((c) => c.status === 'ACTIVE').length > 1 ? `${conns.length === 2 ? 'both' : `all ${conns.length}`} ${t.name} accounts` : t.name;
   confirm({
     title: `Disconnect ${t.name}?`,
     body: conns.every((c) => isDirectApp(c.slug))
       ? `Your bots lose access to ${t.name}. You can add it again any time.`
-      : `Your bots lose access to ${t.name}, and so does anything else using your Composio account. You can add it again any time.`,
+      : `Your bots lose access to ${several}, and so does anything else using your Composio account. You can add it again any time.`,
     confirmLabel: 'Disconnect',
     danger: true,
     onConfirm: async () => {

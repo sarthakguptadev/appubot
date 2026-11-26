@@ -43,8 +43,8 @@ export interface MockOptions {
   groupsFilm: boolean;
   /** signed in to Composio (`?apps=onboarding` starts signed out) */
   appsKey: boolean;
-  /** `?apps=none`: nothing connected yet; `?apps=many`: fifteen apps connected */
-  appsSeed?: 'none' | 'many';
+  /** `?apps=none`: nothing connected yet; `?apps=many`: fifteen apps connected; `?apps=accounts`: two Gmail accounts and three Google Calendars */
+  appsSeed?: 'none' | 'many' | 'accounts';
   /** `?settings=providers` (any section) opens Settings there */
   settings?: SettingsSection;
   /** `?threads=1` opens the side panel on its Threads tab, with one thread unread */
@@ -110,7 +110,7 @@ export function readOptions(): MockOptions {
     groupsPinned: q.get('groups') === 'pinned',
     groupsFilm: q.get('groups') === 'film',
     appsKey: q.get('apps') !== 'onboarding',
-    appsSeed: q.get('apps') === 'none' ? 'none' : q.get('apps') === 'many' ? 'many' : undefined,
+    appsSeed: (['none', 'many', 'accounts'] as const).find((x) => x === q.get('apps')),
     settings: SECTIONS.find((x) => x === q.get('settings')) ?? (q.get('settings') === 'cloud' ? 'billing' : undefined),
     threads: q.get('threads') === '1',
     editor: q.get('editor') === '1',

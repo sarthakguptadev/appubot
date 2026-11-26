@@ -390,6 +390,7 @@ export function buildHandlers(ctx: CoreCtx): Handlers {
     'apps.connections': (_p, cx) => appsOf(cx).connections(),
     'apps.connect': (p, cx) => appsOf(cx).connect(p.slug, p.open === 'caller'),
     'apps.disconnect': (p, cx) => appsOf(cx).disconnect(p.connectedAccountId, p.slug),
+    'apps.setDefault': (p, cx) => appsOf(cx).setDefault(p.connectedAccountId, p.slug),
 
     'devices.list': () => s.devices.list(),
     'devices.revoke': (p, cx) => {
