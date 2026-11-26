@@ -391,7 +391,12 @@ export const Methods = {
     }).refine((p) => !!(p.botId || p.threadId), { message: 'botId or threadId is required' }),
     result: z.object({ userMessage: MessageSchema, agentMessageId: Id }),
   },
-  'chat.cancel': { params: z.object({ threadId: Id }), result: z.object({ ok: z.literal(true) }) },
+  /**
+   * Stop: the running turn ends and so does every message waiting behind it. `keepQueued`: only the running turn ends,
+   * and what waits behind it runs next (the chat's "Stop and read now" under a message a busy bot hasn't read yet);
+   * with nothing waiting it does nothing.
+   */
+  'chat.cancel': { params: z.object({ threadId: Id, keepQueued: z.boolean().optional() }), result: z.object({ ok: z.literal(true) }) },
   /** `clientId`: as for `chat.send`, an answer sent again after a dropped connection is taken once (and answers ok) */
   'chat.answer': { params: z.object({ questionId: Id, answer: z.string(), clientId: z.string().max(100).optional() }), result: z.object({ ok: z.literal(true) }) },
   /**

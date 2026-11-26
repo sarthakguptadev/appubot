@@ -8,7 +8,9 @@ import { memo, useEffect, useMemo, useState } from 'react';
 import type { Message, Part } from '@appubot/protocol';
 import { AlertCircle, Bot as BotIcon, Clock, Repeat } from '../../components/ui/icons';
 import { Icon } from '../../components/ui';
-import { SENDING_QUIET_MS, linkMentions, sendLook, sentBubble, splitFileLines } from '@appubot/chat-core';
+import { SENDING_QUIET_MS, WAITING_QUIET_MS, linkMentions, sendLook, sentBubble, splitFileLines } from '@appubot/chat-core';
+import { call } from '../../lib/actions';
+import { useT } from '../../lib/i18n';
 import { useStore } from '../../lib/store';
 import { useMessagesTheme } from '../../lib/appearance';
 import { Bubble } from './Bubble';
@@ -73,13 +75,35 @@ function SendState({ q, look }: { q: QueuedSend; look: 'quiet' | 'pending' | 'fa
 }
 
 /**
+ * Under a message the bot hasn't read yet because it is still on the job before it (an agent that can't take a message
+ * into its running turn; chat-core `waitingSends`): it says so once it has waited a moment, and offers to end the job
+ * in hand so it is read now (`chat.cancel` `keepQueued`; the composer's Stop would drop the message too). The look is
+ * `SendState`'s.
+ */
+function WaitsForBot({ threadId, botName }: { threadId: string; botName?: string }) {
+  const t = useT();
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setShown(true), WAITING_QUIET_MS);
+    return () => clearTimeout(timer);
+  }, []);
+  if (!shown) return null;
+  return (
+    <div className="flex min-h-6 items-center justify-end gap-2 pr-0.5 text-[11px] text-muted" role="status">
+      <span className="inline-flex items-center gap-1"><Icon icon={Clock} size={11} />{botName || 'Your bot'} will read this when it finishes</span>
+      <button type="button" className="font-medium text-fg-2 underline-offset-2 hover:underline" onClick={() => void call('chat.cancel', { threadId, keepQueued: true }, { errorTitle: t('composer.stopFailed') })}>Stop and read now</button>
+    </div>
+  );
+}
+
+/**
  * Your bubble: round all over, a text message's padding and type (a group room's are the same:
  * features/groups/GroupView.tsx); the fill and ink come from `sentBubble`, set as `backgroundColor` so the sheen over it
  * (index.css `.chat-bubble-sent`) stays.
  */
 export const SENT_BUBBLE = 'chat-bubble-sent squircle w-max min-w-9 rounded-[18px] px-3 py-[7px] text-lead leading-5';
 
-export const UserMessage = memo(function UserMessage({ msg, botName }: { msg: Message; botName?: string }) {
+export const UserMessage = memo(function UserMessage({ msg, botName, waiting }: { msg: Message; botName?: string; /** the bot is still on the job before it and reads it after (`WaitsForBot`) */ waiting?: boolean }) {
   // a cloud computer's pictures come through its channel: re-render once their bytes are here
   useCloudFiles((s) => s.rev);
   const botColor = useStore((s) => s.bots.find((b) => b.id === s.threads.find((t) => t.id === msg.threadId)?.botId)?.color);
@@ -151,7 +175,7 @@ export const UserMessage = memo(function UserMessage({ msg, botName }: { msg: Me
             {themed ? <ReactionChip msg={msg} by="bot" botName={botName} /> : null}
           </div>
         ) : null}
-        {pending && look ? <SendState q={pending} look={look} /> : null}
+        {pending && look ? <SendState q={pending} look={look} /> : waiting ? <WaitsForBot threadId={msg.threadId} botName={botName} /> : null}
       </div>
     </div>
   );

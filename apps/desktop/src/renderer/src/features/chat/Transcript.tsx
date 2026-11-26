@@ -6,7 +6,7 @@
 // A routine's prompt is one line, and its runs with nothing to say fold into one (chat-core `foldRoutineRuns`).
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { Message } from '@appubot/protocol';
-import { conversationSeparators, foldRoutineRuns, routineOf, type TranscriptItem } from '@appubot/chat-core';
+import { conversationSeparators, foldRoutineRuns, routineOf, waitingSends, type TranscriptItem } from '@appubot/chat-core';
 import { ArrowDown } from '../../components/ui/icons';
 import { Icon, Spinner, cn } from '../../components/ui';
 import { rpc } from '../../lib/gateway';
@@ -34,6 +34,8 @@ const GROW = 30;
 /** start loading older messages this far before the top comes into view */
 const PRELOAD_PX = 800;
 const EMPTY: string[] = [];
+/** how far back from the chat's end a message still waiting for the bot can be: the reply being written and what was sent after it */
+const WAITING_TAIL = 12;
 
 /** A message you just sent from this Mac; only those animate in (Synara's chat-message-send-enter). */
 const isLocalSend = (m: Message | undefined) => m?.role === 'user' && m.via === 'desktop';
@@ -51,6 +53,12 @@ const Row = memo(function Row({ threadId, id, botName, cwd, animate, separator }
   threadId: string; id: string; botName: string; cwd?: string; animate: boolean; separator: string | null;
 }) {
   const msg = useStore((s) => s.convo[threadId]?.byId[id]);
+  // a message of yours the bot hasn't read yet because it is still on the job before it (only the chat's last few can be)
+  const waiting = useStore((s) => {
+    const c = s.convo[threadId];
+    const tail = c?.ids.slice(-WAITING_TAIL);
+    return !!c && !!tail?.includes(id) && c.byId[id]?.role === 'user' && waitingSends(tail.flatMap((x) => c.byId[x] ?? [])).includes(id);
+  });
   const [enter] = useState(() => animate && isLocalSend(msg));
   if (!msg) return null;
   // Synara's row: px-1 inside the 46rem column; a sent message pb-3.5, the same gap a settled reply leaves under itself
@@ -60,7 +68,7 @@ const Row = memo(function Row({ threadId, id, botName, cwd, animate, separator }
       {separator ? <Separator label={separator} /> : null}
       <div data-message-id={id} className={cn('flex flex-col px-1', msg.role === 'user' && 'pb-3.5', enter && 'chat-message-send-enter')}>
         {msg.role === 'agent' ? <AgentTurn msg={msg} botName={botName} cwd={cwd} />
-          : msg.via === 'routine' ? <RoutinePromptLine msg={msg} botName={botName} /> : <UserMessage msg={msg} botName={botName} />}
+          : msg.via === 'routine' ? <RoutinePromptLine msg={msg} botName={botName} /> : <UserMessage msg={msg} botName={botName} waiting={waiting} />}
       </div>
     </>
   );

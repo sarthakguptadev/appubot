@@ -145,7 +145,8 @@ describe('gateway', () => {
     expect(got.thread.title).toBe('Fake title');
     expect(got.thread.acpSessionId).toBeTruthy();
     expect(got.thread.commands.map((c) => c.name)).toContain('compact');
-    expect(got.thread.lastMessagePreview).toContain('Hello world');
+    // the chat's line is what the reply ended on, not what it wrote before its tool call (protocol `messagePreview`)
+    expect(got.thread.lastMessagePreview).toBe('Done.');
     // bridge env handed to the agent
     const mcp = runtime.created[0]!.mcpServers![0]! as McpServerStdio;
     expect(mcp.args).toEqual(['/nonexistent/bridge.mjs']);

@@ -116,9 +116,22 @@ export function stripMarkdown(md: string): string {
  */
 export const shownPreview = (preview: string | undefined): string => (preview && !preview.startsWith('⚙ ') ? preview : '');
 
+/**
+ * A message's words for its line. A bot's reply is read by what it ended on (its text after the last tool call), not
+ * what it wrote while working or sent along the way (`said`): a "done" notice says the answer, never "On it". One that
+ * ended on a tool call is read by the last thing it wrote; one that only sent messages, by those.
+ */
+function previewWords(msg: Message): string {
+  const texts = (parts: Part[], said: boolean): string[] => parts.flatMap((p) => (p.type === 'text' && !!p.said === said && p.text.trim() ? [p.text] : []));
+  let lastTool = -1;
+  if (msg.role === 'agent') msg.parts.forEach((p, i) => { if (p.type === 'tool_call') lastTool = i; });
+  const written = texts(msg.parts.slice(0, lastTool + 1), false);
+  return texts(msg.parts.slice(lastTool + 1), false).join(' ') || written[written.length - 1] || texts(msg.parts, true).join(' ');
+}
+
 /** A message's line in lists: its words, else a file, page or voice note it carries; a tool call alone has none. */
 export function messagePreview(msg: Message, max = 120): string {
-  const t = stripMarkdown(msg.parts.filter((p) => p.type === 'text').map((p) => (p as { text: string }).text).join(' ')).replace(/\s+/g, ' ').trim();
+  const t = stripMarkdown(previewWords(msg)).replace(/\s+/g, ' ').trim();
   if (t) return t.length > max ? t.slice(0, max - 1) + '…' : t;
   const file = msg.parts.find((p) => p.type === 'file') as Extract<Part, { type: 'file' }> | undefined;
   if (file) return `📎 ${file.file.name}`;
