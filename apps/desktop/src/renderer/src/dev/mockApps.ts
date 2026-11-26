@@ -3,7 +3,7 @@
  * SVG marks as data URIs; some have none, to show the initial), two connections and an expired one, and sign-ins
  * that finish by themselves after a moment. Which bot may use what is the bots' own `appsOff` (Ledger has GitHub off;
  * `bots.update` changes it). `?page=apps` opens the popup, `?apps=onboarding` starts signed out of Composio (signing in
- * "finishes" by itself a moment later), `?apps=none` with nothing connected, `?apps=many` with fifteen and
+ * "finishes" by itself a moment later), `?apps=none` with nothing connected, `?apps=one` with one Gmail, `?apps=many` with fifteen and
  * `?apps=accounts` with two Gmail accounts and three Google Calendars (adding an app that is connected adds an account).
  */
 import { isDirectApp, newId, type AppCategory, type AppConnection, type AppToolkit, type AppsStatus } from '@appubot/protocol';
@@ -96,7 +96,7 @@ export function createAppsHandlers(g: MockGateway): Pick<Handlers, 'apps.status'
   const pending = new Set<string>();
   const MANY = ['gmail', 'github', 'googlecalendar', 'slack', 'linear', 'googledrive', 'figma', 'stripe', 'hubspot', 'posthog', 'zoom', 'jira', 'dropbox', 'attio'];
   const account = (slug: string, n: number, label: string, status = 'ACTIVE'): AppConnection => ({ slug, connectedAccountId: `ca_${slug}_${n}`, status, label });
-  let connections: AppConnection[] = g.opts.appsSeed === 'none' ? [] : g.opts.appsSeed === 'accounts' ? [
+  let connections: AppConnection[] = g.opts.appsSeed === 'none' ? [] : g.opts.appsSeed === 'one' ? [account('gmail', 1, 'sarthak@example.com')] : g.opts.appsSeed === 'accounts' ? [
     account('gmail', 1, 'sarthak@appubot.com'), account('gmail', 2, 'sarthak.personal@gmail.com'),
     { slug: 'github', connectedAccountId: 'ca_github', status: 'ACTIVE', label: 'sarthakguptadev' },
     account('googlecalendar', 1, 'sarthak@appubot.com'), account('googlecalendar', 2, 'sarthak.personal@gmail.com'), account('googlecalendar', 3, 'family@gmail.com', 'EXPIRED'),

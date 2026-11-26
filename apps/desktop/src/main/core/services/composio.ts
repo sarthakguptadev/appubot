@@ -461,6 +461,12 @@ export class ComposioService {
     return this.listJob;
   }
 
+  /** The accounts listed at least once since launch (`warm` starts it; whoever needs them first waits for it). */
+  private async listedOnce(): Promise<void> {
+    if (!this.auth() || this.listedAt) return;
+    await this.refresh().catch((e: unknown) => this.ctx.log.warn('apps: could not check the connections', errMsg(e)));
+  }
+
   /** `refresh` while the Apps page shows what was listed before: `apps.updated` brings it the new list if anything changed. */
   private async refreshBehind(): Promise<void> {
     const before = JSON.stringify([...this.accounts]);
@@ -543,7 +549,12 @@ export class ComposioService {
     if (known) throw new RpcError('unsupported', cantConnectText(name, known));
     // a second click starts the sign-in over
     this.pending.get(slug)?.stop();
-    const r = await this.call('COMPOSIO_MANAGE_CONNECTIONS', { toolkits: [{ name: slug, action: 'add' }] });
+    // the accounts it has, even right after launch, before `warm` has listed them
+    await this.listedOnce();
+    // another account of an app that works (a second Gmail): Composio answers a plain `add` for it with the app's status
+    // and no link, so the new account is asked for under a name of its own
+    const alias = workingAccounts(this.accounts.get(slug)).length || this.file.get().connected?.includes(slug) ? this.newAlias(slug) : undefined;
+    const r = await this.call('COMPOSIO_MANAGE_CONNECTIONS', { toolkits: [{ name: slug, action: 'add', ...(alias ? { alias } : {}) }] });
     const whole = parseJson(r.text);
     const res = (whole?.data as { results?: Record<string, { status?: unknown; redirect_url?: unknown; accounts?: { id?: unknown; status?: unknown }[]; error?: unknown; error_message?: unknown }> } | undefined)?.results?.[slug];
     const redirectUrl = typeof res?.redirect_url === 'string' ? res.redirect_url : undefined;
@@ -558,8 +569,14 @@ export class ComposioService {
         this.emit();
         throw new RpcError('unsupported', cantConnectText(name, why));
       }
-      // nothing to sign in to after all
-      if (!r.isError && !redirectUrl && String(res?.status ?? '').toLowerCase() === 'active') return {};
+      if (!r.isError && !redirectUrl && String(res?.status ?? '').toLowerCase() === 'active') {
+        // asked for another account and given the one there is: said, rather than nothing happening
+        if (alias) throw new RpcError('apps_unavailable', `Composio didn't open a sign-in for another ${name} account. Try again in a moment.`);
+        // connected already (somewhere else): nothing to sign in to, and it shows as connected
+        await this.refreshSlugs([slug]);
+        this.emit();
+        return {};
+      }
       throw new RpcError('apps_unavailable', plainReason(said) || `Composio didn't start ${name}'s sign-in. Try again in a moment.`);
     }
     // another account of an app that has one: the one in use stays the default until the user picks the new one
@@ -610,6 +627,14 @@ export class ComposioService {
       else this.ctx.s.notifications.notify({ title: `${name} wasn't connected`, body: 'The sign-in page was left unfinished. Add it again to try once more.', level: 'info', native: false });
       this.emit();
     })();
+  }
+
+  /** A name for an app's next account, one none of its accounts has: `gmail-2`, `gmail-3`… */
+  private newAlias(slug: string): string {
+    const taken = new Set((this.accounts.get(slug) ?? []).map((a) => a.alias?.toLowerCase()));
+    let n = (this.accounts.get(slug)?.length ?? 1) + 1;
+    while (taken.has(`${slug}-${n}`)) n++;
+    return `${slug}-${n}`;
   }
 
   private remove(slug: string, accountId: string): Promise<{ text: string; isError: boolean }> {
@@ -751,6 +776,8 @@ export class ComposioService {
     const apps = this.allowedFor(botId);
     if (queries.length > SEARCH_QUERIES_MAX) throw new RpcError('invalid_params', `At most ${SEARCH_QUERIES_MAX} tasks in one search: split them over two calls.`);
     const own = apps.filter((s) => this.direct.has(s));
+    // the bot is told an app's accounts, which are listed once after launch
+    await this.listedOnce();
     const parts = [this.yourApps(apps)];
     // Composio is asked only for the apps that are its own
     if (this.auth() && own.length < apps.length) {
@@ -887,6 +914,8 @@ export class ComposioService {
     const bad = p.tools.find((t) => !apps.has(this.toolkitOf(t.tool_slug) ?? ''));
     if (bad) throw new RpcError('forbidden', this.refused(this.toolkitOf(bad.tool_slug), bad.tool_slug));
     const own = p.tools.filter((t) => this.direct.appOfTool(t.tool_slug));
+    // right after launch the accounts may not be listed yet: a call then would name none, and Composio would pick
+    if (own.length < p.tools.length) await this.listedOnce();
     const theirs = p.tools.filter((t) => !this.direct.appOfTool(t.tool_slug)).map((t) => this.withAccount(t));
     const viaComposio = async (): Promise<{ text: string; isError: boolean }> => {
       // no workbench: its sandbox runs any app's tools, past this bot's apps

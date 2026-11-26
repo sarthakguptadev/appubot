@@ -27,7 +27,7 @@ const WS = WebSocket as unknown as typeof globalThis.WebSocket;
 
 const idToken = (claims: Record<string, unknown>) => `h.${Buffer.from(JSON.stringify(claims)).toString('base64url')}.s`;
 
-interface Account { id: string; slug: string; status: string; email?: string }
+interface Account { id: string; slug: string; status: string; email?: string; alias?: string }
 
 /** Composio for You as the service sees it: one signed-in user, connections made through link pages. */
 class FakeConnect implements ComposioConnect {
@@ -44,12 +44,14 @@ class FakeConnect implements ComposioConnect {
   refused = new Set<string>();
   /** the file in its sandbox can't be read */
   fileGone = false;
+  /** `add` with a name for the new account still answers with the app's status (no link) */
+  noSecond = false;
   private n = 0;
   /** An app's accounts as a list or a search answers them: who each is when the app said, and Composio's default, the newest that works. */
   private listed(slug: string) {
     const mine = this.accounts.filter((a) => a.slug === slug);
     const newest = mine.filter((a) => a.status === 'active').at(-1);
-    return mine.map((a) => ({ id: a.id, status: a.status, is_default: a === newest, ...(a.email ? { user_info: { email: a.email } } : {}) }));
+    return mine.map((a) => ({ id: a.id, status: a.status, is_default: a === newest, ...(a.alias ? { alias: a.alias } : {}), ...(a.email ? { user_info: { email: a.email } } : {}) }));
   }
   async register(redirectUri: string) {
     expect(redirectUri).toMatch(/^(http:\/\/127\.0\.0\.1:\d+\/apps\/signed-in|appubot:\/\/apps\/signed-in)$/);
@@ -82,12 +84,15 @@ class FakeConnect implements ComposioConnect {
     switch (name) {
       case 'COMPOSIO_MANAGE_CONNECTIONS': {
         const results: Record<string, unknown> = {};
-        for (const t of args.toolkits as { name: string; action: string; account_id?: string }[]) {
+        for (const t of args.toolkits as { name: string; action: string; account_id?: string; alias?: string }[]) {
           if (t.action === 'add' && this.refused.has(t.name)) {
             results[t.name] = { toolkit: t.name, status: 'failed', error_message: NO_MANAGED_AUTH(t.name) };
+          } else if (t.action === 'add' && (!t.alias || this.noSecond) && this.accounts.some((a) => a.slug === t.name && a.status === 'active')) {
+            // as the live service answers it: an app that works has nothing to add unless the new account is named
+            results[t.name] = { toolkit: t.name, status: 'active', accounts: this.listed(t.name) };
           } else if (t.action === 'add') {
             const id = `${t.name}_${++this.n}`;
-            this.accounts.push({ id, slug: t.name, status: 'initiated' });
+            this.accounts.push({ id, slug: t.name, status: 'initiated', ...(t.alias ? { alias: t.alias } : {}) });
             results[t.name] = { toolkit: t.name, status: 'initiated', redirect_url: `https://connect.composio.dev/link/lk_${id}`, accounts: this.listed(t.name) };
           } else {
             if (t.action === 'remove') this.accounts = this.accounts.filter((a) => a.id !== t.account_id);
@@ -464,6 +469,9 @@ describe('apps (Composio for You)', () => {
       const said = waitEvent('notification', (n) => n.title === 'Another Gmail account connected');
       await connectGmail('second@example.com');
       expect((await said).body).toMatch(/keep using first@example\.com/);
+      // Composio is asked for a new account by a name of its own: without one it answers with the app's status
+      expect(fake.calls.filter((c) => c.name === 'COMPOSIO_MANAGE_CONNECTIONS' && JSON.stringify(c.args).includes('"add"')).map((c) => c.args.toolkits).slice(-2))
+        .toEqual([[{ name: 'gmail', action: 'add' }], [{ name: 'gmail', action: 'add', alias: 'gmail-2' }]]);
       // both are there, and the one in use is still the default (Composio's own default is now the newer one)
       expect((await gmails()).map((c) => [c.label, c.status, c.isDefault])).toEqual([['first@example.com', 'ACTIVE', true], ['second@example.com', 'ACTIVE', undefined]]);
       const second = (await gmails())[1]!;
@@ -516,6 +524,44 @@ describe('apps (Composio for You)', () => {
       for (const c of await gmails()) await owner.call('apps.disconnect', { connectedAccountId: c.connectedAccountId, slug: 'gmail' });
     }
     expect(core.services.composio.connectedSlugs()).toEqual(['slack']);
+  }, 30_000);
+
+  it('adds another account right after launch, names the default before the list is in, and says so when Composio opens nothing', async () => {
+    const [appu] = await owner.call('bots.list');
+    const t = (await owner.call('threads.list', {})).find((x) => x.botId === appu!.id)!;
+    const agent = await connectAs(core.ctx.auth.issueAgentToken({ threadId: t.id, botId: appu!.id }));
+    const composio = core.services.composio as unknown as { accounts: Map<string, unknown>; listedAt: number };
+    /** what a restart leaves: apps.json, and nothing listed yet */
+    const relaunched = () => { composio.accounts.clear(); composio.listedAt = 0; };
+    const gmails = async () => (await owner.call('apps.connections')).filter((c) => c.slug === 'gmail');
+    const add = async (email: string) => {
+      const res = await owner.call('apps.connect', { slug: 'gmail' });
+      expect(res.redirectUrl).toMatch(/^https:\/\/connect\.composio\.dev\/link\//);
+      const done = waitEvent('apps.updated', (p) => !p.pending.includes('gmail'));
+      fake.activate('gmail', email);
+      await done;
+    };
+    try {
+      await add('first@example.com');
+      relaunched();
+      await add('second@example.com');
+      expect((await gmails()).map((c) => [c.label, c.isDefault])).toEqual([['first@example.com', true], ['second@example.com', undefined]]);
+
+      // a bot's call before anything is listed goes to the default, not to the account Composio would pick
+      relaunched();
+      await agent.call('agent.apps.execute', { tools: [{ tool_slug: 'GMAIL_SEND_EMAIL', arguments: {} }] });
+      const sent = (fake.calls.filter((c) => c.name === 'COMPOSIO_MULTI_EXECUTE_TOOL').at(-1)!.args.tools as { account?: string }[])[0]!.account;
+      expect(sent).toBe((await gmails())[0]!.connectedAccountId);
+
+      // Composio gives back the account there is instead of a sign-in: the person is told, nothing is left pending
+      fake.noSecond = true;
+      expect((await failure(owner.call('apps.connect', { slug: 'gmail' }))).message).toBe("Composio didn't open a sign-in for another Gmail account. Try again in a moment.");
+      expect((await owner.call('apps.status')).pending).not.toContain('gmail');
+    } finally {
+      fake.noSecond = false;
+      agent.close();
+      for (const c of await gmails()) await owner.call('apps.disconnect', { connectedAccountId: c.connectedAccountId, slug: 'gmail' });
+    }
   }, 30_000);
 
   it('renews the access token, and signs out when Composio no longer takes the sign-in', async () => {

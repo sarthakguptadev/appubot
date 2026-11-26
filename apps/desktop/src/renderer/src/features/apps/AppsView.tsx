@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import type { AppCategory, AppConnection, AppToolkit } from '@appubot/protocol';
+import { isDirectApp, type AppCategory, type AppConnection, type AppToolkit } from '@appubot/protocol';
 import { activeSlugs } from '@appubot/chat-core';
-import { AlertCircle, Check, ChevronDown, ChevronLeft, ChevronRight, ExternalLink, MoreHorizontal, Search, Trash2, X } from '../../components/ui/icons';
+import { AlertCircle, Check, ChevronDown, ChevronLeft, ChevronRight, ExternalLink, MoreHorizontal, Plus, Search, Trash2, X } from '../../components/ui/icons';
 import { Badge, Button, Dialog, Icon, Menu, Spinner, Tooltip, cn } from '../../components/ui';
 import { SEGMENT, SEGMENT_SIZE, SegmentChip } from '../../components/ui/Tabs';
 import { ui, useStore } from '../../lib/store';
@@ -9,7 +9,7 @@ import { AppAction, AppLogo, AppLogoStack, AppRow, AppRowSkeleton } from './AppR
 import { BotAccess } from './BotAccess';
 import { chipsThatFit } from './chips';
 import {
-  RECOMMENDED, accountName, clearCatalogCache, loadConnections, makeDefault, removeAccount, signIn, useAppsLive, useAppsUi, useCatalog, useConnectedApps,
+  RECOMMENDED, accountName, clearCatalogCache, loadConnections, makeDefault, removeAccount, signIn, startConnect, useAppsLive, useAppsUi, useCatalog, useConnectedApps,
   type CatalogList,
 } from './appsData';
 
@@ -358,33 +358,53 @@ function Browse() {
 }
 
 /**
- * The accounts of an app that has several (two Gmails): who each is, the one the bots use when they aren't told
- * which, and each one's own menu. They line up under the app's name.
+ * An app's accounts, lined up under its name: who each is (the address it signed in with), and with several (two
+ * Gmails) the one the bots use when they aren't told which and each one's own menu. Then the way to add another.
  */
 function Accounts({ toolkit: t, conns }: { toolkit: AppToolkit; conns: AppConnection[] }) {
+  const several = conns.length > 1;
+  // one account Composio can't say who is: nothing to show but the way to add another
+  const shown = several || conns.some((c) => c.label || c.alias) ? conns : [];
+  const pending = useStore((s) => !!s.apps?.pending.includes(t.slug));
+  const starting = useAppsUi((s) => !!s.starting[t.slug]);
+  const busy = pending || starting;
   return (
     <ul aria-label={`${t.name} accounts`} className="mt-0.5 ml-[52px] flex flex-col">
-      {conns.map((c, i) => {
+      {shown.map((c, i) => {
         const name = accountName(c, i);
         const working = c.status === 'ACTIVE';
         return (
           <li key={c.connectedAccountId} className="flex h-7 min-w-0 items-center gap-2">
             <span className="min-w-0 truncate text-copy text-fg-2" title={name}>{name}</span>
-            {c.isDefault ? (
+            {!several ? null : c.isDefault ? (
               <Tooltip label="Your bots use this account unless they are told to use another"><span className="flex shrink-0"><Badge>Default</Badge></span></Tooltip>
             ) : working ? null : <span className="shrink-0 text-ui text-warning">Signed out</span>}
             <span className="flex-1" />
-            <Menu
-              className="min-w-[170px]"
-              items={[
-                ...(working && !c.isDefault ? [{ label: 'Make default', icon: Check, onSelect: () => void makeDefault(t, c) }] : []),
-                { label: 'Remove', icon: Trash2, danger: true, onSelect: () => removeAccount(t, c, name) },
-              ]}
-              trigger={(p) => <Button {...p} size="icon-xs" variant="ghost" icon={MoreHorizontal} aria-label={`More for ${name}`} className="-mr-1.5" />}
-            />
+            {/* the only account goes with Disconnect, in the app's own menu */}
+            {several ? (
+              <Menu
+                className="min-w-[170px]"
+                items={[
+                  ...(working && !c.isDefault ? [{ label: 'Make default', icon: Check, onSelect: () => void makeDefault(t, c) }] : []),
+                  { label: 'Remove', icon: Trash2, danger: true, onSelect: () => removeAccount(t, c, name) },
+                ]}
+                trigger={(p) => <Button {...p} size="icon-xs" variant="ghost" icon={MoreHorizontal} aria-label={`More for ${name}`} className="-mr-1.5" />}
+              />
+            ) : null}
           </li>
         );
       })}
+      <li className="flex h-7 items-center">
+        <button
+          type="button"
+          aria-label={`Add another ${t.name} account`}
+          disabled={busy}
+          onClick={() => void startConnect(t)}
+          className="no-drag -ml-1 inline-flex h-6 items-center gap-1.5 rounded-control-sm px-1 text-copy text-muted transition-colors hover:text-fg disabled:opacity-60 focus-visible:outline-none focus-visible:shadow-[inset_0_0_0_1.5px_color-mix(in_srgb,var(--ab-fg)_35%,transparent)]"
+        >
+          {busy ? <Spinner size={13} /> : <Icon icon={Plus} size={14} />}Add another account
+        </button>
+      </li>
     </ul>
   );
 }
@@ -404,7 +424,8 @@ function ConnectedRow({ toolkit: t, conns }: { toolkit: AppToolkit; conns: AppCo
         </div>
         <AppAction toolkit={t} conns={conns} listed />
       </div>
-      {conns.length > 1 ? <Accounts toolkit={t} conns={conns} /> : null}
+      {/* an app on its own server, or one that needs no sign-in, has no accounts of its own */}
+      {active && !isDirectApp(t.slug) && t.authKind !== 'none' ? <Accounts toolkit={t} conns={conns} /> : null}
     </div>
   );
 }
@@ -430,7 +451,7 @@ function Connected() {
       <div className={LIST}>
         <Trouble />
         {connsError ? <Problem text={`Couldn't load your connections: ${connsError}`} onRetry={() => void loadConnections()} /> : null}
-        <Section title="Connected" hint="Each app is connected once, for all your bots. Choose which bots use it.">
+        <Section title="Connected" hint="Your connected apps work for all your bots. Choose which bots use each one, or add another account.">
           <div className={COLUMNS}>
             {connected.loading
               ? Array.from({ length: shown }, (_, i) => <AppRowSkeleton key={i} />)
