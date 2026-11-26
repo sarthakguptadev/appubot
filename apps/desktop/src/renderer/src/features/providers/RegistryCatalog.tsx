@@ -118,7 +118,7 @@ export function RegistryCatalog({ registry }: { registry: Registry }) {
     >
       <div className="relative">
         <Icon icon={Search} size={14} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted" />
-        <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search agents" aria-label="Search agents" className="w-full rounded-control ps-8" spellCheck={false} />
+        <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search agents" aria-label="Search agents" className="w-full ps-8" spellCheck={false} />
       </div>
       {registry.error ? <p className="px-2 text-ui text-warning">{registry.error}</p> : null}
       {shown.length ? (

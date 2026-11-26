@@ -136,7 +136,7 @@ function CardState({ card, onWake, onRetry }: { card: ScreenCard; onWake: () => 
   const busy = card.kind === 'waking' || card.kind === 'connecting';
   return (
     <span className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-2 bg-surface-2/85 px-4 text-center" role="status">
-      <span className="squircle flex size-9 items-center justify-center rounded-control bg-[color-mix(in_srgb,var(--ab-fg)_6%,transparent)] text-fg-2">
+      <span className="ab-pill squircle flex size-9 items-center justify-center rounded-control bg-[color-mix(in_srgb,var(--ab-fg)_6%,transparent)] text-fg-2">
         {busy ? <Spinner size={16} /> : <Icon icon={card.kind === 'asleep' ? Moon : card.kind === 'unreachable' ? Cloud : RotateCw} size={17} />}
       </span>
       <span className="text-copy font-medium text-fg-2">{card.title}</span>

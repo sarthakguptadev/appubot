@@ -141,7 +141,7 @@ function MacPermissions({ onNext, onBack }: Nav) {
                   current === it.key ? 'bg-surface-2' : 'hover:bg-surface-2/60',
                 )}
               >
-                <span className="flex size-[32px] shrink-0 items-center justify-center rounded-[9px] text-white shadow-[inset_0_-1px_0_rgba(0,0,0,.12)]" style={{ background: it.tint }}>
+                <span className="ab-pill flex size-[32px] shrink-0 items-center justify-center rounded-[9px] text-white shadow-[inset_0_-1px_0_rgba(0,0,0,.12)]" style={{ background: it.tint }}>
                   <Icon icon={it.icon} size={17} strokeWidth={2} />
                 </span>
                 <span className="min-w-0 flex-1">
@@ -231,7 +231,7 @@ function OtherPermissions({ onNext, onBack }: Nav) {
       <div className="mx-auto flex max-w-[560px] flex-col gap-2.5">
         <PermissionRows />
         <Card className="!rounded-[14px] flex items-center gap-3 px-4 py-3">
-          <span className={cn('squircle flex size-8 shrink-0 items-center justify-center rounded-control', notify === 'on' ? 'bg-success-soft text-success' : 'bg-surface-2 text-fg-2')}>
+          <span className={cn('ab-pill squircle flex size-8 shrink-0 items-center justify-center rounded-control', notify === 'on' ? 'bg-success-soft text-success' : 'bg-surface-2 text-fg-2')}>
             <Icon icon={notify === 'on' ? Check : Bell} size={16} />
           </span>
           <span className="min-w-0 flex-1">

@@ -2,7 +2,7 @@
 import composioLogo from '../../assets/composio.svg';
 import { cn } from '../../components/ui';
 
-const TILE = 'inline-flex shrink-0 items-center justify-center overflow-hidden rounded-[10px] shadow-[inset_0_0_0_.5px_var(--ab-hairline),0_.5px_1px_color-mix(in_srgb,#000_6%,transparent)]';
+const TILE = 'ab-pill inline-flex shrink-0 items-center justify-center overflow-hidden rounded-[10px] shadow-[inset_0_0_0_.5px_var(--ab-hairline),0_.5px_1px_color-mix(in_srgb,#000_6%,transparent)]';
 
 /** Tailscale's nine dots (simple-icons), in the text colour so they flip with the theme. */
 const TAILSCALE = 'M24 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm-9 9a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm0-9a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm6-6a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0-.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM3 24a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0-.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zm18 .5a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0-.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM6 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm9-9a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm-3 2.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM6 3a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM3 5.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z';

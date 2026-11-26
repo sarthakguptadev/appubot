@@ -172,7 +172,7 @@ export function MoveBotDialog() {
             <div className="flex flex-col gap-1">
               <div className="text-note font-medium text-muted">To</div>
               {targets.map((t) => (
-                <label key={t.key} className="flex cursor-pointer items-center gap-2 rounded-control px-2 py-1.5 hover:bg-ink/5">
+                <label key={t.key} className="ab-pill flex cursor-pointer items-center gap-2 rounded-control px-2 py-1.5 hover:bg-ink/5">
                   <input type="radio" name="move-target" checked={target === t.key} disabled={busy} onChange={() => setTarget(t.key)} />
                   <Icon icon={t.key === 'local' ? Laptop : Monitor} size={14} className="text-muted" />
                   <span>{t.label}</span>

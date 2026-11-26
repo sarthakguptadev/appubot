@@ -47,7 +47,7 @@ function BotsPopover({ anchor, toolkit: t, onClose }: { anchor: HTMLElement; too
           const on = appOn(b, t.slug);
           return (
             <li key={b.id}>
-              <label className="squircle flex h-9 cursor-default items-center gap-2.5 rounded-control-sm px-2.5 transition-colors hover:bg-[color-mix(in_srgb,var(--ab-fg)_8%,transparent)]">
+              <label className="ab-pill squircle flex h-9 cursor-default items-center gap-2.5 rounded-control-sm px-2.5 transition-colors hover:bg-[color-mix(in_srgb,var(--ab-fg)_8%,transparent)]">
                 <BotAvatar bot={b} size={20} />
                 <span className="min-w-0 flex-1 truncate text-copy text-fg">{b.name}</span>
                 <Switch checked={on} onChange={(v) => void setAppOn(b, t.slug, v)} label={`${b.name} can use ${t.name}`} />
@@ -76,7 +76,7 @@ export function BotAccess({ toolkit: t }: { toolkit: AppToolkit }) {
         aria-label={`Bots that can use ${t.name}: ${label}`}
         onClick={(e) => setAnchor(anchor ? null : e.currentTarget)}
         className={cn(
-          'no-drag -ml-1.5 flex h-[22px] max-w-full min-w-0 items-center gap-1.5 rounded-md px-1.5 text-left text-copy transition-colors hover:bg-surface-2',
+          'no-drag ab-pill -ml-1.5 flex h-[22px] max-w-full min-w-0 items-center gap-1.5 rounded-md px-1.5 text-left text-copy transition-colors hover:bg-surface-2',
           'focus-visible:outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)]',
           anchor && 'bg-surface-2',
         )}

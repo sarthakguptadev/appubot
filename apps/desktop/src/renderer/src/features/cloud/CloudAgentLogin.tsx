@@ -75,7 +75,7 @@ function ClaudeTokenDialog({ provider: p, onClose }: { provider: Provider; onClo
         <div className="flex flex-col gap-1.5">
           <span className="text-copy font-medium text-fg">1. Make a token on {THIS_MACHINE}</span>
           <div className="flex items-center gap-2">
-            <code className="selectable min-w-0 flex-1 truncate rounded-control bg-surface-2 px-3 py-1.5 font-mono text-ui text-fg">claude setup-token</code>
+            <code className="selectable ab-pill min-w-0 flex-1 truncate rounded-control bg-surface-2 px-3 py-1.5 font-mono text-ui text-fg">claude setup-token</code>
             <Button size="sm" variant="outline" icon={Terminal} onClick={() => void native().openTerminal('claude setup-token')}>Run in {TERMINAL}</Button>
           </div>
           <span className={FIELD_HINT}>It opens your browser to approve, then prints a token that starts with sk-ant-.</span>
@@ -227,7 +227,7 @@ function DeviceLoginDialog({ provider: p, method, onClose, others = [], here = f
       ) : login?.url || way ? (
         <div className="flex flex-col items-center gap-3 py-1">
           {relay?.state === 'failed' && relay.message ? <p className="selectable text-center text-ui leading-snug text-muted">{relay.message}</p> : null}
-          {login?.code ? <div className="selectable rounded-control-lg bg-surface-2 px-5 py-3 font-mono text-[24px] tracking-[0.12em] text-fg">{login.code}</div> : null}
+          {login?.code ? <div className="selectable ab-pill rounded-control-lg bg-surface-2 px-5 py-3 font-mono text-[24px] tracking-[0.12em] text-fg">{login.code}</div> : null}
           <div className="flex items-center gap-2">
             {login?.code ? <Button size="sm" variant="outline" icon={copied ? Check : Copy} onClick={() => { void navigator.clipboard.writeText(login.code!); setCopied(true); }}>{copied ? 'Copied' : 'Copy code'}</Button> : null}
             <Button size="sm" variant="primary" icon={ExternalLink} onClick={() => void native().openExternal((pasteWhat === 'code' ? login?.url : undefined) ?? way?.url ?? login!.url!)}>Open the link</Button>

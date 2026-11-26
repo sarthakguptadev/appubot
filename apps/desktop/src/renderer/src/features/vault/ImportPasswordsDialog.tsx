@@ -89,7 +89,7 @@ export function ImportPasswordsDialog({ items, where, onClose, onDone }: {
       size="lg"
       title={(
         <span className="flex items-center gap-3">
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-control-lg bg-accent-soft text-accent-strong"><Icon icon={LockKeyhole} size={18} /></span>
+          <span className="ab-pill flex size-9 shrink-0 items-center justify-center rounded-control-lg bg-accent-soft text-accent-strong"><Icon icon={LockKeyhole} size={18} /></span>
           Import passwords
         </span>
       )}
@@ -113,7 +113,7 @@ export function ImportPasswordsDialog({ items, where, onClose, onDone }: {
             onDragLeave={() => setOver(false)}
             onDrop={(e) => { e.preventDefault(); setOver(false); void read(e.dataTransfer.files[0]); }}
             className={cn(
-              'flex flex-col items-center gap-2 rounded-control-lg border border-dashed px-6 py-8 text-center transition-colors focus-visible:outline-none',
+              'flex flex-col items-center gap-2 rounded-card border border-dashed px-6 py-8 text-center transition-colors focus-visible:outline-none',
               over ? 'border-[var(--ab-accent)] bg-accent-soft' : 'border-[var(--ab-hairline)] hover:bg-surface-2',
             )}
           >
@@ -140,12 +140,12 @@ export function ImportPasswordsDialog({ items, where, onClose, onDone }: {
             <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search" className="h-8 w-44 shrink-0 text-copy" spellCheck={false} />
           </div>
           {there ? (
-            <label className="flex cursor-pointer items-center justify-between gap-3 rounded-control-lg border border-[var(--ab-hairline)] px-3.5 py-2.5">
+            <label className="ab-pill flex cursor-pointer items-center justify-between gap-3 rounded-control-lg border border-[var(--ab-hairline)] px-3.5 py-2.5">
               <span className="text-copy text-fg">Replace the passwords of the {there.toLocaleString('en-US')} already in the Vault</span>
               <Switch checked={replace} disabled={!!busy} onChange={setReplace} label="Replace the passwords already in the Vault" />
             </label>
           ) : null}
-          <div className="max-h-[320px] overflow-y-auto rounded-control-lg border border-[var(--ab-hairline)]">
+          <div className="max-h-[320px] overflow-y-auto rounded-card border border-[var(--ab-hairline)]">
             {shown.length ? shown.map(({ r, key }) => {
               const skipped = !!r.existing && !replace;
               return (

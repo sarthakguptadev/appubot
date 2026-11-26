@@ -298,7 +298,7 @@ function Trouble() {
   const apps = useStore((s) => s.apps);
   if (!apps?.error) return null;
   return (
-    <div className="flex flex-col gap-2 rounded-control-lg border border-[color-mix(in_srgb,var(--ab-danger)_30%,transparent)] bg-danger-soft px-3.5 py-3">
+    <div className="flex flex-col gap-2 rounded-card border border-[color-mix(in_srgb,var(--ab-danger)_30%,transparent)] bg-danger-soft px-3.5 py-3">
       <p className="selectable text-copy leading-snug text-danger">{apps.error}</p>
       {apps.configured ? null : <div><SignInButton size="sm" again /></div>}
     </div>

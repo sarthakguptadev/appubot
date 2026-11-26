@@ -20,7 +20,7 @@ function Mark({ icon, tone = 'accent', spin }: { icon?: IconComponent; tone?: 'a
   return (
     <motion.span
       initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4, ease: [0.25, 1, 0.5, 1] }}
-      className={`mb-6 flex size-16 items-center justify-center rounded-[20px] ${look}`}
+      className={`ab-pill mb-6 flex size-16 items-center justify-center rounded-[20px] ${look}`}
     >
       {spin ? <Spinner size={24} /> : icon ? <Icon icon={icon} size={28} /> : null}
     </motion.span>

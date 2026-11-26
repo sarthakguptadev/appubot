@@ -24,7 +24,7 @@ function ChoiceButton({ pressed, disabled, shortcut, onClick, children }: { pres
       aria-pressed={pressed}
       disabled={disabled}
       onClick={onClick}
-      className="gen-choice ab-press squircle flex w-full items-start gap-3 rounded-control-lg bg-surface-2 px-3 py-2.5 text-left enabled:hover:bg-surface-3 disabled:cursor-default"
+      className="gen-choice ab-press squircle flex w-full items-start gap-3 rounded-card bg-surface-2 px-3 py-2.5 text-left enabled:hover:bg-surface-3 disabled:cursor-default"
     >
       <ChoiceMark checked={pressed} className="mt-0.5" />
       <span className="min-w-0 flex-1 text-copy font-medium text-fg">{children}</span>
@@ -37,7 +37,7 @@ function OwnAnswerRow({ disabled, inputRef, onAnswer }: { disabled: boolean; inp
   const [text, setText] = useState('');
   const trimmed = text.trim();
   return (
-    <label className={cn('gen-choice squircle flex w-full items-center gap-3 rounded-control-lg border border-transparent px-3 py-2.5 transition-colors duration-150 ease-rare focus-within:bg-surface-2', trimmed ? 'bg-surface-2' : 'border-dashed border-border')}>
+    <label className={cn('gen-choice squircle flex w-full items-center gap-3 rounded-card border border-transparent px-3 py-2.5 transition-colors duration-150 ease-rare focus-within:bg-surface-2', trimmed ? 'bg-surface-2' : 'border-dashed border-border')}>
       <Icon icon={PenLine} size={16} className="text-muted" />
       <input
         ref={inputRef}

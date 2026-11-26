@@ -38,7 +38,7 @@ function ImageTile({ part }: { part: ImagePart }) {
   useCloudFiles((s) => s.rev);
   const fetched = useFileSrc({ url: part.url ?? '', mimeType: part.mimeType });
   const src = part.data ? `data:${part.mimeType};base64,${part.data}` : fetched;
-  const cls = 'block aspect-[4/3] overflow-hidden rounded-control border border-border-subtle bg-surface-2';
+  const cls = 'block aspect-[4/3] overflow-hidden rounded-card border border-border-subtle bg-surface-2';
   // still on its way from a remote computer: the grid waits in the tile
   if (!src) return <div className={cls}><RevealImg src="" /></div>;
   return (
@@ -79,13 +79,13 @@ export function FileTile({ file, sending }: { file: FileAttachment; sending?: st
   const busy = sending !== undefined ? sending : progress;
   const media = playable(file);
   const tile = (
-    <div className="flex max-w-[420px] items-center gap-3 rounded-control-lg border border-border-subtle bg-[color-mix(in_srgb,var(--ab-surface)_40%,transparent)] py-2 pr-2 pl-2.5">
+    <div className="flex max-w-[420px] items-center gap-3 rounded-card border border-border-subtle bg-[color-mix(in_srgb,var(--ab-surface)_40%,transparent)] py-2 pr-2 pl-2.5">
       {isImage && url ? (
-        <button type="button" {...galleryProps(url, file.name)} onClick={openGalleryAt} aria-label="Preview" className="size-10 shrink-0 cursor-zoom-in overflow-hidden rounded-control border border-border-subtle">
+        <button type="button" {...galleryProps(url, file.name)} onClick={openGalleryAt} aria-label="Preview" className="ab-pill size-10 shrink-0 cursor-zoom-in overflow-hidden rounded-control border border-border-subtle">
           <RevealImg src={url} cells={24} />
         </button>
       ) : (
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-control bg-surface-2 text-muted">
+        <span className="ab-pill flex size-10 shrink-0 items-center justify-center rounded-control bg-surface-2 text-muted">
           <Icon icon={file.mimeType === 'application/pdf' || file.mimeType.startsWith('text/') ? FileText : isImage ? ImageIcon : media === 'audio' ? Music : media === 'video' ? Video : File} size={18} />
         </span>
       )}
@@ -132,7 +132,7 @@ function ClipPlayer({ src, shapeKey }: { src: string; shapeKey: string }) {
         if (v.videoWidth && v.videoHeight) mediaShapes.set(shapeKey, [v.videoWidth, v.videoHeight]);
       }}
       style={{ aspectRatio: aspectOf(shape, '16 / 9') }}
-      className="max-h-[280px] w-full rounded-control border border-border-subtle bg-black object-contain"
+      className="max-h-[280px] w-full rounded-card border border-border-subtle bg-black object-contain"
     />
   );
 }

@@ -39,7 +39,7 @@ export function ImportLogo({ id, name, size = 28, className }: { id: string; nam
   const inner = Math.round(size * 0.6);
   const style: CSSProperties = { width: size, height: size, background: picture?.on ?? mark?.on, color: mark?.ink };
   return (
-    <span aria-hidden className={cn('squircle grid shrink-0 place-items-center overflow-hidden rounded-control-sm bg-surface-3 text-fg', className)} style={style}>
+    <span aria-hidden className={cn('ab-pill squircle grid shrink-0 place-items-center overflow-hidden rounded-control-sm bg-surface-3 text-fg', className)} style={style}>
       {picture ? <img src={picture.src} alt="" draggable={false} className={picture.fill ? 'size-full object-cover' : 'object-contain'} style={picture.fill ? undefined : { width: inner + 4, height: inner + 4 }} />
         : mark ? <RegistryIcon svg={mark.svg} size={inner + 2} />
           : <span className="text-ui font-semibold text-fg-2">{name.charAt(0).toUpperCase()}</span>}

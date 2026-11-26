@@ -10,7 +10,7 @@ import { useHotkey } from '../../lib/hooks';
 import { IS_MAC, shortcut } from '../../lib/platform';
 import { DiffBlock } from './ToolDetails';
 
-const MONO = 'selectable max-h-32 overflow-auto rounded-control bg-code-bg px-3 py-2 font-mono text-note leading-[1.55] break-words whitespace-pre-wrap text-fg-2';
+const MONO = 'selectable max-h-32 overflow-auto rounded-card bg-code-bg px-3 py-2 font-mono text-note leading-[1.55] break-words whitespace-pre-wrap text-fg-2';
 
 function Preview({ req }: { req: PermissionRequest }) {
   const command = rawCommand(req.rawInput);

@@ -176,7 +176,7 @@ function ProviderItem({ provider: p, registry }: { provider: Provider; registry:
           <p className="selectable mt-1 truncate font-mono text-note text-muted" title={command}>{command}</p>
         ) : null}
         {missing && p.installHint ? (
-          <p className="selectable squircle mt-1.5 truncate rounded-control-sm bg-surface-2 px-2.5 py-1.5 font-mono text-note text-fg-2" title={p.installHint}>{p.installHint}</p>
+          <p className="selectable ab-pill squircle mt-1.5 truncate rounded-control-sm bg-surface-2 px-2.5 py-1.5 font-mono text-note text-fg-2" title={p.installHint}>{p.installHint}</p>
         ) : null}
         {missing && p.installNeeds === 'node' ? (
           <p className="mt-1.5 text-ui leading-snug text-warning">

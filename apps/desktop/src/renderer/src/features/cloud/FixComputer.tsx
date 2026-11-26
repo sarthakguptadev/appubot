@@ -56,7 +56,7 @@ export function RepairProgress({ repair }: { repair: CloudRepair }) {
   const pct = Math.round(card.fraction * 100);
   return (
     <div className={cn(SETTINGS_ROW, 'flex items-start gap-3')} aria-live="polite">
-      <span className={cn('squircle flex size-9 shrink-0 items-center justify-center rounded-control bg-surface-2', card.tone === 'failed' ? 'text-danger' : card.tone === 'done' ? 'text-success' : 'text-fg-2')}>
+      <span className={cn('ab-pill squircle flex size-9 shrink-0 items-center justify-center rounded-control bg-surface-2', card.tone === 'failed' ? 'text-danger' : card.tone === 'done' ? 'text-success' : 'text-fg-2')}>
         {card.tone === 'running' ? <Spinner size={16} /> : <Icon icon={card.tone === 'done' ? CheckCircle2 : XCircle} size={18} />}
       </span>
       <div className="min-w-0 flex-1 space-y-2">
@@ -147,7 +147,7 @@ export function RepairDialog({ kind, team, version, onClose }: { kind: CloudRepa
             {!backups ? (
               <div className="flex items-center gap-2 text-copy text-muted">{loadingCopies ? <Spinner size={14} /> : null}Reading your saved copies…</div>
             ) : backups.length ? (
-              <div role="radiogroup" aria-label="Saved copies" className="max-h-60 divide-y divide-[var(--ab-hairline)] overflow-y-auto rounded-control-lg border border-[var(--ab-hairline)]">
+              <div role="radiogroup" aria-label="Saved copies" className="max-h-60 divide-y divide-[var(--ab-hairline)] overflow-y-auto rounded-card border border-[var(--ab-hairline)]">
                 {backups.map((b) => {
                   const l = backupLabel(b, now);
                   const on = b.id === picked;

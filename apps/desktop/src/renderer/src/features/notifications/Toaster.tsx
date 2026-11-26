@@ -5,7 +5,7 @@
  * (with a badge for a warning or an error) or an agent's logo where the notice is about one; one about a thread opens
  * it on click. ✕ sits on the corner on hover, and a swipe to the right dismisses.
  */
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { AlertTriangle, CheckCircle2, ChevronRight, Info, XCircle } from '../../components/ui/icons';
 import { BotAvatar, Icon, cn } from '../../components/ui';
@@ -147,8 +147,8 @@ function ToastCard({ t, index, y, expanded, frontHeight, paused, onHeight }: Car
                   <button
                     key={a.label} type="button" data-slot="toast-action"
                     onClick={(e) => { e.stopPropagation(); a.onClick(); }}
-                    style={{ borderRadius: TOAST_TILE_RADIUS }}
-                    className={a.primary ? TOAST_ACTION_PRIMARY : TOAST_ACTION}
+                    style={{ '--tile-r': `${TOAST_TILE_RADIUS}px` } as CSSProperties}
+                    className={cn('ab-pill rounded-(--tile-r)', a.primary ? TOAST_ACTION_PRIMARY : TOAST_ACTION)}
                   >
                     {a.label}
                   </button>

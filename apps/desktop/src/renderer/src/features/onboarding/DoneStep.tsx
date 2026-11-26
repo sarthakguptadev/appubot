@@ -73,7 +73,7 @@ export function DoneStep({ onBack, onFinish, finishing, onCloud, trialDays = 0 }
             )}
           >
             <span className="flex w-full items-center justify-between">
-              <span className="flex size-8 items-center justify-center rounded-[10px] bg-accent-soft text-accent"><Icon icon={t.icon} size={16} /></span>
+              <span className="ab-pill flex size-8 items-center justify-center rounded-[10px] bg-accent-soft text-accent"><Icon icon={t.icon} size={16} /></span>
               {sending === t.prompt ? <Spinner size={14} className="text-muted" /> : <Icon icon={ArrowRight} size={15} className="text-muted opacity-0 transition-[opacity,translate] duration-150 group-hover:translate-x-0.5 group-hover:opacity-100" />}
             </span>
             <span className="mt-3 text-copy font-medium text-fg">{t.title}</span>

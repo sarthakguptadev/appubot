@@ -67,7 +67,7 @@ export function InfoRow({ label, children, mono }: { label: ReactNode; children:
 /** Dashed placeholder block for empty / status copy. */
 export function SettingsEmptyState({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className={cn('rounded-control-lg border border-dashed border-border-subtle bg-transparent px-4 py-10 text-center text-copy leading-snug text-muted', className)}>
+    <div className={cn('rounded-card border border-dashed border-border-subtle bg-transparent px-4 py-10 text-center text-copy leading-snug text-muted', className)}>
       {children}
     </div>
   );

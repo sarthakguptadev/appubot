@@ -7,7 +7,7 @@ export function EmptyState({ icon, title, body, action, className }: { icon?: Lu
   return (
     <div className={cn('flex flex-col items-center justify-center gap-2 px-6 py-10 text-center', className)}>
       {icon ? (
-        <div className="squircle mb-1 flex size-11 items-center justify-center rounded-[14px] bg-surface-2 text-muted">
+        <div className="ab-pill squircle mb-1 flex size-11 items-center justify-center rounded-[14px] bg-surface-2 text-muted">
           <Icon icon={icon} />
         </div>
       ) : null}

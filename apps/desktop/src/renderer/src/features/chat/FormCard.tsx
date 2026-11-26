@@ -219,7 +219,7 @@ function Chip({ on, disabled, check, onClick, children }: { on: boolean; disable
 function ChangeRows({ rows, compact }: { rows: FormChange[]; compact?: boolean }) {
   if (!rows.length) return null;
   return (
-    <dl className={cn('flex flex-col overflow-hidden rounded-control-lg bg-surface-2', compact ? 'divide-y divide-border/60' : 'divide-y divide-border/60')}>
+    <dl className={cn('flex flex-col overflow-hidden rounded-card bg-surface-2', compact ? 'divide-y divide-border/60' : 'divide-y divide-border/60')}>
       {rows.map((r) => (
         <div key={r.label} className={cn('grid gap-x-3 px-3.5', compact ? 'grid-cols-[minmax(0,2fr)_minmax(0,3fr)] py-1.5' : 'grid-cols-[minmax(0,2fr)_minmax(0,3fr)] py-2')}>
           <dt className="flex min-w-0 items-center gap-1.5 text-ui text-muted">
@@ -456,7 +456,7 @@ export function FormCard({ part, botName, botId, botColor, expired }: { part: Qu
           />
         ) : (
           <div className="flex items-start gap-3">
-            <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-control-lg bg-surface-2 text-fg"><Icon icon={VaultIcon} size={16} /></span>
+            <span className="ab-pill mt-0.5 grid size-8 shrink-0 place-items-center rounded-control-lg bg-surface-2 text-fg"><Icon icon={VaultIcon} size={16} /></span>
             <div className="flex min-w-0 flex-col gap-0.5">
               <span className="text-note text-muted">{formEyebrow(form, botName, expired)}</span>
               <span className="block max-h-40 overflow-y-auto text-copy leading-snug font-semibold whitespace-pre-wrap break-words text-fg">{formTitle(part)}</span>
@@ -468,12 +468,12 @@ export function FormCard({ part, botName, botId, botColor, expired }: { part: Qu
         {changeRows.length ? <ChangeRows rows={changeRows} /> : null}
 
         {form.kind === 'telegram' ? (
-          <ol className="flex flex-col gap-1 rounded-control-lg bg-surface-2 px-3.5 py-2.5 text-ui text-muted">
+          <ol className="flex flex-col gap-1 rounded-card bg-surface-2 px-3.5 py-2.5 text-ui text-muted">
             {TELEGRAM_CARD_STEPS.map((step, i) => <li key={step} className="flex gap-2"><span className="tabular-nums text-fg">{i + 1}.</span><span>{step}</span></li>)}
           </ol>
         ) : null}
         {form.kind === 'routine' && form.routine && !routineUpdate ? (
-          <blockquote className="max-h-32 overflow-y-auto rounded-control-lg border-l-2 border-border bg-surface-2 px-3.5 py-2.5 text-ui leading-snug whitespace-pre-wrap text-fg">
+          <blockquote className="max-h-32 overflow-y-auto rounded-card border-l-2 border-border bg-surface-2 px-3.5 py-2.5 text-ui leading-snug whitespace-pre-wrap text-fg">
             <span className="mb-1 block text-note text-muted">It will send {botName} this, on its own:</span>
             {form.routine.prompt}
           </blockquote>
@@ -506,7 +506,7 @@ export function FormCard({ part, botName, botId, botColor, expired }: { part: Qu
                 aria-pressed={picked === s.id}
                 disabled={disabled}
                 onClick={() => { setPicked(s.id); setError(null); }}
-                className="gen-choice ab-press squircle flex w-full items-center gap-3 rounded-control-lg bg-surface-2 px-3 py-2.5 text-left enabled:hover:bg-surface-3"
+                className="gen-choice ab-press squircle flex w-full items-center gap-3 rounded-card bg-surface-2 px-3 py-2.5 text-left enabled:hover:bg-surface-3"
               >
                 <span aria-hidden className="gen-mark" data-checked={picked === s.id || undefined}><span className="gen-mark-dot" /></span>
                 <span className="flex min-w-0 flex-col">

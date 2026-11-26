@@ -128,7 +128,7 @@ export function TeachDialog({ open, onClose }: { open: boolean; onClose: () => v
         </ol>
 
         {missingPerms ? (
-          <div className="flex items-center gap-3 rounded-control-lg bg-warning-soft py-2 pr-2 pl-3.5 text-warning">
+          <div className="flex items-center gap-3 rounded-card bg-warning-soft py-2 pr-2 pl-3.5 text-warning">
             <Icon icon={AlertTriangle} size={16} className="shrink-0" />
             <div className="min-w-0 flex-1 text-note leading-snug">
               {Who} needs Accessibility and Screen Recording access to watch what you do.
@@ -138,7 +138,7 @@ export function TeachDialog({ open, onClose }: { open: boolean; onClose: () => v
         ) : null}
 
         {manual ? (
-          <div className="flex items-start gap-3 rounded-control-lg bg-warning-soft py-2 pr-3 pl-3.5 text-warning">
+          <div className="flex items-start gap-3 rounded-card bg-warning-soft py-2 pr-3 pl-3.5 text-warning">
             <Icon icon={AlertTriangle} size={16} className="mt-px shrink-0" />
             <div className="min-w-0 flex-1 text-note leading-snug">
               {noRecording} Write the steps below and {who} turns them into a skill.

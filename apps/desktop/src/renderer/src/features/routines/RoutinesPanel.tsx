@@ -47,13 +47,13 @@ function RoutineRow({ r, now }: { r: Routine; now: number }) {
   const lastLabel = last ? (last === 'now' ? 'just now' : /^\d+[mhd]$/.test(last) ? `${last} ago` : last) : 'never';
 
   return (
-    <div className={cn('group/row flex items-start gap-2.5 rounded-[10px] px-2 py-2', ROW_HOVER)}>
+    <div className={cn('group/row flex items-start gap-2.5 rounded-card px-2 py-2', ROW_HOVER)}>
       <button
         type="button"
         onClick={() => ui.openModal({ kind: 'routine', routineId: r.id })}
-        className="flex min-w-0 flex-1 items-start gap-2.5 rounded-[8px] text-left outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]"
+        className="flex min-w-0 flex-1 items-start gap-2.5 rounded-card text-left outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]"
       >
-        <span className={cn('mt-px flex size-7 shrink-0 items-center justify-center rounded-[8px]', r.enabled ? 'bg-surface-2 text-fg-2' : 'bg-surface-2 text-muted')}>
+        <span className={cn('ab-pill mt-px flex size-7 shrink-0 items-center justify-center rounded-[8px]', r.enabled ? 'bg-surface-2 text-fg-2' : 'bg-surface-2 text-muted')}>
           <Icon icon={r.deliverTo === 'notify' ? Bell : CalendarClock} size={15} />
         </span>
         <span className={cn('min-w-0 flex-1', !r.enabled && 'opacity-60')}>
@@ -138,7 +138,7 @@ export function RoutinesPanel() {
                   <span>Routines run a prompt on a schedule, even when you’re away. For example:</span>
                   <ul className="flex flex-col gap-1 text-left">
                     {EXAMPLES.map((ex) => (
-                      <li key={ex} className="rounded-[10px] px-3 py-2 text-note text-fg-2 shadow-[inset_0_0_0_.5px_var(--ab-hairline)]">{ex}</li>
+                      <li key={ex} className="rounded-card px-3 py-2 text-note text-fg-2 shadow-[inset_0_0_0_.5px_var(--ab-hairline)]">{ex}</li>
                     ))}
                   </ul>
                 </div>

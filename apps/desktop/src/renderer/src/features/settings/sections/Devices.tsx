@@ -70,7 +70,7 @@ function DeviceRow({ device: d, self, now }: { device: Device; self: boolean; no
 
   return (
     <div className={cn(SETTINGS_ROW, 'flex items-center gap-3')}>
-      <div className="relative squircle flex size-9 shrink-0 items-center justify-center rounded-control bg-surface-2 text-fg-2">
+      <div className="relative ab-pill squircle flex size-9 shrink-0 items-center justify-center rounded-control bg-surface-2 text-fg-2">
         <Icon icon={PLATFORM_ICON[d.platform] ?? MonitorSmartphone} size={18} />
         <StatusDot tone={d.online ? 'online' : 'idle'} className="absolute -right-0.5 -bottom-0.5 size-2.5 ring-2 ring-[var(--ab-bg)]" title={d.online ? 'Online' : 'Offline'} />
       </div>

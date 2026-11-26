@@ -36,7 +36,7 @@ export function ComputerPromo() {
     // a cloud computer of their own (or a team's): the way there
     return (
       <div className="flex h-full flex-col items-center overflow-y-auto px-5 pt-6 pb-16 text-center">
-        <span className="squircle flex size-11 items-center justify-center rounded-[14px] bg-surface-2 text-fg-2"><Icon icon={Cloud} size={22} /></span>
+        <span className="ab-pill squircle flex size-11 items-center justify-center rounded-[14px] bg-surface-2 text-fg-2"><Icon icon={Cloud} size={22} /></span>
         <p className="mt-3 text-copy font-semibold text-fg">Your bots there have a screen of their own</p>
         <p className="mt-1 max-w-[280px] text-ui leading-snug text-muted">Open {own.name} to watch its screen here, or take over.</p>
         <Button variant="primary" size="md" className="mt-4" onClick={() => void switchComputer('cloud', own.team)}>Open {own.name}</Button>
@@ -59,7 +59,7 @@ export function ComputerPromo() {
               const icon = GIVE_ICONS[p.id];
               return (
                 <li key={p.id} className="flex gap-3">
-                  <span className="squircle flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-content text-fg-2">
+                  <span className="ab-pill squircle flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-content text-fg-2">
                     {icon ? <Icon icon={icon} size={16} /> : <ProviderLogo id="claude-code" size={16} />}
                   </span>
                   <span className="min-w-0">

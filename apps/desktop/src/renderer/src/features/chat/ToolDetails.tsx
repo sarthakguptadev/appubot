@@ -21,7 +21,7 @@ export function DiffStat({ added, removed, className }: { added: number; removed
   );
 }
 
-const BLOCK = 'selectable max-h-[22rem] overflow-auto rounded-control bg-code-bg font-mono text-note leading-[1.6]';
+const BLOCK = 'selectable max-h-[22rem] overflow-auto rounded-card bg-code-bg font-mono text-note leading-[1.6]';
 
 /** Shell transcript: `$ command` then its output. */
 export function TerminalBlock({ command, output, maxHeight }: { command?: string; output?: string; maxHeight?: number }) {
@@ -62,7 +62,7 @@ export const DiffBlock = memo(function DiffBlock({ path, oldText, newText, maxHe
   const rows = useMemo(() => collapse(lines), [lines]);
   const stats = useMemo(() => diffStats(lines), [lines]);
   return (
-    <div className="overflow-hidden rounded-control bg-code-bg">
+    <div className="overflow-hidden rounded-card bg-code-bg">
       <div className="flex items-center gap-2 px-3 pt-2 pb-1 text-note">
         <span className="min-w-0 truncate font-mono text-fg-2" title={path}>{basename(path)}</span>
         {oldText === null ? <span className="text-muted">new file</span> : null}
@@ -97,14 +97,14 @@ function FrameThumb({ frameId }: { frameId: string }) {
   const frame = useStore((s) => s.actionFrames.find((f) => f.id === frameId) ?? (s.frame?.id === frameId ? s.frame : undefined));
   if (!frame) return null;
   return (
-    <img src={`data:${frame.mimeType};base64,${frame.data}`} alt="Screen after this action" className="block h-[110px] w-auto rounded-control border border-border-subtle" />
+    <img src={`data:${frame.mimeType};base64,${frame.data}`} alt="Screen after this action" className="block h-[110px] w-auto rounded-card border border-border-subtle" />
   );
 }
 
 function ContentBlock({ content, part }: { content: ToolContent; part: ToolCallPart }) {
   switch (content.type) {
     case 'diff': return <DiffBlock path={content.path} oldText={content.oldText} newText={content.newText} />;
-    case 'image': return <img src={`data:${content.mimeType};base64,${content.data}`} alt="" className="max-h-60 rounded-control border border-border-subtle" />;
+    case 'image': return <img src={`data:${content.mimeType};base64,${content.data}`} alt="" className="max-h-60 rounded-card border border-border-subtle" />;
     case 'resource_link':
       return (
         <button

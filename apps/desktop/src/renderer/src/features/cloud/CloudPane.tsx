@@ -56,7 +56,7 @@ export function CloudPane() {
           {failed ? <Button variant="primary" icon={RotateCw} onClick={() => void switchComputer('cloud', link.team)}>Try again</Button> : null}
           {failed ? <Button variant="ghost" icon={Settings} onClick={() => ui.openSettings('account')}>Account settings</Button> : null}
         </div>
-        {running ? <div className="w-full max-w-[460px] rounded-control-lg border border-[var(--ab-hairline)] text-left"><RepairProgress repair={running} /></div> : null}
+        {running ? <div className="w-full max-w-[460px] rounded-card border border-[var(--ab-hairline)] text-left"><RepairProgress repair={running} /></div> : null}
         {fixes.length ? (
           <div className="flex max-w-[420px] flex-col items-center gap-2.5 pt-2">
             <p className="text-copy leading-relaxed text-muted">{UNREACHABLE_FIX_HINT}</p>

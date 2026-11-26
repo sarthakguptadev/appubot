@@ -35,7 +35,7 @@ export function ChangesCard({ files, cwd }: { files: FileChange[]; cwd?: string 
   const shown = files.slice(0, MAX_FILES);
   return (
     // Synara's turn changes card: the label over its diff stat, a quiet icon and chevron, a lighter border in dark
-    <div className="mt-2 mb-1 overflow-hidden rounded-[0.65rem] border border-border-subtle dark:border-[color-mix(in_srgb,var(--ab-border-subtle)_55%,transparent)]">
+    <div className="mt-2 mb-1 overflow-hidden rounded-card border border-border-subtle dark:border-[color-mix(in_srgb,var(--ab-border-subtle)_55%,transparent)]">
       <button
         type="button"
         aria-expanded={open}

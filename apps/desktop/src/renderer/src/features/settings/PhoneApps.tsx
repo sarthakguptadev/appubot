@@ -35,7 +35,7 @@ function PhoneAppCode({ url, device, via, on, size }: { url: string; device: str
       onClick={() => void native().openExternal(url)}
       title={`${device}: ${url}`}
       aria-label={`Get AppuBot for ${device} on ${on}`}
-      className="group flex flex-col items-center gap-1.5 rounded-control-lg p-1.5 text-center transition-colors hover:bg-[var(--ab-ink-tint)]"
+      className="group flex flex-col items-center gap-1.5 rounded-card p-1.5 text-center transition-colors hover:bg-[var(--ab-ink-tint)]"
     >
       <span className="flex items-center justify-center rounded-[10px] bg-white p-1.5 shadow-[0_0_0_.5px_rgba(0,0,0,.14)]" style={{ width: size + 12, height: size + 12 }}>
         {qr ? <img src={qr} alt="" width={size} height={size} draggable={false} className="rounded-[4px]" /> : <span className="block rounded-[4px] bg-[#f0f0f0]" style={{ width: size, height: size }} />}

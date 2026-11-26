@@ -53,7 +53,7 @@ export function ComputerStep({ stage, trialDays, cheapest, onCloud, onOwn, onHav
           {/* a tag on the card's top edge, so the title keeps its line */}
           <span className="ab-pill squircle absolute -top-3 right-5 flex h-6 items-center rounded-[7px] bg-accent px-3 text-note font-medium text-white">{c.cloud.tag}</span>
           <div className="flex items-center gap-3.5">
-            <span className="flex size-[46px] shrink-0 items-center justify-center rounded-[14px] bg-accent text-white"><Icon icon={Cloud} size={24} /></span>
+            <span className="ab-pill flex size-[46px] shrink-0 items-center justify-center rounded-[14px] bg-accent text-white"><Icon icon={Cloud} size={24} /></span>
             <div className="min-w-0">
               <h2 className="text-[17px] leading-snug font-semibold text-fg">{c.cloud.title}</h2>
               <p className="text-copy leading-snug text-fg-2">{c.cloud.line}</p>
@@ -64,7 +64,7 @@ export function ComputerStep({ stage, trialDays, cheapest, onCloud, onOwn, onHav
               const icon = GIVE_ICONS[p.id];
               return (
                 <li key={p.id} className="flex gap-3 min-[700px]:flex-col min-[700px]:gap-2.5">
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-[11px] bg-content">
+                  <span className="ab-pill flex size-9 shrink-0 items-center justify-center rounded-[11px] bg-content">
                     {icon ? <Icon icon={icon} size={18} className="text-accent" /> : <ProviderLogo id="claude-code" size={18} />}
                   </span>
                   <span className="min-w-0">

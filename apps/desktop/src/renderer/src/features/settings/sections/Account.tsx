@@ -213,7 +213,7 @@ function YouGroup({ view }: { view: CloudAccountView }) {
   const name = view.account?.name;
   return (
     <section id={settingAnchorId(ACCOUNT_YOU_TITLE)} className="scroll-mt-24">
-      <div className="overflow-hidden rounded-control-lg border border-[color-mix(in_srgb,var(--ab-fg)_6%,transparent)] bg-[color-mix(in_srgb,var(--ab-fg)_1.5%,transparent)]">
+      <div className="overflow-hidden rounded-card border border-[color-mix(in_srgb,var(--ab-fg)_6%,transparent)] bg-[color-mix(in_srgb,var(--ab-fg)_1.5%,transparent)]">
         {view.signedIn ? (
           <div className={cn(SETTINGS_ROW, 'flex items-center gap-3 py-4')}>
             {email ? <PersonAvatar email={email} name={name} size={40} photoUrl={view.account?.photoUrl} /> : null}

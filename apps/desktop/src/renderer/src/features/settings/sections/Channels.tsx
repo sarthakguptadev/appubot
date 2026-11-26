@@ -202,7 +202,7 @@ function TelegramCard({ bot: linkedBot, channel: linked, first, open, onToggle }
                   Send <span className="selectable font-mono text-fg-2">/pair {channel.pairingCode}</span> to {channel.botUsername ? `@${channel.botUsername}` : 'this bot'} to add yourself to its allowed users.
                 </div>
               </div>
-              <span className="selectable squircle rounded-control bg-surface-2 px-3.5 py-1.5 font-mono text-[20px] font-medium tracking-[0.25em] text-fg">
+              <span className="selectable ab-pill squircle rounded-control bg-surface-2 px-3.5 py-1.5 font-mono text-[20px] font-medium tracking-[0.25em] text-fg">
                 {channel.pairingCode}
               </span>
             </div>

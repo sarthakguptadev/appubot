@@ -84,7 +84,7 @@ export function CloudDevicesDialog({ modal }: { modal: DevicesModal | null }) {
         <SettingsCard>
           {rows.map((d) => (
             <div key={d.id} className={cn(SETTINGS_ROW, 'flex items-center gap-3')}>
-              <div className="squircle flex size-9 shrink-0 items-center justify-center rounded-control bg-surface-2 text-fg-2">
+              <div className="ab-pill squircle flex size-9 shrink-0 items-center justify-center rounded-control bg-surface-2 text-fg-2">
                 <Icon icon={d.kind === 'phone' ? Smartphone : Laptop} size={18} />
               </div>
               <div className="min-w-0 flex-1">
