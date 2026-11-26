@@ -144,7 +144,7 @@ function BlobPreview({ file }: { file: globalThis.File }) {
 
 function Tile({ onRemove, label, children }: { onRemove: () => void; label: string; children: React.ReactNode }) {
   return (
-    <div className="group/tile relative size-16 shrink-0 overflow-hidden rounded-control border border-border-subtle bg-surface-2" title={label}>
+    <div className="group/tile relative size-16 shrink-0 overflow-hidden rounded-card border border-border-subtle bg-surface-2" title={label}>
       {children}
       <button type="button" aria-label={`Remove ${label}`} onClick={onRemove} className="ab-pill absolute top-1 right-1 flex size-5 items-center justify-center rounded-md bg-[color:var(--ab-popover)] text-muted shadow-sm hover:text-fg">
         <Icon icon={X} size={11} />

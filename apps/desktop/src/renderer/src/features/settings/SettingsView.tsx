@@ -65,15 +65,15 @@ const PAGES: Record<SettingsSection, ComponentType> = {
 };
 
 /*
- * The nav's rows: 36px squircles, 14px; the chosen one gets a wash and a semibold label, in place (T3 Code's: nothing
+ * The nav's rows: 36px, 14px, pills in the Round look (`ab-pill`) and squircles in the Squircle one; the chosen one gets a wash and a semibold label, in place (T3 Code's: nothing
  * slides between rows).
  */
 const NAV_ROW =
-  'squircle no-drag relative isolate flex h-9 w-full min-w-0 items-center gap-2.5 rounded-control-sm px-2.5 text-left text-copy select-none outline-none ' +
+  'ab-pill squircle no-drag relative isolate flex h-9 w-full min-w-0 items-center gap-2.5 rounded-control-sm px-2.5 text-left text-copy select-none outline-none ' +
   'transition-colors duration-150 ease-rare focus-visible:ring-2 focus-visible:ring-[var(--ab-ring)] focus-visible:ring-inset [&>svg]:text-muted';
 const NAV_ROW_IDLE = 'text-fg-2 hover:bg-[color-mix(in_srgb,var(--ab-fg)_5%,transparent)] hover:text-fg';
 const NAV_ROW_ACTIVE = 'font-semibold tracking-ui text-fg [&>svg]:text-fg';
-const NAV_WASH = 'squircle absolute inset-0 -z-10 rounded-control-sm bg-[color-mix(in_srgb,var(--ab-fg)_8%,transparent)]';
+const NAV_WASH = 'ab-pill squircle absolute inset-0 -z-10 rounded-control-sm bg-[color-mix(in_srgb,var(--ab-fg)_8%,transparent)]';
 
 /** The chosen row's wash. */
 function NavWash() {

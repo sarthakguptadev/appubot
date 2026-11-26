@@ -125,7 +125,7 @@ export const UserMessage = memo(function UserMessage({ msg, botName, waiting }: 
       {images.length ? (
         <div className="mb-1.5 flex flex-wrap gap-1.5 last:mb-0">
           {images.map((im, i) => (
-            <button key={i} type="button" aria-label="Open image" {...galleryProps(imageSrc(im))} onClick={openGalleryAt} className="cursor-zoom-in overflow-hidden rounded-control">
+            <button key={i} type="button" aria-label="Open image" {...galleryProps(imageSrc(im))} onClick={openGalleryAt} className="cursor-zoom-in overflow-hidden rounded-card">
               <img src={imageSrc(im)} alt="" draggable={false} className="h-20 max-w-[180px] object-cover" />
             </button>
           ))}

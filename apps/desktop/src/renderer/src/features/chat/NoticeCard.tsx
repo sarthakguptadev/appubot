@@ -30,7 +30,7 @@ export function NoticeCard({ icon, tone, spinning, title, detail, children }: {
       transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
       className="chat-composer-surface squircle relative mb-2 flex min-w-0 items-center gap-3 rounded-card p-2.5"
     >
-      <span className="relative flex size-9 shrink-0 items-center justify-center rounded-control-lg bg-surface-2 text-muted">
+      <span className="ab-pill relative flex size-9 shrink-0 items-center justify-center rounded-control-lg bg-surface-2 text-muted">
         {spinning ? <Spinner size={16} /> : <Icon icon={icon} size={17} />}
         {tone ? (
           <span aria-hidden className={cn('absolute -top-0.5 -right-0.5 size-2 rounded-full ring-2 ring-[color:var(--ab-content)]', DOT[tone])} />

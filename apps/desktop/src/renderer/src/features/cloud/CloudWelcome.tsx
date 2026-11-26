@@ -384,7 +384,7 @@ function Tick({ on, disabled, onChange, label }: { on: boolean; disabled?: boole
   return (
     <span className="relative flex size-5 shrink-0">
       <input type="checkbox" className="peer absolute inset-0 cursor-[inherit] opacity-0" checked={on} disabled={disabled} onChange={() => onChange(!on)} aria-label={label} />
-      <span className={cn('flex size-5 items-center justify-center rounded-[7px] border transition-colors peer-focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]', on ? 'border-accent bg-accent text-white' : 'border-[var(--ab-hairline)] bg-transparent text-transparent', disabled && 'opacity-60')}>
+      <span className={cn('ab-pill flex size-5 items-center justify-center rounded-[7px] border transition-colors peer-focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]', on ? 'border-accent bg-accent text-white' : 'border-[var(--ab-hairline)] bg-transparent text-transparent', disabled && 'opacity-60')}>
         <Check size={13} strokeWidth={2.4} />
       </span>
     </span>
@@ -466,7 +466,7 @@ function NextStep({ onBack, onClose }: { onBack?: () => void; onClose: () => voi
 function NextRow({ icon, title, line, children }: { icon: typeof Smartphone; title: string; line: string; children: ReactNode }) {
   return (
     <div className="flex items-center gap-3.5 border-t border-[var(--ab-hairline)] px-4 py-3 first:border-t-0">
-      <span aria-hidden className="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-surface-3 text-fg-2"><Icon icon={icon} size={17} /></span>
+      <span aria-hidden className="ab-pill flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-surface-3 text-fg-2"><Icon icon={icon} size={17} /></span>
       <div className="min-w-0 flex-1">
         <div className="text-copy font-medium text-fg">{title}</div>
         <div className="text-ui leading-snug text-muted">{line}</div>

@@ -39,7 +39,7 @@ export function ProviderMark({ provider, size = 36, className }: { provider: Pic
   const mark = providerMark(provider.id);
   return (
     <span
-      className={cn('inline-flex shrink-0 items-center justify-center rounded-[10px] bg-surface text-fg shadow-[inset_0_0_0_.5px_var(--ab-hairline),0_.5px_1px_color-mix(in_srgb,#000_6%,transparent)]', className)}
+      className={cn('ab-pill inline-flex shrink-0 items-center justify-center rounded-[10px] bg-surface text-fg shadow-[inset_0_0_0_.5px_var(--ab-hairline),0_.5px_1px_color-mix(in_srgb,#000_6%,transparent)]', className)}
       style={{ width: size, height: size }}
     >
       {mark ? (

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { AlertTriangle, Cloud, Laptop, Info } from '../../components/ui/icons';
 import { teamTint } from '@appubot/chat-core';
 import { Icon, LogoMark, SETTINGS_CARD, cn } from '../../components/ui';
@@ -11,8 +11,12 @@ import { Icon, LogoMark, SETTINGS_CARD, cn } from '../../components/ui';
  * rows link out (payments, starting a team).
  */
 
-/** A tile's corner: a quarter of its size, the app icon's own rounding (Account's computers use 9px at 36). */
-const radius = (size: number) => Math.round(size * 0.25);
+/**
+ * A tile's size and corner: a quarter of its size, the app icon's own rounding (Account's computers use 9px at 36),
+ * as `TILE` reads it; a circle in the Round look (`ab-pill`).
+ */
+const tile = (size: number, rest?: CSSProperties) => ({ width: size, height: size, '--tile-r': `${Math.round(size * 0.25)}px`, ...rest }) as CSSProperties;
+const TILE = 'ab-pill rounded-(--tile-r)';
 
 /**
  * A cloud computer ("Sarthak’s Cloud Computer", "Acme Cloud Computer"): a cloud on the quiet fill, like This Mac's
@@ -24,8 +28,8 @@ export function CloudTile({ team, size = 40, warn, className }: { team?: string 
   return (
     <span
       aria-hidden
-      className={cn('flex shrink-0 items-center justify-center', !tint && 'bg-surface-3 text-fg-2', warn && 'outline-[1.5px] outline-offset-1 outline-warning outline-solid', className)}
-      style={{ width: size, height: size, borderRadius: radius(size), ...(tint ? { background: `color-mix(in srgb, ${tint} 16%, transparent)`, color: tint } : {}) }}
+      className={cn(TILE, 'flex shrink-0 items-center justify-center', !tint && 'bg-surface-3 text-fg-2', warn && 'outline-[1.5px] outline-offset-1 outline-warning outline-solid', className)}
+      style={tile(size, tint ? { background: `color-mix(in srgb, ${tint} 16%, transparent)`, color: tint } : undefined)}
     >
       <Icon icon={Cloud} size={Math.round(size * (size < 20 ? 0.72 : 0.5))} strokeWidth={size < 20 ? 2 : undefined} />
     </span>
@@ -43,8 +47,8 @@ export function TeamTile({ name, size = 40, warn, className }: { name: string; s
   return (
     <span
       aria-hidden
-      className={cn('flex shrink-0 overflow-hidden shadow-[inset_0_0_0_1px_rgba(255,255,255,.12)]', warn && 'outline-[1.5px] outline-offset-1 outline-warning outline-solid', className)}
-      style={{ width: size, height: size, borderRadius: radius(size), background: `linear-gradient(180deg, color-mix(in srgb, ${tint} 86%, #fff), ${tint})` }}
+      className={cn(TILE, 'flex shrink-0 overflow-hidden shadow-[inset_0_0_0_1px_rgba(255,255,255,.12)]', warn && 'outline-[1.5px] outline-offset-1 outline-warning outline-solid', className)}
+      style={tile(size, { background: `linear-gradient(180deg, color-mix(in srgb, ${tint} 86%, #fff), ${tint})` })}
     >
       <LogoMark size={size} />
     </span>
@@ -54,7 +58,7 @@ export function TeamTile({ name, size = 40, warn, className }: { name: string; s
 /** This Mac (or PC): a laptop on the quiet fill. */
 export function MacTile({ size = 40 }: { size?: number }) {
   return (
-    <span aria-hidden className="flex shrink-0 items-center justify-center bg-surface-3 text-fg-2" style={{ width: size, height: size, borderRadius: radius(size) }}>
+    <span aria-hidden className={cn(TILE, 'flex shrink-0 items-center justify-center bg-surface-3 text-fg-2')} style={tile(size)}>
       <Icon icon={Laptop} size={Math.round(size * 0.48)} />
     </span>
   );
@@ -62,7 +66,7 @@ export function MacTile({ size = 40 }: { size?: number }) {
 
 /** A small square for a row's icon (payments, invoices, start a team). */
 export function RowIcon({ children }: { children: ReactNode }) {
-  return <span aria-hidden className="flex size-8 shrink-0 items-center justify-center rounded-control bg-surface-2 text-fg-2">{children}</span>;
+  return <span aria-hidden className="ab-pill flex size-8 shrink-0 items-center justify-center rounded-control bg-surface-2 text-fg-2">{children}</span>;
 }
 
 export type BandTone = 'danger' | 'warning' | 'neutral';

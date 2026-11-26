@@ -199,7 +199,7 @@ export function PairingView({ onConnected, className }: { onConnected?: (device:
             <span
               key={i}
               className={cn(
-                'flex h-10 w-8 items-center justify-center rounded-[8px] bg-surface-2 font-mono text-[20px] font-medium text-fg shadow-[inset_0_0_0_.5px_var(--ab-hairline),inset_0_-1px_0_var(--ab-hairline)]',
+                'ab-pill flex h-10 w-8 items-center justify-center rounded-[8px] bg-surface-2 font-mono text-[20px] font-medium text-fg shadow-[inset_0_0_0_.5px_var(--ab-hairline),inset_0_-1px_0_var(--ab-hairline)]',
                 i === 3 && 'ml-2',
                 expired && 'text-muted line-through',
               )}
@@ -234,7 +234,7 @@ export function PairingView({ onConnected, className }: { onConnected?: (device:
       </div>
 
       {full ? (
-        <div className="flex max-w-[360px] items-start gap-2.5 rounded-control-lg bg-warning-soft px-3.5 py-2.5 text-note leading-snug text-warning">
+        <div className="flex max-w-[360px] items-start gap-2.5 rounded-card bg-warning-soft px-3.5 py-2.5 text-note leading-snug text-warning">
           <Icon icon={Smartphone} size={15} className="mt-px shrink-0" />
           <span>{pairedFullText()}</span>
         </div>
@@ -264,7 +264,7 @@ export function PairingView({ onConnected, className }: { onConnected?: (device:
           {pairing.connectId ? (
             <p className="px-1 text-center text-note leading-snug text-muted">Your phone reaches {THIS_MACHINE} from anywhere through AppuBot Connect, and directly on the same Wi-Fi.</p>
           ) : (tailscale ? !tailscale.running : !pairing.hosts.some((h) => h.kind === 'tailscale' || h.kind === 'magicdns')) ? (
-            <div className="flex items-start gap-2.5 rounded-control-lg bg-warning-soft px-3.5 py-2.5 text-note leading-snug text-warning">
+            <div className="flex items-start gap-2.5 rounded-card bg-warning-soft px-3.5 py-2.5 text-note leading-snug text-warning">
               <Icon icon={Wifi} size={15} className="mt-px shrink-0" />
               <span>
                 {tailscale?.installed === false

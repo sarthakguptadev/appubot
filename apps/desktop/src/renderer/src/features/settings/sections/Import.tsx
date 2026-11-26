@@ -42,7 +42,7 @@ function SourceChip({ id, name, on, onPick }: { id: string; name: string; on: bo
       aria-checked={on}
       onClick={onPick}
       className={cn(
-        'ab-press squircle flex h-12 min-w-0 items-center gap-2.5 rounded-control-lg px-2.5 text-left outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]',
+        'ab-press ab-pill squircle flex h-12 min-w-0 items-center gap-2.5 rounded-control-lg px-2.5 text-left outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]',
         on ? 'bg-[color-mix(in_srgb,var(--ab-accent)_10%,var(--ab-surface-2))] shadow-[inset_0_0_0_2px_var(--ab-accent)]' : 'bg-surface-2 hover:bg-surface-3',
       )}
     >

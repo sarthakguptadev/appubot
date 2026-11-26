@@ -71,7 +71,7 @@ export function TailscaleGuideSteps({ onPair }: { onPair?: () => void }) {
         </Step>
       </ol>
 
-      <div className="flex items-start gap-2.5 rounded-[12px] bg-surface-2 px-3.5 py-2.5 text-ui leading-snug text-fg-2 shadow-[inset_0_0_0_.5px_var(--ab-hairline)]">
+      <div className="flex items-start gap-2.5 rounded-card bg-surface-2 px-3.5 py-2.5 text-ui leading-snug text-fg-2 shadow-[inset_0_0_0_.5px_var(--ab-hairline)]">
         <Icon icon={Wifi} size={15} className="mt-px shrink-0 text-muted" />
         <span>
           On the same Wi-Fi as {THIS_MACHINE}, the phone connects directly. From anywhere else it comes in through AppuBot

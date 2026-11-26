@@ -573,7 +573,7 @@ export function ModelPicker({
                 onMouseLeave={() => { cancelHover(); setHoverCard((h) => (h?.key === r.key ? null : h)); }}
                 onClick={() => choose(r)}
                 className={cn(
-                  'group/row squircle flex h-9 cursor-default items-center gap-2 rounded-control-sm pr-1 pl-2.5 text-copy transition-colors duration-75',
+                  'group/row ab-pill squircle flex h-9 cursor-default items-center gap-2 rounded-control-sm pr-1 pl-2.5 text-copy transition-colors duration-75',
                   i === active ? 'bg-[color-mix(in_srgb,var(--ab-fg)_8%,transparent)]' : cur ? 'bg-[color-mix(in_srgb,var(--ab-fg)_4%,transparent)]' : '',
                 )}
               >

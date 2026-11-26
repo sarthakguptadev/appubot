@@ -39,7 +39,7 @@ function Wireframe({ dark, background }: { dark: boolean; background: Background
 
 /** A preview tile's frame: ringed in the accent when chosen. */
 const tileFrame = (on: boolean): string => cn(
-  'relative block aspect-[5/3] w-full overflow-hidden rounded-control-lg border transition-[border-color,box-shadow]',
+  'relative block aspect-[5/3] w-full overflow-hidden rounded-card border transition-[border-color,box-shadow]',
   on
     ? 'border-[var(--ab-accent)] shadow-[0_0_0_1px_var(--ab-accent)]'
     : 'border-[color-mix(in_srgb,var(--ab-fg)_10%,transparent)] group-hover:border-[color-mix(in_srgb,var(--ab-fg)_22%,transparent)]',

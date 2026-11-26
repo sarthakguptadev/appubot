@@ -11,7 +11,7 @@ export function PairSignIn({ className, card = true }: { className?: string; car
   const body = (
     <>
       <div className="flex items-start gap-3 px-4 pt-4 pb-1">
-        <span className="squircle flex size-9 shrink-0 items-center justify-center rounded-control bg-accent-soft text-accent"><Icon icon={Smartphone} size={18} /></span>
+        <span className="ab-pill squircle flex size-9 shrink-0 items-center justify-center rounded-control bg-accent-soft text-accent"><Icon icon={Smartphone} size={18} /></span>
         <div className="min-w-0 space-y-1">
           <div className="text-copy font-medium text-fg">Sign in to pair a phone</div>
           <p className="max-w-xl text-note leading-normal text-muted">

@@ -26,7 +26,7 @@ export const SlashMenu = memo(function SlashMenu({ items, active, onPick, onHove
           ref={i === active ? (el) => el?.scrollIntoView({ block: 'nearest' }) : undefined}
           onMouseEnter={() => onHover(i)}
           onMouseDown={(e) => { e.preventDefault(); onPick(c); }}
-          className={cn('squircle flex h-9 w-full items-center gap-3 rounded-control-sm px-3 text-left', i === active && 'bg-[color-mix(in_srgb,var(--ab-fg)_8%,transparent)]')}
+          className={cn('ab-pill squircle flex h-9 w-full items-center gap-3 rounded-control-sm px-3 text-left', i === active && 'bg-[color-mix(in_srgb,var(--ab-fg)_8%,transparent)]')}
         >
           <span className="font-mono text-ui text-fg">/{c.name}</span>
           {c.hint ? <span className="font-mono text-note text-muted">{c.hint}</span> : null}

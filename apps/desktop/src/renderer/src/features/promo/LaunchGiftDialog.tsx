@@ -284,7 +284,7 @@ function GiftTicket({ promo }: { promo: PromoStatus }) {
   return (
     <div className="w-full max-w-[480px] overflow-hidden rounded-card border border-[var(--ab-hairline)] bg-[color-mix(in_srgb,var(--ab-content)_82%,transparent)] text-left shadow-[0_18px_40px_-18px_rgba(0,0,0,.35)] backdrop-blur-md">
       <div className="flex items-center gap-3.5 px-4 py-4">
-        <span className="flex size-12 shrink-0 items-center justify-center rounded-control-lg bg-accent-soft"><ProviderLogo id="claude-code" size={26} /></span>
+        <span className="ab-pill flex size-12 shrink-0 items-center justify-center rounded-control-lg bg-accent-soft"><ProviderLogo id="claude-code" size={26} /></span>
         <div className="min-w-0 flex-1">
           <div className="text-[17px] leading-tight font-semibold text-fg">Claude</div>
           <div className="mt-0.5 truncate text-ui text-muted">{LAUNCH_GIFT.eyebrow}</div>
@@ -349,7 +349,7 @@ function PostPreview({ promo, text }: { promo: PromoStatus; text: string }) {
         </div>
       </div>
       <p className="selectable mt-3 text-copy leading-relaxed whitespace-pre-line text-fg">{text}</p>
-      <div className="mt-3 flex items-center gap-2.5 rounded-control-lg border border-[var(--ab-hairline)] px-3 py-2.5">
+      <div className="mt-3 flex items-center gap-2.5 rounded-card border border-[var(--ab-hairline)] px-3 py-2.5">
         <Logo size={30} className="rounded-[8px]" />
         <div className="min-w-0 leading-tight">
           <div className="truncate text-copy font-medium text-fg">AppuBot on Product Hunt</div>

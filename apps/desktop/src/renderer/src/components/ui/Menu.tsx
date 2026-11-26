@@ -19,11 +19,11 @@ export interface MenuItem {
 }
 
 /**
- * A menu row (Rare UI's menu shell: `p-1.5`, rows of 36px with squircle corners, 14px, the icon muted); hover and
+ * A menu row (Rare UI's menu shell: `p-1.5`, rows of 36px, 14px, the icon muted: pills in the Round look (`ab-pill`), squircle corners in the Squircle one); hover and
  * keyboard focus fill it with an ink tint. Shared by the app's other lists that read as menus.
  */
 export const MENU_ITEM =
-  'squircle flex h-9 w-full items-center gap-2.5 rounded-control-sm px-2.5 text-left text-copy transition-colors duration-100 outline-none disabled:opacity-40';
+  'ab-pill squircle flex h-9 w-full items-center gap-2.5 rounded-control-sm px-2.5 text-left text-copy transition-colors duration-100 outline-none disabled:opacity-40';
 export const MENU_ITEM_IDLE = 'text-fg hover:bg-[color-mix(in_srgb,var(--ab-fg)_8%,transparent)] focus-visible:bg-[color-mix(in_srgb,var(--ab-fg)_8%,transparent)]';
 export const MENU_ITEM_DANGER = 'text-danger hover:bg-danger-soft focus-visible:bg-danger-soft';
 /** A separator between groups of a menu: the Settings cards' row hairline. */

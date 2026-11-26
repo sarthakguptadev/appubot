@@ -111,7 +111,7 @@ function PartRow({ part, total, hot, onHot }: { part: Part; total: number; hot: 
       className={cn(SETTINGS_ROW, 'flex items-center gap-3.5 transition-opacity duration-200', hot && hot !== part.id && 'opacity-45')}
     >
       {/* the part's colour as a tile behind its icon: the same colour as its stretch of the bar */}
-      <span className={cn('squircle grid size-8 shrink-0 place-items-center rounded-control text-white', fill)}>
+      <span className={cn('ab-pill squircle grid size-8 shrink-0 place-items-center rounded-control text-white', fill)}>
         <Icon icon={icon} size={16} />
       </span>
       <div className="min-w-0 flex-1 space-y-0.5">

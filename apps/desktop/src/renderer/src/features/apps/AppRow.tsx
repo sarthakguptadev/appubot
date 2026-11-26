@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { isDirectApp, type AppConnection, type AppToolkit } from '@appubot/protocol';
 import { Check, ChevronDown, Plus, Trash2 } from '../../components/ui/icons';
 import { Icon, Menu, Spinner, Tooltip, cn } from '../../components/ui';
@@ -11,9 +11,9 @@ export function AppLogo({ toolkit, size = 40 }: { toolkit: Pick<AppToolkit, 'nam
   const logo = toolkit.logo && !broken ? toolkit.logo : null;
   return (
     <span
-      style={{ width: size, height: size, borderRadius: size / 4 }}
+      style={{ width: size, height: size, '--tile-r': `${size / 4}px` } as CSSProperties}
       className={cn(
-        'flex shrink-0 items-center justify-center overflow-hidden border border-[var(--ab-hairline)]',
+        'ab-pill flex shrink-0 items-center justify-center overflow-hidden rounded-(--tile-r) border border-[var(--ab-hairline)]',
         logo ? 'bg-white' : 'bg-surface-2 text-lead font-medium text-fg-2',
       )}
     >
@@ -31,7 +31,7 @@ export function AppLogoStack({ toolkits, ring, max = 4 }: { toolkits: Pick<AppTo
   return (
     <span aria-hidden className="flex shrink-0 items-center -space-x-1.5">
       {toolkits.slice(0, max).map((t) => (
-        <span key={t.slug} className="flex rounded-[5px]" style={{ boxShadow: `0 0 0 2px ${ring}` }}><AppLogo toolkit={t} size={20} /></span>
+        <span key={t.slug} className="ab-pill flex rounded-[5px]" style={{ boxShadow: `0 0 0 2px ${ring}` }}><AppLogo toolkit={t} size={20} /></span>
       ))}
     </span>
   );
@@ -119,7 +119,7 @@ export function AppRow({ toolkit: t, conns }: { toolkit: AppToolkit; conns: AppC
 export function AppRowSkeleton() {
   return (
     <div className="flex items-center gap-3 py-2" aria-hidden>
-      <span className="size-10 shrink-0 rounded-[10px] bg-surface-2" />
+      <span className="ab-pill size-10 shrink-0 rounded-[10px] bg-surface-2" />
       <span className="flex min-w-0 flex-1 flex-col gap-1.5">
         <span className="h-3 w-24 rounded-full bg-surface-2" />
         <span className="h-2.5 w-40 max-w-full rounded-full bg-surface-2 opacity-70" />

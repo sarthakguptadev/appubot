@@ -34,7 +34,7 @@ export function ThreadRow({ t, active, onScreen, unread, waiting, now, renaming,
       data-thread-row={t.id}
       onMouseMove={onHover}
       className={cn(
-        'group/thread relative rounded-md transition-colors duration-100',
+        'group/thread relative rounded-card transition-colors duration-100',
         onScreen ? 'bg-[color-mix(in_srgb,var(--ab-fg)_8%,transparent)]' : active && 'bg-[color-mix(in_srgb,var(--ab-fg)_4.5%,transparent)]',
       )}
     >
@@ -61,7 +61,7 @@ export function ThreadRow({ t, active, onScreen, unread, waiting, now, renaming,
             type="button"
             tabIndex={-1}
             onClick={onOpen}
-            className="squircle flex w-full min-w-0 flex-col gap-px rounded-control-sm px-2.5 py-2 text-left outline-none"
+            className="squircle flex w-full min-w-0 flex-col gap-px rounded-card px-2.5 py-2 text-left outline-none"
           >
             <span className="flex min-w-0 items-center gap-1.5">
               <span className={cn('min-w-0 truncate text-copy', unread ? 'font-semibold text-fg' : 'text-fg')}>{threadTitle(t)}</span>

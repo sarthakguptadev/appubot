@@ -159,7 +159,7 @@ function ReleaseRow({ notes, defaultOpen, divider }: { notes: ReleaseNotes; defa
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center gap-2.5 rounded-control py-2.5 text-left focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]"
+        className="ab-pill flex w-full items-center gap-2.5 rounded-control py-2.5 text-left focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]"
       >
         <Icon icon={ChevronRight} size={14} className={cn('shrink-0 text-muted transition-transform duration-200', open && 'rotate-90')} />
         <span className="text-copy font-medium text-fg">{releaseDate(notes.version)}</span>

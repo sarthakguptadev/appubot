@@ -166,7 +166,7 @@ export function TransferSection() {
       <MacFilesGroup />
 
       <SettingsGroup title={TRANSFER_SECRETS_TITLE} bare>
-        <div className="flex gap-2.5 rounded-control-lg border border-[var(--ab-hairline)] px-4 py-3 text-copy leading-snug text-muted">
+        <div className="flex gap-2.5 rounded-card border border-[var(--ab-hairline)] px-4 py-3 text-copy leading-snug text-muted">
           <Icon icon={LockKeyhole} size={15} className="mt-0.5 shrink-0" />
           <span>Your AI agents’ sign-ins, connected apps, Telegram and your private SSH key stay on your Mac: sign in to your agents on {target.name} (Settings › Agents), and sign in to Apps there once to get every app you connected. Each bot says what it needs once it’s there.</span>
         </div>

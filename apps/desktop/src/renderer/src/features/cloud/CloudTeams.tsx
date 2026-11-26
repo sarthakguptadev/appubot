@@ -71,7 +71,7 @@ export function InviteCard({ invite: i }: { invite: CloudInviteForMe }) {
   const busy = useCloud((s) => s.busy);
   const now = useNow();
   return (
-    <div className="flex flex-col gap-3 rounded-control-lg border border-[color-mix(in_srgb,var(--ab-accent)_35%,transparent)] bg-[color-mix(in_srgb,var(--ab-accent)_7%,transparent)] p-4 sm:flex-row sm:items-center sm:gap-4">
+    <div className="flex flex-col gap-3 rounded-card border border-[color-mix(in_srgb,var(--ab-accent)_35%,transparent)] bg-[color-mix(in_srgb,var(--ab-accent)_7%,transparent)] p-4 sm:flex-row sm:items-center sm:gap-4">
       <div className="flex min-w-0 flex-1 items-center gap-3.5">
         <TeamTile name={i.teamName} size={40} />
         <div className="min-w-0">
@@ -402,7 +402,7 @@ function RemoveDialog({ view, t, removing, onClose }: { view: CloudAccountView; 
       )}
     >
       {drop.offer ? (
-        <label className="flex cursor-pointer items-start gap-3 rounded-control bg-surface-2 p-3">
+        <label className="flex cursor-pointer items-start gap-3 rounded-card bg-surface-2 p-3">
           <Switch checked={dropSeat} onChange={setDropSeat} label={DROP_SEAT_QUESTION} className="mt-0.5" />
           <span className="min-w-0">
             <span className="block text-copy font-medium text-fg">Also drop their seat</span>
@@ -524,7 +524,7 @@ export function InviteDialog({ view, t, open, onClose }: { view: CloudAccountVie
           <span className="text-note text-muted">{teamRoleNote(role)}</span>
         </div>
         {short > 0 ? (
-          <div className="flex items-start gap-2.5 rounded-control bg-warning-soft p-3 text-ui leading-5 text-warning">
+          <div className="flex items-start gap-2.5 rounded-card bg-warning-soft p-3 text-ui leading-5 text-warning">
             <Icon icon={AlertTriangle} size={15} className="mt-0.5 shrink-0" />
             <div className="min-w-0 flex-1">
               {!check.ok ? check.reason
@@ -624,7 +624,7 @@ export function DangerGroup({ t }: { t: CloudTeamView }) {
   const closes = team.canManage && !!team.plan && !team.subscription?.cancelAtPeriodEnd;
   return (
     <SettingsGroup title="Danger zone" bare>
-      <div className="divide-y divide-[color-mix(in_srgb,var(--ab-danger)_18%,transparent)] overflow-hidden rounded-control-lg border border-[color-mix(in_srgb,var(--ab-danger)_32%,transparent)]">
+      <div className="divide-y divide-[color-mix(in_srgb,var(--ab-danger)_18%,transparent)] overflow-hidden rounded-card border border-[color-mix(in_srgb,var(--ab-danger)_32%,transparent)]">
         <LinkRow
           lead={null}
           title={`Leave ${team.name}`}

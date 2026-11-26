@@ -40,7 +40,7 @@ function ItemRow({ item, onOpen, onRemove }: { item: VaultItem; onOpen: () => vo
   return (
     <div className={cn(SETTINGS_ROW, 'group flex items-center gap-3')}>
       <button type="button" onClick={onOpen} className="flex min-w-0 flex-1 items-center gap-3 text-left focus-visible:outline-none">
-        <span className="squircle flex size-[34px] shrink-0 items-center justify-center rounded-control bg-surface-2 text-fg-2">
+        <span className="ab-pill squircle flex size-[34px] shrink-0 items-center justify-center rounded-control bg-surface-2 text-fg-2">
           <Icon icon={kindOf(item.kind).icon} size={16} />
         </span>
         <span className="min-w-0">
@@ -225,7 +225,7 @@ function ItemDialog({ kind, item, onClose, onSaved }: { kind: VaultKind; item?: 
       size="md"
       title={
         <span className="flex items-center gap-3">
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-control-lg bg-accent-soft text-accent-strong"><Icon icon={k.icon} size={18} /></span>
+          <span className="ab-pill flex size-9 shrink-0 items-center justify-center rounded-control-lg bg-accent-soft text-accent-strong"><Icon icon={k.icon} size={18} /></span>
           {item ? item.name : `New ${k.one.toLowerCase()}`}
         </span>
       }

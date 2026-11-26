@@ -97,7 +97,7 @@ export function SkillsPanel() {
       <div className="flex-1 overflow-y-auto px-2.5 pb-4">
         {TEACH && !lacks.teach ? <Card interactive className="!rounded-[14px] mx-1.5 mb-3">
           <button type="button" onClick={() => ui.openModal({ kind: 'teach' })} className="flex w-full items-center gap-3 rounded-[14px] px-3.5 py-3 text-left outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)]">
-            <span className="squircle flex size-8 shrink-0 items-center justify-center rounded-control bg-accent-soft text-accent-strong">
+            <span className="ab-pill squircle flex size-8 shrink-0 items-center justify-center rounded-control bg-accent-soft text-accent-strong">
               <Icon icon={GraduationCap} size={16} />
             </span>
             <span className="min-w-0 flex-1">
@@ -127,9 +127,9 @@ export function SkillsPanel() {
                   <button
                     type="button"
                     onClick={() => open(k)}
-                    className={cn('flex w-full items-start gap-2.5 rounded-[10px] px-2 py-2 text-left outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)]', ROW_HOVER)}
+                    className={cn('flex w-full items-start gap-2.5 rounded-card px-2 py-2 text-left outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)]', ROW_HOVER)}
                   >
-                    <span className="mt-px flex size-7 shrink-0 items-center justify-center rounded-[8px] bg-surface-2 text-fg-2">
+                    <span className="ab-pill mt-px flex size-7 shrink-0 items-center justify-center rounded-[8px] bg-surface-2 text-fg-2">
                       <Icon icon={k.source === 'taught' ? GraduationCap : BookOpen} size={15} />
                     </span>
                     <span className="min-w-0 flex-1">

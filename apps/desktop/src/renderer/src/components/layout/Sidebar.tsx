@@ -31,7 +31,7 @@ const AVATAR = 36;
 const PINNED_AVATAR = 64;
 const ROW_ON = 'bg-[color-mix(in_srgb,var(--ab-fg)_7.5%,transparent)] shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--ab-fg)_4%,transparent)]';
 const ROW_HOVER = 'hover:bg-[color-mix(in_srgb,var(--ab-fg)_4%,transparent)]';
-const ROW_BUTTON = 'ab-press squircle no-drag relative flex min-w-0 flex-1 items-center gap-2.5 rounded-row p-2 text-left outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)]';
+const ROW_BUTTON = 'ab-press ab-pill squircle no-drag relative flex min-w-0 flex-1 items-center gap-2.5 rounded-row p-2 text-left outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)]';
 const ROW_NAME = 'min-w-0 truncate text-copy leading-[18px] font-semibold tracking-ui text-fg';
 const ROW_PREVIEW = 'truncate text-ui leading-[17px]';
 const PREVIEW_INK = 'text-[color-mix(in_srgb,var(--ab-fg)_52%,transparent)]';
@@ -39,8 +39,8 @@ const PREVIEW_INK = 'text-[color-mix(in_srgb,var(--ab-fg)_52%,transparent)]';
 const STRIP_BUTTON = 'ab-press ab-pill squircle no-drag relative grid size-9 shrink-0 place-items-center rounded-control text-fg-2 hover:text-fg focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]';
 
 /** The chosen row's wash, in place (T3 Code's sidebar: nothing slides between rows). */
-function RowWash({ radius }: { radius: number }) {
-  return <span aria-hidden style={{ borderRadius: radius }} className={cn('squircle pointer-events-none absolute inset-0', ROW_ON)} />;
+function RowWash({ tile }: { tile?: boolean }) {
+  return <span aria-hidden className={cn('squircle pointer-events-none absolute inset-0', tile ? 'rounded-[14px]' : 'ab-pill rounded-row', ROW_ON)} />;
 }
 
 /**
@@ -88,9 +88,9 @@ function GroupRow({ group, selected }: { group: Group; selected: boolean }) {
   return (
     <div
       onContextMenu={(e) => { e.preventDefault(); e.currentTarget.querySelector<HTMLButtonElement>('[data-group-actions]')?.click(); }}
-      className={cn('group/row squircle relative flex w-full items-center rounded-row transition-colors duration-100', !selected && ROW_HOVER)}
+      className={cn('group/row ab-pill squircle relative flex w-full items-center rounded-row transition-colors duration-100', !selected && ROW_HOVER)}
     >
-      {selected ? <RowWash radius={10} /> : null}
+      {selected ? <RowWash /> : null}
       <button type="button" aria-current={selected || undefined} onClick={() => ui.selectGroup(group.id)} className={ROW_BUTTON}>
         <span className="relative grid size-9 shrink-0 place-items-center">
           <GroupTile members={members} />
@@ -141,7 +141,7 @@ function GroupPinTile({ group, selected }: { group: Group; selected: boolean }) 
       onContextMenu={(e) => { e.preventDefault(); e.currentTarget.querySelector<HTMLButtonElement>('[data-group-actions]')?.click(); }}
       className={cn('group/tile squircle relative min-w-0 rounded-[14px] transition-colors duration-100', !selected && ROW_HOVER)}
     >
-      {selected ? <RowWash radius={14} /> : null}
+      {selected ? <RowWash tile /> : null}
       <button
         type="button"
         aria-current={selected || undefined}
@@ -171,11 +171,11 @@ function BotRow({ bot, latest, selected, unread, presence, expanded, onToggle }:
       // right-click opens the bot's actions (the menu button only shows for keyboard focus)
       onContextMenu={(e) => { e.preventDefault(); e.currentTarget.querySelector<HTMLButtonElement>('[data-bot-actions]')?.click(); }}
       className={cn(
-        'group/row squircle relative flex w-full items-center rounded-row transition-colors duration-100',
+        'group/row ab-pill squircle relative flex w-full items-center rounded-row transition-colors duration-100',
         !selected && ROW_HOVER,
       )}
     >
-      {selected ? <RowWash radius={10} /> : null}
+      {selected ? <RowWash /> : null}
       <button
         type="button"
         aria-current={selected || undefined}
@@ -241,7 +241,7 @@ function BotTile({ bot, selected, unread, presence }: { bot: Bot; selected: bool
         !selected && ROW_HOVER,
       )}
     >
-      {selected ? <RowWash radius={14} /> : null}
+      {selected ? <RowWash tile /> : null}
       <button
         type="button"
         aria-current={selected || undefined}
@@ -352,7 +352,7 @@ function BotThreads({ bot }: { bot: Bot }) {
 
   // a hairline drops from the bot's avatar (its centre: the row's 8px inset + half the 36px avatar) and the titles
   // line up with the bot's name (54px in); rows hover inside the line, quieter than the bot row's own fill
-  const ROW = 'no-drag ml-1.5 flex h-7 w-[calc(100%-6px)] min-w-0 items-center gap-2 squircle rounded-control-sm pr-2 pl-[21px] text-left text-ui leading-normal outline-none transition-colors duration-100 hover:bg-[color-mix(in_srgb,var(--ab-fg)_3.5%,transparent)] focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)]';
+  const ROW = 'no-drag ml-1.5 flex h-7 w-[calc(100%-6px)] min-w-0 items-center gap-2 ab-pill squircle rounded-control-sm pr-2 pl-[21px] text-left text-ui leading-normal outline-none transition-colors duration-100 hover:bg-[color-mix(in_srgb,var(--ab-fg)_3.5%,transparent)] focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)]';
   return (
     <ul className="mt-0.5 mb-2 ml-[26px] flex flex-col border-l border-[color-mix(in_srgb,var(--ab-fg)_10%,transparent)]" aria-label={`${bot.name}'s threads`}>
       {threads.slice(0, shown).map((t) => {
@@ -415,7 +415,7 @@ function AppStack() {
       {STACK_APPS.map((logo, i) => (
         <span
           key={logo}
-          className="grid shrink-0 place-items-center overflow-hidden rounded-[6px] bg-white shadow-[0_0_0_2px_var(--ab-surface)]"
+          className="ab-pill grid shrink-0 place-items-center overflow-hidden rounded-[6px] bg-white shadow-[0_0_0_2px_var(--ab-surface)]"
           style={{ width: STACK_TILE, height: STACK_TILE, marginLeft: i ? STACK_STEP - STACK_TILE : 0, zIndex: i }}
         >
           <img src={logo} alt="" draggable={false} className="size-[68%] object-contain" />

@@ -273,7 +273,7 @@ html[data-glass="off"] body { background-image: none; }
 .chat-markdown :not(pre) > code {
   border-radius: .4rem; background: var(--ab-code-bg); padding: .1rem .4rem; color: var(--ab-fg); font-family: var(--font-mono); font-size: .875em; letter-spacing: 0;
 }
-.chat-markdown img { max-width: 100%; border-radius: 10px; }
+.chat-markdown img { max-width: 100%; border-radius: var(--radius-card); }
 /* opens the message's image gallery (imageGallery.ts); one inside a link opens the link */
 .chat-markdown img[data-gallery-src]:not(a img) { cursor: zoom-in; }
 .chat-markdown pre { max-width: 100%; overflow-x: auto; border-radius: 1rem; background: var(--ab-code-bg); padding: .5rem .6rem; font-family: var(--font-mono); }
