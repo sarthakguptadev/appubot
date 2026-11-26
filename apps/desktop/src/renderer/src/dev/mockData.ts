@@ -67,8 +67,10 @@ export interface MockOptions {
   /** `?thread=media` opens Appu's thread of media and odd cases (images, a page, voice, a failed turn); `?thread=routines`
    * its chat where a routine runs every 10 minutes (runs with nothing to say fold into one line); `?thread=work` a long
    * working turn and one still running (the work trail: add `&work=1`); `?thread=handoff` a chat with Appu where
-   * tasks were handed to Ledger with @Ledger, its answers in its name */
-  thread?: 'media' | 'routines' | 'work' | 'failed' | 'handoff';
+   * tasks were handed to Ledger with @Ledger, its answers in its name; `?thread=note` a job in hand with the bot's notes
+   * on the way, `?thread=question` a question asked mid-job and answered while the job goes on, `?thread=waits` a
+   * message sent to a bot whose agent can't take it mid-job (it waits, and says so) */
+  thread?: 'media' | 'routines' | 'work' | 'failed' | 'handoff' | 'note' | 'question' | 'waits';
   /** `?longname=1`: Appu has a very long name (truncation in the header, roster and composer) */
   longName: boolean;
   /**
@@ -119,7 +121,7 @@ export function readOptions(): MockOptions {
     updateState: (['downloading', 'ready'] as const).find((x) => x === q.get('update')),
     gift: q.get('gift') === '1' ? 'offer' : (['signedout', 'on', 'over'] as const).find((x) => x === q.get('gift')),
     computer: (['on-screen', 'background', 'waiting'] as const).find((x) => x === q.get('computer')),
-    thread: (['media', 'routines', 'work', 'failed', 'handoff'] as const).find((x) => x === q.get('thread')),
+    thread: (['media', 'routines', 'work', 'failed', 'handoff', 'note', 'question', 'waits'] as const).find((x) => x === q.get('thread')),
     longName: q.get('longname') === '1',
     profile: q.get('profile')?.trim() || undefined,
     limits: MOCK_LIMITS_STATES.find((x) => x === q.get('limits')),
@@ -445,6 +447,7 @@ export function buildSeed(opts: MockOptions): Seed {
     thread({ id: IDS.appuRoutines, botId: IDS.appu, title: 'Asana check', status: 'running', lastMessagePreview: '2 new tasks for you: “Logo review” (due Friday) and a comment from Anna on “Budget 2027”.', createdAt: ago(4 * HOUR), lastActiveAt: ago(2 * MIN) }),
     // only where asked for: it is the newest thread, so it would be Appu's current one everywhere
     ...(opts.thread === 'work' ? [thread({ id: IDS.appuWork, botId: IDS.appu, title: 'October expense report', status: 'running', createdAt: ago(20 * MIN), lastActiveAt: ago(MIN) })] : []),
+    ...(opts.thread === 'note' || opts.thread === 'question' || opts.thread === 'waits' ? [thread({ id: IDS.appuMidJob, botId: IDS.appu, title: 'October expense report', status: 'running', createdAt: ago(6 * MIN), lastActiveAt: ago(MIN) })] : []),
     // `?thread=failed`: a chat whose latest turn failed on its model (the failure card with its fixes)
     ...(opts.thread === 'failed' ? [thread({ id: IDS.appuFailed, botId: IDS.appu, title: 'Plan the offsite', status: 'error', createdAt: ago(6 * MIN), lastActiveAt: ago(MIN) })] : []),
     // `?thread=handoff`: a chat where Appu and the user handed Ledger tasks with @Ledger

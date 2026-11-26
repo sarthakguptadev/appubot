@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Message } from '@appubot/protocol';
-import { SENDING_QUIET_MS, absorbLocals, copyOfReply, dropReply, localMessages, localTime, replyIdOf, sendLook, settleLocal } from './sendQueue';
+import { SENDING_QUIET_MS, absorbLocals, copyOfReply, dropReply, localMessages, localTime, replyIdOf, sendLook, settleLocal, waitingSends } from './sendQueue';
 
 const real = (id: string, role: 'user' | 'agent', text = '', extra: Partial<Message> = {}): Message =>
   ({ id, threadId: 't1', role, parts: text ? [{ type: 'text', text }] : [], status: role === 'agent' ? 'streaming' : 'complete', via: 'desktop', createdAt: 200, updatedAt: 200, ...extra }) as Message;
@@ -83,5 +83,37 @@ describe('how a message on its way looks', () => {
     expect(sendLook('queued', 1000, 1000 + SENDING_QUIET_MS)).toBe('pending');
     expect(sendLook('uploading', 1000, 5000)).toBe('pending');
     expect(sendLook('failed', 1000, 1000)).toBe('failed');
+  });
+});
+
+describe('messages waiting for the bot to finish', () => {
+  const done = (id: string) => real(id, 'agent', 'ok', { status: 'complete' });
+
+  it('are yours written after the reply now being written, with no reply under them', () => {
+    const list = [real('u1', 'user', 'do the job'), real('a1', 'agent', 'working'), real('u2', 'user', 'how long?'), real('u3', 'user', 'and one more')];
+    expect(waitingSends(list)).toEqual(['u2', 'u3']);
+    // taken into the turn (or its own turn started): a reply is under it
+    expect(waitingSends([...list.slice(0, 3), real('a2', 'agent')])).toEqual([]);
+  });
+
+  it('are none when the bot is idle, or nothing was sent since it started', () => {
+    expect(waitingSends([])).toEqual([]);
+    expect(waitingSends([real('u1', 'user', 'hi'), real('a1', 'agent')])).toEqual([]);
+    expect(waitingSends([real('u1', 'user', 'hi'), done('a1'), real('u2', 'user', 'again')])).toEqual([]);
+    expect(waitingSends([real('u1', 'user', 'first message of a chat')])).toEqual([]);
+  });
+
+  it('leave out a copy still on its way, a routine’s prompt and another bot’s message', () => {
+    const list = [
+      real('u1', 'user', 'do the job'), real('a1', 'agent', 'working'),
+      real('u2', 'user', 'check Asana', { via: 'routine' }), real('u3', 'user', 'from Ledger', { via: 'bot' }),
+      real('u4', 'user', 'mine'), real('local:b', 'user', 'still sending', { clientId: 'local:b' }),
+    ];
+    expect(waitingSends(list)).toEqual(['u4']);
+  });
+
+  it('look past another bot’s answer to a task handed to it from this chat', () => {
+    const ledger = { from: { botId: 'bot_ledger', name: 'Ledger' }, via: 'bot' as const, status: 'complete' as const };
+    expect(waitingSends([real('u1', 'user', 'do the job'), real('a1', 'agent', 'working'), real('u2', 'user', 'mine'), real('a2', 'agent', 'Ledger’s answer', ledger)])).toEqual(['u2']);
   });
 });

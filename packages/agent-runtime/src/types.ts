@@ -209,8 +209,8 @@ export interface AgentRuntime {
   cancel(sessionId: string): Promise<void>;
   /**
    * Put a message into the turn that is running (ACP steering, `_session/steering`, where the agent advertises
-   * `_meta.steering.supported` at initialize: Claude Code's adapter), the way a message typed into Claude Code mid-task
-   * reaches it. The turn's own `prompt()` goes on and settles once the steered message is answered; the reply to it
+   * `_meta.steering.supported` at initialize: Claude Code's and Codex's adapters, OpenCode from 2.2; not Cursor, Grok
+   * or Copilot as of 2026-11), the way a message typed into Claude Code mid-task reaches it. The turn's own `prompt()` goes on and settles once the steered message is answered; the reply to it
    * starts a new part. False when it can't (no steering, no turn running, an error): send it as the next prompt.
    */
   steer(sessionId: string, blocks: PromptBlock[]): Promise<boolean>;

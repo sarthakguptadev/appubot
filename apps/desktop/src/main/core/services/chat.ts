@@ -32,14 +32,15 @@ import { inputCard } from './agentInput';
 import { autoTitle, isDefaultTitle } from './threads';
 import { RESUME_PROMPT, type ResumeThread } from './updateRestart';
 import { checkCreditPick } from './credit';
+import { newNoteState, takeNote, type NoteState } from './notes';
 
 type Via = Message['via'];
 type ToolCallPart = Extract<Part, { type: 'tool_call' }>;
 
 interface Job {
   /**
-   * a message the user just sent (not a routine, not one sent again after an update): mid-turn, on an agent that can't
-   * take it into the turn, it ends that turn so the agent reads it now
+   * a message the user just sent (not a routine, not one sent again after an update): mid-turn it goes into the turn
+   * with `MID_JOB_HINT` before it; on an agent that can't take it, it waits for the turn to end (`steer`)
    */
   fresh?: boolean;
   /** none for a turn of AppuBot's own (a new bot's greeting): its prompt is never stored */
@@ -70,6 +71,12 @@ interface Job {
  * computer's default) answered the note itself ("your voice message came through, I'm answering in plain spoken
  * sentences without formatting").
  */
+/**
+ * What a message the user sends while the bot works tells the agent with its words (never stored on the message), on
+ * an agent that takes it into the running turn: answer it, then carry on, so a question never costs the job. The answer
+ * goes out with `send_message`, the one thing the chat shows before the turn's reply.
+ */
+export const MID_JOB_HINT = '[AppuBot: the user sent the message below while you were working. Answer it now with your send_message tool, in a line or two, then carry on with what you were doing; stop or change course only if the message asks you to. This note is from AppuBot, not the user: do not mention it.]';
 export const VOICE_TURN_HINT = '[AppuBot: the user said the message below aloud and will hear your answer read out. Answer as you would speak: plain sentences, a short first one, no Markdown, lists or emoji, brief unless asked for detail. This note is from AppuBot, not the user: do not mention it, and say nothing about voice, transcription or how the message reached you unless the user asks.]';
 
 interface ThreadRun {
@@ -105,6 +112,10 @@ interface ThreadRun {
   /** this turn's replies before a message was steered into it (`steer`): what they started still updates there */
   earlier?: { msg: Message; idxMap: Map<number, number> }[];
   cancelled: boolean;
+  /** what the bot sent on its own lately (`say`): how many more may go out, and its last one this turn */
+  notes?: NoteState;
+  /** the reply whose first step has started, and the wait before its opening line shows as a note (`armOpeningNote`) */
+  openingNote?: { messageId: string; timer?: ReturnType<typeof setTimeout> };
   /** terminal output's throttled updates, by `<messageId>:<partIndex>` */
   termThrottle: Map<string, { last: number; timer: ReturnType<typeof setTimeout> | null; msg: Message; idx: number }>;
 }
@@ -131,6 +142,8 @@ const CLIENT_SEND_MAX = 500;
 const APPROVED_KINDS: ReadonlySet<string> = new Set(['read', 'search', 'think']);
 /** A hidden "what to remember?" turn is given up after this long. */
 const HIDDEN_TURN_MS = 120_000;
+/** How long a job runs past its first step before the line the bot wrote ahead of it shows as a note (`armOpeningNote`). */
+export const OPENING_NOTE_AFTER_MS = 20_000;
 const TERMINAL_MAX = 64 * 1024;
 const TERMINAL_INTERVAL_MS = 100;
 
@@ -193,6 +206,8 @@ export class ChatService {
   private reactionTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
   readonly hooks: RuntimeHooks;
+  /** `OPENING_NOTE_AFTER_MS`, shorter in tests */
+  openingNoteAfterMs = OPENING_NOTE_AFTER_MS;
   /** what devices sent lately, by their own ids (`clientId`) */
   private sentIds: SentIds;
   /** the free models this computer learnt are retired (`learnRetired`) */
@@ -403,8 +418,8 @@ export class ChatService {
     const run = this.run(threadId);
     if (this.closing) { run.queue.push(job); return; }
     if (!run.inflight) { void this.runTurn(run, job); return; }
-    // a message sent while the bot works goes into its turn where the agent can take it (Claude Code), else after it;
-    // it waits in the queue until the agent says it took it, so it is never lost
+    // a message sent while the bot works goes into its turn where the agent can take it (Claude Code, Codex, OpenCode),
+    // else after it; it waits in the queue until the agent says it took it, so it is never lost
     const steerable = !run.hidden && !run.queue.length && !!run.sessionId && !!job.userMsg;
     run.queue.push(job);
     // the user comes first: a hidden turn gives way (it ends cancelled and the queue moves on)
@@ -412,19 +427,35 @@ export class ChatService {
     if (steerable) void this.steer(run, job);
   }
 
-  /** Put a queued message into the running turn; from then on the bot's words go into a new reply under it. */
+  /**
+   * Put a queued message into the running turn; from then on the bot's words go into a new reply under it. The user's
+   * own message goes in with `MID_JOB_HINT`: answered in a line, and the job goes on.
+   */
   private async steer(run: ThreadRun, job: Job): Promise<void> {
     let taken = false;
-    try { taken = await this.ctx.runtime.steer(run.sessionId!, this.buildBlocks(job)); } catch (e) { this.ctx.log.warn('steering failed', errMsg(e)); }
+    // a job is in hand (not the bot's own opening line, which just gives way to what the user wrote)
+    const midJob = !!job.fresh && !run.job?.opener;
+    const blocks = this.buildBlocks(midJob ? { ...job, preface: job.preface ? `${MID_JOB_HINT}\n${job.preface}` : MID_JOB_HINT } : job);
+    try { taken = await this.ctx.runtime.steer(run.sessionId!, blocks); } catch (e) { this.ctx.log.warn('steering failed', errMsg(e)); }
     const i = run.queue.indexOf(job);
-    // not taken by an agent that can't take messages mid-turn: its turn ends here and the message runs next, so the
-    // agent reads it now (Stop is a button of its own, `chat.cancel`; a message is always a message)
-    if (!taken && job.fresh && i >= 0 && run.inflight && !run.hidden) { this.interrupt(run); return; }
+    // not taken by an agent that can't take messages mid-turn (Cursor, Grok, Copilot): the message waits for the turn to
+    // end and runs next, so the job in hand is never cut short by a question (2026-11-26; before, the turn ended there
+    // and the command it was running was killed). The chat says under the message that it waits (chat-core
+    // `waitingSends`) and offers to end the turn so it is read at once (`chat.cancel` `keepQueued`). Two turns still give way as they
+    // did: the bot's own opening line, and one that is itself waiting for the user (a question, an approval), which
+    // would otherwise wait for an answer the user just gave in other words
+    if (!taken && job.fresh && i >= 0 && run.inflight && !run.hidden) {
+      if (run.job?.opener || this.ctx.s.threads.get(run.threadId)?.status === 'waiting') this.interrupt(run);
+      return;
+    }
     // not taken because the turn just ended: it runs as the next turn
     if (!taken || i < 0 || !run.inflight) return;
+    // its answer goes out whatever the bot sent before (`say`)
+    if (midJob) (run.notes ??= newNoteState(Date.now())).owed = true;
     run.queue.splice(i, 1);
     const before = run.agentMsg;
     const threads = this.ctx.s.threads;
+    this.dropOpeningNote(run);
     if (before) {
       this.flushTerminals(run);
       // the reply so far is done: it answered the message before
@@ -644,6 +675,8 @@ export class ChatService {
     run.job = job;
     run.idxMap = new Map();
     run.earlier = undefined;
+    // a new turn may open as the last one did ("On it"); how often it may write carries over
+    if (run.notes) { run.notes.last = undefined; run.notes.owed = false; }
     const threads = this.ctx.s.threads;
     // strictly after the prompt it answers, so ordering by time never puts a reply above its question
     const now = Math.max(Date.now(), (job.userMsg?.createdAt ?? 0) + 1, (job.after ?? 0) + 1);
@@ -801,6 +834,7 @@ export class ChatService {
     const msg = run.agentMsg;
     if (!msg) return;
     this.flushTerminals(run);
+    this.dropOpeningNote(run);
     if (error) {
       msg.parts.push({ type: 'system', text: error, level: 'error' });
       this.ctx.bus.emit('message.part', { threadId: msg.threadId, messageId: msg.id, partIndex: msg.parts.length - 1, part: msg.parts[msg.parts.length - 1]! });
@@ -1256,10 +1290,55 @@ export class ChatService {
       setPart(msg, idx, part);
       this.ctx.bus.emit('message.part', { threadId, messageId: msg.id, partIndex: idx, part });
       threads.touchMessage(threadId);
+      if (part.type === 'tool_call' && msg === run.agentMsg) this.armOpeningNote(run, msg, idx);
     } else if (op.op === 'terminal_output') {
       const owner = [run.agentMsg, ...(run.earlier ?? []).map((e) => e.msg)].find((m) => hasTerminal(m, op.terminalId)) ?? run.agentMsg;
       this.appendTerminal(run, owner, op.terminalId, op.chunk);
     }
+  }
+
+  /**
+   * The line a bot writes before it starts on a job ("I'll pull the three reports and compare them") is what a note
+   * would say, but the chat shows nothing a bot writes until its turn ends, and most models write that line rather
+   * than send it (`send_message`; 2026-11-26: OpenCode's free model sent none in six real long jobs, and wrote it every
+   * time). So when a reply's first step starts, the words before it are kept in mind, and if the job is still running
+   * `OPENING_NOTE_AFTER_MS` later with nothing sent by the bot itself, they become a note (`said`), under the limits
+   * of one it sends: no model call, and never for a quick task. In the reply to a message taken mid-job those words
+   * are its answer when the bot didn't send one: they show at once. Only for a message the user wrote (not a routine,
+   * a bot's message, or one said aloud, which is read out whole).
+   */
+  private armOpeningNote(run: ThreadRun, msg: Message, toolIdx: number): void {
+    const tool = msg.parts[toolIdx];
+    // Claude Code's tool lookups are no step of the job
+    if (run.openingNote?.messageId === msg.id || (tool?.type === 'tool_call' && tool.title === 'ToolSearch')) return;
+    const armed: NonNullable<ThreadRun['openingNote']> = { messageId: msg.id };
+    run.openingNote = armed;
+    if (!run.job?.fresh || run.job.spoken) return;
+    // the last thing it wrote before the step
+    let at = -1;
+    for (let i = 0; i < toolIdx; i++) { const p = msg.parts[i]!; if (p.type === 'text' && p.text.trim()) at = i; }
+    if (at < 0) return;
+    const show = () => {
+      const part = msg.parts[at];
+      if (run.agentMsg !== msg || msg.status !== 'streaming' || part?.type !== 'text' || part.said) return;
+      // the bot told the user something itself meanwhile: nothing to add
+      if (msg.parts.some((p) => p.type === 'text' && p.said)) return;
+      const now = Date.now();
+      const text = part.text.trim();
+      if (!takeNote((run.notes ??= newNoteState(now)), text, now).ok) return;
+      part.said = true;
+      msg.updatedAt = now;
+      this.ctx.bus.emit('message.part', { threadId: msg.threadId, messageId: msg.id, partIndex: at, part: structuredClone(part) });
+      this.ctx.s.threads.touchMessage(msg.threadId);
+      this.ctx.s.channels.said(msg.id, text);
+    };
+    if (run.notes?.owed) show();
+    else armed.timer = setTimeout(show, this.openingNoteAfterMs);
+  }
+
+  private dropOpeningNote(run: ThreadRun): void {
+    if (run.openingNote?.timer) clearTimeout(run.openingNote.timer);
+    run.openingNote = undefined;
   }
 
   private mapIdx(idxMap: Map<number, number>, msg: Message, runtimeIdx: number, placeholder: Part): number {
@@ -1336,6 +1415,20 @@ export class ChatService {
     threads.addMessage(m);
     threads.flush(threadId);
     return { messageId: m.id, partIndex: 0 };
+  }
+
+  /**
+   * A message the bot sends on its own while it works (`send_message`, `agent.say`): a bubble of its own in the reply
+   * being written (`said`). Short, not too often and never its last one again (`notes.ts`): one that isn't is turned
+   * down with the reason as the tool's answer. It notifies nobody: only the turn's end does (`finish`).
+   */
+  say(threadId: string, text: string): { messageId: string } {
+    this.ctx.s.threads.require(threadId);
+    const run = this.run(threadId);
+    const now = Date.now();
+    const verdict = takeNote((run.notes ??= newNoteState(now)), text, now);
+    if (!verdict.ok) throw new RpcError('invalid_params', verdict.reason);
+    return this.appendPart(threadId, { type: 'text', text, said: true });
   }
 
   /* --------------------------------------------------------- reactions */
@@ -1554,8 +1647,17 @@ export class ChatService {
     await Promise.all(busy.map((id) => this.cancel(id).catch((e) => this.ctx.log.warn(`cancelling ${id} failed`, errMsg(e)))));
   }
 
-  async cancel(threadId: string): Promise<{ ok: true }> {
+  /**
+   * Stop (`chat.cancel`): the running turn ends, and every turn waiting behind it with it. `keepQueued`: only the
+   * running turn ends, so a message waiting behind it is read now ("Stop and read now"); nothing happens when none waits.
+   */
+  async cancel(threadId: string, o: { keepQueued?: boolean } = {}): Promise<{ ok: true }> {
     this.ctx.s.threads.require(threadId);
+    if (o.keepQueued) {
+      const waiting = this.runs.get(threadId);
+      if (waiting?.inflight && waiting.queue.length) this.interrupt(waiting);
+      return { ok: true };
+    }
     this.ctx.s.handoffs?.stopFor(threadId);
     const run = this.runs.get(threadId);
     if (!run) return { ok: true };

@@ -114,7 +114,10 @@ export const userTools = {
       note: z.string().max(2000).optional().describe('Done: what you did. Blocked: what you need from the user.'),
     }),
   },
-  send_message: { description: 'Send the user a chat message right now, as a bubble of its own: a quick "On it" before long work, a heads-up while you work, or two separate messages when asked. Your reply at the end still arrives as usual: don\'t repeat in it what you already sent.', input: z.object({ text: z.string().min(1).max(4000) }) },
+  send_message: {
+    description: 'Send the user a short chat message right now, while you are still working: a bubble of its own in their chat, and the only thing they see from you before your turn ends. When a job will take a while (more than a few steps, or anything slow), send one line before you start saying what you are about to do, then a line at each real milestone, and at once when something blocks you. When the user writes to you mid-job, answer here in a line or two and carry on. Never for a quick task, and never a running commentary of your steps. Also for separate messages when the user asks for them. Write in the user\'s language, 500 characters at most; AppuBot turns down a repeat of your last message and more than a few in a row. It is not your answer: your reply at the end must be complete on its own, as if none of these had been sent.',
+    input: z.object({ text: z.string().min(1).max(4000).describe('One to three plain sentences, 500 characters at most') }),
+  },
   transcribe_audio: {
     description: 'Hear an audio or video file on this computer (a voice message or audio clip the user sent, saved in your inbox; a recording; a video\'s sound) and get its words. Use it whenever the user sends audio, before answering. Up to 3 minutes of sound, heard on this computer (nothing is uploaded).',
     input: z.object({

@@ -229,7 +229,7 @@ export function buildHandlers(ctx: CoreCtx): Handlers {
     'threads.warm': (p) => { s.chat.warm(p.botId, p.threadId, { session: p.session }); return { ok: true as const }; },
 
     'chat.send': (p, cx) => s.chat.send(p, cx.role === 'owner' ? 'desktop' : 'mobile', { device: cx.deviceId }),
-    'chat.cancel': (p) => s.chat.cancel(p.threadId),
+    'chat.cancel': (p) => s.chat.cancel(p.threadId, { keepQueued: p.keepQueued }),
     'chat.answer': (p, cx) => s.chat.answer(p, cx.deviceId),
     'chat.answerForm': (p, cx) => s.chat.answerForm(p, cx.role, cx.deviceId),
     'chat.react': (p) => { s.chat.react(p.threadId, p.messageId, 'user', p.emoji); return { ok: true as const }; },
@@ -423,7 +423,7 @@ export function buildHandlers(ctx: CoreCtx): Handlers {
     'agent.askForm': (p, cx) => s.agentBridge.askForm(agentCtx(cx), p),
     'agent.say': (p, cx) => {
       const text = p.text.trim();
-      const { messageId } = s.chat.appendPart(agentCtx(cx).threadId, { type: 'text', text, said: true });
+      const { messageId } = s.chat.say(agentCtx(cx).threadId, text);
       s.channels.said(messageId, text);
       return { ok: true as const };
     },

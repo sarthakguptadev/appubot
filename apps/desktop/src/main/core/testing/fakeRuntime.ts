@@ -20,8 +20,12 @@ export class FakeRuntime implements AgentRuntime {
   private cancels = new Map<string, () => void>();
   /** a "slow" turn's own end: a steered message answered ends it */
   private ends = new Map<string, () => void>();
-  /** the agent takes messages into its running turn (Claude Code's ACP steering) */
+  /** the agent takes messages into its running turn (ACP steering: Claude Code, Codex, OpenCode) */
   steering = false;
+  /** how long after taking a message it answers it and ends the turn */
+  steerAnswerMs = 5;
+  /** after answering a message it took, it goes on to another step of the job before the turn ends */
+  steerThenStep = false;
   steered: { sessionId: string; blocks: PromptBlock[] }[] = [];
   /** holds createSession until it resolves (a session that takes a while to start) */
   gate: Promise<void> | null = null;
@@ -117,10 +121,20 @@ export class FakeRuntime implements AgentRuntime {
 
   async prompt(sessionId: string, blocks: PromptBlock[]): Promise<PromptResult> {
     this.prompts.push({ sessionId, blocks });
-    const text = blocks.filter((b): b is Extract<PromptBlock, { type: 'text' }> => b.type === 'text').map((b) => b.text).join('\n');
+    // what was asked, without the bot's instructions an agent that doesn't read its file gets with the first message
+    const text = blocks.filter((b): b is Extract<PromptBlock, { type: 'text' }> => b.type === 'text').map((b) => b.text).join('\n').replace(/<instructions>[\s\S]*?<\/instructions>/g, '');
     const op = this.hooks.onTurnOp.bind(this.hooks, sessionId);
     if (text.includes('slow')) {
       op({ op: 'delta', partIndex: 0, partType: 'thought', delta: 'Thinking slowly…' });
+      return new Promise<PromptResult>((resolve) => {
+        this.cancels.set(sessionId, () => resolve({ stopReason: 'cancelled' }));
+        this.ends.set(sessionId, () => resolve({ stopReason: 'end_turn' }));
+      });
+    }
+    // a job: it writes what it is about to do, starts its first step, and runs until something ends it
+    if (text.includes('long job')) {
+      op({ op: 'delta', partIndex: 0, partType: 'text', delta: 'I’ll pull the three reports and compare them.' });
+      op({ op: 'part', partIndex: 1, part: { type: 'tool_call', toolCallId: 'job1', title: 'Read reports', kind: 'read', status: 'in_progress', content: [], locations: [] } });
       return new Promise<PromptResult>((resolve) => {
         this.cancels.set(sessionId, () => resolve({ stopReason: 'cancelled' }));
         this.ends.set(sessionId, () => resolve({ stopReason: 'end_turn' }));
@@ -178,10 +192,21 @@ export class FakeRuntime implements AgentRuntime {
     setTimeout(() => {
       this.ends.delete(sessionId);
       this.cancels.delete(sessionId);
-      this.hooks.onTurnOp(sessionId, { op: 'delta', partIndex: 1, partType: 'text', delta: `On it: ${text}` });
+      this.hooks.onTurnOp(sessionId, { op: 'delta', partIndex: 8, partType: 'text', delta: `On it: ${text}` });
+      if (this.steerThenStep) this.hooks.onTurnOp(sessionId, { op: 'part', partIndex: 7, part: { type: 'tool_call', toolCallId: 'job2', title: 'Read reports again', kind: 'read', status: 'in_progress', content: [], locations: [] } });
       end();
-    }, 5);
+    }, this.steerAnswerMs);
     return true;
+  }
+
+  /** A running "slow" turn gets to its own end (nobody stopped it, nothing was steered into it). */
+  finishSlow(sessionId: string): void {
+    const end = this.ends.get(sessionId);
+    this.ends.delete(sessionId);
+    this.cancels.delete(sessionId);
+    if (!end) return;
+    this.hooks.onTurnOp(sessionId, { op: 'delta', partIndex: 9, partType: 'text', delta: 'The slow thing is done.' });
+    end();
   }
 
   async cancel(sessionId: string): Promise<void> {

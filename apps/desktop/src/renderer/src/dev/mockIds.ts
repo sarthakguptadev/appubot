@@ -25,6 +25,8 @@ export const IDS = {
   /** `?thread=work` (with `&work=1`): a long working turn for the work trail, then one still running */
   appuWork: 'th_appu_work',
   appuFailed: 'th_appu_failed',
+  /** `?thread=note|question|waits`: a job in hand with the bot's notes on the way, a question asked mid-job and answered, a message waiting for the job to end */
+  appuMidJob: 'th_appu_midjob',
   /** `?thread=handoff`: tasks handed to Ledger with @Ledger in a chat with Appu (by the user, then by Appu), Ledger's answers in its name */
   appuHandoff: 'th_appu_handoff',
   /** Ledger's one thread */

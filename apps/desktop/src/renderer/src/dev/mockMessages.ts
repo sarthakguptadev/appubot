@@ -562,6 +562,42 @@ function workThread(id: string): Message[] {
   ];
 }
 
+/* ---------- `?thread=note|question|waits`: a job in hand, and what the chat shows of it before the reply ---------- */
+function midJobThread(id: string, kind: 'note' | 'question' | 'waits'): Message[] {
+  const t0 = ago(4 * MIN);
+  let k = 0;
+  const call = (title: string, toolKind: ToolCallPart['kind'], at: number, took: number, extra: Partial<ToolCallPart> = {}): ToolCallPart => ({
+    type: 'tool_call', toolCallId: `tc_mid_${++k}`, title, kind: toolKind, status: 'completed', content: [], locations: [], startedAt: at, endedAt: at + took, ...extra,
+  });
+  const note = (t: string): Part => ({ type: 'text', text: t, said: true });
+  const building = (at: number): ToolCallPart => ({ ...call('python3 build_report.py --month 2026-10', 'execute', at, 0, { rawInput: { command: 'python3 build_report.py --month 2026-10' } }), status: 'in_progress', endedAt: undefined });
+  const ask = msg('m_mid_1', id, 'user', t0 - 2_000, [text('Pull together the October expense report: check the card statement, fix any wrong categories, rebuild the PDF and send it to me.')]);
+  const looked: Part[] = [
+    call('Read inbox/card-statement-october.csv', 'read', t0 + 6_000, 900, { locations: [{ path: `${APPU_WS}/inbox/card-statement-october.csv` }] }),
+    call('grep', 'search', t0 + 9_000, 700, { rawInput: { pattern: 'Other' } }),
+    call('Read rules/categories.yaml', 'read', t0 + 12_000, 600, { locations: [{ path: `${APPU_WS}/rules/categories.yaml` }] }),
+  ];
+  const fixed = call('Edit rules/categories.yaml', 'edit', t0 + 70_000, 1_100, { locations: [{ path: `${APPU_WS}/rules/categories.yaml` }] });
+  if (kind === 'waits') {
+    // an agent that can't take a message into its turn: no notes of AppuBot's making, and the second message waits
+    return [
+      ask,
+      msg('m_mid_2', id, 'agent', t0, [...looked, fixed, building(ago(40_000))], { status: 'streaming', updatedAt: ago(40_000) }),
+      msg('m_mid_3', id, 'user', ago(30_000), [text('Also send a copy to Priya when it’s done.')]),
+    ];
+  }
+  const opening = note('On it. I’ll check the statement against the category rules, fix what’s filed wrong, then rebuild the PDF. A few minutes.');
+  const milestone = note('Two things were filed under Other: Notion and one Uber ride. Fixed; rebuilding the PDF now.');
+  if (kind === 'note') return [ask, msg('m_mid_2', id, 'agent', t0, [opening, ...looked, fixed, milestone, building(ago(20_000))], { status: 'streaming', updatedAt: ago(20_000) })];
+  const t1 = ago(70_000);
+  return [
+    ask,
+    msg('m_mid_2', id, 'agent', t0, [opening, ...looked], { updatedAt: t1 - 1_000 }),
+    msg('m_mid_3', id, 'user', t1 - 1_000, [text('Quick one while you work: what did software come to in September?')]),
+    msg('m_mid_4', id, 'agent', t1, [note('₹39,800 in September, so October is up about 6%. Carrying on with the report.'), { ...fixed, startedAt: t1 + 9_000, endedAt: t1 + 10_100 }, building(ago(20_000))], { status: 'streaming', updatedAt: ago(20_000) }),
+  ];
+}
+
 /* ---------- the conversations ---------- */
 export function buildMessages(opts: MockOptions): Record<string, Message[]> {
   const appu = IDS.main;
@@ -575,6 +611,7 @@ export function buildMessages(opts: MockOptions): Record<string, Message[]> {
     [IDS.appuRoutines]: routinesThread(IDS.appuRoutines),
     ...(opts.thread === 'work' ? { [IDS.appuWork]: workThread(IDS.appuWork) } : {}),
     ...(opts.thread === 'handoff' ? { [IDS.appuHandoff]: handoffThread(IDS.appuHandoff) } : {}),
+    ...(opts.thread === 'note' || opts.thread === 'question' || opts.thread === 'waits' ? { [IDS.appuMidJob]: midJobThread(IDS.appuMidJob, opts.thread) } : {}),
     ...(opts.thread === 'failed' ? {
       [IDS.appuFailed]: [
         msg('m_failed_1', IDS.appuFailed, 'user', ago(2 * MIN), [text('Plan a two-day offsite for 40 people near Goa in early December.')]),

@@ -141,3 +141,28 @@ export function sendLook(state: 'queued' | 'uploading' | 'sending' | 'failed', s
   if (state === 'failed') return 'failed';
   return now - since < SENDING_QUIET_MS ? 'quiet' : 'pending';
 }
+
+/** a message waiting for the bot to finish says so only after this long: one going into the running turn has its reply under it by then */
+export const WAITING_QUIET_MS = 1200;
+
+/**
+ * Your messages the bot hasn't read yet because it is still on the job before them: the ones the computer has (not a
+ * copy still on its way) that came after the reply now being written, with no reply of their own under them. An agent
+ * that takes a message into its running turn (Claude Code, Codex, OpenCode) starts a reply under yours at once, so
+ * these are the ones sent to an agent that can't (Cursor, Grok, Copilot: the message runs when the turn ends), or
+ * while another of yours was still waiting. A routine's prompt and another bot's message wait without saying so.
+ */
+export function waitingSends(messages: readonly Message[]): string[] {
+  const out: string[] = [];
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const m = messages[i]!;
+    if (m.role === 'user') {
+      if (!isLocalId(m.id) && m.via !== 'routine' && m.via !== 'bot') out.unshift(m.id);
+      continue;
+    }
+    // another bot's answer to a task handed to it from this chat is not this bot's turn
+    if (m.from) continue;
+    return m.status === 'streaming' && !isLocalId(m.id) ? out : [];
+  }
+  return [];
+}
