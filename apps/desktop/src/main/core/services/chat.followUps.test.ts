@@ -3,7 +3,7 @@
  * lines are kept on the message and sent with its completion, so the apps show them as pills under it, the same after
  * a restart and in another window.
  */
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -11,6 +11,7 @@ import { Events, MessageSchema, type Bot, type Message, type Thread } from '@app
 import type { TurnOp } from '@appubot/agent-runtime';
 import { FOLLOW_UP_MAX_CHARS } from '@appubot/chat-core';
 import { createCore, type Core } from '../app';
+import { OPENING_NOTE_AFTER_MS } from './chat';
 import { FOLLOW_UPS_PARAGRAPH, renderAgentInstructions, renderInstructionsPreface } from './bots';
 import { FakeRuntime } from '../testing/fakeRuntime';
 import { silentLogger } from '../util';
@@ -154,6 +155,53 @@ describe('a reply cut off while its block was arriving', () => {
     expect(text(closing.reply)).toBe('Here it is.');
     expect(closing.reply.followUps).toEqual(['Email it to the team']);
     expect(JSON.stringify([line.sent, tag.sent, closing.sent])).not.toMatch(/<\/?fol/i);
+  });
+});
+
+describe('a note sent mid-job is not the reply', () => {
+  const said = (m: Message | undefined): string[] => (m?.parts ?? []).flatMap((p) => (p.type === 'text' && p.said ? [p.text] : []));
+  /** a job that runs until `end`: the agent's session, and the reply being written */
+  const startJob = async (): Promise<{ sid: string; id: string; end: () => Promise<Message> }> => {
+    const before = runtime.prompts.length;
+    const { agentMessageId: id } = core.services.chat.send({ threadId: thread.id, text: 'do something slow', attachments: [], images: [] });
+    await vi.waitFor(() => expect(runtime.prompts.length).toBe(before + 1));
+    const sid = runtime.prompts.at(-1)!.sessionId;
+    const end = async () => {
+      (runtime as unknown as { ends: Map<string, () => void> }).ends.get(sid)!();
+      await idle();
+      return messages().find((m) => m.id === id)!;
+    };
+    return { sid, id, end };
+  };
+  afterEach(() => { core.services.chat.openingNoteAfterMs = OPENING_NOTE_AFTER_MS; });
+
+  it('goes out as written, and without a block the bot put in it; the reply at the end still offers its own', async () => {
+    const job = await startJob();
+    const plain = 'Two were filed under Other (a < b in the rules): fixed.';
+    expect(core.services.chat.say(thread.id, plain).text).toBe(plain);
+    expect(core.services.chat.say(thread.id, `Rebuilding the PDF now.${BLOCK}`).text).toBe('Rebuilding the PDF now.');
+    // one that is only a block is turned down, in words the bot can act on
+    expect(() => core.services.chat.say(thread.id, BLOCK.trim())).toThrow(/follow-ups go at the very end of your reply/);
+    expect(said(messages().find((m) => m.id === job.id))).toEqual([plain, 'Rebuilding the PDF now.']);
+    const from = events.length;
+    for (const op of words(9, 'The report is rebuilt.\n\n<followups>\nSend it to Priya\n</followups>')) runtime.hooks.onTurnOp(job.sid, op);
+    const reply = await job.end();
+    expect(reply.followUps).toEqual(['Send it to Priya']);
+    expect(reply.parts.flatMap((p) => (p.type === 'text' ? [[p.text, !!p.said]] : []))).toEqual([[plain, true], ['Rebuilding the PDF now.', true], ['The report is rebuilt.', false]]);
+    expect(JSON.stringify([reply.parts, events.slice(from).filter((e) => e.event !== 'message.completed')])).not.toMatch(/<\/?follow|Email it|Send it to Priya/);
+  });
+
+  it('never carries a block as the line a bot wrote before its first step, and that block offers nothing', async () => {
+    // the third note of this chat: as many as may go out in a row
+    core.services.chat.openingNoteAfterMs = 50;
+    const job = await startJob();
+    for (const op of words(1, `I’ll pull the three reports and compare them.${BLOCK}`)) runtime.hooks.onTurnOp(job.sid, op);
+    runtime.hooks.onTurnOp(job.sid, { op: 'part', partIndex: 2, part: { type: 'tool_call', toolCallId: 'job1', title: 'Read reports', kind: 'read', status: 'in_progress', content: [], locations: [] } });
+    await vi.waitFor(() => expect(said(messages().find((m) => m.id === job.id))).toEqual(['I’ll pull the three reports and compare them.']), { timeout: 5000 });
+    for (const op of words(9, 'All three agree.')) runtime.hooks.onTurnOp(job.sid, op);
+    const reply = await job.end();
+    expect(reply.followUps).toBeUndefined();
+    expect(JSON.stringify(reply)).not.toMatch(/follow|Email it/i);
   });
 });
 

@@ -1457,14 +1457,19 @@ export class ChatService {
    * A message the bot sends on its own while it works (`send_message`, `agent.say`): a bubble of its own in the reply
    * being written (`said`). Short, not too often and never its last one again (`notes.ts`): one that isn't is turned
    * down with the reason as the tool's answer. It notifies nobody: only the turn's end does (`finish`).
+   *
+   * A note is not the reply: a follow-ups block written into one is taken out of it and offers nothing (only the
+   * reply's last words do). Returns the note as it went out.
    */
-  say(threadId: string, text: string): { messageId: string } {
+  say(threadId: string, text: string): { messageId: string; text: string } {
     this.ctx.s.threads.require(threadId);
     const run = this.run(threadId);
     const now = Date.now();
-    const verdict = takeNote((run.notes ??= newNoteState(now)), text, now);
+    const note = splitFollowUps(text).text.trim();
+    if (!note && text.trim()) throw new RpcError('invalid_params', 'Not sent: follow-ups go at the very end of your reply, never in a message sent while you work.');
+    const verdict = takeNote((run.notes ??= newNoteState(now)), note, now);
     if (!verdict.ok) throw new RpcError('invalid_params', verdict.reason);
-    return this.appendPart(threadId, { type: 'text', text, said: true });
+    return { messageId: this.appendPart(threadId, { type: 'text', text: note, said: true }).messageId, text: note };
   }
 
   /* --------------------------------------------------------- reactions */
