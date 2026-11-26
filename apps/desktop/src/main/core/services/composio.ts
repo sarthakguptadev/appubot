@@ -16,8 +16,8 @@
 import { randomBytes } from 'node:crypto';
 import { mkdirSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { appOn, appsOn, type AppConnection, type AppToolkit, type AppsStatus, type Bot, type MethodParams, type MethodResult, type QuestionForm } from '@appubot/protocol';
-import { appCardState } from '@appubot/chat-core';
+import { appOn, appsOn, type AppConnection, type AppsStatus, type Bot, type MethodParams, type MethodResult, type QuestionForm } from '@appubot/protocol';
+import { appCardState, searchApps } from '@appubot/chat-core';
 import type { AgentContext } from '../auth';
 import type { CoreCtx } from '../context';
 import type { JsonFile, StoredApps } from '../store';
@@ -64,21 +64,6 @@ const STARTING = new Set(['INITIATED', 'INITIALIZING']);
 const FAILED = new Set(['FAILED', 'EXPIRED', 'REVOKED']);
 
 const sameList = (a: readonly string[], b: readonly string[]): boolean => a.length === b.length && a.every((x, i) => x === b[i]);
-
-/** Short queries: the very name, name prefix, slug prefix, a word of the name, anywhere in the name, then the description. */
-function localSearch(items: AppToolkit[], q: string): AppToolkit[] {
-  const n = q.toLowerCase();
-  const rank = (t: AppToolkit): number => {
-    const name = t.name.toLowerCase();
-    if (name === n) return 0;
-    if (name.startsWith(n)) return 1;
-    if (t.slug.startsWith(n)) return 2;
-    if (name.split(/\W+/).some((w) => w.startsWith(n))) return 3;
-    if (name.includes(n)) return 4;
-    return t.description?.toLowerCase().includes(n) ? 5 : -1;
-  };
-  return items.map((t, i) => ({ t, i, r: rank(t) })).filter((x) => x.r >= 0).sort((a, b) => a.r - b.r || a.i - b.i).map((x) => x.t);
-}
 
 /** Composio's tool results are JSON text; anything else stays as it is. */
 function parseJson(text: string): Record<string, unknown> | undefined {
@@ -408,7 +393,7 @@ export class ComposioService {
     if (p.slugs?.length) return { categories, toolkits: p.slugs.flatMap((s) => this.bySlug.get(s) ?? []) };
     const q = p.search?.trim() ?? '';
     let list = p.category ? toolkits.filter((t) => t.categories.includes(p.category!)) : toolkits;
-    if (q) list = localSearch(list, q);
+    if (q) list = searchApps(list, q, categories);
     const offset = Math.max(0, Math.floor(Number(p.cursor) || 0));
     const end = offset + limit;
     return { categories, toolkits: list.slice(offset, end), nextCursor: end < list.length ? String(end) : undefined, total: list.length };

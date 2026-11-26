@@ -253,6 +253,11 @@ describe('apps (Composio for You)', () => {
     expect(all.toolkits.map((t) => t.slug)).not.toContain('test_app');
     expect(all.toolkits.map((t) => t.slug)).not.toContain('composio');
     expect((await owner.call('apps.catalog', { search: 'gma' })).toolkits[0]!.slug).toBe('gmail');
+    // a category by its name, and several words wherever each one is
+    const devTools = (await owner.call('apps.catalog', { category: 'developer-tools' })).total!;
+    expect((await owner.call('apps.catalog', { search: 'Developer Tools' })).total).toBeGreaterThanOrEqual(devTools);
+    expect((await owner.call('apps.catalog', { search: 'GMAIL  email' })).toolkits[0]!.slug).toBe('gmail');
+    expect((await owner.call('apps.catalog', { search: 'no app is called this' })).total).toBe(0);
     expect((await owner.call('apps.catalog', { slugs: ['slack', 'gmail', 'nope'] })).toolkits.map((t) => t.slug)).toEqual(['slack', 'gmail']);
     const cat = all.categories[0]!;
     expect((await owner.call('apps.catalog', { category: cat.id, limit: 200 })).toolkits.every((t) => t.categories.includes(cat.id))).toBe(true);

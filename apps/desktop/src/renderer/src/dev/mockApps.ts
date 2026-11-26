@@ -7,6 +7,7 @@
  * `?apps=accounts` with two Gmail accounts and three Google Calendars (adding an app that is connected adds an account).
  */
 import { isDirectApp, newId, type AppCategory, type AppConnection, type AppToolkit, type AppsStatus } from '@appubot/protocol';
+import { searchApps } from '@appubot/chat-core';
 import { GatewayError } from '../lib/gateway';
 import type { Handlers } from './mockHandlers';
 import type { MockGateway } from './MockGateway';
@@ -85,11 +86,6 @@ const CATEGORIES: AppCategory[] = Object.entries(CATEGORY_NAMES)
   .map(([id, name]) => ({ id, name, count: TOOLKITS.filter((t) => t.categories.includes(id)).length }))
   .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 
-function search(items: AppToolkit[], q: string): AppToolkit[] {
-  const n = q.toLowerCase();
-  return items.filter((t) => t.name.toLowerCase().includes(n) || t.slug.includes(n) || (q.length >= 3 && !!t.description?.toLowerCase().includes(n)));
-}
-
 export function createAppsHandlers(g: MockGateway): Pick<Handlers, 'apps.status' | 'apps.signIn' | 'apps.finishSignIn' | 'apps.signOut' | 'apps.catalog' | 'apps.connections' | 'apps.connect' | 'apps.disconnect' | 'apps.setDefault'> {
   let signedIn = !!g.opts.appsKey;
   let signingIn = false;
@@ -155,7 +151,8 @@ export function createAppsHandlers(g: MockGateway): Pick<Handlers, 'apps.status'
       const limit = p?.limit ?? 60;
       if (p?.slugs?.length) return { categories: CATEGORIES, toolkits: p.slugs.flatMap((s) => toolkit(s) ?? []) };
       let list = p?.category ? TOOLKITS.filter((t) => t.categories.includes(p.category!)) : TOOLKITS;
-      if (p?.search?.trim()) list = search(list, p.search.trim());
+      // the gateway's own search, over the seeded catalog
+      if (p?.search?.trim()) list = searchApps(list, p.search, CATEGORIES);
       const offset = Number(p?.cursor ?? 0) || 0;
       return { categories: CATEGORIES, toolkits: list.slice(offset, offset + limit), nextCursor: offset + limit < list.length ? String(offset + limit) : undefined, total: list.length };
     },
