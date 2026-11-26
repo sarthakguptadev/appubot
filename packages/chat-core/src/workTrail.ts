@@ -51,9 +51,9 @@ export function isWeakToolTitle(value: string): boolean {
   return /^(tool|shell|bash|execute|command|skill|read|edit|search|find|grep|glob|fetch|other|write|delete|move|think|run|list|working|reading|editing|searching|writing|running|listing|fetching|thinking|deleting|moving|mcp:\s*tool|read file|edit file|write file|run command|ran command|unnamed|tool call)$/i.test(value.trim());
 }
 
-/** AppuBot's own bridge tool behind a raw title (`mcp__appubot__apps_execute`, `appubot.send_message`), if any. */
+/** AppuBot's own bridge tool behind a raw title (`mcp__appubot__apps_execute`, `appubot.send_message`, OpenCode's `appubot_send_message`), if any. */
 export function bridgeTool(title: string): string | undefined {
-  return /^(?:mcp__appubot__|appubot[./:-]|appubot__)([a-z_]+)(?::\s*[a-z_]+)?$/.exec(title.trim())?.[1];
+  return /^(?:mcp__appubot__|appubot__|appubot[./:_-])([a-z_]+)(?::\s*[a-z_]+)?$/.exec(title.trim())?.[1];
 }
 
 /**

@@ -66,15 +66,29 @@ describe('model endpoint helpers', () => {
   });
 
   it("writes OpenCode's provider config", () => {
-    expect(openCodeConfig([])).toBeUndefined();
+    expect(JSON.parse(openCodeConfig([])).provider).toBeUndefined();
     const config = JSON.parse(openCodeConfig([{ id: 'e', kind: 'ollama', name: 'Ollama', baseUrl: 'http://127.0.0.1:11434/v1', models: ['m1'], providerKey: 'ollama', createdAt: 1, apiKey: 'k' }])!);
     expect(config.provider.ollama).toEqual({
       npm: '@ai-sdk/openai-compatible', name: 'Ollama', options: { baseURL: 'http://127.0.0.1:11434/v1', apiKey: 'k' }, models: { m1: { name: 'm1' } },
     });
   });
+
+  // OpenCode 2 keeps a session's MCP tools behind its `execute` tool; with that denied the model is offered them itself
+  it("turns OpenCode's Code Mode off, except where it is the only way to a server's tools", () => {
+    for (const version of [undefined, '2.4.1', '2.2.0', '1.19.6']) expect(JSON.parse(openCodeConfig([], version)).permission).toEqual({ execute: 'deny' });
+    for (const version of ['2.0.32', '2.1.4']) expect(JSON.parse(openCodeConfig([], version)).permission).toBeUndefined();
+  });
 });
 
 describe('model endpoints', () => {
+  it("gives OpenCode's tools to its model with no endpoint saved, and says nothing of the bridge or its token", async () => {
+    const { runtime } = await start();
+    const env = runtime.hooks.secretEnv?.('opencode');
+    expect(JSON.parse(env!.OPENCODE_CONFIG_CONTENT!)).toEqual({ $schema: 'https://opencode.ai/config.json', permission: { execute: 'deny' } });
+    expect(runtime.hooks.secretEnv?.('claude-code')?.OPENCODE_CONFIG_CONTENT).toBeUndefined();
+    expect(runtime.hooks.secretEnv?.('codex')?.OPENCODE_CONFIG_CONTENT).toBeUndefined();
+  });
+
   it('finds models, saves endpoints for this user only and hands them to OpenCode', async () => {
     const { core, runtime } = await start();
     const s = core.services;
@@ -120,7 +134,7 @@ describe('model endpoints', () => {
 
     await s.endpoints.delete(ollama.id);
     await s.endpoints.delete(hosted.id);
-    expect(runtime.hooks.secretEnv?.('opencode')).toBeUndefined();
+    expect(JSON.parse(runtime.hooks.secretEnv?.('opencode')!.OPENCODE_CONFIG_CONTENT!).provider).toBeUndefined();
     expect(s.providers.list().find((p) => p.id === 'opencode')!.auth?.account).toBe('Free models');
     await expect(s.endpoints.delete('nope')).rejects.toThrow(/not found/);
   });

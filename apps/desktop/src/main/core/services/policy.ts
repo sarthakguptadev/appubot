@@ -31,9 +31,9 @@ export const pickAllowOnce = (options: Option[]): string | undefined => pickOpti
 const OWN_TOOLS = new Set(['apps_search', 'apps_tool_schemas', 'ask_user', 'ask_form', 'vault_request', 'apps_request', 'telegram_request', 'send_message', 'show_page', 'send_voice', 'transcribe_audio', 'react', 'remember', 'update_memory', 'forget', 'read_memory', 'list_bots', 'get_bot', 'update_bot', 'create_bot', 'read_bot_history', 'list_routines', 'create_routine', 'update_routine', 'delete_routine', 'message_bot', 'message_bots', 'list_groups', 'post_to_group', 'create_group', 'start_goal', 'finish_goal', 'vault_list', 'vault_fill', 'vault_key']);
 const SETUP_TOOLS = new Set([...OWN_TOOLS, 'save_skill']);
 
-/** The bridge tool a permission request is for (`mcp__appubot__ask_user`, `appubot.ask_user`, Cursor's `appubot-ask_user: ask_user`…), if it is one. */
+/** The bridge tool a permission request is for (`mcp__appubot__ask_user`, `appubot.ask_user`, OpenCode's `appubot_ask_user`, Cursor's `appubot-ask_user: ask_user`…), if it is one. */
 export function bridgeTool(title: string): string | undefined {
-  return /^(?:mcp__appubot__|appubot[./:-]|appubot__)([a-z_]+)(?::\s*[a-z_]+)?$/.exec(title.trim())?.[1];
+  return /^(?:mcp__appubot__|appubot__|appubot[./:_-])([a-z_]+)(?::\s*[a-z_]+)?$/.exec(title.trim())?.[1];
 }
 
 /** `tool`: the bridge tool's own name (`ask_user`, PermissionAsk.bridgeTool) or a raw tool title (`mcp__appubot__ask_user`). */
