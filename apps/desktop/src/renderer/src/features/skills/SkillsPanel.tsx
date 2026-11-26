@@ -127,7 +127,7 @@ export function SkillsPanel() {
                   <button
                     type="button"
                     onClick={() => open(k)}
-                    className={cn('flex w-full items-start gap-2.5 rounded-card px-2 py-2 text-left outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)]', ROW_HOVER)}
+                    className={cn('flex w-full items-start gap-2.5 rounded-row px-2 py-2 text-left outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)]', ROW_HOVER)}
                   >
                     <span className="ab-pill mt-px flex size-7 shrink-0 items-center justify-center rounded-[8px] bg-surface-2 text-fg-2">
                       <Icon icon={k.source === 'taught' ? GraduationCap : BookOpen} size={15} />

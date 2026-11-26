@@ -47,11 +47,11 @@ function RoutineRow({ r, now }: { r: Routine; now: number }) {
   const lastLabel = last ? (last === 'now' ? 'just now' : /^\d+[mhd]$/.test(last) ? `${last} ago` : last) : 'never';
 
   return (
-    <div className={cn('group/row flex items-start gap-2.5 rounded-card px-2 py-2', ROW_HOVER)}>
+    <div className={cn('group/row flex items-start gap-2.5 rounded-row px-2 py-2', ROW_HOVER)}>
       <button
         type="button"
         onClick={() => ui.openModal({ kind: 'routine', routineId: r.id })}
-        className="flex min-w-0 flex-1 items-start gap-2.5 rounded-card text-left outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]"
+        className="flex min-w-0 flex-1 items-start gap-2.5 rounded-row text-left outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]"
       >
         <span className={cn('ab-pill mt-px flex size-7 shrink-0 items-center justify-center rounded-[8px]', r.enabled ? 'bg-surface-2 text-fg-2' : 'bg-surface-2 text-muted')}>
           <Icon icon={r.deliverTo === 'notify' ? Bell : CalendarClock} size={15} />
