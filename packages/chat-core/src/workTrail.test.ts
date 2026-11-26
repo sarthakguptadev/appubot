@@ -207,6 +207,7 @@ describe('words', () => {
 
   it('names AppuBot’s own tools in words', () => {
     expect(bridgeTool('mcp__appubot__apps_execute')).toBe('apps_execute');
+    expect(bridgeTool('appubot_apps_execute')).toBe('apps_execute');
     expect(bridgeTool('Read a.ts')).toBeUndefined();
     const gmail = tool('other', { title: 'mcp__appubot__apps_execute', rawInput: { tools: [{ tool_slug: 'GMAIL_SEND_EMAIL' }] } });
     expect(trailSentence(gmail, false).verb).toBe('Used Gmail');

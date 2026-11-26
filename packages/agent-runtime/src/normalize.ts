@@ -71,11 +71,11 @@ const APPUBOT_TOOL_TITLES: Record<string, string> = {
 };
 
 /**
- * The AppuBot bridge tool a raw tool title names (`mcp__appubot__ask_user`, `appubot.ask_user`, Cursor's
- * `appubot-ask_user: ask_user` → `ask_user`), if any.
+ * The AppuBot bridge tool a raw tool title names (`mcp__appubot__ask_user`, `appubot.ask_user`, OpenCode's
+ * `appubot_ask_user`, Cursor's `appubot-ask_user: ask_user` → `ask_user`), if any.
  */
 export function bridgeToolName(title: string | null | undefined): string | undefined {
-  return /^(?:mcp__appubot__|appubot[./:-]|appubot__)([a-z_]+)(?::\s*[a-z_]+)?$/.exec((title ?? '').trim())?.[1];
+  return /^(?:mcp__appubot__|appubot__|appubot[./:_-])([a-z_]+)(?::\s*[a-z_]+)?$/.exec((title ?? '').trim())?.[1];
 }
 
 /** The same from a tool call's input, where an agent names the server and tool (Cursor: `providerIdentifier`, `toolName`). */

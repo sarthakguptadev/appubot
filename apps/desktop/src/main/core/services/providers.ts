@@ -452,8 +452,8 @@ export class ProvidersService {
     const credit = this.ctx.s.credit?.env(id);
     if (credit) return credit;
     const keys = this.readKeys(scope)[id];
-    // OpenCode also gets the custom model endpoints (ModelEndpointsService), keys included
-    const endpoints = providerBase(id) === 'opencode' ? this.ctx.s.endpoints?.openCodeEnv() : undefined;
+    // OpenCode also gets its inline config (ModelEndpointsService): Code Mode off, the custom model endpoints, keys included
+    const endpoints = providerBase(id) === 'opencode' ? this.ctx.s.endpoints?.openCodeEnv(this.statuses.get(id)?.version) : undefined;
     return endpoints ? { ...keys, ...endpoints } : keys;
   }
 

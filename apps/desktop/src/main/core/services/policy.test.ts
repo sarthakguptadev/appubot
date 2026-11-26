@@ -39,6 +39,15 @@ describe('a new bot setting itself up', () => {
   });
 });
 
+describe("OpenCode's names for AppuBot's tools", () => {
+  it('reads "appubot_ask_user" as ask_user, one of its own tools', () => {
+    expect(bridgeTool('appubot_ask_user')).toBe('ask_user');
+    expect(isOwnTool('appubot_ask_user')).toBe(true);
+    expect(isOwnTool('appubot_computer_click')).toBe(false);
+    expect(actsInAccounts('appubot_apps_execute')).toBe(true);
+  });
+});
+
 describe("Cursor's names for AppuBot's tools", () => {
   it('reads "appubot-ask_user: ask_user" as ask_user, one of its own tools', () => {
     expect(bridgeTool('appubot-ask_user: ask_user')).toBe('ask_user');

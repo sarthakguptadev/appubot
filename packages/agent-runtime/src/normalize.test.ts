@@ -323,6 +323,16 @@ describe('bridge tools behind friendly titles', () => {
     expect(a.getBridgeTool('t2')).toBeUndefined();
     expect(bridgeToolName('appubot.remember')).toBe('remember');
   });
+
+  it("reads OpenCode's names for them", () => {
+    const a = new TurnAssembler();
+    a.applyToolCallUpdate({ toolCallId: 't1', title: 'appubot_send_file' });
+    expect(a.getToolCall('t1')?.title).toBe('Send file to you');
+    expect(a.getBridgeTool('t1')).toBe('send_file');
+    expect(bridgeToolName('appubot_ask_user')).toBe('ask_user');
+    expect(bridgeToolName('appubot__ask_user')).toBe('ask_user');
+    expect(bridgeToolName('other_ask_user')).toBeUndefined();
+  });
 });
 
 describe("bridge tools in Cursor's requests", () => {

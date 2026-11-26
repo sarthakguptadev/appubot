@@ -51,16 +51,27 @@ export function providerKeyFor(e: Pick<ModelEndpoint, 'kind' | 'name'>, taken: S
   return key;
 }
 
-/** OpenCode's config for these endpoints (`provider` entries), as `OPENCODE_CONFIG_CONTENT` carries it. */
-export function openCodeConfig(endpoints: StoredEndpoint[]): string | undefined {
-  if (!endpoints.length) return undefined;
+/**
+ * OpenCode's config as `OPENCODE_CONFIG_CONTENT` carries it: these endpoints as `provider` entries, and its Code Mode
+ * off. OpenCode 2 starts the MCP servers a session brings but keeps their tools from the model: they sit in a catalog
+ * reached only by writing JavaScript for its `execute` tool, so a bot had none of AppuBot's tools to call
+ * (AppuBot#41). With `execute` denied OpenCode offers every tool to the model itself, as the other agents do.
+ * OpenCode 1 has no such tool and ignores the rule; OpenCode 2.0 and 2.1 (`version`) have no other way to a server's
+ * tools than Code Mode, so there it stays on.
+ */
+export function openCodeConfig(endpoints: StoredEndpoint[], version?: string): string {
   const provider = Object.fromEntries(endpoints.map((e) => [e.providerKey, {
     npm: '@ai-sdk/openai-compatible',
     name: e.name,
     options: { baseURL: e.baseUrl, ...(e.apiKey ? { apiKey: e.apiKey } : {}) },
     models: Object.fromEntries(e.models.map((m) => [m, { name: m }])),
   }]));
-  return JSON.stringify({ $schema: 'https://opencode.ai/config.json', provider });
+  const codeModeOnly = /^v?2\.[01]\./.test(version ?? '');
+  return JSON.stringify({
+    $schema: 'https://opencode.ai/config.json',
+    ...(codeModeOnly ? {} : { permission: { execute: 'deny' } }),
+    ...(endpoints.length ? { provider } : {}),
+  });
 }
 
 export class ModelEndpointsService {
@@ -72,10 +83,9 @@ export class ModelEndpointsService {
     return this.read().map(({ apiKey, ...e }) => ({ ...e, keySaved: !!apiKey }));
   }
 
-  /** The environment OpenCode starts with: its inline config for the endpoints (none: nothing). */
-  openCodeEnv(): Record<string, string> | undefined {
-    const config = openCodeConfig(this.read());
-    return config ? { OPENCODE_CONFIG_CONTENT: config } : undefined;
+  /** The environment OpenCode starts with: its inline config (`version`: the OpenCode it is for, when known). */
+  openCodeEnv(version?: string): Record<string, string> {
+    return { OPENCODE_CONFIG_CONTENT: openCodeConfig(this.read(), version) };
   }
 
   /** Ask the server for its models; an address without `/v1` that fails is tried again with it. */
