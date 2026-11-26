@@ -999,8 +999,16 @@ export const AppToolkitSchema = z.object({
 });
 export type AppToolkit = z.infer<typeof AppToolkitSchema>;
 
-/** A connected account in the user's Composio account; `status` is Composio's (ACTIVE, INITIATED, FAILED, …), upper case. */
-export const AppConnectionSchema = z.object({ slug: z.string(), connectedAccountId: z.string(), status: z.string() });
+/**
+ * A connected account in the user's Composio account; `status` is Composio's (ACTIVE, INITIATED, FAILED, …), upper case.
+ * An app can have several (two Gmails): `label` is who the account is at the app (its address or name, when the app
+ * says), `alias` the name it was given at Composio, and `isDefault` marks the one the bots' calls use when they name
+ * no account.
+ */
+export const AppConnectionSchema = z.object({
+  slug: z.string(), connectedAccountId: z.string(), status: z.string(),
+  label: z.string().optional(), alias: z.string().optional(), isDefault: z.boolean().optional(),
+});
 export type AppConnection = z.infer<typeof AppConnectionSchema>;
 
 

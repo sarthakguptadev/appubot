@@ -1,15 +1,16 @@
 import { createContext, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { AppCategory, AppConnection, AppToolkit } from '@appubot/protocol';
 import { activeSlugs } from '@appubot/chat-core';
-import { AlertCircle, ChevronDown, ChevronLeft, ChevronRight, ExternalLink, Search, X } from '../../components/ui/icons';
-import { Button, Dialog, Icon, Menu, Spinner, Tooltip, cn } from '../../components/ui';
+import { AlertCircle, Check, ChevronDown, ChevronLeft, ChevronRight, ExternalLink, MoreHorizontal, Search, Trash2, X } from '../../components/ui/icons';
+import { Badge, Button, Dialog, Icon, Menu, Spinner, Tooltip, cn } from '../../components/ui';
 import { SEGMENT, SEGMENT_SIZE, SegmentChip } from '../../components/ui/Tabs';
 import { ui, useStore } from '../../lib/store';
 import { AppAction, AppLogo, AppLogoStack, AppRow, AppRowSkeleton } from './AppRow';
 import { BotAccess } from './BotAccess';
 import { chipsThatFit } from './chips';
 import {
-  RECOMMENDED, clearCatalogCache, loadConnections, signIn, useAppsLive, useAppsUi, useCatalog, useConnectedApps, type CatalogList,
+  RECOMMENDED, accountName, clearCatalogCache, loadConnections, makeDefault, removeAccount, signIn, useAppsLive, useAppsUi, useCatalog, useConnectedApps,
+  type CatalogList,
 } from './appsData';
 
 /*
@@ -17,8 +18,9 @@ import {
  * directory: a search, the categories as chips, then Recommended for you and a section per category. Sections load as
  * they scroll into view; a chip or "View all" pages through one category and a search shows a flat list. The apps
  * already connected are a view of their own, behind the header's "3 connected": each with the bots that may use it (an
- * app is connected once, for every bot; any bot can have it turned off). Signed out of Composio the directory still
- * shows; adding an app signs in first.
+ * app is connected once, for every bot; any bot can have it turned off), and an app with several accounts (two Gmails)
+ * with each of them and the one the bots use by default. Signed out of Composio the directory still shows; adding an
+ * app signs in first.
  */
 
 const SECTION_SIZE = 6;
@@ -355,18 +357,54 @@ function Browse() {
   );
 }
 
+/**
+ * The accounts of an app that has several (two Gmails): who each is, the one the bots use when they aren't told
+ * which, and each one's own menu. They line up under the app's name.
+ */
+function Accounts({ toolkit: t, conns }: { toolkit: AppToolkit; conns: AppConnection[] }) {
+  return (
+    <ul aria-label={`${t.name} accounts`} className="mt-0.5 ml-[52px] flex flex-col">
+      {conns.map((c, i) => {
+        const name = accountName(c, i);
+        const working = c.status === 'ACTIVE';
+        return (
+          <li key={c.connectedAccountId} className="flex h-7 min-w-0 items-center gap-2">
+            <span className="min-w-0 truncate text-copy text-fg-2" title={name}>{name}</span>
+            {c.isDefault ? (
+              <Tooltip label="Your bots use this account unless they are told to use another"><span className="flex shrink-0"><Badge>Default</Badge></span></Tooltip>
+            ) : working ? null : <span className="shrink-0 text-ui text-warning">Signed out</span>}
+            <span className="flex-1" />
+            <Menu
+              className="min-w-[170px]"
+              items={[
+                ...(working && !c.isDefault ? [{ label: 'Make default', icon: Check, onSelect: () => void makeDefault(t, c) }] : []),
+                { label: 'Remove', icon: Trash2, danger: true, onSelect: () => removeAccount(t, c, name) },
+              ]}
+              trigger={(p) => <Button {...p} size="icon-xs" variant="ghost" icon={MoreHorizontal} aria-label={`More for ${name}`} className="-mr-1.5" />}
+            />
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 /** A connected app: the bots that may use it under its name, and its connection (Connected / Reconnect) on the right. */
 function ConnectedRow({ toolkit: t, conns }: { toolkit: AppToolkit; conns: AppConnection[] }) {
   const active = conns.some((c) => c.status === 'ACTIVE');
   return (
-    <div className="flex min-w-0 items-center gap-3 py-2">
-      <AppLogo toolkit={t} />
-      <div className="min-w-0 flex-1">
-        <div className="truncate text-copy leading-5 font-medium text-fg">{t.name}</div>
-        {/* signed out, no bot has it: the switches come back with the connection */}
-        {active ? <BotAccess toolkit={t} /> : <div className="truncate text-copy leading-[22px] text-warning">Signed out</div>}
+    // a row with accounts is taller than its neighbour: each starts at the top of its cell
+    <div className="min-w-0 self-start py-2">
+      <div className="flex min-w-0 items-center gap-3">
+        <AppLogo toolkit={t} />
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-copy leading-5 font-medium text-fg">{t.name}</div>
+          {/* signed out, no bot has it: the switches come back with the connection */}
+          {active ? <BotAccess toolkit={t} /> : <div className="truncate text-copy leading-[22px] text-warning">Signed out</div>}
+        </div>
+        <AppAction toolkit={t} conns={conns} listed />
       </div>
-      <AppAction toolkit={t} conns={conns} listed />
+      {conns.length > 1 ? <Accounts toolkit={t} conns={conns} /> : null}
     </div>
   );
 }

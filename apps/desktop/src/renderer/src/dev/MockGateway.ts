@@ -7,7 +7,7 @@
  *               &step=welcome|agents|permissions|pair|follow|done to open a step, &perms=granted to start granted)
  *               ?theme=dark|light  ?voice=ready|off (speech models downloaded / unsupported)  ?panel=skills|memory|routines|files|computer (computer: with ?screen=asleep|waking|connecting|live|reconnecting|paused|unreachable)  ?page=apps|connected (the Connect apps popup, or its connected apps)
  *               ?settings=providers (or any Settings section)
- *               ?bot=bot_ledger (another bot than Appu)   ?approval=0   ?forms=1 (a form and a Vault card)   ?apps=onboarding|none|many (signed out of Composio, nothing connected, fifteen connected)
+ *               ?bot=bot_ledger (another bot than Appu)   ?approval=0   ?forms=1 (a form and a Vault card)   ?apps=onboarding|none|many|accounts (signed out of Composio, nothing connected, fifteen connected, apps with several accounts)
  *               ?threads=1 (the thread switcher open, one of Appu's older threads unread)
  *               ?editor=1 (the bot's side panel open on Details, where it is set up)
  *               ?characters=off|fail|worn (a computer without characters / Generate failing / Ledger wearing one)

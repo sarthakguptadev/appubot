@@ -3,7 +3,8 @@
  * SVG marks as data URIs; some have none, to show the initial), two connections and an expired one, and sign-ins
  * that finish by themselves after a moment. Which bot may use what is the bots' own `appsOff` (Ledger has GitHub off;
  * `bots.update` changes it). `?page=apps` opens the popup, `?apps=onboarding` starts signed out of Composio (signing in
- * "finishes" by itself a moment later), `?apps=none` with nothing connected and `?apps=many` with fifteen.
+ * "finishes" by itself a moment later), `?apps=none` with nothing connected, `?apps=many` with fifteen and
+ * `?apps=accounts` with two Gmail accounts and three Google Calendars (adding an app that is connected adds an account).
  */
 import { isDirectApp, newId, type AppCategory, type AppConnection, type AppToolkit, type AppsStatus } from '@appubot/protocol';
 import { GatewayError } from '../lib/gateway';
@@ -89,23 +90,41 @@ function search(items: AppToolkit[], q: string): AppToolkit[] {
   return items.filter((t) => t.name.toLowerCase().includes(n) || t.slug.includes(n) || (q.length >= 3 && !!t.description?.toLowerCase().includes(n)));
 }
 
-export function createAppsHandlers(g: MockGateway): Pick<Handlers, 'apps.status' | 'apps.signIn' | 'apps.finishSignIn' | 'apps.signOut' | 'apps.catalog' | 'apps.connections' | 'apps.connect' | 'apps.disconnect'> {
+export function createAppsHandlers(g: MockGateway): Pick<Handlers, 'apps.status' | 'apps.signIn' | 'apps.finishSignIn' | 'apps.signOut' | 'apps.catalog' | 'apps.connections' | 'apps.connect' | 'apps.disconnect' | 'apps.setDefault'> {
   let signedIn = !!g.opts.appsKey;
   let signingIn = false;
   const pending = new Set<string>();
   const MANY = ['gmail', 'github', 'googlecalendar', 'slack', 'linear', 'googledrive', 'figma', 'stripe', 'hubspot', 'posthog', 'zoom', 'jira', 'dropbox', 'attio'];
-  let connections: AppConnection[] = g.opts.appsSeed === 'none' ? [] : [
+  const account = (slug: string, n: number, label: string, status = 'ACTIVE'): AppConnection => ({ slug, connectedAccountId: `ca_${slug}_${n}`, status, label });
+  let connections: AppConnection[] = g.opts.appsSeed === 'none' ? [] : g.opts.appsSeed === 'accounts' ? [
+    account('gmail', 1, 'sarthak@appubot.com'), account('gmail', 2, 'sarthak.personal@gmail.com'),
+    { slug: 'github', connectedAccountId: 'ca_github', status: 'ACTIVE', label: 'sarthakguptadev' },
+    account('googlecalendar', 1, 'sarthak@appubot.com'), account('googlecalendar', 2, 'sarthak.personal@gmail.com'), account('googlecalendar', 3, 'family@gmail.com', 'EXPIRED'),
+    { slug: 'slack', connectedAccountId: 'ca_slack', status: 'ACTIVE', label: 'AppuBot' },
+  ] : [
     ...(g.opts.appsSeed === 'many' ? MANY : ['gmail', 'github']).map((slug) => ({ slug, connectedAccountId: `ca_${slug}`, status: 'ACTIVE' })),
     { slug: 'notion', connectedAccountId: 'ca_notion', status: 'EXPIRED' },
   ];
+  /** of an app with several accounts, the one the bots use: the user's pick, else the first that works */
+  const defaults = new Map<string, string>();
+  const listed = (): AppConnection[] => connections.map((c) => {
+    const working = connections.filter((x) => x.slug === c.slug && x.status === 'ACTIVE');
+    const first = working.find((x) => x.connectedAccountId === defaults.get(c.slug)) ?? working[0];
+    return first === c ? { ...c, isDefault: true } : c;
+  });
 
   const status = (): AppsStatus => ({ configured: signedIn, account: signedIn ? 'sarthak@appubot.com' : undefined, signingIn, pending: [...pending], direct: true });
   const emit = () => g.emit('apps.updated', status());
   const need = () => { if (!signedIn) throw new GatewayError('apps_not_configured', 'Sign in to Composio in Apps'); };
   const toolkit = (slug: string) => TOOLKITS.find((t) => t.slug === slug);
   const activate = (slug: string) => {
-    connections = [...connections.filter((c) => c.slug !== slug), { slug, connectedAccountId: newId('ca'), status: 'ACTIVE' }];
-    g.emit('notification', { id: newId('ntf'), title: `${toolkit(slug)?.name ?? slug} connected`, body: 'Your bots can use it now.', level: 'success', ts: Date.now() });
+    // a signed-out account is replaced; one that works stays, and the new one is another account beside it
+    const kept = connections.filter((c) => c.slug === slug && c.status === 'ACTIVE');
+    const name = toolkit(slug)?.name ?? slug;
+    connections = [...connections.filter((c) => c.slug !== slug || c.status === 'ACTIVE'), { slug, connectedAccountId: newId('ca'), status: 'ACTIVE', ...(kept.length ? { label: `another.${kept.length}@example.com` } : {}) }];
+    g.emit('notification', kept.length
+      ? { id: newId('ntf'), title: `Another ${name} account connected`, body: `Your bots keep using ${kept[0]!.label ?? 'the first one'} unless they are told to use the new one. Change the default in Apps.`, level: 'success', ts: Date.now() }
+      : { id: newId('ntf'), title: `${name} connected`, body: 'Your bots can use it now.', level: 'success', ts: Date.now() });
     emit();
   };
 
@@ -141,7 +160,7 @@ export function createAppsHandlers(g: MockGateway): Pick<Handlers, 'apps.status'
       return { categories: CATEGORIES, toolkits: list.slice(offset, offset + limit), nextCursor: offset + limit < list.length ? String(offset + limit) : undefined, total: list.length };
     },
     // signed out of Composio, the apps on their own servers are still listed
-    'apps.connections': () => (signedIn ? connections : connections.filter((c) => isDirectApp(c.slug))),
+    'apps.connections': () => (signedIn ? listed() : listed().filter((c) => isDirectApp(c.slug))),
     'apps.connect': (p) => {
       if (!isDirectApp(p.slug)) need();
       const t = toolkit(p.slug);
@@ -157,6 +176,12 @@ export function createAppsHandlers(g: MockGateway): Pick<Handlers, 'apps.status'
       if (!isDirectApp(p.slug)) need();
       if (!connections.some((c) => c.connectedAccountId === p.connectedAccountId)) throw new GatewayError('not_found', 'Connection not found');
       connections = connections.filter((c) => c.connectedAccountId !== p.connectedAccountId);
+      emit();
+      return { ok: true };
+    },
+    'apps.setDefault': (p) => {
+      if (!connections.some((c) => c.connectedAccountId === p.connectedAccountId && c.status === 'ACTIVE')) throw new GatewayError('not_found', 'Connection not found');
+      defaults.set(p.slug, p.connectedAccountId);
       emit();
       return { ok: true };
     },

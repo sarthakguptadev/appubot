@@ -10,6 +10,7 @@ import { createCore, type Core } from '../app';
 import { FakeRuntime } from '../testing/fakeRuntime';
 import { silentLogger } from '../util';
 import { accountsIn, cantConnectText, fileLinkCode, fileLinkIn, toolkitOfTool } from './composio';
+import { accountLabel, accountNames, accountsText, defaultAccount, pickAccount } from './composioAccounts';
 import { accountOf, ComposioHttpError, rpcAnswer, type ComposioConnect, type ComposioTokens } from './composioConnect';
 import { authKindOf, categoryName, listedDirectory, unavailableReason, type AppsDirectory } from './composioDirectory';
 import { DIRECT_APPS } from './directApps';
@@ -26,7 +27,7 @@ const WS = WebSocket as unknown as typeof globalThis.WebSocket;
 
 const idToken = (claims: Record<string, unknown>) => `h.${Buffer.from(JSON.stringify(claims)).toString('base64url')}.s`;
 
-interface Account { id: string; slug: string; status: string }
+interface Account { id: string; slug: string; status: string; email?: string }
 
 /** Composio for You as the service sees it: one signed-in user, connections made through link pages. */
 class FakeConnect implements ComposioConnect {
@@ -44,6 +45,12 @@ class FakeConnect implements ComposioConnect {
   /** the file in its sandbox can't be read */
   fileGone = false;
   private n = 0;
+  /** An app's accounts as a list or a search answers them: who each is when the app said, and Composio's default, the newest that works. */
+  private listed(slug: string) {
+    const mine = this.accounts.filter((a) => a.slug === slug);
+    const newest = mine.filter((a) => a.status === 'active').at(-1);
+    return mine.map((a) => ({ id: a.id, status: a.status, is_default: a === newest, ...(a.email ? { user_info: { email: a.email } } : {}) }));
+  }
   async register(redirectUri: string) {
     expect(redirectUri).toMatch(/^(http:\/\/127\.0\.0\.1:\d+\/apps\/signed-in|appubot:\/\/apps\/signed-in)$/);
     const id = `client_${this.clients.length + 1}`;
@@ -81,10 +88,10 @@ class FakeConnect implements ComposioConnect {
           } else if (t.action === 'add') {
             const id = `${t.name}_${++this.n}`;
             this.accounts.push({ id, slug: t.name, status: 'initiated' });
-            results[t.name] = { toolkit: t.name, status: 'initiated', redirect_url: `https://connect.composio.dev/link/lk_${id}`, accounts: this.accounts.filter((a) => a.slug === t.name).map((a) => ({ id: a.id, status: a.status })) };
+            results[t.name] = { toolkit: t.name, status: 'initiated', redirect_url: `https://connect.composio.dev/link/lk_${id}`, accounts: this.listed(t.name) };
           } else {
             if (t.action === 'remove') this.accounts = this.accounts.filter((a) => a.id !== t.account_id);
-            results[t.name] = { toolkit: t.name, accounts: this.accounts.filter((a) => a.slug === t.name).map((a) => ({ id: a.id, status: a.status })) };
+            results[t.name] = { toolkit: t.name, accounts: this.listed(t.name) };
           }
         }
         return ok({ results });
@@ -97,7 +104,10 @@ class FakeConnect implements ComposioConnect {
             reference_workbench_snippets: ['run_composio_tool("GMAIL_SEND_EMAIL", {})'],
           }],
           toolkit_connection_statuses: [
-            ...['gmail', 'slack', 'github'].map((t) => ({ toolkit: t, has_active_connection: this.accounts.some((a) => a.slug === t && a.status === 'active'), status_message: `call COMPOSIO_MANAGE_CONNECTIONS for ${t}` })),
+            ...['gmail', 'slack', 'github'].map((t) => ({
+              toolkit: t, has_active_connection: this.accounts.some((a) => a.slug === t && a.status === 'active'), status_message: `call COMPOSIO_MANAGE_CONNECTIONS for ${t}`,
+              accounts: this.listed(t), ...(this.accounts.filter((a) => a.slug === t && a.status === 'active').length > 1 ? { account_selection: 'required' } : {}),
+            })),
             // an app that needs no sign-in reads as connected, with no account
             { toolkit: 'osv', has_active_connection: true, status_message: 'This toolkit does not require authentication. Tools are ready to use.' },
           ],
@@ -108,7 +118,14 @@ class FakeConnect implements ComposioConnect {
       case 'COMPOSIO_GET_TOOL_SCHEMAS':
         return ok({ schemas: args.tool_slugs });
       case 'COMPOSIO_MULTI_EXECUTE_TOOL': {
-        const tools = (args.tools as { tool_slug: string }[]).map((t) => t.tool_slug);
+        const asked = args.tools as { tool_slug: string; account?: string }[];
+        const tools = asked.map((t) => t.tool_slug);
+        // an app with several accounts and none named: nothing runs
+        const unnamed = asked.find((t) => !t.account && this.accounts.filter((a) => a.slug === t.tool_slug.split('_')[0]!.toLowerCase() && a.status === 'active').length > 1);
+        if (unnamed) {
+          const app = unnamed.tool_slug.split('_')[0]!.toLowerCase();
+          return ok({ results: [{ response: { successful: false, error: `Multiple ${app} accounts connected. Specify which to use via the 'account' field` }, tool_slug: unnamed.tool_slug, index: 0 }], total_count: 1, success_count: 0, error_count: 1 });
+        }
         // too large to return: a preview, the whole of it in a file in the sandbox
         if (tools[0] === 'GMAIL_FETCH_EMAILS') {
           return ok({
@@ -118,7 +135,7 @@ class FakeConnect implements ComposioConnect {
             next_steps: 'First review the inline structure. Only after confirming it, write code to parse the saved response in COMPOSIO_REMOTE_WORKBENCH.',
           });
         }
-        return ok({ ran: tools });
+        return ok({ ran: tools, on: asked.map((t) => t.account ?? null) });
       }
       case 'COMPOSIO_REMOTE_WORKBENCH':
         return ok({ results: '', stdout: this.fileGone ? 'APPUBOT_FILE_ERROR=File not found: /mnt/files/mex/foot.json\n' : `Uploading file to S3...\nS3 URL: ${FILE_LINK}\nAPPUBOT_FILE_URL=${FILE_LINK}\n` });
@@ -126,7 +143,10 @@ class FakeConnect implements ComposioConnect {
         return { text: 'unknown tool', isError: true };
     }
   }
-  activate(slug: string): void { for (const a of this.accounts) if (a.slug === slug) a.status = 'active'; }
+  /** The link page was finished: the account being connected works, as `email` when the app says who it is. */
+  activate(slug: string, email?: string): void {
+    for (const a of this.accounts) if (a.slug === slug && a.status !== 'active') { a.status = 'active'; if (email) a.email = email; }
+  }
 }
 
 let core: Core;
@@ -417,6 +437,87 @@ describe('apps (Composio for You)', () => {
     expect((await owner.call('apps.connections')).map((c) => c.slug)).toEqual(['slack']);
   });
 
+  it('keeps the first account when a second is connected, and names the account on every call', async () => {
+    const [appu] = await owner.call('bots.list');
+    const t = (await owner.call('threads.list', {})).find((x) => x.botId === appu!.id)!;
+    const agent = await connectAs(core.ctx.auth.issueAgentToken({ threadId: t.id, botId: appu!.id }));
+    const connectGmail = async (email: string) => {
+      await owner.call('apps.connect', { slug: 'gmail' });
+      const done = waitEvent('apps.updated', (p) => !p.pending.includes('gmail'));
+      fake.activate('gmail', email);
+      await done;
+    };
+    const gmails = async () => (await owner.call('apps.connections')).filter((c) => c.slug === 'gmail');
+    /** the account Composio was told to run the bot's Gmail call on */
+    const ranOn = async (account?: string) => {
+      const ran = await agent.call('agent.apps.execute', { tools: [{ tool_slug: 'GMAIL_SEND_EMAIL', arguments: {}, ...(account ? { account } : {}) }] });
+      return { text: ran.text, sent: (fake.calls.filter((c) => c.name === 'COMPOSIO_MULTI_EXECUTE_TOOL').at(-1)!.args.tools as { account?: string }[])[0]!.account };
+    };
+    try {
+      await connectGmail('first@example.com');
+      const [first] = await gmails();
+      expect(first).toMatchObject({ status: 'ACTIVE', label: 'first@example.com', isDefault: true });
+      // one account: nothing is named, as it always was
+      expect((await ranOn()).sent).toBeUndefined();
+      expect((await agent.call('agent.apps.search', { queries: [{ use_case: 'x' }] })).text).not.toMatch(/has \d+ accounts/);
+
+      const said = waitEvent('notification', (n) => n.title === 'Another Gmail account connected');
+      await connectGmail('second@example.com');
+      expect((await said).body).toMatch(/keep using first@example\.com/);
+      // both are there, and the one in use is still the default (Composio's own default is now the newer one)
+      expect((await gmails()).map((c) => [c.label, c.status, c.isDefault])).toEqual([['first@example.com', 'ACTIVE', true], ['second@example.com', 'ACTIVE', undefined]]);
+      const second = (await gmails())[1]!;
+      expect(fake.accounts.filter((a) => a.slug === 'gmail').map((a) => a.id)).toEqual([first!.connectedAccountId, second.connectedAccountId]);
+
+      // the bot is told the accounts and the default, in the listing and in the app's status
+      const found = await agent.call('agent.apps.search', { queries: [{ use_case: 'post and email' }] });
+      expect(found.text).toContain('Gmail has 2 accounts: first@example.com (the default) and second@example.com. A tool runs on the default account unless you name another');
+      const statuses = (JSON.parse(found.text.slice(found.text.indexOf('\n\n') + 2)) as { toolkit_connection_statuses: Record<string, unknown>[] }).toolkit_connection_statuses;
+      expect(statuses.find((s) => s.toolkit === 'gmail')).toMatchObject({ accounts: [{ account: 'first@example.com', default: true }, { account: 'second@example.com' }], status_message: 'Gmail has 2 accounts: first@example.com (the default) and second@example.com.' });
+      expect(statuses.find((s) => s.toolkit === 'gmail')).not.toHaveProperty('account_selection');
+
+      // no account named: the default, by its id; one named by its address (any case) or its id: that one
+      expect((await ranOn()).sent).toBe(first!.connectedAccountId);
+      expect((await ranOn('Second@Example.com')).sent).toBe(second.connectedAccountId);
+      expect((await ranOn(second.connectedAccountId)).sent).toBe(second.connectedAccountId);
+      // an account the app doesn't have: nothing is sent, and the bot is told the ones there are
+      const calls = fake.calls.length;
+      const wrong = await failure(agent.call('agent.apps.execute', { tools: [{ tool_slug: 'GMAIL_SEND_EMAIL', arguments: {}, account: 'nobody@example.com' }] }));
+      expect(wrong.message).toMatch(/Gmail has no account “nobody@example\.com”\. Gmail has 2 accounts: first@example\.com \(the default\) and second@example\.com\./);
+      expect(fake.calls.length).toBe(calls);
+
+      // the user picks the other one
+      expect((await failure(owner.call('apps.setDefault', { connectedAccountId: 'not-mine', slug: 'gmail' }))).code).toBe('not_found');
+      const changed = waitEvent('apps.updated', () => true);
+      await owner.call('apps.setDefault', { connectedAccountId: second.connectedAccountId, slug: 'gmail' });
+      await changed;
+      expect((await gmails()).map((c) => [c.label, c.isDefault])).toEqual([['first@example.com', undefined], ['second@example.com', true]]);
+      expect((await ranOn()).sent).toBe(second.connectedAccountId);
+      core.ctx.store.flush();
+      expect(appsFile().defaults).toEqual({ gmail: second.connectedAccountId });
+
+      // the default removed: the one left is it, with no choice kept, and nothing is named again
+      await owner.call('apps.disconnect', { connectedAccountId: second.connectedAccountId, slug: 'gmail' });
+      expect((await gmails()).map((c) => [c.label, c.isDefault])).toEqual([['first@example.com', true]]);
+      core.ctx.store.flush();
+      expect(appsFile().defaults).toEqual({});
+      expect((await ranOn()).sent).toBeUndefined();
+
+      // an account connected somewhere else, which AppuBot hasn't seen: Composio runs nothing, and the bot is told
+      // the accounts; the default is then Composio's (the newest), and the next call names it
+      fake.accounts.push({ id: 'gmail_elsewhere', slug: 'gmail', status: 'active', email: 'third@example.com' });
+      const refused = await ranOn();
+      expect(refused.sent).toBeUndefined();
+      expect(refused.text).toMatch(/Gmail has 2 accounts: first@example\.com and third@example\.com \(the default\)\. Run it again/);
+      expect((await ranOn()).sent).toBe('gmail_elsewhere');
+      expect((await ranOn('first@example.com')).sent).toBe(first!.connectedAccountId);
+    } finally {
+      agent.close();
+      for (const c of await gmails()) await owner.call('apps.disconnect', { connectedAccountId: c.connectedAccountId, slug: 'gmail' });
+    }
+    expect(core.services.composio.connectedSlugs()).toEqual(['slack']);
+  }, 30_000);
+
   it('renews the access token, and signs out when Composio no longer takes the sign-in', async () => {
     const [appu] = await owner.call('bots.list');
     const t = (await owner.call('threads.list', {})).find((x) => x.botId === appu!.id)!;
@@ -487,8 +588,43 @@ describe('Composio helpers', () => {
   it('reads accounts out of a manage-connections answer', () => {
     const m = accountsIn(JSON.stringify({ data: { results: { gmail: { accounts: [{ id: 'gmail_a', status: 'active' }, { status: 'x' }] }, slack: { accounts: [] } } } }));
     expect(m.get('gmail')).toEqual([{ slug: 'gmail', connectedAccountId: 'gmail_a', status: 'ACTIVE' }]);
+    // who the account is, the name it was given and Composio's default, when it says
+    const named = accountsIn(JSON.stringify({ data: { results: { gmail: { accounts: [{ id: 'gmail_a', status: 'active', is_default: true, alias: ' work ', user_info: { email: 'a@example.com' } }, { id: 'gmail_b', status: 'expired', is_default: false, alias: null, user_info: {} }] } } } }));
+    expect(named.get('gmail')).toEqual([
+      { slug: 'gmail', connectedAccountId: 'gmail_a', status: 'ACTIVE', label: 'a@example.com', alias: 'work', isDefault: true },
+      { slug: 'gmail', connectedAccountId: 'gmail_b', status: 'EXPIRED' },
+    ]);
     expect(m.get('slack')).toEqual([]);
     expect(accountsIn('not json').size).toBe(0);
+  });
+
+  it('knows the accounts of an app: who each is, which is the default, and the one a bot means', () => {
+    expect(accountLabel({ email: 'a@example.com', name: 'A' })).toBe('a@example.com');
+    expect(accountLabel({ login: 'octo' })).toBe('octo');
+    expect(accountLabel({ team: { name: 'not a string' } })).toBeUndefined();
+    expect(accountLabel(null)).toBeUndefined();
+    const acc = (id: string, more: Record<string, unknown> = {}) => ({ slug: 'gmail', connectedAccountId: id, status: 'ACTIVE', ...more });
+    const a = acc('gmail_a', { label: 'a@example.com' });
+    const b = acc('gmail_b', { label: 'b@example.com', alias: 'Work', isDefault: true });
+    const gone = acc('gmail_c', { label: 'c@example.com', status: 'EXPIRED' });
+    // the user's choice, else Composio's default, else the first; never one that doesn't work
+    expect(defaultAccount([a, b, gone], 'gmail_a')).toBe(a);
+    expect(defaultAccount([a, b, gone])).toBe(b);
+    expect(defaultAccount([a, b, gone], 'gmail_c')).toBe(b);
+    expect(defaultAccount([a, gone])).toBe(a);
+    expect(defaultAccount([gone])).toBeUndefined();
+    // by id, address or given name, whatever the case
+    expect(pickAccount([a, b], 'GMAIL_B')).toBe(b);
+    expect(pickAccount([a, b], ' A@Example.com ')).toBe(a);
+    expect(pickAccount([a, b], 'work')).toBe(b);
+    expect(pickAccount([a, b], 'nobody')).toBeUndefined();
+    // the same account signed in twice: told apart by id, and the address alone names neither
+    const twin = acc('gmail_d', { label: 'a@example.com' });
+    expect([...accountNames([a, twin, acc('gmail_e')]).values()]).toEqual(['a@example.com [gmail_a]', 'a@example.com [gmail_d]', 'gmail_e']);
+    expect(pickAccount([a, twin], 'a@example.com')).toBeUndefined();
+    expect(pickAccount([a, twin], 'a@example.com [gmail_d]')).toBe(twin);
+    expect(accountsText('Gmail', [a, b, gone], 'gmail_a')).toBe('Gmail has 2 accounts: a@example.com (the default) and b@example.com');
+    expect(accountsText('Gmail', [a, b, acc('gmail_e')])).toBe('Gmail has 3 accounts: a@example.com, b@example.com (the default) and gmail_e');
   });
 
   it('tells a tool\'s app by the longest slug it starts with', () => {

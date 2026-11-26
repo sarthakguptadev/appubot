@@ -270,12 +270,12 @@ export const appsTools = {
     input: z.object({ tool_slugs: z.array(z.string().min(1)).min(1).max(50) }),
   },
   apps_execute: {
-    description: 'Run app tools found with apps_search: up to 50 at once when they don\'t depend on each other (run dependent ones in order, one call after another). Pass each tool\'s arguments exactly as its schema says. Sending, posting, deleting or paying acts in the user\'s real accounts: do it only when the user asked for it, and check the details (recipients, amounts, channels) first. When the user has several accounts of an app, name the one to use in `account`. Ask for no more than you need (a limit, only the fields you want): an answer too large to return comes back as a preview plus `full_answer.path`, a JSON file in your folder holding all of it, to read with your own tools.',
+    description: 'Run app tools found with apps_search: up to 50 at once when they don\'t depend on each other (run dependent ones in order, one call after another). Pass each tool\'s arguments exactly as its schema says. Sending, posting, deleting or paying acts in the user\'s real accounts: do it only when the user asked for it, and check the details (recipients, amounts, channels) first. When the user has several accounts of an app, apps_search lists them and says which is the default: a tool runs on the default unless you name another in its `account`. Ask for no more than you need (a limit, only the fields you want): an answer too large to return comes back as a preview plus `full_answer.path`, a JSON file in your folder holding all of it, to read with your own tools.',
     input: z.object({
       tools: z.array(z.object({
         tool_slug: z.string().min(1).describe('A tool slug from apps_search, e.g. GMAIL_SEND_EMAIL'),
         arguments: z.record(z.string(), z.unknown()).describe('The tool\'s arguments, as its input schema says'),
-        account: z.string().optional().describe('Which account, by its alias (e.g. "work") or id, when the app has several'),
+        account: z.string().optional().describe('Which account, when the app has several: its address, name or id as apps_search lists it (e.g. "me@work.com"). Left out, the default account is used'),
       })).min(1).max(50),
       thought: z.string().optional().describe('One sentence: why these tools'),
     }),

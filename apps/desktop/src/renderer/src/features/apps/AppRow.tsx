@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { isDirectApp, type AppConnection, type AppToolkit } from '@appubot/protocol';
-import { Check, ChevronDown, Trash2 } from '../../components/ui/icons';
+import { Check, ChevronDown, Plus, Trash2 } from '../../components/ui/icons';
 import { Icon, Menu, Spinner, Tooltip, cn } from '../../components/ui';
 import { useStore } from '../../lib/store';
 import { disconnect, startConnect, useAppsUi } from './appsData';
@@ -42,8 +42,8 @@ const PILL =
   'transition-colors duration-100 hover:bg-surface-3 focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-bg),0_0_0_4px_var(--ab-ring)]';
 
 /**
- * The row's right side: Add / Connect, a spinner while signing in, or "Added" (with Disconnect in its menu). In the
- * list of connected apps (`listed`) a working one says "Connected", in green.
+ * The row's right side: Add / Connect, a spinner while signing in, or "Added" (with Add another account and Disconnect
+ * in its menu). In the list of connected apps (`listed`) a working one says "Connected", in green.
  */
 export function AppAction({ toolkit: t, conns, listed = false }: { toolkit: AppToolkit; conns: AppConnection[]; listed?: boolean }) {
   const pending = useStore((s) => !!s.apps?.pending.includes(t.slug));
@@ -65,7 +65,11 @@ export function AppAction({ toolkit: t, conns, listed = false }: { toolkit: AppT
   if (active.length) {
     return (
       <Menu
-        items={[{ label: 'Disconnect', icon: Trash2, danger: true, onSelect: () => disconnect(t, conns) }]}
+        items={[
+          // a second Gmail, a work calendar: Composio's page again, and the account in use stays the default
+          ...(isDirectApp(t.slug) || t.authKind === 'none' ? [] : [{ label: 'Add another account', icon: Plus, onSelect: () => void startConnect(t) }]),
+          { label: 'Disconnect', icon: Trash2, danger: true, onSelect: () => disconnect(t, conns) },
+        ]}
         className="min-w-[160px]"
         trigger={(p) => (
           <button

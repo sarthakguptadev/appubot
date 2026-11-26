@@ -152,6 +152,8 @@ export interface StoredApps {
   connected?: string[];
   watched?: string[];
   sweptAt?: number;
+  /** of an app with several accounts, the one the bots' calls use when they name none: toolkit slug → account id */
+  defaults?: Record<string, string>;
   /** apps Composio refused to connect here (no sign-in of its own, not offered, retired): off the Apps page from then on */
   unavailable?: Record<string, 'needs-setup' | 'not-offered' | 'retired'>;
   /** apps connected on their own servers (`directApps.ts`), by slug */

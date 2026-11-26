@@ -23,6 +23,7 @@ import type { CoreCtx } from '../context';
 import type { JsonFile, StoredApps } from '../store';
 import type { StoredComposioAuth } from '../store';
 import { errMsg, notFound, RpcError, sleep } from '../util';
+import { NEEDS_ACCOUNT, accountLabel, accountNames, accountsText, defaultAccount, pickAccount, workingAccounts } from './composioAccounts';
 import { ComposioHttpError, composioConnect, pkce, type ComposioConnect } from './composioConnect';
 import { listedDirectory, unavailableReason, type AppsDirectory, type UnavailableReason } from './composioDirectory';
 import { DirectApps } from './directApps';
@@ -87,12 +88,26 @@ function parseJson(text: string): Record<string, unknown> | undefined {
   } catch { return undefined; }
 }
 
+/** One account as Composio lists it. */
+interface ListedAccount { id?: unknown; status?: unknown; alias?: unknown; user_info?: unknown; is_default?: unknown }
+
+/** A listed account as AppuBot keeps it; `isDefault` is still Composio's own default here (`defaultAccount` decides ours). */
+function accountOf(slug: string, a: ListedAccount): AppConnection {
+  const label = accountLabel(a.user_info);
+  return {
+    slug, connectedAccountId: a.id as string, status: String(a.status ?? '').toUpperCase(),
+    ...(label ? { label } : {}),
+    ...(typeof a.alias === 'string' && a.alias.trim() ? { alias: a.alias.trim().slice(0, 120) } : {}),
+    ...(a.is_default === true ? { isDefault: true } : {}),
+  };
+}
+
 /** The accounts per toolkit in a `COMPOSIO_MANAGE_CONNECTIONS` answer (`data.results[slug].accounts`). */
 export function accountsIn(text: string): Map<string, AppConnection[]> {
   const out = new Map<string, AppConnection[]>();
-  const results = (parseJson(text)?.data as { results?: Record<string, { accounts?: { id?: unknown; status?: unknown }[]; redirect_url?: unknown }> } | undefined)?.results ?? {};
+  const results = (parseJson(text)?.data as { results?: Record<string, { accounts?: ListedAccount[]; redirect_url?: unknown }> } | undefined)?.results ?? {};
   for (const [slug, r] of Object.entries(results)) {
-    out.set(slug, (r.accounts ?? []).filter((a) => typeof a.id === 'string').map((a) => ({ slug, connectedAccountId: a.id as string, status: String(a.status ?? '').toUpperCase() })));
+    out.set(slug, (r.accounts ?? []).filter((a) => typeof a.id === 'string').map((a) => accountOf(slug, a)));
   }
   return out;
 }
@@ -161,6 +176,8 @@ export class ComposioService {
   private refreshing: Promise<string> | null = null;
   /** accounts per toolkit, as last listed */
   private accounts = new Map<string, AppConnection[]>();
+  /** who an account is, by its id, where a search said and the list didn't */
+  private labels = new Map<string, string>();
   private listedAt = 0;
   private listJob: Promise<void> | null = null;
   private sweepJob: Promise<void> | null = null;
@@ -317,6 +334,7 @@ export class ComposioService {
     for (const p of this.pending.values()) p.stop();
     this.pending.clear();
     this.accounts.clear();
+    this.labels.clear();
     this.listedAt = 0;
     this.refreshing = null;
   }
@@ -417,9 +435,12 @@ export class ComposioService {
   /** Takes in listed accounts: the Apps page's list, and which apps are connected (what the bots follow). */
   private note(listed: Map<string, AppConnection[]>): void {
     for (const [slug, accounts] of listed) {
-      const shown = accounts.filter((a) => !STARTING.has(a.status));
+      const shown = accounts.filter((a) => !STARTING.has(a.status)).map((a) => (a.label || !this.labels.has(a.connectedAccountId) ? a : { ...a, label: this.labels.get(a.connectedAccountId) }));
       if (shown.length) this.accounts.set(slug, shown); else this.accounts.delete(slug);
     }
+    // a chosen default that is gone (removed here or at Composio) is no longer a choice
+    const gone = Object.entries(this.file.get().defaults ?? {}).filter(([slug, id]) => listed.has(slug) && !this.accounts.get(slug)?.some((a) => a.connectedAccountId === id)).map(([slug]) => slug);
+    if (gone.length) this.file.update((x) => ({ ...x, defaults: Object.fromEntries(Object.entries(x.defaults ?? {}).filter(([slug]) => !gone.includes(slug))) }));
     const f = this.file.get();
     const watched = [...new Set([...(f.watched ?? []).filter((s) => !listed.has(s) || this.accounts.has(s)), ...this.accounts.keys()])].sort();
     const connected = [...this.accounts].filter(([, a]) => a.some((x) => x.status === 'ACTIVE')).map(([s]) => s).sort();
@@ -483,7 +504,27 @@ export class ComposioService {
     else if (Date.now() - this.listedAt > LISTED_TTL_MS) void this.refreshBehind();
     // someone is looking at their apps: one connected on another computer (or at Composio) should turn up soon
     this.sweepIfDue(SWEEP_ON_VIEW_MS);
-    return [...[...this.accounts.values()].flat(), ...own];
+    return [...[...this.accounts].flatMap(([slug, accounts]) => {
+      const first = this.defaultOf(slug);
+      // `isDefault` as the clients read it: AppuBot's default, not Composio's
+      return accounts.map(({ isDefault: _theirs, ...a }) => (a.connectedAccountId === first?.connectedAccountId ? { ...a, isDefault: true } : a));
+    }), ...own];
+  }
+
+  /** The account an app's calls use when the bot names none (see `defaultAccount`). */
+  private defaultOf(slug: string): AppConnection | undefined {
+    return defaultAccount(this.accounts.get(slug), this.file.get().defaults?.[slug]);
+  }
+
+  /** The user picks which of an app's accounts the bots use when they name none. */
+  async setDefault(connectedAccountId: string, slug: string): Promise<{ ok: true }> {
+    const working = (list: AppConnection[] | undefined) => workingAccounts(list).some((a) => a.connectedAccountId === connectedAccountId);
+    // one connected a moment ago, or on another computer, may not be listed here yet
+    if (!working(this.accounts.get(slug)) && !this.direct.has(slug)) this.note(await this.list([slug]));
+    if (!working(this.accounts.get(slug))) throw notFound('Connection', connectedAccountId);
+    this.file.update((f) => ({ ...f, defaults: { ...f.defaults, [slug]: connectedAccountId } }));
+    this.emit();
+    return { ok: true };
   }
 
   /**
@@ -521,6 +562,10 @@ export class ComposioService {
       if (!r.isError && !redirectUrl && String(res?.status ?? '').toLowerCase() === 'active') return {};
       throw new RpcError('apps_unavailable', plainReason(said) || `Composio didn't start ${name}'s sign-in. Try again in a moment.`);
     }
+    // another account of an app that has one: the one in use stays the default until the user picks the new one
+    const listed = accountsIn(r.text).get(slug);
+    const inUse = defaultAccount(workingAccounts(listed).length ? listed : this.accounts.get(slug), this.file.get().defaults?.[slug]);
+    if (inUse && this.file.get().defaults?.[slug] !== inUse.connectedAccountId) this.file.update((f) => ({ ...f, defaults: { ...f.defaults, [slug]: inUse.connectedAccountId } }));
     this.watch(slug, name, account.id as string, redirectUrl, onCaller);
     return { redirectUrl };
   }
@@ -572,7 +617,12 @@ export class ComposioService {
   }
 
   private connected(slug: string, name: string, accountId: string): void {
-    this.ctx.s.notifications.notify({ title: `${name} connected`, body: 'Your bots can use it now.', level: 'success', native: false });
+    const working = workingAccounts(this.accounts.get(slug));
+    const kept = this.defaultOf(slug);
+    if (working.length > 1 && kept && kept.connectedAccountId !== accountId) {
+      // nothing is swapped: the account the bots were using is still the one they use
+      this.ctx.s.notifications.notify({ title: `Another ${name} account connected`, body: `Your bots keep using ${accountNames(working).get(kept.connectedAccountId)} unless they are told to use the new one. Change the default in Apps.`, level: 'success', native: false });
+    } else this.ctx.s.notifications.notify({ title: `${name} connected`, body: 'Your bots can use it now.', level: 'success', native: false });
     this.emit();
     // older broken or unfinished accounts of the same app only clutter the list
     void this.list([slug])
@@ -723,7 +773,32 @@ export class ComposioService {
     // the ones that need no sign-in are many: a few by name, the rest found by searching
     const ready = apps.filter((s) => !connected.has(s));
     const also = ready.length ? ` No sign-in needed, also yours: ${named(ready.slice(0, 6))}${ready.length > 6 ? ` and ${ready.length - 6} more` : ''}.` : '';
-    return `Your apps: ${mine.length ? named(mine) : 'none connected'}.${also} Run tools with apps_execute; read a tool's inputs with apps_tool_schemas when they aren't below. Only these apps' tools work for you.`;
+    const several = mine.filter((s) => this.several(s)).map((s) => `${this.accountsOf(s)}.`);
+    const accounts = several.length ? ` ${several.join(' ')} A tool runs on the default account unless you name another in its \`account\` (apps_execute): name it whenever the user says which account, and ask when sending or changing something and it isn't clear which they mean.` : '';
+    return `Your apps: ${mine.length ? named(mine) : 'none connected'}.${also}${accounts} Run tools with apps_execute; read a tool's inputs with apps_tool_schemas when they aren't below. Only these apps' tools work for you.`;
+  }
+
+  /** Whether an app has several working accounts: only then does AppuBot name the account on its calls. */
+  private several(slug: string): boolean {
+    return workingAccounts(this.accounts.get(slug)).length > 1;
+  }
+
+  /** An app's accounts in words for a bot. */
+  private accountsOf(slug: string): string {
+    return accountsText(this.appName(slug), this.accounts.get(slug) ?? [], this.file.get().defaults?.[slug]);
+  }
+
+  /**
+   * A bot's call with its account named, for an app with several: the one it asked for, or the user's default. An app
+   * with one account goes through as the bot wrote it.
+   */
+  private withAccount<T extends { tool_slug: string; account?: string }>(t: T): T {
+    const slug = this.toolkitOf(t.tool_slug);
+    if (!slug || !this.several(slug)) return t;
+    const working = workingAccounts(this.accounts.get(slug));
+    const account = t.account?.trim() ? pickAccount(working, t.account) : this.defaultOf(slug);
+    if (!account) throw new RpcError('invalid_params', `${this.appName(slug)} has no account “${t.account}”. ${this.accountsOf(slug)}. Write one of them in \`account\` as it is written here.`);
+    return { ...t, account: account.connectedAccountId };
   }
 
   /** What search says about tools (their toolkit) and connections (an app connected or gone meanwhile). */
@@ -733,7 +808,21 @@ export class ComposioService {
     }
     // an app that needs no sign-in always reads as connected there
     const connected = this.usableSlugs();
-    const changed = (data.toolkit_connection_statuses ?? []).some((c) => typeof c.toolkit === 'string' && !!c.has_active_connection !== connected.includes(c.toolkit));
+    let learned = false;
+    const changed = (data.toolkit_connection_statuses ?? []).some((c) => {
+      if (typeof c.toolkit !== 'string') return false;
+      const theirs = Array.isArray(c.accounts) ? (c.accounts as { id?: unknown; status?: unknown; user_info?: unknown }[]).filter((a) => typeof a?.id === 'string') : undefined;
+      // who an account is, when search knows and the list didn't say
+      for (const a of theirs ?? []) {
+        const label = accountLabel(a.user_info);
+        if (label && this.labels.get(a.id as string) !== label) { this.labels.set(a.id as string, label); learned = true; }
+      }
+      // an account connected or removed elsewhere since the last look (only where search says each one's state)
+      const working = theirs?.every((a) => typeof a.status === 'string') ? theirs.filter((a) => String(a.status).toUpperCase() === 'ACTIVE').map((a) => a.id as string).sort() : undefined;
+      const ours = workingAccounts(this.accounts.get(c.toolkit)).map((a) => a.connectedAccountId).sort();
+      return !!c.has_active_connection !== connected.includes(c.toolkit) || (!!working && !this.direct.has(c.toolkit) && !sameList(working, ours));
+    });
+    if (learned) for (const [slug, list] of this.accounts) this.accounts.set(slug, list.map((a) => (a.label || !this.labels.has(a.connectedAccountId) ? a : { ...a, label: this.labels.get(a.connectedAccountId) })));
     if (changed) void this.refreshSlugs((data.toolkit_connection_statuses ?? []).map((c) => c.toolkit).filter((s): s is string => typeof s === 'string'));
   }
 
@@ -759,6 +848,14 @@ export class ComposioService {
       const slug = String(c.toolkit ?? '');
       const name = this.appName(slug);
       if (!apps.has(slug)) return { toolkit: slug, has_active_connection: false, status_message: `${name} isn't one of your apps: ask the user to connect it in ${this.appsPage}, or to turn it on for you there if it is connected.` };
+      // several accounts: as AppuBot names them and with its default, which is not always Composio's
+      if (c.has_active_connection && this.several(slug)) {
+        const { accounts: _accounts, account_selection: _selection, ...rest } = c;
+        const working = workingAccounts(this.accounts.get(slug));
+        const names = accountNames(working);
+        const first = this.defaultOf(slug);
+        return { ...rest, accounts: working.map((a) => ({ account: names.get(a.connectedAccountId), ...(a === first ? { default: true } : {}) })), status_message: `${this.accountsOf(slug)}.` };
+      }
       return { ...c, status_message: c.has_active_connection ? `${name} is connected.` : `${name} isn't connected right now: ask the user to reconnect it in ${this.appsPage}.` };
     });
     // its session id is for Composio's own tools (the apps tools don't take one); next steps that send the bot to
@@ -790,17 +887,28 @@ export class ComposioService {
     const bad = p.tools.find((t) => !apps.has(this.toolkitOf(t.tool_slug) ?? ''));
     if (bad) throw new RpcError('forbidden', this.refused(this.toolkitOf(bad.tool_slug), bad.tool_slug));
     const own = p.tools.filter((t) => this.direct.appOfTool(t.tool_slug));
-    const theirs = p.tools.filter((t) => !this.direct.appOfTool(t.tool_slug));
+    const theirs = p.tools.filter((t) => !this.direct.appOfTool(t.tool_slug)).map((t) => this.withAccount(t));
     const viaComposio = async (): Promise<{ text: string; isError: boolean }> => {
       // no workbench: its sandbox runs any app's tools, past this bot's apps
       const r = await this.call('COMPOSIO_MULTI_EXECUTE_TOOL', { tools: theirs, ...(p.thought ? { thought: p.thought } : {}), sync_response_to_workbench: false });
       const text = await this.withWholeAnswer(botId, theirs.length === 1 ? theirs[0]!.tool_slug : 'answer', r.text);
-      return { ...r, text: ourToolNames(text) };
+      return { ...r, text: ourToolNames(text) + (NEEDS_ACCOUNT.test(r.text) ? await this.accountsNote(theirs.map((t) => this.toolkitOf(t.tool_slug)).filter((s): s is string => !!s)) : '') };
     };
     if (!own.length) return viaComposio();
     if (!theirs.length) return this.direct.execute(botId, own);
     const [a, b] = await Promise.all([viaComposio(), this.direct.execute(botId, own)]);
     return { text: `${a.text}\n\n${b.text}`, isError: a.isError && b.isError };
+  }
+
+  /**
+   * Composio wouldn't run a tool because its app has several accounts and the call named none: one was connected
+   * elsewhere since AppuBot last looked. It looks again and tells the bot the accounts; the next call names the default
+   * itself.
+   */
+  private async accountsNote(slugs: string[]): Promise<string> {
+    await this.refreshSlugs([...new Set(slugs)]);
+    const several = [...new Set(slugs)].filter((s) => this.several(s)).map((s) => `${this.accountsOf(s)}.`);
+    return several.length ? `\n\n${several.join(' ')} Run it again: it goes to the default account unless you name another in \`account\`.` : '';
   }
 
   /**

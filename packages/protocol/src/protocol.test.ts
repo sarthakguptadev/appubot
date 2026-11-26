@@ -76,6 +76,11 @@ test('apps: status never carries tokens, catalog pages default, connect takes a 
   assert.deepEqual(AppToolkitSchema.parse({ slug: 'gmail', name: 'Gmail', authKind: 'oauth' }), { slug: 'gmail', name: 'Gmail', categories: [], authKind: 'oauth' });
   assert.throws(() => AppToolkitSchema.parse({ slug: 'gmail', name: 'Gmail', authKind: 'magic' }));
   assert.ok(AppConnectionSchema.parse({ slug: 'gmail', connectedAccountId: 'gmail_x', status: 'ACTIVE' }));
+  // several accounts of one app: who each is and which one is the default, all optional (an older computer sends none)
+  const account = { slug: 'gmail', connectedAccountId: 'gmail_x', status: 'ACTIVE', label: 'a@example.com', alias: 'work', isDefault: true };
+  assert.deepEqual(AppConnectionSchema.parse(account), account);
+  assert.throws(() => Methods['apps.setDefault'].params.parse({ slug: 'gmail' }));
+  assert.ok(Methods['apps.setDefault'].params.parse({ connectedAccountId: 'gmail_x', slug: 'gmail' }));
   assert.throws(() => Methods['agent.apps.search'].params.parse({ queries: [] }));
   assert.ok(Methods['agent.apps.execute'].params.parse({ tools: [{ tool_slug: 'GMAIL_SEND_EMAIL', arguments: { to: 'a@b.c' } }] }));
   assert.throws(() => Methods['agent.apps.execute'].params.parse({ tools: [{ tool_slug: 'GMAIL_SEND_EMAIL' }] }));
