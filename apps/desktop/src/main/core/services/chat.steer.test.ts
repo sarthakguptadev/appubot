@@ -15,7 +15,7 @@ import { createCore, type Core } from '../app';
 import { FakeRuntime } from '../testing/fakeRuntime';
 import { silentLogger } from '../util';
 import { MID_JOB_HINT, OPENING_NOTE_AFTER_MS } from './chat';
-import { NOTE_BURST, NOTE_EVERY_MS, NOTE_MAX_CHARS } from './notes';
+import { NOTE_BURST, NOTE_EVERY_MS, NOTE_MAX_CHARS, ROUTINE_NOTE_REASON } from './notes';
 
 let core: Core;
 let runtime: FakeRuntime;
@@ -236,6 +236,24 @@ describe('what the bot sends on its own while it works (send_message)', () => {
     expect(refused('51.')).toBe('');
     expect(refused('And another thing.')).toMatch(/too many messages in a row/);
     // it sits in the reply under the question, which is still being written
+    expect(said(messages().at(-1))).toEqual(['51.']);
+    await idle();
+  });
+
+  it('sends nothing on a routine’s run, where nobody is watching, but answers a message the user writes into it', async () => {
+    vi.useFakeTimers({ toFake: ['Date'], now: Date.now() + 50 * NOTE_EVERY_MS });
+    runtime.steering = true;
+    runtime.steerAnswerMs = 400;
+    const before = runtime.prompts.length;
+    core.services.chat.send({ threadId: thread.id, text: 'do something slow, every morning', attachments: [], images: [] }, 'routine');
+    await vi.waitFor(() => expect(runtime.prompts.length).toBe(before + 1));
+    const run = messages().at(-1)!;
+    expect(refused('Checking the reports now.')).toBe(ROUTINE_NOTE_REASON);
+    expect(said(messages().find((m) => m.id === run.id))).toEqual([]);
+    // the user's own message, taken into that run, is a turn of its own
+    const sent = send('what is 17 times 3?');
+    await vi.waitFor(() => expect(messages().at(-1)?.id).toBe(sent.agentMessageId));
+    expect(refused('51.')).toBe('');
     expect(said(messages().at(-1))).toEqual(['51.']);
     await idle();
   });

@@ -32,7 +32,7 @@ import { inputCard } from './agentInput';
 import { autoTitle, isDefaultTitle } from './threads';
 import { RESUME_PROMPT, type ResumeThread } from './updateRestart';
 import { checkCreditPick } from './credit';
-import { newNoteState, takeNote, type NoteState } from './notes';
+import { ROUTINE_NOTE_REASON, newNoteState, takeNote, type NoteState } from './notes';
 
 type Via = Message['via'];
 type ToolCallPart = Extract<Part, { type: 'tool_call' }>;
@@ -1460,10 +1460,14 @@ export class ChatService {
    *
    * A note is not the reply: a follow-ups block written into one is taken out of it and offers nothing (only the
    * reply's last words do). Returns the note as it went out.
+   *
+   * A routine's run sends none (`ROUTINE_NOTE_REASON`): with a note in it, a run with nothing to say would stop
+   * folding and notify every time. A message the user writes into that run is a turn of its own, and is answered.
    */
   say(threadId: string, text: string): { messageId: string; text: string } {
     this.ctx.s.threads.require(threadId);
     const run = this.run(threadId);
+    if (run.inflight && run.job?.via === 'routine') throw new RpcError('invalid_params', ROUTINE_NOTE_REASON);
     const now = Date.now();
     const note = splitFollowUps(text).text.trim();
     if (!note && text.trim()) throw new RpcError('invalid_params', 'Not sent: follow-ups go at the very end of your reply, never in a message sent while you work.');

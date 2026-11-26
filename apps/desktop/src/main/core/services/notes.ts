@@ -24,6 +24,13 @@ export interface NoteState {
 
 export const newNoteState = (now: number): NoteState => ({ credit: NOTE_BURST * NOTE_EVERY_MS, at: now });
 
+/**
+ * What a bot reads when it sends a note on a routine's run. Nobody watches a run that started on schedule, and a note
+ * is a bubble of its own: with one, a run that had nothing to say ("✓") would no longer fold away, and would mark the
+ * chat unread and notify every time it ran. What the run found goes in its reply.
+ */
+export const ROUTINE_NOTE_REASON = 'Not sent: this message came from one of the user’s routines, on schedule, so nobody is waiting to hear how it goes. Carry on, and put everything the user should know in your reply at the end.';
+
 /** What two notes are compared by: their letters and digits, whatever the case, spacing, punctuation or emoji. */
 export function noteKey(text: string): string {
   const key = text.normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
