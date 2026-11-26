@@ -30,10 +30,10 @@ export function ComposioSettingRow() {
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
           {configured ? <Button size="sm" variant="ghost" onClick={signOut}>Sign out</Button> : null}
-          <Button size="sm" variant="secondary" onClick={() => ui.openApps()}>Open Apps</Button>
+          <Button size="sm" variant="secondary" onClick={() => ui.openApps()}>Connect apps</Button>
         </div>
       </div>
-      {/* signed in and something is wrong (Composio can't be reached): said here too, not only on the Apps page */}
+      {/* signed in and something is wrong (Composio can't be reached): said here too, not only in the Connect apps popup */}
       {configured && apps?.error ? <p className="selectable pl-12 text-ui leading-snug text-danger">{apps.error}</p> : null}
       {configured ? null : (
         <div className="flex flex-col gap-2 pl-12">

@@ -5,9 +5,9 @@
  *
  * URL switches: ?onboarding=1 (first-run setup: Accessibility, Screen Recording and notifications not given yet; add
  *               &step=welcome|agents|permissions|pair|follow|done to open a step, &perms=granted to start granted)
- *               ?theme=dark|light  ?voice=ready|off (speech models downloaded / unsupported)  ?panel=skills|memory|routines|files|computer (computer: with ?screen=asleep|waking|connecting|live|reconnecting|paused|unreachable)  ?page=apps (the Apps page)
+ *               ?theme=dark|light  ?voice=ready|off (speech models downloaded / unsupported)  ?panel=skills|memory|routines|files|computer (computer: with ?screen=asleep|waking|connecting|live|reconnecting|paused|unreachable)  ?page=apps|connected (the Connect apps popup, or its connected apps)
  *               ?settings=providers (or any Settings section)
- *               ?bot=bot_ledger (another bot than Appu)   ?approval=0   ?forms=1 (a form and a Vault card)   ?apps=onboarding (signed out of Composio)
+ *               ?bot=bot_ledger (another bot than Appu)   ?approval=0   ?forms=1 (a form and a Vault card)   ?apps=onboarding|none|many (signed out of Composio, nothing connected, fifteen connected)
  *               ?threads=1 (the thread switcher open, one of Appu's older threads unread)
  *               ?editor=1 (the bot's side panel open on Details, where it is set up)
  *               ?characters=off|fail|worn (a computer without characters / Generate failing / Ledger wearing one)
@@ -226,7 +226,7 @@ export class MockGateway implements GatewayLike {
     if (this.opts.thread === 'handoff') void openThread(IDS.appuHandoff);
     const panel = this.opts.panel;
     if (panel) setState({ rightOpen: true, rightTab: panel });
-    if (this.opts.page === 'apps') ui.openApps();
+    if (this.opts.page) ui.openApps(this.opts.page === 'connected' ? 'connected' : 'browse');
     if (this.opts.groups && !this.opts.bot) ui.selectGroup(GROUP_ID);
     if (this.opts.settings) ui.openSettings(this.opts.settings);
     if (this.opts.threads) {

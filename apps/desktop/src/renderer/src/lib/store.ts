@@ -13,6 +13,8 @@ import { markOnce } from './perfMarks';
 export type RightTab = 'threads' | 'bot' | 'skills' | 'memory' | 'routines' | 'files' | 'computer';
 /** The sidebar's width as it opens, and what a double-click on its edge returns it to (the owner's own, 2026-11-14; 288 before). */
 export const SIDEBAR_WIDTH = 303;
+/** The Connect apps popup's two views. */
+export type AppsView = 'browse' | 'connected';
 export type SettingsSection = 'general' | 'vault' | 'appearance' | 'providers' | 'instructions' | 'apps' | 'devices' | 'computer' | 'channels' | 'voice' | 'usage' | 'storage' | 'about' | 'whats-new' | 'permissions' | 'account' | 'billing' | 'team' | 'transfer' | 'import';
 /** an old name main still sends (`appubot:navigate {id: 'cloud'}` after a sign-in or checkout): opens Billing */
 export type LegacySettingsSection = 'cloud';
@@ -181,8 +183,10 @@ export interface AppState {
   sidebarWidth: number;
   /** the settings page replacing the chat (null: settings closed) */
   settingsSection: SettingsSection | null;
-  /** the Apps page replacing the chat and the side panel (the sidebar's "Connect apps") */
+  /** the Connect apps popup (the sidebar's "Connect apps"), a dialog of its own so a confirm can open over it */
   appsOpen: boolean;
+  /** what it shows: the directory, or the apps already connected */
+  appsView: AppsView;
   /** a setting row/group anchor to scroll to once the section shows (settings search) */
   settingsTarget: string | null;
   modal: Modal | null;
@@ -243,16 +247,16 @@ export function groupThreadOf(s: Pick<AppState, 'threads'>, threadId: string): {
 }
 
 /** Whether a group's room is on screen showing that thread. */
-export function roomOnScreen(s: Pick<AppState, 'groups' | 'selectedGroupId' | 'settingsSection' | 'appsOpen'>, groupId: string, chatId: string): boolean {
-  if (s.selectedGroupId !== groupId || s.settingsSection !== null || s.appsOpen) return false;
+export function roomOnScreen(s: Pick<AppState, 'groups' | 'selectedGroupId' | 'settingsSection'>, groupId: string, chatId: string): boolean {
+  if (s.selectedGroupId !== groupId || s.settingsSection !== null) return false;
   const g = s.groups.find((x) => x.id === groupId);
   return !g || currentGroupChat(g).id === chatId;
 }
 
-type ScreenFields = 'threads' | 'groups' | 'selectedBotId' | 'selectedThreadId' | 'selectedGroupId' | 'settingsSection' | 'appsOpen';
-/** Whether a thread is the one on screen (settings, Apps or a group's room aren't covering the chat). */
+type ScreenFields = 'threads' | 'groups' | 'selectedBotId' | 'selectedThreadId' | 'selectedGroupId' | 'settingsSection';
+/** Whether a thread is the one on screen (settings or a group's room aren't covering the chat). */
 export function threadOnScreen(s: Pick<AppState, ScreenFields>, threadId: string): boolean {
-  return s.selectedThreadId === threadId && s.selectedGroupId === null && s.settingsSection === null && !s.appsOpen;
+  return s.selectedThreadId === threadId && s.selectedGroupId === null && s.settingsSection === null;
 }
 
 /** On screen for toasts: the thread itself, or a Telegram chat of the bot on screen (its approvals dock there). */
@@ -262,7 +266,7 @@ export function seenOnScreen(s: Pick<AppState, ScreenFields>, threadId: string):
   const room = groupThreadOf(s, threadId);
   if (room) return roomOnScreen(s, room.groupId, room.chatId);
   const t = s.threads.find((x) => x.id === threadId);
-  return !!t && t.source === 'channel' && t.botId === s.selectedBotId && s.selectedGroupId === null && s.settingsSection === null && !s.appsOpen;
+  return !!t && t.source === 'channel' && t.botId === s.selectedBotId && s.selectedGroupId === null && s.settingsSection === null;
 }
 
 /**
@@ -296,7 +300,7 @@ const initial: AppState = {
   convo: {}, convoLru: [],
   selectedBotId: null, selectedGroupId: null, selectedThreadId: null, threadPick: {}, unread: loadUnread(),
   rightOpen: false, rightTab: 'threads', rightWidth: 380, sidebarWidth: SIDEBAR_WIDTH,
-  settingsSection: null, settingsTarget: null, appsOpen: false, modal: null, quitPrompt: null, toasts: [], nativeDark: false,
+  settingsSection: null, settingsTarget: null, appsOpen: false, appsView: 'browse', modal: null, quitPrompt: null, toasts: [], nativeDark: false,
   supportOpen: false, supportUnread: 0, voiceMode: null,
 };
 
@@ -616,7 +620,7 @@ export function updateToast(id: string, patch: Partial<Omit<Toast, 'id' | 'ts'>>
 /* ---------- ui actions ---------- */
 export const ui = {
   selectBot(botId: string | null): void {
-    // picking a bot is navigation: it leaves the settings and Apps pages (and a group's room); it shows the thread you had open there
+    // picking a bot is navigation: it leaves settings and the Connect apps popup (and a group's room); it shows the thread you had open there
     setState((s) => ({ selectedBotId: botId, selectedGroupId: null, selectedThreadId: threadFor(s, botId), settingsSection: null, settingsTarget: null, appsOpen: false }));
   },
   /** Show a group's room in place of the chat (null: back to the bot's chat). */
@@ -659,8 +663,8 @@ export const ui = {
     });
   },
   openRight(tab: RightTab): void { setState({ rightOpen: true, rightTab: tab }); },
-  /** The Apps page (a page of its own, like settings: it covers the chat and the side panel). */
-  openApps(): void { setState({ appsOpen: true, settingsSection: null, settingsTarget: null }); },
+  /** The Connect apps popup (a dialog over whatever is on screen), on the directory or on the connected apps. */
+  openApps(view: AppsView = 'browse'): void { setState({ appsOpen: true, appsView: view }); },
   closeApps(): void { setState({ appsOpen: false }); },
   openSettings(section: SettingsSection | LegacySettingsSection = 'general', target?: string): void { setState({ settingsSection: section === 'cloud' ? 'billing' : section, settingsTarget: target ?? null, appsOpen: false }); },
   closeSettings(): void { setState({ settingsSection: null, settingsTarget: null }); },

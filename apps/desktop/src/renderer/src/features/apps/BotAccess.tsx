@@ -26,7 +26,7 @@ function BotsPopover({ anchor, toolkit: t, onClose }: { anchor: HTMLElement; too
 
   useEffect(() => {
     const down = (e: MouseEvent) => { if (!ref.current?.contains(e.target as Node) && !anchor.contains(e.target as Node)) onClose(); };
-    // its own Escape, before the page's (which would leave Apps)
+    // its own Escape, before the dialog's (which would close Connect apps)
     const key = (e: KeyboardEvent) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); onClose(); } };
     window.addEventListener('mousedown', down);
     window.addEventListener('keydown', key, true);
@@ -62,7 +62,7 @@ function BotsPopover({ anchor, toolkit: t, onClose }: { anchor: HTMLElement; too
   );
 }
 
-/** A connected app's footer: the bots it's on for (avatars, "All bots" / "2 of 3 bots"), opening a switch per bot. */
+/** Under a connected app's name: the bots it's on for (avatars, "All bots" / "2 of 3 bots"), opening a switch per bot. */
 export function BotAccess({ toolkit: t }: { toolkit: AppToolkit }) {
   const bots = useStore((s) => s.bots);
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
@@ -76,19 +76,19 @@ export function BotAccess({ toolkit: t }: { toolkit: AppToolkit }) {
         aria-label={`Bots that can use ${t.name}: ${label}`}
         onClick={(e) => setAnchor(anchor ? null : e.currentTarget)}
         className={cn(
-          'no-drag flex h-8 w-full min-w-0 items-center gap-2 rounded-[10px] px-2 text-left text-ui transition-colors hover:bg-surface-2',
+          'no-drag -ml-1.5 flex h-[22px] max-w-full min-w-0 items-center gap-1.5 rounded-md px-1.5 text-left text-copy transition-colors hover:bg-surface-2',
           'focus-visible:outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)]',
           anchor && 'bg-surface-2',
         )}
       >
         {on.length ? (
           <span className="flex shrink-0 items-center -space-x-1">
-            {on.slice(0, SHOWN).map((b) => <BotAvatar key={b.id} bot={b} size={18} />)}
+            {on.slice(0, SHOWN).map((b) => <BotAvatar key={b.id} bot={b} size={16} />)}
           </span>
         ) : (
-          <span className="size-[18px] shrink-0 rounded-full border border-dashed border-[color-mix(in_srgb,var(--ab-fg)_28%,transparent)]" />
+          <span className="size-4 shrink-0 rounded-full border border-dashed border-[color-mix(in_srgb,var(--ab-fg)_28%,transparent)]" />
         )}
-        <span className={cn('min-w-0 flex-1 truncate', on.length ? 'text-fg-2' : 'text-muted')}>{label}</span>
+        <span className="min-w-0 truncate text-muted">{label}</span>
         <Icon icon={ChevronDown} size={13} className="shrink-0 text-muted" />
       </button>
       {anchor ? <BotsPopover anchor={anchor} toolkit={t} onClose={() => setAnchor(null)} /> : null}

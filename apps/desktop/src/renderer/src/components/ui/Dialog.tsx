@@ -56,11 +56,13 @@ export interface DialogProps {
   className?: string;
   bodyClassName?: string;
   hideClose?: boolean;
+  /** a control in the header, between the title and Close */
+  headerAction?: ReactNode;
   /** the dialog's name for screen readers when it shows no title (the command palette) */
   label?: string;
 }
 
-function Panel({ onClose, title, description, children, footer, size = 'md', className, bodyClassName, hideClose, label }: Omit<DialogProps, 'open'>) {
+function Panel({ onClose, title, description, children, footer, size = 'md', className, bodyClassName, hideClose, headerAction, label }: Omit<DialogProps, 'open'>) {
   const id = useId();
   const ref = useRef<HTMLDivElement>(null);
 
@@ -127,6 +129,7 @@ function Panel({ onClose, title, description, children, footer, size = 'md', cla
               {title ? <h2 id={`${id}-title`} className="text-[18px] leading-tight font-semibold tracking-ui text-fg">{title}</h2> : null}
               {description ? <p id={`${id}-description`} className="mt-1 text-copy leading-normal text-muted">{description}</p> : null}
             </div>
+            {headerAction}
             {!hideClose ? <Button variant="ghost" size="icon-sm" icon={X} aria-label="Close" onClick={onClose} className="-mt-1 -mr-2.5" /> : null}
           </div>
         ) : null}

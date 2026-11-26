@@ -217,7 +217,7 @@ export function BotPanel() {
         <LoginsRow bot={bot} />
         <button
           type="button"
-          onClick={() => ui.openApps()}
+          onClick={() => ui.openApps('connected')}
           className={cn(ROW, 'w-full text-left outline-none transition-colors hover:bg-fg/[.04] focus-visible:bg-fg/[.04]')}
         >
           <span className={ROW_LABEL}>Apps</span>

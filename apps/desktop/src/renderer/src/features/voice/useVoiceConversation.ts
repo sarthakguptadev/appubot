@@ -835,14 +835,14 @@ export function setVoiceMuted(muted: boolean): void {
 /** Start over after a failure (models, microphone). */
 export function retryVoice(): void { if (session) void session.start(); }
 
-/** Showing another bot or thread, settings or Apps ends voice mode; the connection and new messages reach it. */
+/** Showing another bot or thread, or settings, ends voice mode; the connection and new messages reach it. */
 function watch(): void {
   if (unwatch) return;
   unwatch = useStore.subscribe((s, prev) => {
     const vm = s.voiceMode;
     if (!vm || !session) return;
     // the main window leaves voice mode when the chat goes off screen; the menu bar's call window has no chat to leave
-    const elsewhere = !isVoiceBarView() && (s.settingsSection !== null || s.appsOpen || s.selectedBotId !== vm.botId
+    const elsewhere = !isVoiceBarView() && (s.settingsSection !== null || s.selectedBotId !== vm.botId
       || (s.selectedThreadId !== null && s.selectedThreadId !== vm.threadId));
     if (elsewhere) { endVoice(); return; }
     if (s.conn !== prev.conn) session.onConn(s.conn);

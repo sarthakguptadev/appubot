@@ -11,7 +11,7 @@ import { SupportWidget } from '../../features/support/SupportWidget';
 import { useWhatsNewAutoOpen } from '../../features/whatsNew/WhatsNew';
 import { useAgentUpdateNotices } from '../../features/providers/agentUpdates';
 import { ReconnectBanner } from './Connection';
-import { AppsPage, preloadDialogs } from './ModalHost';
+import { preloadDialogs } from './ModalHost';
 import { RightPanel } from './RightPanel';
 import { Sidebar } from './Sidebar';
 import { CloudPane } from '../../features/cloud/CloudPane';
@@ -30,12 +30,11 @@ function useShortcuts(): void {
     if (m?.kind === 'quick') ui.closeModal(); else if (!isDialogOpen()) ui.openModal({ kind: 'quick' });
   });
   useHotkey((e) => cmd(e) && e.key === ',', () => ui.openSettings());
-  // ⌘N: a new thread with the selected bot (settings and Apps step aside so you see it)
+  // ⌘N: a new thread with the selected bot (settings steps aside so you see it)
   useHotkey((e) => cmd(e) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'n', () => {
     const s = getState();
     if (isDialogOpen() || !s.selectedBotId) return;
     if (s.settingsSection !== null) ui.closeSettings();
-    if (s.appsOpen) ui.closeApps();
     void startThread(s.selectedBotId);
   });
   // ⌘1…⌘9 jump to the n-th bot
@@ -49,8 +48,8 @@ function useShortcuts(): void {
 function useReadTracking(): void {
   const threadId = useStore((s) => s.selectedThreadId);
   const isUnread = useStore((s) => !!s.selectedThreadId && !!s.unread[s.selectedThreadId]);
-  // the settings and Apps pages cover the chat
-  const hidden = useStore((s) => s.settingsSection !== null || s.appsOpen || s.selectedGroupId !== null);
+  // the settings page covers the chat
+  const hidden = useStore((s) => s.settingsSection !== null || s.selectedGroupId !== null);
   useEffect(() => {
     if (!threadId || hidden) return;
     const mark = () => { if (document.hasFocus() && document.visibilityState === 'visible') ui.markRead(threadId); };
@@ -79,14 +78,13 @@ function SettingsHost() {
 
 export function MainLayout() {
   const selectedThreadId = useStore((s) => s.selectedThreadId);
-  const appsOpen = useStore((s) => s.appsOpen);
   const groupOpen = useStore((s) => s.selectedGroupId !== null);
   useShortcuts();
   useReadTracking();
   useWhatsNewAutoOpen();
   useAgentUpdateNotices();
   useEffect(() => markOnce('appubot:main-painted', true), []);
-  // what launch left out (KaTeX, the dialogs and the Apps page: chunks of their own) in a quiet moment, so a reply with
+  // what launch left out (KaTeX and the dialogs: chunks of their own) in a quiet moment, so a reply with
   // maths or a dialog opened later draws in its first frame
   useEffect(() => {
     const id = requestIdleCallback(() => { if (appearanceNow().math) void loadMath(); preloadDialogs(); }, { timeout: 8000 });
@@ -122,12 +120,8 @@ export function MainLayout() {
           <ReconnectBanner />
           <CloudSyncStrip />
           <TeachBanner />
-          {/* Apps is a page of its own: it takes over the card (settings is a window over everything, below); composer
-              drafts live outside the chat view, so they survive the round trip */}
           {cloudWaiting ? (
             <CloudPane />
-          ) : appsOpen ? (
-            <AppsPage />
           ) : groupOpen ? (
             <div className="flex min-h-0 flex-1">
               <GroupView />
@@ -138,7 +132,7 @@ export function MainLayout() {
             </div>
           )}
         </section>
-        {!appsOpen ? <RightPanel /> : null}
+        <RightPanel />
       </main>
       <SettingsHost />
       <DesktopView />

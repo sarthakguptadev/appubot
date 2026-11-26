@@ -339,7 +339,7 @@ function ThreadRow({ t, rowClass, onScreen, unread, waiting, renaming, onRename,
  */
 function BotThreads({ bot }: { bot: Bot }) {
   const all = useStore((s) => s.threads);
-  const onScreenId = useStore((s) => (s.appsOpen ? null : s.selectedThreadId));
+  const onScreenId = useStore((s) => s.selectedThreadId);
   const unread = useStore((s) => s.unread);
   const pending = useStore((s) => s.pendingPermissions);
   const threads = useMemo(() => botThreads(all, bot.id), [all, bot.id]);
@@ -384,14 +384,14 @@ function BotThreads({ bot }: { bot: Bot }) {
 const RAISED = 'bg-surface-2 hover:bg-surface-3';
 const RAISED_ON = 'bg-surface-3';
 
-/** Opens (or, open, closes) the Apps page. */
+/** Opens the Connect apps popup. */
 function ConnectApps() {
   const open = useStore((s) => s.appsOpen);
   return (
     <button
       type="button"
-      aria-pressed={open}
-      onClick={() => (open ? ui.closeApps() : ui.openApps())}
+      aria-haspopup="dialog"
+      onClick={() => ui.openApps()}
       className={cn(
         'ab-press ab-pill squircle no-drag flex h-9 min-w-0 flex-1 items-center justify-center gap-2 rounded-control px-3 text-ui font-semibold tracking-ui text-fg focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-bg),0_0_0_4px_var(--ab-ring)]',
         RAISED, open && RAISED_ON,
@@ -408,7 +408,7 @@ const STACK_APPS = [gmailLogo, slackLogo, notionLogo, githubLogo];
 const STACK_TILE = 18;
 const STACK_STEP = 12;
 
-/** Those apps' logos as a row of small tiles, each lying over the one before it (the Apps page's sign-in banner in small). */
+/** Those apps' logos as a row of small tiles, each lying over the one before it. */
 function AppStack() {
   return (
     <span aria-hidden className="flex shrink-0 items-center" style={{ width: STACK_TILE + STACK_STEP * (STACK_APPS.length - 1), height: STACK_TILE }}>
@@ -439,8 +439,6 @@ export function Sidebar() {
   // opening the app, a switch or a cloud computer waking say nothing (lib/connectionQuiet.ts): the gear's dot shows
   // only once the connection has been down a while, or at once for a refusal that waiting can't fix
   const down = useHeldFor(conn !== 'connected') || conn === 'unauthorized' || conn === 'incompatible';
-  // the Apps page is where you are while it's open, not the selected bot's chat
-  const appsOpen = useStore((s) => s.appsOpen);
   /** bots whose threads are listed under them */
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set());
   const toggle = (id: string) => setExpanded((prev) => {
@@ -492,11 +490,11 @@ export function Sidebar() {
             <ul className="mb-2 grid grid-cols-3 gap-1" aria-label={t('sidebar.pinned')}>
               {pinned.map((r) => (
                 <li key={r.bot.id} className="min-w-0">
-                  <BotTile bot={r.bot} selected={!appsOpen && selectedGroupId === null && r.bot.id === selectedBotId} unread={r.unread} presence={r.presence} />
+                  <BotTile bot={r.bot} selected={selectedGroupId === null && r.bot.id === selectedBotId} unread={r.unread} presence={r.presence} />
                 </li>
               ))}
               {pinnedGroups.map((g) => (
-                <li key={g.id} className="min-w-0"><GroupPinTile group={g} selected={!appsOpen && g.id === selectedGroupId} /></li>
+                <li key={g.id} className="min-w-0"><GroupPinTile group={g} selected={g.id === selectedGroupId} /></li>
               ))}
             </ul>
           ) : null}
@@ -504,13 +502,13 @@ export function Sidebar() {
             {listed.map((r) => (
               <li key={r.bot.id}>
                 <BotRow
-                  bot={r.bot} latest={r.latest} selected={!appsOpen && selectedGroupId === null && r.bot.id === selectedBotId} unread={r.unread} presence={r.presence}
+                  bot={r.bot} latest={r.latest} selected={selectedGroupId === null && r.bot.id === selectedBotId} unread={r.unread} presence={r.presence}
                   expanded={expanded.has(r.bot.id)} onToggle={() => toggle(r.bot.id)}
                 />
                 {expanded.has(r.bot.id) ? <BotThreads bot={r.bot} /> : null}
               </li>
             ))}
-            {groups.map((g) => <li key={g.id}><GroupRow group={g} selected={!appsOpen && g.id === selectedGroupId} /></li>)}
+            {groups.map((g) => <li key={g.id}><GroupRow group={g} selected={g.id === selectedGroupId} /></li>)}
           </ul>
           {!rows.length && !groups.length && !pinnedGroups.length ? (
             cloudLoading ? <div className="flex justify-center px-3 py-8"><Spinner size={14} className="text-muted" /></div>

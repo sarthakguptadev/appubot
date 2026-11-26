@@ -25,8 +25,8 @@ export interface MockOptions {
   cloudOnly?: boolean;
   theme?: 'light' | 'dark';
   panel?: RightTab;
-  /** `?page=apps` opens the Apps page */
-  page?: 'apps';
+  /** `?page=apps` opens the Connect apps popup, `?page=connected` on its connected apps */
+  page?: 'apps' | 'connected';
   /** `?bot=bot_ledger` opens another bot than Appu */
   bot?: string;
   approval: boolean;
@@ -43,6 +43,8 @@ export interface MockOptions {
   groupsFilm: boolean;
   /** signed in to Composio (`?apps=onboarding` starts signed out) */
   appsKey: boolean;
+  /** `?apps=none`: nothing connected yet; `?apps=many`: fifteen apps connected */
+  appsSeed?: 'none' | 'many';
   /** `?settings=providers` (any section) opens Settings there */
   settings?: SettingsSection;
   /** `?threads=1` opens the side panel on its Threads tab, with one thread unread */
@@ -99,7 +101,7 @@ export function readOptions(): MockOptions {
     cloudOnly: q.get('cloudonly') === '1',
     theme: theme === 'dark' || theme === 'light' ? theme : undefined,
     panel: PANELS.find((p) => p === panel),
-    page: q.get('page') === 'apps' ? 'apps' : undefined,
+    page: q.get('page') === 'apps' ? 'apps' : q.get('page') === 'connected' ? 'connected' : undefined,
     bot: q.get('bot') ?? undefined,
     approval: q.get('approval') !== '0' && q.get('working') !== '1',
     working: q.get('working') === '1',
@@ -108,6 +110,7 @@ export function readOptions(): MockOptions {
     groupsPinned: q.get('groups') === 'pinned',
     groupsFilm: q.get('groups') === 'film',
     appsKey: q.get('apps') !== 'onboarding',
+    appsSeed: q.get('apps') === 'none' ? 'none' : q.get('apps') === 'many' ? 'many' : undefined,
     settings: SECTIONS.find((x) => x === q.get('settings')) ?? (q.get('settings') === 'cloud' ? 'billing' : undefined),
     threads: q.get('threads') === '1',
     editor: q.get('editor') === '1',
