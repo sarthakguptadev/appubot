@@ -3,6 +3,7 @@
  */
 import { messagePreview, newId, type Message, type Part, type PermissionRequest } from '@appubot/protocol';
 import type { MockGateway } from './MockGateway';
+import { MOCK_FOLLOW_UPS } from './mockMessages';
 
 type Timer = ReturnType<typeof setTimeout>;
 type Step = [at: number, fn: () => void];
@@ -112,7 +113,7 @@ Want me to go ahead and take care of it?`;
   at(150, () => undefined);
   for (const w of chunks(reply, /\S+\s*/g)) at(40, () => g.delta(threadId, messageId, 2, 'text', w));
   at(120, () => {
-    g.completeMessage(threadId, messageId, 'complete', 'end_turn');
+    g.completeMessage(threadId, messageId, 'complete', 'end_turn', g.opts.followUps ? MOCK_FOLLOW_UPS.slice(0, g.opts.followUps) : undefined);
     finishThread(g, threadId, messageId);
   });
 

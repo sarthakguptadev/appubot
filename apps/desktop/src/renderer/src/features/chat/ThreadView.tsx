@@ -206,6 +206,12 @@ export function ThreadView() {
     const c = thread ? s.convo[thread.id] : undefined;
     return c?.ids.length ? c.ids[c.ids.length - 1]! : '';
   });
+  // what the bot offered as the next step with that reply: only while it is the chat's newest message
+  const followUps = useStore((s) => {
+    const c = thread ? s.convo[thread.id] : undefined;
+    const last = c?.ids.length ? c.byId[c.ids[c.ids.length - 1]!] : undefined;
+    return last?.role === 'agent' && last.status === 'complete' ? last.followUps : undefined;
+  });
 
   // no model or mode pickers yet (a new bot or thread, or an agent no chat has used): start its agent so they arrive now
   const needsWarm = !!bot && (!thread || !thread.models.length || !thread.modes.length);
@@ -266,14 +272,15 @@ export function ThreadView() {
       {showNotifications ? <NotificationsPill chip onDismiss={() => dismiss('notifications')} /> : null}
     </>
   ) : null;
-  // under a finished reply, after those: a random few things to try next, from what this person hasn't done yet
-  // (chat-core suggestions.ts); never in a chat with no reply yet (the landing has its own) or one waiting on an answer
+  // under a finished reply, after those: the bot's own follow-ups for it, then a random few things to try next, from
+  // what this person hasn't done yet (chat-core suggestions.ts); never in a chat with no reply yet (the landing has its
+  // own) or one waiting on an answer
   const room = 5 - (showAccess ? 1 : 0) - (showNotifications ? 1 : 0);
   const footer = quiet && thread && lastId && thread.status !== 'waiting' ? (
     <div className="flex flex-wrap gap-2">
       {showAccess ? <ComputerAccessPill botName={bot.name} onDismiss={() => dismiss('computer')} /> : null}
       {showNotifications ? <NotificationsPill onDismiss={() => dismiss('notifications')} /> : null}
-      <SuggestionPills bot={bot} threadId={thread.id} seed={lastId} room={room} />
+      <SuggestionPills bot={bot} threadId={thread.id} seed={lastId} room={room} followUps={followUps} />
     </div>
   ) : null;
 

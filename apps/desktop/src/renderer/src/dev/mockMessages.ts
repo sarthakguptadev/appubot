@@ -4,6 +4,7 @@
  * Telegram chat of its own.
  */
 import type { ComputerAction, Message, Part } from '@appubot/protocol';
+import { suggestionCount } from '@appubot/chat-core';
 import type { MockOptions } from './mockData';
 import { APPU_WS, DAY, FILM_IDS, FILM_PIXEL_CHAT, HOUR, IDS, MIN, ago } from './mockIds';
 import { frameImage } from './mockFrame';
@@ -598,6 +599,18 @@ function midJobThread(id: string, kind: 'note' | 'question' | 'waits'): Message[
   ];
 }
 
+/** What the mock bot offers as the next step (`?followups=`). */
+export const MOCK_FOLLOW_UPS = ['Email it to Acme', 'Make it due in 30 days', 'Do the same for October', 'Send this every month'];
+
+/** `?followups=` and `?pills=`: the chat's newest reply with follow-ups of the bot's own, as a reply that gets that many pills. */
+function withPills(list: Message[], opts: MockOptions): Message[] {
+  const last = list[list.length - 1];
+  if (!last || last.role !== 'agent' || last.status !== 'complete' || (opts.pills === undefined && !opts.followUps)) return list;
+  let id = last.id;
+  if (opts.pills !== undefined) for (let i = 0; i < 500 && suggestionCount(`${IDS.appu}:${id}`) !== opts.pills; i++) id = `${last.id}_${i}`;
+  return [...list.slice(0, -1), { ...last, id, ...(opts.followUps ? { followUps: MOCK_FOLLOW_UPS.slice(0, opts.followUps) } : {}) }];
+}
+
 /* ---------- the conversations ---------- */
 export function buildMessages(opts: MockOptions): Record<string, Message[]> {
   const appu = IDS.main;
@@ -631,13 +644,13 @@ export function buildMessages(opts: MockOptions): Record<string, Message[]> {
         text('Done - moved **63 screenshots** into `~/Pictures/Screenshots/` (July → October). Your Desktop is clear.'),
       ]),
     ],
-    [appu]: [
+    [appu]: withPills([
       msg('m_inbox_1', appu, 'user', ago(3 * HOUR), [text('Check my Mail inbox for anything unread since yesterday. Summarise what needs a reply today and draft short answers for the easy ones.')], { via: 'routine', routine: { id: IDS.routineInbox, name: 'Morning inbox digest' } }),
       msg('m_inbox_2', appu, 'agent', ago(3 * HOUR) + 40_000, [
         text('**4 emails need you today:**\n\n1. **Priya (Ledgerworks)** - needs the September bank statement by Wednesday.\n2. **Acme Corp** - asking for the retainer invoice.\n3. **Razorpay** - settlement report for Oct 9 is ready.\n4. **Rahul** - lunch Thursday? I drafted a “yes, 1pm works”.\n\nThe other 11 are newsletters; I left them unread.'),
       ], { via: 'routine' }),
       ...mainThread(opts),
-    ],
+    ], opts),
     ...(opts.groupsFilm ? {
       [FILM_PIXEL_CHAT]: [
         msg('m_px_1', FILM_PIXEL_CHAT, 'user', ago(6 * MIN), [text('The launch thread goes out Friday at 9:00. Can you make a square version of the graphic for the first post, with the headline a little bigger?')], { via: 'bot', from: { botId: FILM_IDS.echo, name: 'Echo' } }),

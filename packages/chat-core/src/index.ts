@@ -26,6 +26,7 @@ export * from './memory';
 export * from './threads';
 export * from './routineRuns';
 export * from './suggestions';
+export * from './followUps';
 export * from './botAvatar';
 export * from './botMotion';
 export * from './characters';

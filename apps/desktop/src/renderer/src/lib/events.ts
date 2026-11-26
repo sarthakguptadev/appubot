@@ -136,6 +136,8 @@ function applyServerEvent(event: EventName | 'hello', payload: unknown): void {
         m.status = d.status;
         m.stopReason = d.stopReason;
         m.error = d.error;
+        // what the bot offered as your next step with this reply (the pills under it: features/chat/Suggestions.tsx)
+        if (d.followUps) m.followUps = d.followUps;
         m.updatedAt = Date.now();
       });
       const s = getState();

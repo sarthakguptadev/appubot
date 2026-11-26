@@ -423,8 +423,8 @@ export function buildHandlers(ctx: CoreCtx): Handlers {
     'agent.askForm': (p, cx) => s.agentBridge.askForm(agentCtx(cx), p),
     'agent.say': (p, cx) => {
       const text = p.text.trim();
-      const { messageId } = s.chat.say(agentCtx(cx).threadId, text);
-      s.channels.said(messageId, text);
+      const { messageId, text: note } = s.chat.say(agentCtx(cx).threadId, text);
+      s.channels.said(messageId, note);
       return { ok: true as const };
     },
     'agent.notify': (p, cx) => s.agentBridge.notify(agentCtx(cx), p.title, p.body),

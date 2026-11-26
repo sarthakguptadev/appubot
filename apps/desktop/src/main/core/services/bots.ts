@@ -8,7 +8,7 @@ import { join } from 'node:path';
 import { BOT_COLORS, BotSchema, BotShape, computerUseSupported, creditModelAllowed, currentChat, machineName, newId, providerBase, slugify, type Bot, type MethodParams, type MethodResult } from '@appubot/protocol';
 import {
   MEMORY_ENTRY_MAX, MEMORY_FILE, MEMORY_LOAD_MAX, appendMemory, capMemory, cleanEntry, forgetInMemory, memoryIsEmpty,
-  hasPlaceholderName, memoryPreface, memoryTemplate, replaceInMemory,
+  FOLLOW_UP_MAX_CHARS, FOLLOW_UPS_MAX, hasPlaceholderName, memoryPreface, memoryTemplate, replaceInMemory,
 } from '@appubot/chat-core';
 import type { CoreCtx } from '../context';
 import { notFound, RpcError, todayStamp } from '../util';
@@ -51,6 +51,23 @@ export function languageName(tag: string | undefined): string | undefined {
     return name && name !== code ? name : undefined;
   } catch { return undefined; }
 }
+
+/**
+ * How a bot offers the person their next step (chat-core followUps.ts): a block at the end of its reply, which the
+ * computer takes out of the text (`ChatService`) and the apps show as pills under it. Told here and not with a tool,
+ * so offering them costs no model request of its own.
+ */
+export const FOLLOW_UPS_PARAGRAPH = `
+## Follow-ups
+When you have done something for the user (made, found, changed or worked something out), end your reply with what they would most likely ask you next: one to ${FOLLOW_UPS_MAX} short lines in a \`<followups>\` block, as the very last thing in the reply:
+
+<followups>
+Email it to the team
+Make it shorter
+</followups>
+
+AppuBot takes the block out of your reply and shows each line as a button under it; a tap sends that line to you as the user's next message. Write each line as the user would say it to you, in their language, in a few words (under ${FOLLOW_UP_MAX_CHARS} characters), about what you just did, and only what you can really do. Never a question to the user, and no block when you are asking them something or waiting on them. Leave it out when nothing useful follows (a greeting, a short answer, small talk), in a group, and when the message came from another bot.
+`;
 
 /**
  * The one paragraph a cloud bot's CLAUDE.md adds, right after who it is. Only cloud bots get it (their profile key
@@ -129,7 +146,7 @@ ${bot.computerUse && computerUseSupported(process.platform) ? `- \`computer_*\` 
 ` : `- Computer use (screen control) is disabled for this bot.
 `}
 Apps the user connected in AppuBot (Gmail, Slack, GitHub, Notion…) are yours through \`apps_search\` (find the tools for a task), \`apps_tool_schemas\` (a tool's inputs) and \`apps_execute\` (run tools, several at once), but only the ones the user turned on for you. If a task needs an app you don't have (or you have no \`apps_\` tools at all), ask for it with \`apps_request\`: a card in the chat whose button connects it (or turns it on for ${bot.name}), instead of sending the user to settings.
-
+${FOLLOW_UPS_PARAGRAPH}
 ## Memory and threads
 You talk with the user in threads: each is a conversation of its own, and a new thread starts fresh, without the earlier ones. What carries over is your memory, \`MEMORY.md\` in this folder: the first message of every new thread brings it along (its newest part, when it is long).
 - Save durable facts with \`remember\` as you learn them: who the user is and how they like things done (tone, formats, tools), their accounts, folders and the people they work with, ongoing projects and where they stand. One short fact per call; never secrets (passwords, keys, codes).

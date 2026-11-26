@@ -74,6 +74,13 @@ export interface MockOptions {
   /** `?longname=1`: Appu has a very long name (truncation in the header, roster and composer) */
   longName: boolean;
   /**
+   * `?followups=1..4`: the newest reply of Appu's main chat came with that many follow-ups of the bot's own (the first
+   * pills under it), and so does every reply the mock bot gives after it
+   */
+  followUps: number;
+  /** `?pills=2..5`: that reply is one that gets this many of the app's own pills (chat-core `suggestionCount`) */
+  pills?: number;
+  /**
    * `?profile=sarthakfour`: a Claude Code profile of that name is the agent for new bots and Appu's, on Sonnet 5
    * (Claude Code's own list, as a real session reports it): the model picker's trigger with a long account label
    */
@@ -123,6 +130,8 @@ export function readOptions(): MockOptions {
     computer: (['on-screen', 'background', 'waiting'] as const).find((x) => x === q.get('computer')),
     thread: (['media', 'routines', 'work', 'failed', 'handoff', 'note', 'question', 'waits'] as const).find((x) => x === q.get('thread')),
     longName: q.get('longname') === '1',
+    followUps: Math.max(0, Math.min(4, Number(q.get('followups')) || 0)),
+    pills: [2, 3, 4, 5].find((n) => String(n) === q.get('pills')),
     profile: q.get('profile')?.trim() || undefined,
     limits: MOCK_LIMITS_STATES.find((x) => x === q.get('limits')),
     agents: (['signin', 'installing'] as const).find((x) => x === q.get('agents')),
