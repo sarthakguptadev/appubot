@@ -33,12 +33,12 @@ const messages = (): Message[] => core.services.threads.messages(thread.id, { li
 const idle = () => vi.waitFor(() => expect(core.services.threads.require(thread.id).status).toBe('idle'));
 
 /** One turn whose agent sends these ops; returns the reply as the computer keeps it, and the events it sent for it. */
-async function turn(ops: TurnOp[], ends: 'end_turn' | 'cancelled' = 'end_turn'): Promise<{ reply: Message; sent: typeof events }> {
+async function turn(ops: TurnOp[], ends: 'end_turn' | 'cancelled' | 'max_tokens' = 'end_turn'): Promise<{ reply: Message; sent: typeof events }> {
   runtime.reply = (_t, sid) => { for (const op of ops) runtime.hooks.onTurnOp(sid, op); return ''; };
   runtime.replyEnds = ends;
   const from = events.length;
   const { agentMessageId } = core.services.chat.send({ threadId: thread.id, text: 'summarise the report', attachments: [], images: [] });
-  await vi.waitFor(() => expect(events.slice(from).some((e) => e.event === 'message.completed' && e.payload.messageId === agentMessageId)).toBe(true));
+  await vi.waitFor(() => expect(events.slice(from).some((e) => e.event === 'message.completed' && e.payload.messageId === agentMessageId)).toBe(true), { timeout: 5000 });
   await idle();
   runtime.reply = null;
   runtime.replyEnds = 'end_turn';
@@ -47,6 +47,9 @@ async function turn(ops: TurnOp[], ends: 'end_turn' | 'cancelled' = 'end_turn'):
 const words = (partIndex: number, t: string, size = 5): TurnOp[] =>
   Array.from({ length: Math.ceil(t.length / size) }, (_, i) => ({ op: 'delta' as const, partIndex, partType: 'text' as const, delta: t.slice(i * size, (i + 1) * size) }));
 const tool = (partIndex: number): TurnOp => ({ op: 'part', partIndex, part: { type: 'tool_call', toolCallId: `t${partIndex}`, title: 'Read report.md', kind: 'read', status: 'completed', content: [], locations: [] } });
+
+/** the reply's text as the apps were sent it, piece by piece */
+const streamed = (sent: typeof events): string => sent.flatMap((e) => (e.event === 'message.delta' && e.payload.partType === 'text' ? [String(e.payload.delta)] : [])).join('');
 
 const BLOCK = '\n\n<followups>\nEmail it to the team\nMake it shorter\n</followups>\n';
 
@@ -137,6 +140,35 @@ describe('a block that is not the end of the reply', () => {
   });
 });
 
+describe('a reply cut off while its block was arriving', () => {
+  it('keeps nothing of the tag, and only the lines that were whole, when it ran out of words', async () => {
+    const line = await turn(words(0, 'Here it is.\n\n<followups>\nEmail it to the team\nMake it sh', 4), 'max_tokens');
+    expect(line.reply).toMatchObject({ status: 'complete', stopReason: 'max_tokens', followUps: ['Email it to the team'] });
+    expect(text(line.reply)).toBe('Here it is.');
+    expect(streamed(line.sent)).toBe('Here it is.');
+    const tag = await turn(words(0, 'Here it is.\n\n<follow', 4), 'max_tokens');
+    expect(text(tag.reply)).toBe('Here it is.');
+    expect(streamed(tag.sent)).toBe('Here it is.');
+    expect(tag.reply.followUps).toBeUndefined();
+    const closing = await turn(words(0, 'Here it is.\n\n<followups>\nEmail it to the team\n</follo', 4), 'max_tokens');
+    expect(text(closing.reply)).toBe('Here it is.');
+    expect(closing.reply.followUps).toEqual(['Email it to the team']);
+    expect(JSON.stringify([line.sent, tag.sent, closing.sent])).not.toMatch(/<\/?fol/i);
+  });
+});
+
+describe('a reply nobody sees', () => {
+  it('saves no follow-up as a fact when the bot is asked what to remember', async () => {
+    await turn(words(0, 'Noted.'));
+    runtime.reply = (t) => (t.includes('moved on from this thread') ? '- Likes short summaries\n\n<followups>\n- Remind me tomorrow\n</followups>' : 'Hello.');
+    core.services.chat.startThread(bot.id);
+    await vi.waitFor(() => expect(core.services.bots.getMemory(bot.id).memory).toContain('Likes short summaries'));
+    runtime.reply = null;
+    expect(core.services.bots.getMemory(bot.id).memory).not.toMatch(/Remind me tomorrow|followups/);
+  });
+});
+
+// last of the turns: a turn after a restart is primed with the chat's earlier messages, the "slow" one among them
 describe('follow-ups are kept', () => {
   it('through a restart: the same lines on the same message', async () => {
     const { reply } = await turn(words(0, `Saved.${BLOCK}`));
@@ -148,6 +180,22 @@ describe('follow-ups are kept', () => {
     const again = core.services.threads.messages(thread.id, { limit: 50 }).find((m) => m.id === id)!;
     expect(again.followUps).toEqual(['Email it to the team', 'Make it shorter']);
     expect(text(again)).toBe('Saved.');
+  });
+
+  it('and nothing of a block that was still arriving when AppuBot stopped', async () => {
+    const before = runtime.prompts.length;
+    const { agentMessageId } = core.services.chat.send({ threadId: thread.id, text: 'do something slow', attachments: [], images: [] });
+    await vi.waitFor(() => expect(runtime.prompts.length).toBe(before + 1));
+    const sid = runtime.prompts.at(-1)!.sessionId;
+    for (const op of words(1, 'Half done.\n\n<followups>\nEmail it to the te')) runtime.hooks.onTurnOp(sid, op);
+    await core.stop();
+    core = make(root);
+    await core.start();
+    core.ctx.bus.on((e) => { events.push(e as { event: string; payload: Record<string, unknown> }); });
+    const cut = messages().find((m) => m.id === agentMessageId)!;
+    expect(text(cut)).toBe('Half done.');
+    expect(cut.followUps).toBeUndefined();
+    expect(JSON.stringify(cut)).not.toMatch(/follow|Email/i);
   });
 });
 

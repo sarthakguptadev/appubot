@@ -49,7 +49,7 @@ describe('FollowUpsStream', () => {
   });
 
   it('shows a reply without a block exactly as it came', () => {
-    for (const text of ['Done.', 'Done.\n', 'a < b and <b>bold</b> and <follow me>\n\n', 'if (a <f) {}', 'ends with <follow', '  \n']) {
+    for (const text of ['Done.', 'Done.\n', 'a < b and <b>bold</b> and <follow me>\n\n', 'if (a <f) {}', 'ends with <', '  \n']) {
       for (const size of [1, 3, 1000]) {
         const got = stream(text, size);
         expect(got.text).toBe(text);
@@ -69,6 +69,28 @@ describe('FollowUpsStream', () => {
     expect(splitFollowUps('Done.\n<followups>\nMake it shorter\nEmail it</follow')).toEqual({ text: 'Done.', followUps: ['Make it shorter', 'Email it'] });
     expect(splitFollowUps('Done. <Follow-Ups>- Make it shorter\n- Email it</Follow-Ups>')).toEqual({ text: 'Done.', followUps: ['Make it shorter', 'Email it'] });
     expect(splitFollowUps('Done.\n<follow_ups>\n<followup>Make it shorter</followup>\n<followup>Email it</followup>\n</follow_ups>').followUps).toEqual(['Make it shorter', 'Email it']);
+  });
+
+  it('leaves out a last line that was still being written when the reply was cut off', () => {
+    expect(splitFollowUps('Done.\n<followups>\nMake it shorter\nEmail it to the te')).toEqual({ text: 'Done.', followUps: ['Make it shorter'] });
+    expect(splitFollowUps('Done.\n<followups>\nMake it sh')).toEqual({ text: 'Done.', followUps: [] });
+    expect(splitFollowUps('Done.\n<followups>')).toEqual({ text: 'Done.', followUps: [] });
+    // a line break, or a tag begun after it, says the line was whole
+    expect(splitFollowUps('Done.\n<followups>\nMake it shorter\nEmail it\n').followUps).toEqual(['Make it shorter', 'Email it']);
+    expect(splitFollowUps('Done.\n<followups>\nMake it shorter\nEmail it\n</').followUps).toEqual(['Make it shorter', 'Email it']);
+    expect(splitFollowUps('Done.\n<followups><followup>Make it shorter</followup><followup>Email it</followup>').followUps).toEqual(['Make it shorter', 'Email it']);
+    expect(splitFollowUps('Done.\n<followups><followup>Make it shorter</followup><followup>Email i').followUps).toEqual(['Make it shorter']);
+  });
+
+  it('leaves nothing of a tag the reply was cut off in', () => {
+    for (let cut = 2; cut < '<followups>'.length; cut++) {
+      const tag = '<followups>'.slice(0, cut);
+      expect(splitFollowUps(`Done.\n\n${tag}`)).toEqual({ text: 'Done.', followUps: [] });
+      expect(splitFollowUps(`Done.\n\n\`\`\`xml\n${tag}`)).toEqual({ text: 'Done.', followUps: [] });
+    }
+    for (const size of [1, 4, 1000]) expect(stream('Done.\n\n<follow-u', size)).toEqual({ shown: 'Done.', text: 'Done.', followUps: [] });
+    // a lone "<" is the reply's own
+    expect(splitFollowUps('Is a <')).toEqual({ text: 'Is a <', followUps: [] });
   });
 
   it('gives no follow-ups for an empty block, and still hides it', () => {
@@ -93,6 +115,65 @@ describe('FollowUpsStream', () => {
     const s = new FollowUpsStream();
     expect(s.push('\n<followups>\nEmail it\n</followups>')).toBe('');
     expect(s.end()).toEqual({ text: '', followUps: ['Email it'] });
+  });
+
+  it('takes a block wrapped in a code fence with its fence, at every cut of the stream', () => {
+    const wrapped = 'Saved it.\n\n```xml\n<followups>\nEmail it\nMake it shorter\n</followups>\n```\n';
+    for (const size of [1, 2, 3, 4, 7, 13, 1000]) {
+      const got = stream(wrapped, size);
+      expect(got.shown).toBe('Saved it.');
+      expect(got.text).toBe('Saved it.');
+      expect(got.followUps).toEqual(['Email it', 'Make it shorter']);
+    }
+    // a bare fence and a tilde one, a blank line inside, and a fence that never closes
+    expect(splitFollowUps('Done.\n```\n\n<followups>\nEmail it\n</followups>\n\n```')).toEqual({ text: 'Done.', followUps: ['Email it'] });
+    expect(splitFollowUps('Done.\n~~~\n<followups>\nEmail it\n</followups>\n~~~')).toEqual({ text: 'Done.', followUps: ['Email it'] });
+    expect(splitFollowUps('Done.\n```\n<followups>\nEmail it\n</followups>')).toEqual({ text: 'Done.', followUps: ['Email it'] });
+    expect(splitFollowUps('```\n<followups>\nEmail it\n</followups>\n```')).toEqual({ text: '', followUps: ['Email it'] });
+  });
+
+  it('keeps the fence that closes the bot’s own code before a block', () => {
+    const text = 'Here:\n\n```js\nconst a = 1;\n```\n<followups>\nRun it\n</followups>';
+    for (const size of [1, 3, 5, 1000]) {
+      const got = stream(text, size);
+      expect(got.text).toBe('Here:\n\n```js\nconst a = 1;\n```');
+      expect(got.followUps).toEqual(['Run it']);
+    }
+  });
+
+  it('shows code as it was written, fences and all, when no block comes', () => {
+    for (const text of ['Here:\n```js\nconst a = 1;\n```\nDone.', 'Ends on an open fence:\n```', '```\ncode\n```\n', 'a\n```\n<b>\n```']) {
+      for (const size of [1, 2, 5, 1000]) expect(stream(text, size)).toEqual({ shown: expect.any(String), text, followUps: [] });
+    }
+  });
+
+  it('never shows the tags, whatever the block sits in', () => {
+    const cases = [
+      // in the middle of a reply
+      'First.\n<followups>\nEmail it\n</followups>\nThen more.',
+      // inside the bot's own code, with code after it
+      'Look:\n```xml\n<config>\n<followups>\nEmail it\n</followups>\n</config>\n```\nThat is all.',
+      // a fence of its own, and the bot wrote on after it
+      'Done.\n```\n<followups>\nEmail it\n</followups>\n```\n\nAnything else?',
+      // a fence with words of its own before the block
+      'Done.\n```\nNext steps:\n<followups>\nEmail it\n</followups>\n```',
+      // twice, cut short, on one line
+      'A.\n<followups>\nOld\n</followups>\nB.\n<followups>\nNew',
+      'Done. <followups>Email it</followups> Bye.',
+    ];
+    for (const text of cases) {
+      for (const size of [1, 3, 8, 1000]) {
+        const s = new FollowUpsStream();
+        let shown = '';
+        for (let i = 0; i < text.length; i += size) { shown += s.push(text.slice(i, i + size)); expect(shown).not.toMatch(/follow/i); }
+        const end = s.end();
+        expect(shown + end.text).not.toMatch(/follow/i);
+        expect(shown + end.text).not.toMatch(/Email it|Old|New/);
+      }
+    }
+    expect(splitFollowUps(cases[2]!)).toEqual({ text: 'Done.\n\nAnything else?', followUps: [] });
+    expect(splitFollowUps(cases[1]!)).toEqual({ text: 'Look:\n```xml\n<config>\n</config>\n```\nThat is all.', followUps: [] });
+    expect(splitFollowUps(cases[3]!)).toEqual({ text: 'Done.\n```\nNext steps:\n```', followUps: [] });
   });
 
   it('applies the limits to a block', () => {

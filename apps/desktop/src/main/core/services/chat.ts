@@ -604,7 +604,7 @@ export class ChatService {
       const result = await this.ctx.runtime.prompt(sid, [{ type: 'text', text: prompt }]);
       if (result.stopReason === 'cancelled') return;
       let added = 0;
-      for (const fact of parseMemoryFacts(run.hidden.text)) {
+      for (const fact of parseMemoryFacts(splitFollowUps(run.hidden.text).text)) {
         try { if (this.ctx.s.bots.remember(bot.id, fact).added) added++; } catch { /* a fact it can't take */ }
       }
       this.ctx.log.info(`thread ${thread.id}: ${bot.name} saved ${added} new fact(s) to memory on leaving it`);
