@@ -1,6 +1,6 @@
 /**
  * Apps: the user's own Composio account ("Composio for You"), signed in with OAuth in the browser. The directory of
- * toolkits ships with the app (composioDirectory.json, built before a release with the maker's key). Connections are
+ * toolkits ships with the app as it is in the source (composioDirectory.json; nothing fetches it). Connections are
  * made once for every bot, through Composio's MCP (`COMPOSIO_MANAGE_CONNECTIONS`, its link page in the browser), and each bot reaches the connected
  * apps it may use (`appsOn`: all of them unless turned off for that bot) through the bridge's apps tools, which come
  * here: search, input schemas and execute, filtered and checked against that bot's apps on every call. The tokens
@@ -16,8 +16,8 @@
 import { randomBytes } from 'node:crypto';
 import { mkdirSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { appOn, appsOn, type AppConnection, type AppToolkit, type AppsStatus, type Bot, type MethodParams, type MethodResult, type QuestionForm } from '@appubot/protocol';
-import { appCardState } from '@appubot/chat-core';
+import { appOn, appsOn, type AppConnection, type AppsStatus, type Bot, type MethodParams, type MethodResult, type QuestionForm } from '@appubot/protocol';
+import { appCardState, searchApps } from '@appubot/chat-core';
 import type { AgentContext } from '../auth';
 import type { CoreCtx } from '../context';
 import type { JsonFile, StoredApps } from '../store';
@@ -64,21 +64,6 @@ const STARTING = new Set(['INITIATED', 'INITIALIZING']);
 const FAILED = new Set(['FAILED', 'EXPIRED', 'REVOKED']);
 
 const sameList = (a: readonly string[], b: readonly string[]): boolean => a.length === b.length && a.every((x, i) => x === b[i]);
-
-/** Short queries: the very name, name prefix, slug prefix, a word of the name, anywhere in the name, then the description. */
-function localSearch(items: AppToolkit[], q: string): AppToolkit[] {
-  const n = q.toLowerCase();
-  const rank = (t: AppToolkit): number => {
-    const name = t.name.toLowerCase();
-    if (name === n) return 0;
-    if (name.startsWith(n)) return 1;
-    if (t.slug.startsWith(n)) return 2;
-    if (name.split(/\W+/).some((w) => w.startsWith(n))) return 3;
-    if (name.includes(n)) return 4;
-    return t.description?.toLowerCase().includes(n) ? 5 : -1;
-  };
-  return items.map((t, i) => ({ t, i, r: rank(t) })).filter((x) => x.r >= 0).sort((a, b) => a.r - b.r || a.i - b.i).map((x) => x.t);
-}
 
 /** Composio's tool results are JSON text; anything else stays as it is. */
 function parseJson(text: string): Record<string, unknown> | undefined {
@@ -408,7 +393,7 @@ export class ComposioService {
     if (p.slugs?.length) return { categories, toolkits: p.slugs.flatMap((s) => this.bySlug.get(s) ?? []) };
     const q = p.search?.trim() ?? '';
     let list = p.category ? toolkits.filter((t) => t.categories.includes(p.category!)) : toolkits;
-    if (q) list = localSearch(list, q);
+    if (q) list = searchApps(list, q, categories);
     const offset = Math.max(0, Math.floor(Number(p.cursor) || 0));
     const end = offset + limit;
     return { categories, toolkits: list.slice(offset, end), nextCursor: end < list.length ? String(end) : undefined, total: list.length };
@@ -459,6 +444,12 @@ export class ComposioService {
       this.listedAt = Date.now();
     })().finally(() => { this.listJob = null; });
     return this.listJob;
+  }
+
+  /** The accounts listed at least once since launch (`warm` starts it; whoever needs them first waits for it). */
+  private async listedOnce(): Promise<void> {
+    if (!this.auth() || this.listedAt) return;
+    await this.refresh().catch((e: unknown) => this.ctx.log.warn('apps: could not check the connections', errMsg(e)));
   }
 
   /** `refresh` while the Apps page shows what was listed before: `apps.updated` brings it the new list if anything changed. */
@@ -543,7 +534,12 @@ export class ComposioService {
     if (known) throw new RpcError('unsupported', cantConnectText(name, known));
     // a second click starts the sign-in over
     this.pending.get(slug)?.stop();
-    const r = await this.call('COMPOSIO_MANAGE_CONNECTIONS', { toolkits: [{ name: slug, action: 'add' }] });
+    // the accounts it has, even right after launch, before `warm` has listed them
+    await this.listedOnce();
+    // another account of an app that works (a second Gmail): Composio answers a plain `add` for it with the app's status
+    // and no link, so the new account is asked for under a name of its own
+    const alias = workingAccounts(this.accounts.get(slug)).length || this.file.get().connected?.includes(slug) ? this.newAlias(slug) : undefined;
+    const r = await this.call('COMPOSIO_MANAGE_CONNECTIONS', { toolkits: [{ name: slug, action: 'add', ...(alias ? { alias } : {}) }] });
     const whole = parseJson(r.text);
     const res = (whole?.data as { results?: Record<string, { status?: unknown; redirect_url?: unknown; accounts?: { id?: unknown; status?: unknown }[]; error?: unknown; error_message?: unknown }> } | undefined)?.results?.[slug];
     const redirectUrl = typeof res?.redirect_url === 'string' ? res.redirect_url : undefined;
@@ -558,8 +554,14 @@ export class ComposioService {
         this.emit();
         throw new RpcError('unsupported', cantConnectText(name, why));
       }
-      // nothing to sign in to after all
-      if (!r.isError && !redirectUrl && String(res?.status ?? '').toLowerCase() === 'active') return {};
+      if (!r.isError && !redirectUrl && String(res?.status ?? '').toLowerCase() === 'active') {
+        // asked for another account and given the one there is: said, rather than nothing happening
+        if (alias) throw new RpcError('apps_unavailable', `Composio didn't open a sign-in for another ${name} account. Try again in a moment.`);
+        // connected already (somewhere else): nothing to sign in to, and it shows as connected
+        await this.refreshSlugs([slug]);
+        this.emit();
+        return {};
+      }
       throw new RpcError('apps_unavailable', plainReason(said) || `Composio didn't start ${name}'s sign-in. Try again in a moment.`);
     }
     // another account of an app that has one: the one in use stays the default until the user picks the new one
@@ -610,6 +612,14 @@ export class ComposioService {
       else this.ctx.s.notifications.notify({ title: `${name} wasn't connected`, body: 'The sign-in page was left unfinished. Add it again to try once more.', level: 'info', native: false });
       this.emit();
     })();
+  }
+
+  /** A name for an app's next account, one none of its accounts has: `gmail-2`, `gmail-3`… */
+  private newAlias(slug: string): string {
+    const taken = new Set((this.accounts.get(slug) ?? []).map((a) => a.alias?.toLowerCase()));
+    let n = (this.accounts.get(slug)?.length ?? 1) + 1;
+    while (taken.has(`${slug}-${n}`)) n++;
+    return `${slug}-${n}`;
   }
 
   private remove(slug: string, accountId: string): Promise<{ text: string; isError: boolean }> {
@@ -751,6 +761,8 @@ export class ComposioService {
     const apps = this.allowedFor(botId);
     if (queries.length > SEARCH_QUERIES_MAX) throw new RpcError('invalid_params', `At most ${SEARCH_QUERIES_MAX} tasks in one search: split them over two calls.`);
     const own = apps.filter((s) => this.direct.has(s));
+    // the bot is told an app's accounts, which are listed once after launch
+    await this.listedOnce();
     const parts = [this.yourApps(apps)];
     // Composio is asked only for the apps that are its own
     if (this.auth() && own.length < apps.length) {
@@ -887,6 +899,8 @@ export class ComposioService {
     const bad = p.tools.find((t) => !apps.has(this.toolkitOf(t.tool_slug) ?? ''));
     if (bad) throw new RpcError('forbidden', this.refused(this.toolkitOf(bad.tool_slug), bad.tool_slug));
     const own = p.tools.filter((t) => this.direct.appOfTool(t.tool_slug));
+    // right after launch the accounts may not be listed yet: a call then would name none, and Composio would pick
+    if (own.length < p.tools.length) await this.listedOnce();
     const theirs = p.tools.filter((t) => !this.direct.appOfTool(t.tool_slug)).map((t) => this.withAccount(t));
     const viaComposio = async (): Promise<{ text: string; isError: boolean }> => {
       // no workbench: its sandbox runs any app's tools, past this bot's apps

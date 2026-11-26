@@ -83,7 +83,8 @@ export function AppAction({ toolkit: t, conns, listed = false }: { toolkit: AppT
           >
             {listed ? null : <Icon icon={Check} size={14} />}
             {listed ? 'Connected' : 'Added'}
-            {listed ? null : <Icon icon={ChevronDown} size={12} className="opacity-0 transition-opacity group-hover/added:opacity-100 group-aria-expanded/added:opacity-100" />}
+            {/* in the connected list its menu (Add another account, Disconnect) is the row's only control: the arrow always shows */}
+            <Icon icon={ChevronDown} size={12} className={listed ? 'opacity-80' : 'opacity-0 transition-opacity group-hover/added:opacity-100 group-aria-expanded/added:opacity-100'} />
           </button>
         )}
       />

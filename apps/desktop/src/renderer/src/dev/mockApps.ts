@@ -3,10 +3,11 @@
  * SVG marks as data URIs; some have none, to show the initial), two connections and an expired one, and sign-ins
  * that finish by themselves after a moment. Which bot may use what is the bots' own `appsOff` (Ledger has GitHub off;
  * `bots.update` changes it). `?page=apps` opens the popup, `?apps=onboarding` starts signed out of Composio (signing in
- * "finishes" by itself a moment later), `?apps=none` with nothing connected, `?apps=many` with fifteen and
+ * "finishes" by itself a moment later), `?apps=none` with nothing connected, `?apps=one` with one Gmail, `?apps=many` with fifteen and
  * `?apps=accounts` with two Gmail accounts and three Google Calendars (adding an app that is connected adds an account).
  */
 import { isDirectApp, newId, type AppCategory, type AppConnection, type AppToolkit, type AppsStatus } from '@appubot/protocol';
+import { searchApps } from '@appubot/chat-core';
 import { GatewayError } from '../lib/gateway';
 import type { Handlers } from './mockHandlers';
 import type { MockGateway } from './MockGateway';
@@ -85,18 +86,13 @@ const CATEGORIES: AppCategory[] = Object.entries(CATEGORY_NAMES)
   .map(([id, name]) => ({ id, name, count: TOOLKITS.filter((t) => t.categories.includes(id)).length }))
   .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 
-function search(items: AppToolkit[], q: string): AppToolkit[] {
-  const n = q.toLowerCase();
-  return items.filter((t) => t.name.toLowerCase().includes(n) || t.slug.includes(n) || (q.length >= 3 && !!t.description?.toLowerCase().includes(n)));
-}
-
 export function createAppsHandlers(g: MockGateway): Pick<Handlers, 'apps.status' | 'apps.signIn' | 'apps.finishSignIn' | 'apps.signOut' | 'apps.catalog' | 'apps.connections' | 'apps.connect' | 'apps.disconnect' | 'apps.setDefault'> {
   let signedIn = !!g.opts.appsKey;
   let signingIn = false;
   const pending = new Set<string>();
   const MANY = ['gmail', 'github', 'googlecalendar', 'slack', 'linear', 'googledrive', 'figma', 'stripe', 'hubspot', 'posthog', 'zoom', 'jira', 'dropbox', 'attio'];
   const account = (slug: string, n: number, label: string, status = 'ACTIVE'): AppConnection => ({ slug, connectedAccountId: `ca_${slug}_${n}`, status, label });
-  let connections: AppConnection[] = g.opts.appsSeed === 'none' ? [] : g.opts.appsSeed === 'accounts' ? [
+  let connections: AppConnection[] = g.opts.appsSeed === 'none' ? [] : g.opts.appsSeed === 'one' ? [account('gmail', 1, 'sarthak@example.com')] : g.opts.appsSeed === 'accounts' ? [
     account('gmail', 1, 'sarthak@appubot.com'), account('gmail', 2, 'sarthak.personal@gmail.com'),
     { slug: 'github', connectedAccountId: 'ca_github', status: 'ACTIVE', label: 'sarthakguptadev' },
     account('googlecalendar', 1, 'sarthak@appubot.com'), account('googlecalendar', 2, 'sarthak.personal@gmail.com'), account('googlecalendar', 3, 'family@gmail.com', 'EXPIRED'),
@@ -155,7 +151,8 @@ export function createAppsHandlers(g: MockGateway): Pick<Handlers, 'apps.status'
       const limit = p?.limit ?? 60;
       if (p?.slugs?.length) return { categories: CATEGORIES, toolkits: p.slugs.flatMap((s) => toolkit(s) ?? []) };
       let list = p?.category ? TOOLKITS.filter((t) => t.categories.includes(p.category!)) : TOOLKITS;
-      if (p?.search?.trim()) list = search(list, p.search.trim());
+      // the gateway's own search, over the seeded catalog
+      if (p?.search?.trim()) list = searchApps(list, p.search, CATEGORIES);
       const offset = Number(p?.cursor ?? 0) || 0;
       return { categories: CATEGORIES, toolkits: list.slice(offset, offset + limit), nextCursor: offset + limit < list.length ? String(offset + limit) : undefined, total: list.length };
     },
