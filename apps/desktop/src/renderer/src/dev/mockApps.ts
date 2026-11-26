@@ -2,8 +2,8 @@
  * Dev-only: the Apps directory (Composio) for the mock gateway. A seeded catalog across a few categories (logos are
  * SVG marks as data URIs; some have none, to show the initial), two connections and an expired one, and sign-ins
  * that finish by themselves after a moment. Which bot may use what is the bots' own `appsOff` (Ledger has GitHub off;
- * `bots.update` changes it). `?page=apps` opens the page, `?apps=onboarding` starts signed out of Composio (signing in
- * "finishes" by itself a moment later).
+ * `bots.update` changes it). `?page=apps` opens the popup, `?apps=onboarding` starts signed out of Composio (signing in
+ * "finishes" by itself a moment later), `?apps=none` with nothing connected and `?apps=many` with fifteen.
  */
 import { isDirectApp, newId, type AppCategory, type AppConnection, type AppToolkit, type AppsStatus } from '@appubot/protocol';
 import { GatewayError } from '../lib/gateway';
@@ -93,9 +93,9 @@ export function createAppsHandlers(g: MockGateway): Pick<Handlers, 'apps.status'
   let signedIn = !!g.opts.appsKey;
   let signingIn = false;
   const pending = new Set<string>();
-  let connections: AppConnection[] = [
-    { slug: 'gmail', connectedAccountId: 'ca_gmail', status: 'ACTIVE' },
-    { slug: 'github', connectedAccountId: 'ca_github', status: 'ACTIVE' },
+  const MANY = ['gmail', 'github', 'googlecalendar', 'slack', 'linear', 'googledrive', 'figma', 'stripe', 'hubspot', 'posthog', 'zoom', 'jira', 'dropbox', 'attio'];
+  let connections: AppConnection[] = g.opts.appsSeed === 'none' ? [] : [
+    ...(g.opts.appsSeed === 'many' ? MANY : ['gmail', 'github']).map((slug) => ({ slug, connectedAccountId: `ca_${slug}`, status: 'ACTIVE' })),
     { slug: 'notion', connectedAccountId: 'ca_notion', status: 'EXPIRED' },
   ];
 

@@ -343,7 +343,7 @@ function applyServerEvent(event: EventName | 'hello', payload: unknown): void {
       if (n.threadId && seenOnScreen(s, n.threadId) && document.hasFocus()) return;
       if (n.kind && toastHere(s)) return;
       // a group's notice (a member's report, its goal done or stuck): the room on screen needs none
-      if (n.groupId && s.selectedGroupId === n.groupId && s.settingsSection === null && !s.appsOpen) return;
+      if (n.groupId && s.selectedGroupId === n.groupId && s.settingsSection === null) return;
       pushToast({ id: n.id, title: n.title, body: n.body, level: n.level, threadId: n.threadId, ...(n.groupId ? { groupId: n.groupId } : {}) });
       return;
     }

@@ -22,11 +22,10 @@ const GroupEditorDialog = lazyComponent(() => import('../../features/groups/Grou
 const PairDialog = lazyComponent(() => import('../../features/settings/PairDialog').then((m) => m.PairDialog));
 const CloudWelcome = lazyComponent(() => import('../../features/cloud/CloudWelcome').then((m) => m.CloudWelcome));
 const CloudDevicesDialog = lazyComponent(() => import('../../features/cloud/CloudDevicesDialog').then((m) => m.CloudDevicesDialog));
-/** The Apps page (MainLayout), on the same terms. */
-export const AppsPage = lazyComponent(() => import('../../features/apps/AppsView').then((m) => m.AppsPage));
+const AppsDialog = lazyComponent(() => import('../../features/apps/AppsView').then((m) => m.AppsDialog));
 
 export function preloadDialogs(): void {
-  for (const c of [NewBotDialog, TeachDialog, SkillDialog, RoutineDialog, GroupEditorDialog, PairDialog, CloudWelcome, CloudDevicesDialog, AppsPage]) void c.preload();
+  for (const c of [NewBotDialog, TeachDialog, SkillDialog, RoutineDialog, GroupEditorDialog, PairDialog, CloudWelcome, CloudDevicesDialog, AppsDialog]) void c.preload();
 }
 
 /** Mounted from the first time `open` is true (its chunk loading meanwhile), and kept so it can close with its motion. */
@@ -95,6 +94,7 @@ function QuitDialog() {
 /** All app-level dialogs stay mounted so their exit animations play. */
 export function ModalHost() {
   const modal = useStore((s) => s.modal);
+  const appsOpen = useStore((s) => s.appsOpen);
   const close = ui.closeModal;
   return (
     <>
@@ -104,6 +104,7 @@ export function ModalHost() {
       <OnceOpened open={modal?.kind === 'routine'}><RoutineDialog open={modal?.kind === 'routine'} onClose={close} routineId={modal?.kind === 'routine' ? modal.routineId : undefined} /></OnceOpened>
       <OnceOpened open={modal?.kind === 'group'}><GroupEditorDialog open={modal?.kind === 'group'} onClose={close} groupId={modal?.kind === 'group' ? modal.groupId : undefined} withBotId={modal?.kind === 'group' ? modal.withBotId : undefined} /></OnceOpened>
       <OnceOpened open={modal?.kind === 'pair'}><PairDialog open={modal?.kind === 'pair'} onClose={close} /></OnceOpened>
+      <OnceOpened open={appsOpen}><AppsDialog open={appsOpen} onClose={ui.closeApps} /></OnceOpened>
       <QuickSwitcher open={modal?.kind === 'quick'} onClose={close} />
       <ConfirmDialog modal={modal?.kind === 'confirm' ? modal : null} />
       <OnceOpened open={modal?.kind === 'cloud-welcome'}><CloudWelcome modal={modal?.kind === 'cloud-welcome' ? modal : null} /></OnceOpened>

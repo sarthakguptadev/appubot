@@ -1,24 +1,20 @@
-import type { AppConnection } from '@appubot/protocol';
-import { Plug } from '../../../components/ui/icons';
-import { Button } from '../../../components/ui';
+import { Button, cn } from '../../../components/ui';
 import { ui, useStore } from '../../../lib/store';
-import { ConnectedCard, ConnectedSkeleton, useConnectionsBySlug } from '../../apps/AppsView';
+import { AppLogoStack } from '../../apps/AppRow';
 import { ComposioSettingRow } from '../../apps/ComposioSettingRow';
 import { useAppsLive, useConnectedApps } from '../../apps/appsData';
-import { SettingsCard, SettingsEmptyState, SettingsGroup } from './shared';
-
-const NO_CONNS: AppConnection[] = [];
+import { SETTINGS_ROW, SETTINGS_ROW_DESCRIPTION, SETTINGS_ROW_TITLE, SettingsCard, SettingsEmptyState, SettingsGroup } from './shared';
 
 /**
- * Settings › Apps: the Composio sign-in, then each connected app with the bots that may use it (the Apps page's own
- * cards), and the way to the Apps page for the rest of the directory.
+ * Settings › Apps: the Composio sign-in, then how many apps are connected and the way to them. The apps themselves,
+ * and the bots that may use each, are in the Connect apps popup.
  */
 export function AppsSection() {
   // signed in to Composio, or apps connected on their own servers (those need no Composio sign-in)
   const configured = useStore((s) => !!s.apps?.configured || !!s.apps?.direct);
   useAppsLive();
-  const bySlug = useConnectionsBySlug();
   const connected = useConnectedApps();
+  const total = connected.slugs.length;
 
   return (
     <div className="space-y-6">
@@ -27,23 +23,21 @@ export function AppsSection() {
       </SettingsGroup>
 
       {configured ? (
-        <SettingsGroup
-          title="Connected apps"
-          description="Choose which bots use each app."
-          action={<Button size="xs" variant="outline" icon={Plug} onClick={() => ui.openApps()}>Browse apps</Button>}
-          bare
-        >
-          {connected.slugs.length ? (
-            <div className="flex flex-col gap-3">
-              {connected.loading
-                ? connected.slugs.map((s) => <ConnectedSkeleton key={s} />)
-                : connected.toolkits.map((t) => <ConnectedCard key={t.slug} toolkit={t} conns={bySlug.get(t.slug) ?? NO_CONNS} />)}
-            </div>
-          ) : (
-            <SettingsCard>
-              <SettingsEmptyState>No apps connected yet. Browse apps to connect Gmail, Slack, GitHub and more.</SettingsEmptyState>
-            </SettingsCard>
-          )}
+        <SettingsGroup title="Connected apps" description="Choose which bots use each app." bare>
+          <SettingsCard>
+            {total ? (
+              <div className={cn(SETTINGS_ROW, 'flex items-center gap-3')}>
+                <AppLogoStack toolkits={connected.toolkits} ring="var(--ab-surface)" />
+                <div className="min-w-0 flex-1">
+                  <h3 className={SETTINGS_ROW_TITLE}>{total} {total === 1 ? 'app' : 'apps'}</h3>
+                  <p className={cn('truncate', SETTINGS_ROW_DESCRIPTION)}>{connected.toolkits.map((t) => t.name).join(', ')}</p>
+                </div>
+                <Button size="sm" variant="secondary" onClick={() => ui.openApps('connected')}>Manage</Button>
+              </div>
+            ) : (
+              <SettingsEmptyState>No apps connected yet. Connect Gmail, Slack, GitHub and more.</SettingsEmptyState>
+            )}
+          </SettingsCard>
         </SettingsGroup>
       ) : null}
     </div>

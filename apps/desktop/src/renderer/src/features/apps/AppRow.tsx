@@ -5,15 +5,15 @@ import { Icon, Menu, Spinner, Tooltip, cn } from '../../components/ui';
 import { useStore } from '../../lib/store';
 import { disconnect, startConnect, useAppsUi } from './appsData';
 
-/** 40px logo tile: brand marks sit on white (they're drawn for light backgrounds); no logo, the initial. */
+/** A logo tile (40px in a row): brand marks sit on white (they're drawn for light backgrounds); no logo, the initial. */
 export function AppLogo({ toolkit, size = 40 }: { toolkit: Pick<AppToolkit, 'name' | 'logo'>; size?: number }) {
   const [broken, setBroken] = useState(false);
   const logo = toolkit.logo && !broken ? toolkit.logo : null;
   return (
     <span
-      style={{ width: size, height: size }}
+      style={{ width: size, height: size, borderRadius: size / 4 }}
       className={cn(
-        'flex shrink-0 items-center justify-center overflow-hidden rounded-[10px] border border-[var(--ab-hairline)]',
+        'flex shrink-0 items-center justify-center overflow-hidden border border-[var(--ab-hairline)]',
         logo ? 'bg-white' : 'bg-surface-2 text-lead font-medium text-fg-2',
       )}
     >
@@ -26,12 +26,26 @@ export function AppLogo({ toolkit, size = 40 }: { toolkit: Pick<AppToolkit, 'nam
   );
 }
 
+/** A few apps' logos as a row of small tiles, each lying over the one before it; `ring` is the colour they sit on. */
+export function AppLogoStack({ toolkits, ring, max = 4 }: { toolkits: Pick<AppToolkit, 'slug' | 'name' | 'logo'>[]; ring: string; max?: number }) {
+  return (
+    <span aria-hidden className="flex shrink-0 items-center -space-x-1.5">
+      {toolkits.slice(0, max).map((t) => (
+        <span key={t.slug} className="flex rounded-[5px]" style={{ boxShadow: `0 0 0 2px ${ring}` }}><AppLogo toolkit={t} size={20} /></span>
+      ))}
+    </span>
+  );
+}
+
 const PILL =
   'ab-press ab-pill squircle no-drag inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-[9px] bg-surface-2 px-3.5 text-ui font-semibold tracking-ui text-fg ' +
   'transition-colors duration-100 hover:bg-surface-3 focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-bg),0_0_0_4px_var(--ab-ring)]';
 
-/** The row's right side: Add / Connect, a spinner while signing in, or "Added" (with Disconnect in its menu). */
-export function AppAction({ toolkit: t, conns }: { toolkit: AppToolkit; conns: AppConnection[] }) {
+/**
+ * The row's right side: Add / Connect, a spinner while signing in, or "Added" (with Disconnect in its menu). In the
+ * list of connected apps (`listed`) a working one says "Connected", in green.
+ */
+export function AppAction({ toolkit: t, conns, listed = false }: { toolkit: AppToolkit; conns: AppConnection[]; listed?: boolean }) {
   const pending = useStore((s) => !!s.apps?.pending.includes(t.slug));
   const starting = useAppsUi((s) => !!s.starting[t.slug]);
   // Add was pressed while signed out of Composio: its sign-in is open in the browser, and this app follows it
@@ -57,11 +71,15 @@ export function AppAction({ toolkit: t, conns }: { toolkit: AppToolkit; conns: A
           <button
             {...p}
             type="button"
-            className="ab-pill squircle no-drag group/added inline-flex h-8 shrink-0 items-center gap-1 rounded-[9px] px-2 text-ui text-muted transition-colors hover:bg-surface-2 hover:text-fg focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]"
+            className={cn(
+              'ab-pill squircle no-drag group/added inline-flex h-8 shrink-0 items-center gap-1 rounded-[9px] px-2 text-ui transition-colors hover:bg-surface-2 focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]',
+              // the word ends at the row's edge, like the pills above and below it
+              listed ? '-mr-2 font-medium text-success' : 'text-muted hover:text-fg',
+            )}
           >
-            <Icon icon={Check} size={14} />
-            Added
-            <Icon icon={ChevronDown} size={12} className="opacity-0 transition-opacity group-hover/added:opacity-100 group-aria-expanded/added:opacity-100" />
+            {listed ? null : <Icon icon={Check} size={14} />}
+            {listed ? 'Connected' : 'Added'}
+            {listed ? null : <Icon icon={ChevronDown} size={12} className="opacity-0 transition-opacity group-hover/added:opacity-100 group-aria-expanded/added:opacity-100" />}
           </button>
         )}
       />
