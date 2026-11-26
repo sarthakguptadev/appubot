@@ -9,6 +9,21 @@ import type { ReleaseNotes } from './whatsNew';
  */
 export const RELEASES: readonly ReleaseNotes[] = [
   {
+    version: '2026.1126.2',
+    features: [
+      {
+        id: 'add-account',
+        title: 'Add another account',
+        description: 'Connect apps now shows the account each app is signed in with, and an Add another account button under it. Adding a second Gmail, or a second account of any app, now opens its sign-in instead of doing nothing.',
+      },
+      {
+        id: 'apps-search',
+        title: 'Better app search',
+        description: 'Search in Connect apps finds an app by several words at once, such as “send email”, and by its category, such as “CRM”.',
+      },
+    ],
+  },
+  {
     version: '2026.1126.1',
     features: [
       {
