@@ -1,16 +1,18 @@
 /**
  * The row of pills under a bot's latest reply (ThreadView passes it to the transcript as its footer): first what the
- * system still has to allow (ThreadView's own pills), then a random few things to try next, picked by chat-core
- * `pickSuggestions` from what this person hasn't done yet (no apps connected, no phone, no Telegram, no routine...).
- * An ask is sent to the bot as a message; a setup opens its place in AppuBot. Each pill's ✕ (under the pointer) puts
- * it away for this run, and one used isn't offered again in this run.
+ * system still has to allow (ThreadView's own pills), then what the bot itself offered as the next step with that
+ * reply (its follow-ups: chat-core followUps.ts), then a random few things to try next, picked by chat-core
+ * `pickPills` from what this person hasn't done yet (no apps connected, no phone, no Telegram, no routine...): two to
+ * five of them, fewer beside the bot's own. A follow-up or an ask is sent to the bot as a message; a setup opens its
+ * place in AppuBot. Each pill's ✕ (under the pointer) puts it away for this run, and one used isn't offered again in
+ * this run.
  */
 import { useEffect, useMemo, useState } from 'react';
 import type { Bot } from '@appubot/protocol';
 import { appOn } from '@appubot/protocol';
-import { activeSlugs, pickSuggestions, type SuggestionFacts, type SuggestionId } from '@appubot/chat-core';
+import { activeSlugs, cleanFollowUps, followUpKey, pickPills, type SuggestionFacts, type SuggestionId } from '@appubot/chat-core';
 import {
-  Bell, Bot as BotIcon, Brain, CalendarClock, Cloud, Download, FolderOpen, GraduationCap, Mail, MessageCircle, Mic,
+  ArrowRight, Bell, Bot as BotIcon, Brain, CalendarClock, Cloud, Download, FolderOpen, GraduationCap, Mail, MessageCircle, Mic,
   Search, Smartphone, Sparkles, Telegram, Users, X, Zap,
 } from '../../components/ui/icons';
 import { Icon, cn } from '../../components/ui';
@@ -63,6 +65,8 @@ const ICONS: Record<SuggestionId, typeof Bell> = {
 
 /** put away or used in this run (the same for every chat) */
 const hidden = new Set<SuggestionId>();
+/** a bot's follow-ups put away or used in this run, by the reply they came with and the line */
+const hiddenFollowUps = new Set<string>();
 
 /** What is known about this person and bot, for `pickSuggestions`; a fact not read yet stays undefined. */
 function useFacts(bot: Bot): SuggestionFacts {
@@ -86,12 +90,14 @@ function useFacts(bot: Bot): SuggestionFacts {
     if (!apps) void loadAppsStatus();
     else if (apps.configured && !connections) void loadConnections();
   }, [conn, apps?.configured, !!connections]);
-  const appSlugs = useMemo(() => (connections ? activeSlugs(connections).filter((slug) => appOn(bot, slug)) : undefined), [connections, bot.appsOff]);
+  const connected = useMemo(() => (connections ? activeSlugs(connections) : undefined), [connections]);
+  const appSlugs = useMemo(() => connected?.filter((slug) => appOn(bot, slug)), [connected, bot.appsOff]);
   if (!hydrated) return { botName: bot.name, bots, routines };
   return {
     botName: bot.name, bots, routines, groups, phonePaired, telegram,
     appsSignedIn: apps ? apps.configured : undefined,
     apps: apps?.configured ? appSlugs : undefined,
+    connected: apps?.configured ? connected : undefined,
     computerUse: bot.computerUse && computerOn,
     voice,
     teach: TEACH && !lacks.teach,
@@ -99,12 +105,24 @@ function useFacts(bot: Bot): SuggestionFacts {
   };
 }
 
-/** The suggestion pills for the reply `seed` names, at most `room` of them. */
-export function SuggestionPills({ bot, threadId, seed, room }: { bot: Bot; threadId: string; seed: string; room: number }) {
+/**
+ * The pills for the reply `seed` names, at most `room` of them: the bot's own `followUps` for it, then the app's
+ * suggestions. Which and how many is decided by the reply (chat-core `pickPills`), so they are the same on every
+ * redraw, in another window and after a restart.
+ */
+export function SuggestionPills({ bot, threadId, seed, room, followUps }: { bot: Bot; threadId: string; seed: string; room: number; followUps?: readonly string[] }) {
   const facts = useFacts(bot);
   const [, redraw] = useState(0);
-  const picked = useMemo(() => pickSuggestions(facts, `${bot.id}:${seed}`, room, hidden), [facts, seed, room, bot.id, hidden.size]);
+  // what the person wrote in this chat: nothing they already asked is offered again
+  const conv = useStore((s) => s.convo[threadId]);
+  const sent = useMemo(() => (conv ? conv.ids.flatMap((id) => {
+    const m = conv.byId[id];
+    return m?.role === 'user' ? [m.parts.flatMap((p) => (p.type === 'text' ? [p.text] : [])).join(' ')] : [];
+  }) : []), [conv]);
+  const offered = useMemo(() => cleanFollowUps(followUps ?? []).filter((line) => !hiddenFollowUps.has(`${seed}\n${followUpKey(line)}`)), [followUps, seed, hiddenFollowUps.size]);
+  const picked = useMemo(() => pickPills({ facts, seed: `${bot.id}:${seed}`, room, hide: hidden, followUps: offered, sent }), [facts, seed, room, bot.id, hidden.size, offered, sent]);
   const away = (id: SuggestionId) => { hidden.add(id); redraw((n) => n + 1); };
+  const followUpAway = (line: string) => { hiddenFollowUps.add(`${seed}\n${followUpKey(line)}`); redraw((n) => n + 1); };
   const run = (id: SuggestionId, label: string, kind: 'ask' | 'setup') => {
     away(id);
     if (kind === 'ask') { void sendMessage(bot.id, threadId, label, []); return; }
@@ -122,7 +140,10 @@ export function SuggestionPills({ bot, threadId, seed, room }: { bot: Bot; threa
   };
   return (
     <>
-      {picked.map((s) => (
+      {picked.followUps.map((line) => (
+        <SetupPill key={`follow-up:${line}`} icon={ArrowRight} label={line} onAction={() => { followUpAway(line); void sendMessage(bot.id, threadId, line, []); }} onDismiss={() => followUpAway(line)} />
+      ))}
+      {picked.suggestions.map((s) => (
         <SetupPill key={s.id} icon={ICONS[s.id]} label={s.label} onAction={() => run(s.id, s.label, s.kind)} onDismiss={() => away(s.id)} />
       ))}
     </>

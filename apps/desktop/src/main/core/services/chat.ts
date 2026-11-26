@@ -15,7 +15,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { applyDelta, computerUseSupported, currentChat, hasPermissionModes, freeModelsToTry, isFreeAgent, isRetiredModel, learntRetiredModels, nextFreeModel, noteRetiredModel, providerBase, retiredModelError, messagePreview, newId, setPart, threadActiveAt, ToolKind, type Bot, type Message, type MethodParams, type Part, type PermissionRequest, type Thread } from '@appubot/protocol';
-import { AGENT_IMAGE_TYPES, IMAGE_FIT_DIM, IMAGE_MAX_BASE64, IMAGE_SOURCE_MAX, cloudStateText, conversationPreface, fitPlan, fitsAgent, imageSize, isNothingNewRun, parseMemoryFacts, providerLogin, reactionBack, withoutNoReply } from '@appubot/chat-core';
+import { AGENT_IMAGE_TYPES, FollowUpsStream, IMAGE_FIT_DIM, IMAGE_MAX_BASE64, IMAGE_SOURCE_MAX, cloudStateText, conversationPreface, fitPlan, fitsAgent, imageSize, isNothingNewRun, parseMemoryFacts, providerLogin, reactionBack, splitFollowUps, withoutNoReply } from '@appubot/chat-core';
 import { elicitationContent } from '@appubot/agent-runtime';
 import type { ElicitationAnswer, ElicitationAsk, PermissionAsk, PromptBlock, RuntimeHooks, SessionInfo, TurnOp } from '@appubot/agent-runtime';
 import type { CoreCtx } from '../context';
@@ -111,6 +111,11 @@ interface ThreadRun {
   idxMap: Map<number, number>;
   /** this turn's replies before a message was steered into it (`steer`): what they started still updates there */
   earlier?: { msg: Message; idxMap: Map<number, number> }[];
+  /**
+   * the text the bot is writing now, read for the follow-ups block that may end it (chat-core followUps.ts): the block
+   * is held back here, so it never reaches the message (`settleTail`)
+   */
+  tail?: { msg: Message; idxMap: Map<number, number>; partIndex: number; stream: FollowUpsStream };
   cancelled: boolean;
   /** what the bot sent on its own lately (`say`): how many more may go out, and its last one this turn */
   notes?: NoteState;
@@ -458,6 +463,7 @@ export class ChatService {
     this.dropOpeningNote(run);
     if (before) {
       this.flushTerminals(run);
+      this.settleTail(run);
       // the reply so far is done: it answered the message before
       before.status = 'complete';
       before.updatedAt = Date.now();
@@ -835,6 +841,9 @@ export class ChatService {
     if (!msg) return;
     this.flushTerminals(run);
     this.dropOpeningNote(run);
+    // what the bot offered as the person's next step, with the last words of a reply it finished
+    const followUps = this.settleTail(run);
+    if (status === 'complete' && followUps.length) msg.followUps = followUps;
     if (error) {
       msg.parts.push({ type: 'system', text: error, level: 'error' });
       this.ctx.bus.emit('message.part', { threadId: msg.threadId, messageId: msg.id, partIndex: msg.parts.length - 1, part: msg.parts[msg.parts.length - 1]! });
@@ -847,7 +856,7 @@ export class ChatService {
     // a routine's run with nothing to say ("✓"): the chat folds it away, so it notifies nobody, marks nothing unread
     // and doesn't become the chat's preview (chat-core `isNothingNewRun`, the rule the transcript folds by)
     const nothingNew = run.job?.via === 'routine' && !!run.job.userMsg && !run.earlier?.length && isNothingNewRun(run.job.userMsg, [msg]);
-    this.ctx.bus.emit('message.completed', { threadId: msg.threadId, messageId: msg.id, status, stopReason, error, ...(nothingNew ? { nothingNew: true } : {}) });
+    this.ctx.bus.emit('message.completed', { threadId: msg.threadId, messageId: msg.id, status, stopReason, error, ...(nothingNew ? { nothingNew: true } : {}), ...(msg.followUps ? { followUps: [...msg.followUps] } : {}) });
     for (const [id, p] of this.pending) if (p.req.threadId === run.threadId) this.resolvePermission(id, null, 'turn-ended');
 
     const threads = this.ctx.s.threads;
@@ -1280,11 +1289,18 @@ export class ChatService {
     const msg = into?.msg ?? run.agentMsg;
     const idxMap = into?.idxMap ?? run.idxMap;
     if (op.op === 'delta') {
-      const idx = this.mapIdx(idxMap, msg, op.partIndex, { type: op.partType, text: '' });
-      applyDelta(msg, idx, op.partType, op.delta);
-      this.ctx.bus.emit('message.delta', { threadId, messageId: msg.id, partIndex: idx, partType: op.partType, delta: op.delta });
-      threads.touchMessage(threadId);
+      let delta = op.delta;
+      if (op.partType === 'text' && delta) {
+        // the reply's text passes through the reader of its follow-ups block: what could still become one waits
+        if (run.tail && (run.tail.msg !== msg || run.tail.partIndex !== op.partIndex)) this.settleTail(run);
+        run.tail ??= { msg, idxMap, partIndex: op.partIndex, stream: new FollowUpsStream() };
+        delta = run.tail.stream.push(delta);
+        if (!delta) return;
+      } else if (op.partType !== 'text' && !idxMap.has(op.partIndex)) this.settleTail(run);
+      this.applyDelta(msg, idxMap, op.partIndex, op.partType, delta);
     } else if (op.op === 'part') {
+      // something new after the text (a tool, a plan): the text before it was not the reply's last words
+      if (!idxMap.has(op.partIndex)) this.settleTail(run);
       const idx = this.mapIdx(idxMap, msg, op.partIndex, op.part);
       const part = this.mergeTerminalOutput(msg.parts[idx], structuredClone(op.part));
       setPart(msg, idx, part);
@@ -1339,6 +1355,26 @@ export class ChatService {
   private dropOpeningNote(run: ThreadRun): void {
     if (run.openingNote?.timer) clearTimeout(run.openingNote.timer);
     run.openingNote = undefined;
+  }
+
+  private applyDelta(msg: Message, idxMap: Map<number, number>, runtimeIdx: number, partType: 'text' | 'thought', delta: string): void {
+    const idx = this.mapIdx(idxMap, msg, runtimeIdx, { type: partType, text: '' });
+    applyDelta(msg, idx, partType, delta);
+    this.ctx.bus.emit('message.delta', { threadId: msg.threadId, messageId: msg.id, partIndex: idx, partType, delta });
+    this.ctx.s.threads.touchMessage(msg.threadId);
+  }
+
+  /**
+   * The text the bot was writing is over (something else follows it, or its turn ended): what was held back of it and
+   * is no follow-ups block goes to the message after all. Returns the block's lines, for a turn that ended on them.
+   */
+  private settleTail(run: ThreadRun): string[] {
+    const tail = run.tail;
+    if (!tail) return [];
+    run.tail = undefined;
+    const { text, followUps } = tail.stream.end();
+    if (text) this.applyDelta(tail.msg, tail.idxMap, tail.partIndex, 'text', text);
+    return followUps;
   }
 
   private mapIdx(idxMap: Map<number, number>, msg: Message, runtimeIdx: number, placeholder: Part): number {
@@ -1505,7 +1541,7 @@ export class ChatService {
       const result = await this.ctx.runtime.prompt(sid, [{ type: 'text', text: prompt }]);
       if (result.stopReason === 'cancelled') return;
       keep = false;
-      const text = withoutNoReply(run.hidden.text);
+      const text = withoutNoReply(splitFollowUps(run.hidden.text).text);
       if (text) {
         const now = Date.now();
         this.ctx.s.threads.addMessage({ id: newId('msg'), threadId, role: 'agent', parts: [{ type: 'text', text }], status: 'complete', via: 'system', createdAt: now, updatedAt: now });

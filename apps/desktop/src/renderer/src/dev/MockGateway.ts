@@ -81,6 +81,11 @@ export class MockGateway implements GatewayLike {
       const t = this.db.threads.find((x) => x.id === IDS.main);
       if (t) t.lastActiveAt = Date.now();
     }
+    // `?pills=` and `?followups=` are about Appu's main chat: it is the one that opens
+    if (!this.cloud && (this.opts.pills !== undefined || this.opts.followUps)) {
+      const t = this.db.threads.find((x) => x.id === IDS.main);
+      if (t) t.lastActiveAt = Date.now();
+    }
     if (!this.cloud && q.get('bench') === '1') installBench(this);
   }
 
@@ -286,10 +291,10 @@ export class MockGateway implements GatewayLike {
     this.emit('message.part', { threadId, messageId, partIndex, part });
   }
 
-  completeMessage(threadId: string, messageId: string, status: 'complete' | 'cancelled' | 'error', stopReason?: string): void {
+  completeMessage(threadId: string, messageId: string, status: 'complete' | 'cancelled' | 'error', stopReason?: string, followUps?: string[]): void {
     const m = this.findMessage(threadId, messageId);
-    if (m) { m.status = status; m.stopReason = stopReason; m.updatedAt = Date.now(); }
-    this.emit('message.completed', { threadId, messageId, status, stopReason });
+    if (m) { m.status = status; m.stopReason = stopReason; m.updatedAt = Date.now(); if (followUps) m.followUps = followUps; }
+    this.emit('message.completed', { threadId, messageId, status, stopReason, ...(followUps ? { followUps } : {}) });
   }
 }
 

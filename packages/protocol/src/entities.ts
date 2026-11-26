@@ -597,6 +597,14 @@ export const MessageSchema = z.object({
    */
   routine: z.object({ id: Id, name: z.string() }).optional(),
   reactions: z.array(ReactionSchema).optional(),
+  /**
+   * What the person may want next, in their words: up to four short lines the bot wrote at the end of this reply
+   * (chat-core followUps.ts; the computer takes them out of the text). The apps offer them as pills under the chat's
+   * newest message, where a tap sends the line as the person's next message. Absent on a reply without any, and from
+   * a computer from before them. Read with chat-core `cleanFollowUps`: the count and the length are the reader's to
+   * hold, so a later computer may send more.
+   */
+  followUps: z.array(z.string()).optional(),
   /** a user message's id on the device that sent it (`chat.send clientId`) */
   clientId: z.string().max(100).optional(),
   /** which change this copy is at (`MessageRev`): of two copies of a message, the higher one is newer */

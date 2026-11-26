@@ -1080,7 +1080,7 @@ export const Events = {
    * `nothingNew`: a routine's run whose reply had nothing to say (chat-core `isNothingNewRun`: "✓", "No new items"): the
    * chat folds it away, so it neither marks the thread unread nor becomes its preview, and no notice went out for it
    */
-  'message.completed': z.object({ threadId: Id, messageId: Id, status: z.enum(['complete', 'cancelled', 'error']), stopReason: z.string().optional(), error: z.string().optional(), rev: MessageRev, nothingNew: z.boolean().optional() }),
+  'message.completed': z.object({ threadId: Id, messageId: Id, status: z.enum(['complete', 'cancelled', 'error']), stopReason: z.string().optional(), error: z.string().optional(), rev: MessageRev, nothingNew: z.boolean().optional(), followUps: z.array(z.string()).optional() }),
   'permission.requested': PermissionRequestSchema,
   'permission.resolved': z.object({ id: Id, optionId: z.string(), by: z.string().optional() }),
   'question.asked': z.object({ threadId: Id, messageId: Id, questionId: Id, question: z.string(), options: z.array(z.string()), form: QuestionFormSchema.optional() }),
