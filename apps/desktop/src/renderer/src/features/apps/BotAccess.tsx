@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { appOn, type AppToolkit } from '@appubot/protocol';
 import { appBots } from '@appubot/chat-core';
 import { ChevronDown } from '../../components/ui/icons';
-import { BotAvatar, Icon, Switch, cn } from '../../components/ui';
+import { BotAvatar, Icon, ROW_HOVER, ROW_PRESS, Switch, cn } from '../../components/ui';
 import { useStore } from '../../lib/store';
 import { setAppOn } from './appsData';
 
@@ -47,7 +47,7 @@ function BotsPopover({ anchor, toolkit: t, onClose }: { anchor: HTMLElement; too
           const on = appOn(b, t.slug);
           return (
             <li key={b.id}>
-              <label className="ab-pill squircle flex h-9 cursor-default items-center gap-2.5 rounded-control-sm px-2.5 hover:bg-[color-mix(in_srgb,var(--ab-fg)_8%,transparent)]">
+              <label className={cn('squircle flex h-9 cursor-default items-center gap-2.5 rounded-control-sm px-2.5', ROW_HOVER, ROW_PRESS)}>
                 <BotAvatar bot={b} size={20} />
                 <span className="min-w-0 flex-1 truncate text-copy text-fg">{b.name}</span>
                 <Switch checked={on} onChange={(v) => void setAppOn(b, t.slug, v)} label={`${b.name} can use ${t.name}`} />

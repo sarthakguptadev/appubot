@@ -65,15 +65,16 @@ const PAGES: Record<SettingsSection, ComponentType> = {
 };
 
 /*
- * The nav's rows: 36px, 14px, pills in the Round look (`ab-pill`) and squircles in the Squircle one; the chosen one gets a wash and a semibold label, in place (T3 Code's: nothing
- * slides between rows).
+ * The nav's rows: 36px, 14px, rounded rectangles whose corners are the Settings sheet's less the nav's 10px of padding
+ * (22 − 10 = 12), never pills; a light wash under the pointer, and the chosen or pressed one a darker wash and a
+ * semibold label, in place (T3 Code's: nothing slides between rows).
  */
 const NAV_ROW =
-  'ab-pill squircle no-drag relative isolate flex h-9 w-full min-w-0 items-center gap-2.5 rounded-control-sm px-2.5 text-left text-copy select-none outline-none ' +
-  'transition-colors duration-150 ease-rare focus-visible:ring-2 focus-visible:ring-[var(--ab-ring)] focus-visible:ring-inset [&>svg]:text-muted';
-const NAV_ROW_IDLE = 'text-fg-2 hover:bg-[color-mix(in_srgb,var(--ab-fg)_5%,transparent)] hover:text-fg';
+  'squircle no-drag relative isolate flex h-9 w-full min-w-0 items-center gap-2.5 rounded-control-lg px-2.5 text-left text-copy select-none outline-none ' +
+  'focus-visible:ring-2 focus-visible:ring-[var(--ab-ring)] focus-visible:ring-inset [&>svg]:text-muted';
+const NAV_ROW_IDLE = 'text-fg-2 hover:bg-[color-mix(in_srgb,var(--ab-fg)_5%,transparent)] hover:text-fg active:bg-[color-mix(in_srgb,var(--ab-fg)_10%,transparent)]';
 const NAV_ROW_ACTIVE = 'font-semibold tracking-ui text-fg [&>svg]:text-fg';
-const NAV_WASH = 'ab-pill squircle absolute inset-0 -z-10 rounded-control-sm bg-[color-mix(in_srgb,var(--ab-fg)_8%,transparent)]';
+const NAV_WASH = 'squircle absolute inset-0 -z-10 rounded-control-lg bg-[color-mix(in_srgb,var(--ab-fg)_10%,transparent)]';
 
 /** The chosen row's wash. */
 function NavWash() {
@@ -260,7 +261,7 @@ function SettingsNav() {
         <button
           type="button"
           onClick={ui.closeSettings}
-          className="ab-press ab-pill squircle no-drag flex h-9 w-full items-center gap-2 rounded-control px-2.5 text-ui font-medium tracking-ui text-muted outline-none hover:bg-[color-mix(in_srgb,var(--ab-fg)_6%,transparent)] hover:text-fg focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]"
+          className="ab-press squircle no-drag flex h-9 w-full items-center gap-2 rounded-control-lg px-2.5 text-ui font-medium tracking-ui text-muted outline-none hover:bg-[color-mix(in_srgb,var(--ab-fg)_5%,transparent)] hover:text-fg active:bg-[color-mix(in_srgb,var(--ab-fg)_10%,transparent)] focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]"
         >
           <Icon icon={ChevronLeft} size={15} className="shrink-0" />
           {t('settings.backToApp')}

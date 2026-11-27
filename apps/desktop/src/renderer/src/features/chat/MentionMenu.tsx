@@ -5,7 +5,7 @@
 import { memo } from 'react';
 import type { Bot } from '@appubot/protocol';
 import { Users } from '../../components/ui/icons';
-import { BotAvatar, Icon, MENU_ITEM, cn } from '../../components/ui';
+import { BotAvatar, Icon, MENU_ITEM, ROW_ON, ROW_PRESS, cn } from '../../components/ui';
 
 /** one row: a bot, or everyone in a group room */
 export type MentionItem = { kind: 'bot'; bot: Bot } | { kind: 'everyone' };
@@ -31,7 +31,7 @@ export const MentionMenu = memo(function MentionMenu({ items, active, at, onPick
           ref={i === active ? (el) => el?.scrollIntoView({ block: 'nearest' }) : undefined}
           onMouseEnter={() => onHover(i)}
           onMouseDown={(e) => { e.preventDefault(); onPick(it); }}
-          className={cn(MENU_ITEM, 'text-fg', i === active && 'bg-[color-mix(in_srgb,var(--ab-fg)_8%,transparent)]')}
+          className={cn(MENU_ITEM, 'text-fg', ROW_PRESS, i === active && ROW_ON)}
         >
           {it.kind === 'bot' ? <BotAvatar bot={it.bot} size={16} still /> : <Icon icon={Users} size={16} className="text-muted" />}
           <span className="flex-1 truncate">Ask {mentionName(it)}</span>

@@ -12,7 +12,7 @@ import type { Provider } from '@appubot/protocol';
 import { agentChoices, modelDisplayName } from '@appubot/protocol';
 import { giftModelName, agentLimits, modelRowLimits, planLine, limitsForModel, modelLimitText, providerInitials, providerLogin, providerMark, formatTokens, type ModelLimits } from '@appubot/chat-core';
 import { Check, ChevronDown, ChevronLeft, ChevronRight, Search, Star, Undo, Zap } from '../../components/ui/icons';
-import { FIELD_CLASS, Icon, Popover, Spinner, cn } from '../../components/ui';
+import { FIELD_CLASS, Icon, Popover, ROW_ON, ROW_PRESS, Spinner, cn } from '../../components/ui';
 import { shortcut } from '../../lib/platform';
 import { useStore } from '../../lib/store';
 import { ProviderLogo, RegistryIcon } from './providerLogos';
@@ -573,8 +573,8 @@ export function ModelPicker({
                 onMouseLeave={() => { cancelHover(); setHoverCard((h) => (h?.key === r.key ? null : h)); }}
                 onClick={() => choose(r)}
                 className={cn(
-                  'group/row ab-pill squircle flex h-9 cursor-default items-center gap-2 rounded-control-sm pr-1 pl-2.5 text-copy',
-                  i === active ? 'bg-[color-mix(in_srgb,var(--ab-fg)_8%,transparent)]' : cur ? 'bg-[color-mix(in_srgb,var(--ab-fg)_4%,transparent)]' : '',
+                  'group/row squircle flex h-9 cursor-default items-center gap-2 rounded-control pr-1 pl-2.5 text-copy',
+                  ROW_PRESS, i === active ? ROW_ON : cur ? 'bg-[color-mix(in_srgb,var(--ab-fg)_5%,transparent)]' : '',
                 )}
               >
                 {rowAgent ? <span title={agentTitle(rowAgent, providers)} className="inline-flex"><AgentGlyph agent={rowAgent} size={14} /></span> : null}

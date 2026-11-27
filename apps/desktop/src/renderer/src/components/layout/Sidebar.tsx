@@ -379,10 +379,11 @@ function BotThreads({ bot }: { bot: Bot }) {
 
 /**
  * The sidebar's buttons (search, +, Settings, Connect apps) are the app's secondary button (components/ui/Button.tsx):
- * an ink fill with no outline, a shade deeper under the pointer or while what they open is open.
+ * an ink fill with no outline, a light step deeper under the pointer, and a dark one while pressed or while what they
+ * open is open.
  */
-const RAISED = 'bg-surface-2 hover:bg-surface-3';
-const RAISED_ON = 'bg-surface-3';
+const RAISED = 'bg-surface-2 hover:bg-[color-mix(in_srgb,var(--ab-fg)_7.5%,transparent)] active:bg-[color-mix(in_srgb,var(--ab-fg)_12%,transparent)]';
+const RAISED_ON = 'bg-[color-mix(in_srgb,var(--ab-fg)_12%,transparent)] hover:bg-[color-mix(in_srgb,var(--ab-fg)_12%,transparent)]';
 
 /** Opens the Connect apps popup. */
 function ConnectApps() {

@@ -14,7 +14,7 @@ import { transferLimit, type Bot, type BotImportResult } from '@appubot/protocol
 import { bytes } from '@appubot/chat-core';
 import { sizeRefusalText } from '../transfer/transferPlan';
 import { AlertTriangle, ArrowRight, CircleCheck, Laptop, Monitor } from '../../components/ui/icons';
-import { Button, Dialog, Icon, Spinner, Switch } from '../../components/ui';
+import { Button, Dialog, Icon, ROW_HOVER, ROW_PRESS, Spinner, Switch, cn } from '../../components/ui';
 import { activeComputer, errorMessage, localGateway, type GatewayLike } from '../../lib/gateway';
 import { THIS_MACHINE } from '../../lib/platform';
 import { pushToast, setState, ui, useStore } from '../../lib/store';
@@ -172,7 +172,7 @@ export function MoveBotDialog() {
             <div className="flex flex-col gap-1">
               <div className="text-note font-medium text-muted">To</div>
               {targets.map((t) => (
-                <label key={t.key} className="ab-pill flex cursor-pointer items-center gap-2 rounded-control px-2 py-1.5 hover:bg-ink/5">
+                <label key={t.key} className={cn('flex cursor-pointer items-center gap-2 rounded-control px-2 py-1.5', ROW_HOVER, ROW_PRESS)}>
                   <input type="radio" name="move-target" checked={target === t.key} disabled={busy} onChange={() => setTarget(t.key)} />
                   <Icon icon={t.key === 'local' ? Laptop : Monitor} size={14} className="text-muted" />
                   <span>{t.label}</span>
