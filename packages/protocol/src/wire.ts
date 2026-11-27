@@ -18,6 +18,7 @@ import {
   MacFilesStatusSchema, MacFolderSchema, MacLinkGrantSchema, MacLinkStatusSchema,
 } from './carry';
 import { GROUP_RESTORE_CHATS_MAX, GroupMessageSchema, GroupRestoreChatSchema, GroupSchema } from './groups';
+import { ConnectorAgentToolSchema, ConnectorBots, ConnectorContentSchema, ConnectorSaveSchema, ConnectorSchema } from './connectors';
 
 /**
  * Patch schema for `*.update` methods: same (partial) type as `schema.partial()`, but with every `.default()`
@@ -549,6 +550,23 @@ export const Methods = {
   /** a saved secret, for the owner's editor (Show) */
   'vault.reveal': { params: z.object({ id: Id, field: VaultSecretField }), result: z.object({ value: z.string() }) },
 
+  /* custom connectors: MCP servers the person adds (see connectors.ts); the computer's own window only */
+  /** `encrypted`: the saved values are sealed with the computer's keychain */
+  'connectors.list': { params: Empty, result: z.object({ connectors: z.array(ConnectorSchema), encrypted: z.boolean() }) },
+  /** Adds a connector or changes one, then reaches it and reads its tools (its status says how that went). */
+  'connectors.save': { params: ConnectorSaveSchema, result: ConnectorSchema },
+  'connectors.remove': { params: z.object({ id: Id }), result: z.object({ ok: z.literal(true) }) },
+  /** Reaches it again and reads its tools afresh. */
+  'connectors.check': { params: z.object({ id: Id }), result: ConnectorSchema },
+  /** One tool on or off for every bot. */
+  'connectors.setTool': { params: z.object({ id: Id, tool: z.string().min(1), on: z.boolean() }), result: ConnectorSchema },
+  /** Which bots may use it. */
+  'connectors.setBots': { params: z.object({ id: Id, bots: ConnectorBots }), result: ConnectorSchema },
+  /** Opens the server's own sign-in page in this computer's browser (it comes back to the gateway). */
+  'connectors.signIn': { params: z.object({ id: Id }), result: z.object({ redirectUrl: z.string() }) },
+  /** Forgets its sign-in here. */
+  'connectors.signOut': { params: z.object({ id: Id }), result: ConnectorSchema },
+
   /* git and GitHub, carried from one of the person's computers to another (carry.ts): the computer's own window only */
   /** what this computer's git has to carry: its name and email, and whether a GitHub sign-in was found */
   'github.local': { params: Empty, result: GitLocalSchema },
@@ -791,6 +809,13 @@ export const Methods = {
   'agent.apps.execute': {
     params: z.object({ tools: z.array(z.object({ tool_slug: z.string().min(1), arguments: z.record(z.string(), z.unknown()), account: z.string().optional() })).min(1).max(50), thought: z.string().optional() }),
     result: z.object({ text: z.string(), isError: z.boolean().optional() }),
+  },
+  /** The tools of the custom connectors this bot may use, as the bridge offers them (`<connector>__<tool>`). */
+  'agent.connectors.tools': { params: Empty, result: z.object({ tools: z.array(ConnectorAgentToolSchema) }) },
+  /** Runs one of them on its connector. */
+  'agent.connectors.call': {
+    params: z.object({ name: z.string().min(1).max(128), arguments: z.record(z.string(), z.unknown()).default({}) }),
+    result: z.object({ content: z.array(ConnectorContentSchema), isError: z.boolean() }),
   },
   'agent.notify': { params: z.object({ title: z.string(), body: z.string().default('') }), result: z.object({ ok: z.literal(true) }) },
   'agent.sendFile': { params: z.object({ path: z.string(), caption: z.string().optional() }), result: FileAttachmentSchema },
@@ -1117,6 +1142,8 @@ export const Events = {
   'channel.removed': z.object({ id: z.string() }),
   /** the key, a connection or a pending sign-in changed (refetch `apps.connections`) */
   'apps.updated': AppsStatusSchema,
+  /** a custom connector was added, changed, reached or removed: all of them */
+  'connectors.updated': z.object({ connectors: z.array(ConnectorSchema) }),
   'device.updated': DeviceSchema,
   'device.deleted': z.object({ id: Id }),
   'pairing.updated': PairingInfoSchema.nullable(),

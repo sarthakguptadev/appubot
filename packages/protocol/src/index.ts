@@ -13,6 +13,7 @@ export * from './characters';
 export * from './push';
 export * from './endpoints';
 export * from './vault';
+export * from './connectors';
 export * from './voiceModels';
 export * from './cloud';
 export * from './viewerControl';

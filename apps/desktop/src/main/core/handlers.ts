@@ -63,6 +63,7 @@ const AGENT_ALLOWED = new Set<MethodName>([
   'agent.routines.list', 'agent.routines.create', 'agent.routines.update', 'agent.routines.delete',
   'agent.bots.message', 'agent.bots.broadcast', 'agent.groups.list', 'agent.groups.post', 'agent.groups.create', 'agent.goal.start', 'agent.goal.finish',
   'agent.vault.list', 'agent.vault.fill', 'agent.vault.key', 'agent.vault.request',
+  'agent.connectors.tools', 'agent.connectors.call',
   'agent.mac.list', 'agent.mac.find', 'agent.mac.fetch', 'agent.mac.put',
   'computer.act', 'computer.batch', 'computer.screenshot', 'computer.status', 'files.sendToDevices', 'system.ping',
 ]);
@@ -106,6 +107,8 @@ export function checkRole(method: MethodName, params: unknown, cx: CallCtx): voi
       // so do the Vault's secrets and a model server's key: typed in and shown only on the computer (clearing one, or
       // anything else about an item or a server, works from a phone too)
       if (method === 'vault.reveal' || (method === 'vault.save' && carriesSecret(params, 'secrets'))) deny();
+      // custom connectors start commands on the computer and keep its secrets: its own window only
+      if (method.startsWith('connectors.')) deny();
       // what one of the person's computers hands another (a GitHub sign-in, a token to read its folders) passes
       // through the computer's own window only, like the Vault's secrets
       if (method.startsWith('github.') || method.startsWith('macLink.') || method === 'macFiles.link' || method === 'macFiles.unlink') deny();
@@ -275,6 +278,14 @@ export function buildHandlers(ctx: CoreCtx): Handlers {
     'vault.saveMany': (p, cx) => s.vault.saveMany(p.items, scopeOf(cx)),
     'vault.delete': (p, cx) => s.vault.delete(p.id, scopeOf(cx)),
     'vault.reveal': (p, cx) => s.vault.reveal(p.id, p.field, scopeOf(cx)),
+    'connectors.list': () => s.connectors.list(),
+    'connectors.save': (p) => s.connectors.save(p),
+    'connectors.remove': (p) => s.connectors.remove(p.id),
+    'connectors.check': (p) => s.connectors.check(p.id),
+    'connectors.setTool': (p) => s.connectors.setTool(p.id, p.tool, p.on),
+    'connectors.setBots': (p) => s.connectors.setBots(p.id, p.bots),
+    'connectors.signIn': (p) => s.connectors.signIn(p.id),
+    'connectors.signOut': (p) => s.connectors.signOut(p.id),
 
     // git and GitHub carried between the person's computers (the computer's own window: `checkRole`)
     'github.local': (_p, cx) => s.github.local(scopeOf(cx)),
@@ -462,6 +473,8 @@ export function buildHandlers(ctx: CoreCtx): Handlers {
     'agent.vault.list': (p, cx) => s.vault.agentList(agentCtx(cx), p.kind),
     'agent.vault.fill': (p, cx) => s.vault.fill(agentCtx(cx), p),
     'agent.vault.key': (p, cx) => s.vault.key(agentCtx(cx), p.id),
+    'agent.connectors.tools': (_p, cx) => ({ tools: s.connectors.toolsFor(agentCtx(cx).botId) }),
+    'agent.connectors.call': (p, cx) => s.connectors.call(agentCtx(cx).botId, p.name, p.arguments),
     'agent.mac.list': (p, cx) => s.macFiles.agentList(agentCtx(cx), p.path),
     'agent.mac.find': (p, cx) => s.macFiles.agentFind(agentCtx(cx), p.query, p.path),
     'agent.mac.fetch': (p, cx) => s.macFiles.agentFetch(agentCtx(cx), p.path),

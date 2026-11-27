@@ -431,6 +431,12 @@ export class Gateway {
       const { ok, app } = await this.ctx.s.composio.returned({ code: c.req.query('code'), state: c.req.query('state'), error: c.req.query('error') });
       return c.html(SIGNED_IN_PAGE(ok, app));
     });
+    // the browser back from a custom connector's own sign-in
+    app.get('/connectors/signed-in', async (c) => {
+      const name = this.ctx.s.connectors.signingIn(c.req.query('state'));
+      const ok = await this.ctx.s.connectors.finish({ code: c.req.query('code'), state: c.req.query('state'), error: c.req.query('error') });
+      return c.html(SIGNED_IN_PAGE(!!ok, name ?? 'The connector'));
+    });
 
     // no token yet here: a few KB at most (a longer one is refused by its declared length, or as soon as it passes it)
     app.post('/api/pair', bodyLimit({ maxSize: PAIR_BODY_MAX, onError: (c) => c.json({ error: 'Pairing request too large' }, 413) }), async (c) => {

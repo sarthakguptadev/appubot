@@ -44,6 +44,7 @@ import type { LimitsService } from './services/limits';
 import type { LimitsFetch } from './services/limits/probes';
 import type { ModelEndpointsService } from './services/modelEndpoints';
 import type { VaultService } from './services/vault';
+import type { ConnectorsService } from './services/connectors';
 import type { GitHubService, GitIo } from './services/github';
 import type { MacLinkService } from './services/macLink';
 import type { MacFilesService } from './services/macFiles';
@@ -355,6 +356,8 @@ export interface Services {
   limits: LimitsService;
   endpoints: ModelEndpointsService;
   vault: VaultService;
+  /** MCP servers the person added (Settings › Apps › Custom connectors), offered to the bots through the bridge */
+  connectors: ConnectorsService;
   storage: StorageService;
   characters: CharactersService;
   /** "Download my bots" on an AppuBot Cloud computer (a zip over the channel) */

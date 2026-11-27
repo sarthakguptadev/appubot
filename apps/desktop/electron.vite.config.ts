@@ -11,7 +11,7 @@ import { noticesPlugin } from './scripts/notices.mjs';
 // writes THIRD_PARTY_NOTICES.txt (scripts/notices.mjs), which electron-builder.yml ships as a plain file.
 export default defineConfig({
   main: {
-    plugins: [externalizeDepsPlugin({ exclude: ['@appubot/protocol', '@appubot/agent-runtime', '@appubot/client', '@appubot/theme', '@appubot/chat-core'] }), noticesPlugin('main')],
+    plugins: [externalizeDepsPlugin({ exclude: ['@appubot/protocol', '@appubot/agent-runtime', '@appubot/client', '@appubot/theme', '@appubot/chat-core', '@modelcontextprotocol/sdk'] }), noticesPlugin('main')],
     resolve: { alias: { '@main': resolve('src/main') } },
     // voiceHost: the process that runs the speech models (core/services/voiceEngine.ts forks out/main/voiceHost.js)
     build: { rollupOptions: { input: { index: resolve('src/main/index.ts'), voiceHost: resolve('src/main/voiceHost.ts') } }, minify: true },

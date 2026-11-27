@@ -4,7 +4,8 @@
  *   APPUBOT_GATEWAY_URL  http://127.0.0.1:7890
  *   APPUBOT_TOKEN        per-session agent token (role 'agent')
  *   APPUBOT_THREAD_ID, APPUBOT_BOT_ID, APPUBOT_BOT_NAME, APPUBOT_COMPUTER_USE=1|0, APPUBOT_APPS=1|0, APPUBOT_CLOUD=1 (an AppuBot Cloud computer),
- *   APPUBOT_MAC_FILES=<name> (one of the user's own computers lends this one its files)
+ *   APPUBOT_MAC_FILES=<name> (one of the user's own computers lends this one its files),
+ *   APPUBOT_CONNECTORS=1 (the bot may use some custom connector's tools)
  */
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
@@ -13,12 +14,14 @@ import { z } from 'zod';
 import { GatewayClient } from '@appubot/client';
 import { MEMORY_LOAD_MAX, type ComputerAction, type MethodResult } from '@appubot/protocol';
 import { appsTools, botTools, computerTools, macFilesTools, userTools, vaultTools, type BatchStep } from './tools';
+import { addConnectorTools } from './connectorTools';
 
 const url = process.env.APPUBOT_GATEWAY_URL ?? 'http://127.0.0.1:7890';
 const token = process.env.APPUBOT_TOKEN ?? '';
 const threadId = process.env.APPUBOT_THREAD_ID ?? '';
 const computerUse = (process.env.APPUBOT_COMPUTER_USE ?? '1') !== '0';
 const apps = process.env.APPUBOT_APPS === '1';
+const connectors = process.env.APPUBOT_CONNECTORS === '1';
 /** one of the user's own computers lends this one its files: its name */
 const macFiles = (process.env.APPUBOT_MAC_FILES ?? '').trim();
 const log = (...a: unknown[]) => process.stderr.write(`[appubot-mcp] ${a.map(String).join(' ')}\n`);
@@ -457,6 +460,15 @@ function renderHistory(botName: string, page: MethodResult<'agent.bots.history'>
 
 async function main() {
   client.connect();
+  // listed before the agent asks for the tools; without the gateway the bridge still starts, with its own tools only
+  if (connectors) {
+    try {
+      await waitConnected();
+      const { tools } = await client.call('agent.connectors.tools', {});
+      addConnectorTools(server, tools, async (name, args) => { await waitConnected(); return client.call('agent.connectors.call', { name, arguments: args }); });
+      log('connector tools', tools.length);
+    } catch (e) { log('connector tools unavailable', e instanceof Error ? e.message : String(e)); }
+  }
   const transport = new StdioServerTransport();
   await server.connect(transport);
   log('ready', url, 'computerUse=' + computerUse, 'apps=' + apps);

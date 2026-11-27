@@ -300,6 +300,9 @@ function applyServerEvent(event: EventName | 'hello', payload: unknown): void {
     case 'apps.updated':
       setState({ apps: payload as P<'apps.updated'> });
       return;
+    /* custom connectors: Settings › Apps keeps them while it shows them (features/apps/connectorsData) */
+    case 'connectors.updated':
+      return;
 
     /* ---------- devices & pairing ---------- */
     case 'device.updated': {

@@ -11,6 +11,8 @@ export interface BridgeOptions {
   computerUse: boolean;
   /** the bot may use connected apps (Composio): the bridge offers its apps tools */
   apps?: boolean;
+  /** the bot may use some custom connector's tools: the bridge offers them (`APPUBOT_CONNECTORS=1`) */
+  connectors?: boolean;
   /** one of the user's own computers lends this one its files: the bridge offers the `mac_files_*` tools (`APPUBOT_MAC_FILES`: its name) */
   macFiles?: string;
   /** an AppuBot Cloud computer: the computer tools name the apps its image has (`APPUBOT_CLOUD=1`) */
@@ -37,6 +39,7 @@ export function buildBridgeServer(o: BridgeOptions): McpServerStdio {
       APPUBOT_BOT_NAME: o.botName,
       APPUBOT_COMPUTER_USE: o.computerUse ? '1' : '0',
       APPUBOT_APPS: o.apps ? '1' : '0',
+      ...(o.connectors ? { APPUBOT_CONNECTORS: '1' } : {}),
       ...(o.cloud ? { APPUBOT_CLOUD: '1' } : {}),
       ...(o.macFiles ? { APPUBOT_MAC_FILES: o.macFiles } : {}),
     },
