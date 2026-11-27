@@ -66,12 +66,12 @@ interface Ctx {
   mentions?: readonly Bot[];
 }
 
-/** A text message's corners: round all over; the last bubble of a bot's run ends it on a small tail, its bottom corner on the bot's side tightened. */
+/** A text message's corners (16px): bubbles of one run join like a messaging app's, the corners between them on the bot's side tightened to 4px. */
 export const BUBBLE_CORNERS: Record<BubbleSpot, string> = {
-  only: 'squircle rounded-[18px] rounded-bl-[6px]',
-  first: 'squircle rounded-[18px]',
-  middle: 'squircle rounded-[18px]',
-  last: 'squircle rounded-[18px] rounded-bl-[6px]',
+  only: 'squircle rounded-[16px]',
+  first: 'squircle rounded-[16px] rounded-bl-[4px]',
+  middle: 'squircle rounded-[16px] rounded-l-[4px]',
+  last: 'squircle rounded-[16px] rounded-tl-[4px]',
 };
 
 /** The reply's text bubbles in order, each with its place in the run (the corners of a chat's grouped messages). */
@@ -82,10 +82,10 @@ function bubbleRun(list: Chunk[]): Map<number, BubbleSpot> {
 
 /**
  * The bot's bubble: an ink wash under a faint sheen at its top (index.css `.chat-bubble-reply`), no outline or shadow in
- * either scheme, a text message's padding (12 by 7 around 15px text) and width (a group room's bots wear the same:
- * features/groups/GroupView.tsx).
+ * either scheme, a text message's padding (12 by 7 around 15px text) and a messaging app's width, 58% of the column (a table or code block may take more: index.css). A group room's bots wear
+ * the same: features/groups/GroupView.tsx.
  */
-export const REPLY_BUBBLE = 'chat-bubble-reply w-fit max-w-[88%] min-w-9 bg-agent-bubble px-3 py-[7px]';
+export const REPLY_BUBBLE = 'chat-bubble-reply w-fit max-w-[58%] min-w-9 bg-agent-bubble px-3 py-[7px]';
 
 /**
  * The bot's reply as a text message (answers-only view): a left-aligned bubble sized to its text, the user bubble's

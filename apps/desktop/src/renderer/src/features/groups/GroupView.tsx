@@ -278,7 +278,7 @@ function RoomComposer({ group, chatId, working, members }: { group: Group; chatI
   // the chat's own composer, words only: the room takes no files, and the pickers under it belong to a bot's thread
   return (
     <div className="relative shrink-0 px-5 pb-4">
-      <div className="mx-auto w-full max-w-[46rem]">
+      <div className="chat-column">
         {pending.length ? <ApprovalBar requests={pending} botName={asker?.name ?? 'A bot'} /> : goal ? <GoalCard goal={goal} unit="messages" onAct={(action) => void call('groups.goal', { id: group.id, ...(chatId !== group.id ? { chatId } : {}), action }, { errorTitle: 'Couldn’t change the goal' })} /> : null}
         <Composer
           key={chatId}
@@ -320,7 +320,7 @@ function GroupLanding({ group, members, loaded, onPick }: { group: Group; member
   const who = names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}` : names[0] ?? 'No bots yet';
   return (
     <div className="relative flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-6 pb-8">
-      <div className="flex max-w-[46rem] animate-[message-enter_240ms_var(--ease-out-quint)_both] flex-col items-center text-center">
+      <div className="chat-column flex animate-[message-enter_240ms_var(--ease-out-quint)_both] flex-col items-center text-center">
         <GroupTile members={[...members]} size={members.length > 1 ? 76 : 44} />
         <h1 className="mt-4 text-[30px] leading-[1.15] font-normal tracking-[-0.015em] text-fg/95">Message {group.name}</h1>
         <p className="mt-2 max-w-[30rem] text-copy leading-relaxed text-muted">
@@ -390,9 +390,9 @@ export function GroupView() {
         {empty ? (
           <GroupLanding key={chatId} group={group} members={members} loaded={loaded} onPick={(text) => void sendGroupMessage(group.id, chatId, text)} />
         ) : (
-          // the transcript's own frame: a 20px gutter, the scrollbar's track outside the 46rem column, its resting gap at the end
+          // the transcript's own frame: a 20px gutter, the scrollbar's track outside the chat's column, its resting gap at the end
           <div ref={scroller} onScroll={onScroll} className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto px-5 [scrollbar-gutter:stable]">
-            <div className="mx-auto flex w-full max-w-[46rem] flex-col pt-4">
+            <div className="chat-column flex flex-col pt-4">
               {rows.map(({ m, prev, next, label }) => (
                 <Fragment key={m.id}>
                   {label ? <Separator label={label} /> : null}

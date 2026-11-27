@@ -8,7 +8,7 @@ import { Check, X } from '../../components/ui/icons';
 import { Icon, cn } from '../../components/ui';
 
 /** the reply bubble's fill, sheen, padding and type, and the sent bubble's (AgentTurn.tsx `REPLY_BUBBLE`, UserMessage.tsx `SENT_BUBBLE`: both import the cards, so the classes are named here) */
-const ASKED = 'chat-bubble-reply squircle w-fit max-w-[88%] min-w-9 rounded-[18px] bg-agent-bubble px-3 py-[7px] text-[15px] leading-[22px] tracking-[.01em] text-fg';
+const ASKED = 'chat-bubble-reply squircle w-fit max-w-[58%] min-w-9 rounded-[16px] bg-agent-bubble px-3 py-[7px] text-[15px] leading-[22px] tracking-[.01em] text-fg';
 const SAID = 'chat-bubble-sent squircle w-fit max-w-[88%] min-w-9 rounded-[18px] px-3 py-[7px] text-lead leading-5';
 
 /** The bot's question and your answer, as two messages. `ask` left out: only what you answered. */

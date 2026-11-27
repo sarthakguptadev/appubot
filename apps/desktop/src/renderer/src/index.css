@@ -10,6 +10,8 @@
 @theme {
   --font-display: "Geist Variable", "Geist", -apple-system, BlinkMacSystemFont, "Noto Sans Devanagari", system-ui, sans-serif;
   --font-sans: "Geist Variable", "Geist", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Noto Sans Devanagari", system-ui, sans-serif;
+  /* chat text (messages): the system's face, Geist behind it where the system has none */
+  --font-chat: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI Variable Text", "Segoe UI", system-ui, "Geist Variable", "Noto Sans Devanagari", sans-serif;
   /* Synara's code face (JetBrains Mono, bundled) for chips, inline code and code blocks */
   --font-mono: "JetBrains Mono Variable", "JetBrains Mono", "SF Mono", SFMono-Regular, Menlo, monospace;
   --animate-caret: caret-blink 1.06s steps(2, start) infinite;
@@ -22,6 +24,13 @@
 }
 
 @keyframes caret-blink { to { visibility: hidden; } }
+
+/* The chat's column (2026-11-27, after Grok Bot's): messages and the composer share both edges, at least 80px in from
+   the chat's sides and at most 960px wide, never narrower than the old 46rem column where there is room for it. */
+.chat-column { width: 100%; max-width: min(960px, max(46rem, 100% - 160px)); margin-inline: auto; }
+/* Chat text is set in the system's own face (SF Pro on a Mac) rather than the app's Geist, as messaging apps set it;
+   code keeps its mono face */
+.chat-markdown { font-family: var(--font-chat); }
 /* a small badge arriving: a fade from 98%. Menus, popovers, tooltips and dialogs don't use it: they open and close in
    one frame */
 @keyframes pop-in { from { opacity: 0; transform: scale(.98); } to { opacity: 1; transform: none; } }
@@ -293,6 +302,8 @@ html[data-glass="off"] body { background-image: none; }
 /* A text message's type, in either bubble: 15px, a reply's prose on a 22px line and your own words on 20, a touch of
    tracking (Geist sits tight at this size), blocks 10px apart; code keeps its own size and spacing. */
 :is(.chat-bubble-reply, .chat-bubble-sent) .chat-markdown { font-size: 15px; line-height: 22px; letter-spacing: .01em; }
+/* a reply holding a table or a code block may run wider than a bubble of words (58% of the column, AgentTurn.tsx) */
+.chat-bubble-reply:has(.chat-markdown-table, .chat-markdown-codeblock) { max-width: 88%; }
 .chat-bubble-sent .chat-markdown { line-height: 20px; }
 :is(.chat-bubble-reply, .chat-bubble-sent) .chat-markdown :is(p, ul, ol, blockquote, pre, .chat-markdown-table, .chat-markdown-codeblock) { margin: 10px 0; }
 :is(.chat-bubble-reply, .chat-bubble-sent) .chat-markdown > :first-child { margin-top: 0; }
