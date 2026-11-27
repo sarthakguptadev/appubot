@@ -1,10 +1,15 @@
 import { useT } from '../../lib/i18n';
-import { useEffect, useRef, useState, type ComponentType, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, type ComponentType, type KeyboardEvent, type RefObject } from 'react';
 import { Search, X } from '../../components/ui/icons';
 import { Button, Icon, Kbd, MODAL_BACKDROP, MODAL_SURFACE, cn, isDialogOpen } from '../../components/ui';
 import { useHotkey } from '../../lib/hooks';
 import { ui, useStore, type SettingsSection } from '../../lib/store';
-import { SETTINGS_NAV_ITEMS, rankSettingsSearch, transferTitle, settingAnchorId, settingsNavItem, settingsPage, settingsTrail, type SettingsNavItem, type SettingsSearchEntry } from './nav';
+import { SETTINGS_NAV_ITEMS, transferTitle, settingsNavItem, settingsPage, type SettingsNavItem } from './nav';
+import { searchSettings, settingRows, type SettingRow } from './settingsSearch';
+import { Marked, PALETTE_ROW, PALETTE_ROW_ON, PaletteFooter } from '../../components/layout/PaletteRow';
+import { shortcut } from '../../lib/platform';
+
+type SettingResult = ReturnType<typeof searchSettings<SettingRow>>[number];
 import { AboutSection } from './sections/About';
 import { AppearanceSection } from './sections/Appearance';
 import { PermissionsSection } from './sections/Permissions';
@@ -79,9 +84,6 @@ function NavWash() {
   return <span aria-hidden className={NAV_WASH} />;
 }
 
-// Cap the result list so a broad query stays a quick scan rather than a wall of rows.
-const SEARCH_LIMIT = 12;
-
 /** Which pages show here: Voice on a cloud computer only once it reads aloud, no Account/Billing without the account service, Team only on a team. */
 function useShownPages(): (id: SettingsSection) => boolean {
   // the cloud computer hears nothing, but one that reads aloud (`VoiceStatus.speaks`) has its voice to pick; Permissions
@@ -106,59 +108,32 @@ function shownRow(item: SettingsNavItem, shown: (id: SettingsSection) => boolean
   return { item: { ...item, id: first.id, label: first.label, icon: first.icon, description: first.description }, pages };
 }
 
-/** The left column: Back and the search button on top, the computer switcher, then the pages (or, searching, the results). */
-function SettingsNav() {
+/** The left column: the search field on top, the computer switcher, then the pages. */
+function SettingsNav({ query, setQuery, input, onSearchKey }: {
+  query: string; setQuery: (q: string) => void;
+  input: RefObject<HTMLInputElement | null>;
+  onSearchKey: (e: KeyboardEvent<HTMLInputElement>) => void;
+}) {
   const t = useT();
   const active = useStore((s) => s.settingsSection) ?? 'general';
   // its row carries a dot while a permission is missing
   const permissionsNeeded = usePermissionsNeeded();
   const shown = useShownPages();
-  const [query, setQuery] = useState('');
-  const [pick, setPick] = useState(0);
-  // the search field is out of sight until asked for: the strip's search button, or "/" (the owner's call 2026-11-14)
-  const [searchOpen, setSearchOpen] = useState(false);
-  const input = useRef<HTMLInputElement>(null);
-  const results = rankSettingsSearch(query, SEARCH_LIMIT * 2).filter((e) => shown(e.section)).slice(0, SEARCH_LIMIT);
   const searching = query.trim().length > 0;
-
-  // "/" searches, as in T3 Code
-  useHotkey((e) => e.key === '/' && !isDialogOpen() && !(document.activeElement instanceof HTMLInputElement || document.activeElement instanceof HTMLTextAreaElement), () => setSearchOpen(true));
-  // the field takes the keyboard as it appears
-  useEffect(() => { if (searchOpen) input.current?.focus(); }, [searchOpen]);
-  const closeSearch = () => { setQuery(''); setSearchOpen(false); };
-
-  const select = (e: SettingsSearchEntry) => {
-    ui.openSettings(e.section, settingAnchorId(e.title));
-    closeSearch();
-  };
-  const onSearchKey = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'ArrowDown' && results.length) { e.preventDefault(); setPick((i) => (i + 1) % results.length); }
-    else if (e.key === 'ArrowUp' && results.length) { e.preventDefault(); setPick((i) => (i - 1 + results.length) % results.length); }
-    else if (e.key === 'Enter') {
-      e.preventDefault();
-      const r = results[pick] ?? results[0];
-      if (r) select(r);
-    } else if (e.key === 'Escape' && query) {
-      // clear the query first; later Escapes let go of the field, then close settings
-      e.preventDefault();
-      e.stopPropagation();
-      setQuery('');
-    }
-  };
 
   // one flat list, no headings (the owner's call 2026-11-14, "rm grouping in settings"); the rows keep the order
   // nav.ts lists them in: account, AI, connections, the computer, the app
   const rows = (
     <ul className="mt-1 flex flex-col gap-0.5">
       {SETTINGS_NAV_ITEMS.map((r) => shownRow(r, shown)).filter((r) => r !== null).map(({ item: r, pages }) => {
-        const on = pages.includes(active);
+        const on = !searching && pages.includes(active);
         return (
           <li key={r.id}>
             <button
               type="button"
               aria-current={on ? 'page' : undefined}
               className={cn(NAV_ROW, on ? NAV_ROW_ACTIVE : NAV_ROW_IDLE)}
-              onClick={() => ui.openSettings(r.id)}
+              onClick={() => { setQuery(''); ui.openSettings(r.id); }}
             >
               {on ? <NavWash /> : null}
               <Icon icon={r.icon} size={16} className="shrink-0" />
@@ -173,86 +148,85 @@ function SettingsNav() {
 
   return (
     <nav aria-label={t('settings.nav.aria')} className="flex w-[224px] shrink-0 flex-col border-e border-[var(--ab-hairline)] bg-[var(--ab-settings-nav)]">
-      {/* the top strip: only the search button, at its right */}
-      <div className="flex h-14 shrink-0 items-center pl-2.5">
-        <span className="min-w-0 flex-1" />
-        <button
-          type="button"
-          aria-label={t('settings.search.aria')}
-          aria-pressed={searchOpen}
-          title={`${t('common.search')} /`}
-          // mousedown would blur the field first (closing it), and the click would open it again
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => (searchOpen ? closeSearch() : setSearchOpen(true))}
-          className={cn(
-            'ab-press ab-pill squircle no-drag mr-2.5 grid size-9 shrink-0 place-items-center rounded-control text-fg-2 outline-none hover:bg-surface-3 hover:text-fg focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]',
-            searchOpen ? 'bg-surface-3 text-fg' : 'bg-surface-2',
-          )}
-        >
-          <Icon icon={Search} size={15} />
-        </button>
-      </div>
-      <div className="no-drag min-h-0 flex-1 overflow-x-hidden overflow-y-auto p-2.5">
-        {/* whose settings these are: this Mac, the person's cloud computer or a team's (nothing where there is only this one) */}
-        <div className="pb-2 empty:hidden"><ComputerMenu inSettings /></div>
-        {searchOpen || searching ? (
-        <label className="ab-pill squircle flex h-9 items-center gap-2.5 rounded-control-sm bg-surface-2 px-2.5 text-copy font-medium text-muted hover:bg-surface-3 focus-within:shadow-[0_0_0_2px_var(--ab-ring)]">
+      {/* the top: the search field, always there (the owner's call 2026-11-27: "like command K but for it") */}
+      <div className="flex h-14 shrink-0 items-center px-2.5">
+        <label className="ab-pill squircle no-drag flex h-9 w-full items-center gap-2.5 rounded-control-sm bg-surface-2 px-2.5 text-copy font-medium text-muted hover:bg-surface-3 focus-within:bg-surface-3">
           <Icon icon={Search} size={16} className="shrink-0 text-muted/80" />
           <input
             ref={input}
             type="search"
             value={query}
-            onChange={(e) => { setQuery(e.target.value); setPick(0); }}
+            onChange={(e) => setQuery(e.target.value)}
             onKeyDown={onSearchKey}
-            // left empty, it goes away again
-            onBlur={() => { if (!query.trim()) setSearchOpen(false); }}
             spellCheck={false}
             autoCorrect="off"
             autoCapitalize="off"
             placeholder={t('common.search')}
             aria-label={t('settings.search.aria')}
+            role="combobox"
+            aria-expanded={searching}
+            aria-controls={RESULTS_ID}
+            aria-autocomplete="list"
             className="min-w-0 flex-1 bg-transparent text-copy font-normal text-fg outline-none placeholder:font-medium placeholder:text-muted [&::-webkit-search-cancel-button]:hidden"
           />
           {searching ? (
             <button type="button" aria-label={t('settings.search.clear')} onMouseDown={(e) => e.preventDefault()} onClick={() => { setQuery(''); input.current?.focus(); }} className="ab-pill flex size-5 shrink-0 items-center justify-center rounded text-muted hover:text-fg">
               <Icon icon={X} size={12} />
             </button>
-          ) : <Kbd>/</Kbd>}
+          ) : <Kbd>{shortcut('F')}</Kbd>}
         </label>
-        ) : null}
-
-        {searching ? (
-          results.length ? (
-            <ul aria-label={t('settings.search.results')} className="mt-2 flex flex-col gap-0.5">
-              {results.map((e, i) => {
-                const section = settingsNavItem(e.section);
-                const trail = settingsTrail(e.section);
-                return (
-                  <li key={`${e.section}:${e.title}`}>
-                    <button
-                      type="button"
-                      className={cn(NAV_ROW, 'h-auto min-h-10 items-start py-1.5', i === pick ? 'bg-[color-mix(in_srgb,var(--ab-fg)_8%,transparent)] text-fg' : NAV_ROW_IDLE)}
-                      onMouseMove={() => setPick(i)}
-                      onClick={() => select(e)}
-                    >
-                      <Icon icon={section.icon} size={16} className="mt-0.5 shrink-0" />
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-copy font-medium text-fg">{e.title}</span>
-                        <span className="block truncate text-[11px] text-muted/75">{trail}</span>
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          ) : (
-            <p role="status" className="px-2 py-6 text-center text-note text-muted">{t('settings.search.none')}</p>
-          )
-        ) : (
-          rows
-        )}
+      </div>
+      <div className="no-drag min-h-0 flex-1 overflow-x-hidden overflow-y-auto px-2.5 pb-2.5">
+        {/* whose settings these are: this Mac, the person's cloud computer or a team's (nothing where there is only this one) */}
+        <div className="pb-2 empty:hidden"><ComputerMenu inSettings /></div>
+        {rows}
       </div>
     </nav>
+  );
+}
+
+const RESULTS_ID = 'settings-search-results';
+
+/**
+ * Settings' search, the ⌘K palette's list over every setting on every page (features/settings/settingsSearch.ts):
+ * each row its page's icon, its name with the matched words in semibold and where it is, the highlight moved by the
+ * arrows and the pointer; Enter or a click opens it (SettingsModal `pick`).
+ */
+function SettingsResults({ results, at, setAt, onPick }: {
+  results: SettingResult[]; at: number; setAt: (i: number) => void; onPick: (r: SettingResult) => void;
+}) {
+  const t = useT();
+  const list = useRef<HTMLDivElement>(null);
+  useEffect(() => { list.current?.querySelector<HTMLElement>(`[data-index="${at}"]`)?.scrollIntoView({ block: 'nearest' }); }, [at]);
+  return (
+    <div className="relative flex min-h-0 min-w-0 flex-1 flex-col pt-14">
+      <div ref={list} id={RESULTS_ID} role="listbox" aria-label={t('settings.search.results')} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-2">
+        {results.map((r, i) => (
+          <button
+            key={r.key}
+            type="button"
+            id={`${RESULTS_ID}-${i}`}
+            role="option"
+            aria-selected={i === at}
+            tabIndex={-1}
+            data-index={i}
+            onMouseMove={() => { if (i !== at) setAt(i); }}
+            // the field keeps the focus (and its caret)
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => onPick(r)}
+            className={cn(PALETTE_ROW, 'rounded-control-lg', i === at && PALETTE_ROW_ON)}
+          >
+            <span className="flex size-5 shrink-0 items-center justify-center text-fg-2"><Icon icon={r.icon} size={16} /></span>
+            <span className="flex min-w-0 flex-1 items-baseline gap-2">
+              <span className="max-w-[65%] shrink-0 truncate text-copy text-fg"><Marked text={r.label} ranges={r.ranges} /></span>
+              {r.trail ? <span className="min-w-0 truncate text-note text-muted">{r.trail}</span> : null}
+            </span>
+          </button>
+        ))}
+        {!results.length ? <p role="status" className="px-3 py-10 text-center text-copy text-muted">{t('settings.search.none')}</p> : null}
+      </div>
+      <PaletteFooter verb={results.length ? 'Open' : undefined} escKeys={['esc']} escLabel="Clear" />
+    </div>
   );
 }
 
@@ -276,10 +250,18 @@ function SettingsContent() {
 
   // each section starts at the top
   useEffect(() => { if (scroller.current) scroller.current.scrollTop = 0; }, [section]);
-  // search results scroll their row into view once the section has rendered
+  // search results scroll their row into view once the section has rendered, and it lights up for a moment
   useEffect(() => {
     if (!target) return;
-    const frame = requestAnimationFrame(() => document.getElementById(target)?.scrollIntoView({ block: 'start', behavior: 'smooth' }));
+    const frame = requestAnimationFrame(() => {
+      const el = document.getElementById(target);
+      if (!el) return;
+      el.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      el.classList.remove('settings-found');
+      void el.offsetWidth;
+      el.classList.add('settings-found');
+      el.addEventListener('animationend', () => el.classList.remove('settings-found'), { once: true });
+    });
     return () => cancelAnimationFrame(frame);
   }, [section, target]);
 
@@ -341,15 +323,60 @@ export function SettingsModal() {
   const t = useT();
   const open = useStore((s) => s.settingsSection !== null);
   const popup = useRef<HTMLDivElement>(null);
+  const input = useRef<HTMLInputElement>(null);
+  const shown = useShownPages();
+  const [query, setQuery] = useState('');
+  const [at, setAt] = useState(0);
+  const results = searchSettings(settingRows().filter((r) => shown(r.section)), query);
+  const searching = query.trim().length > 0;
+  const current = results[Math.min(at, results.length - 1)];
+  useEffect(() => { setAt(0); }, [query]);
 
-  // Escape closes, unless a dialog or menu owns it; inside a field it only lets go of the field
+  // Escape closes, unless a dialog or menu owns it; inside a field it only lets go of the field (the search field's
+  // own Escape clears it, then closes: `onSearchKey`)
   useHotkey((e) => e.key === 'Escape' && !isDialogOpen(), () => {
     const el = document.activeElement;
     if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement) el.blur();
     else ui.closeSettings();
   }, open);
-  // focus the panel, not its first control: arrows and page keys scroll it, no stray focus ring
-  useEffect(() => { if (open) popup.current?.focus({ preventScroll: true }); }, [open]);
+  // the search field takes the keyboard as Settings opens, and on ⌘F or "/" (as in T3 Code) while it is open
+  useEffect(() => { if (open) input.current?.focus({ preventScroll: true }); else setQuery(''); }, [open]);
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: globalThis.KeyboardEvent) => {
+      const find = (e.metaKey || e.ctrlKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'f';
+      const typing = document.activeElement instanceof HTMLInputElement || document.activeElement instanceof HTMLTextAreaElement;
+      if (!(find || (e.key === '/' && !typing)) || isDialogOpen()) return;
+      e.preventDefault();
+      e.stopPropagation();
+      input.current?.focus();
+      input.current?.select();
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [open]);
+
+  const pick = (r: SettingResult) => {
+    setQuery('');
+    ui.openSettings(r.section, r.anchor);
+  };
+  const onSearchKey = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.nativeEvent.isComposing) return;
+    if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && searching) {
+      e.preventDefault();
+      // round the ends, as the palette's list does
+      if (results.length) setAt((i) => (i + (e.key === 'ArrowDown' ? 1 : -1) + results.length) % results.length);
+    } else if (e.key === 'Enter' && searching) {
+      e.preventDefault();
+      if (current) pick(current);
+    } else if (e.key === 'Escape') {
+      // a query clears first; an empty field closes Settings
+      e.preventDefault();
+      e.stopPropagation();
+      if (query) setQuery('');
+      else ui.closeSettings();
+    }
+  };
 
   // Tab goes round the panel's own controls, never to the app behind it
   const onKey = (e: KeyboardEvent<HTMLDivElement>) => {
@@ -375,8 +402,8 @@ export function SettingsModal() {
         onKeyDown={onKey}
         className={cn(MODAL_SURFACE, 'no-drag relative flex h-[min(700px,calc(100vh-48px))] w-[min(898px,calc(100vw-48px))] min-h-0 min-w-0 overflow-hidden outline-none')}
       >
-        <SettingsNav />
-        <SettingsContent />
+        <SettingsNav query={query} setQuery={setQuery} input={input} onSearchKey={onSearchKey} />
+        {searching ? <SettingsResults results={results} at={Math.min(at, Math.max(0, results.length - 1))} setAt={setAt} onPick={pick} /> : <SettingsContent />}
         <Button variant="ghost" size="icon-sm" icon={X} aria-label={t('common.close')} onClick={ui.closeSettings} className="absolute top-4 right-4" />
       </div>
     </div>

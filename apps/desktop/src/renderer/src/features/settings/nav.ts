@@ -322,24 +322,3 @@ export const SETTINGS_SEARCH_ENTRIES: SettingsSearchEntry[] = [
   { section: 'storage', title: KEEP_LOGS_TITLE, keywords: 'storage logs delete old days retention clean' },
   { section: 'voice', title: VOICE_STORAGE_TITLE, keywords: 'voice files speech models download remove delete disk space size parakeet whisper indicconformer supertonic kokoro' },
 ];
-
-/** Ranked matches: title prefix, then a word in the title, then anywhere in title, keywords or section name. */
-export function rankSettingsSearch(query: string, limit: number): SettingsSearchEntry[] {
-  const q = query.trim().toLowerCase();
-  if (!q) return [];
-  const score = (e: SettingsSearchEntry): number => {
-    const title = e.title.toLowerCase();
-    if (title.startsWith(q)) return 0;
-    if (title.split(/[^\p{L}\p{N}]+/u).some((w) => w.startsWith(q))) return 1;
-    if (title.includes(q)) return 2;
-    if (e.keywords?.includes(q)) return 3;
-    if (settingsTrail(e.section).toLowerCase().includes(q)) return 4;
-    return -1;
-  };
-  return SETTINGS_SEARCH_ENTRIES
-    .map((e, i) => ({ e, i, s: score(e) }))
-    .filter((x) => x.s >= 0)
-    .sort((a, b) => a.s - b.s || a.i - b.i)
-    .slice(0, limit)
-    .map((x) => x.e);
-}

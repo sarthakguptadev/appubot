@@ -328,6 +328,9 @@ html[data-glass="off"] body { background-image: none; }
 
 /* ---------- question cards (adapted from Akeru's generative-ui.css, MIT) ---------- */
 /* the chosen one: a ring (never a border, so a choice keeps its size) and a deeper fill */
+/* a setting opened from Settings' search: a ring that fades (SettingsView `settings-found`) */
+@keyframes settings-found { 0%, 40% { outline-color: color-mix(in srgb, var(--ab-primary) 70%, transparent); } to { outline-color: transparent; } }
+.settings-found { outline: 2px solid transparent; outline-offset: 4px; border-radius: 12px; animation: settings-found 1.6s ease-out; }
 .gen-choice[aria-pressed="true"] { box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--ab-primary) 60%, var(--ab-border)); background: color-mix(in srgb, var(--ab-primary) 9%, transparent); }
 .gen-choices[data-unavailable] .gen-choice { opacity: .55; }
 .gen-choices[data-answered] .gen-choice:not([aria-pressed="true"], :focus-within) { opacity: .55; }

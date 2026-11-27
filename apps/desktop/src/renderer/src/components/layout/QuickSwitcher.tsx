@@ -1,14 +1,15 @@
-import { Fragment, useDeferredValue, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { Fragment, useDeferredValue, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { botThreads, offeredModels, shownPreview, stripMarkdown, type Bot, type Thread } from '@appubot/protocol';
-import { ArrowDown, ArrowLeft, ArrowUp, AudioLines, Brain, Check, ChevronRight, GraduationCap, Mail, MessageCircle, MessageSquare, Monitor, Moon, MousePointerClick, Plug, Plus, QrCode, RefreshCw, Search, Settings, SlidersHorizontal, Sparkles, SquarePen, Sun, Users, Zap, type LucideIcon } from '../ui/icons';
-import { BotAvatar, Dialog, Icon, Kbd, ROW_PRESS, cn } from '../ui';
+import { ArrowLeft, AudioLines, Brain, Check, ChevronRight, GraduationCap, Mail, MessageCircle, MessageSquare, Monitor, Moon, MousePointerClick, Plug, Plus, QrCode, RefreshCw, Search, Settings, SlidersHorizontal, Sparkles, SquarePen, Sun, Users, Zap, type LucideIcon } from '../ui/icons';
+import { BotAvatar, Dialog, Icon, Kbd, cn } from '../ui';
 import { openBot, openThread, startThread, updateBot } from '../../lib/actions';
 import { buildRoster, effortsFor, messageRawText, threadTitle, timeAgo } from '@appubot/chat-core';
 import { COMPUTER_USE, TEACH, shortcut } from '../../lib/platform';
 import { getState, macSettingsOf, ui, useStore } from '../../lib/store';
 import { setThreadEffort, setThreadModel } from '../../lib/choices';
 import { macCall, updateMacSettings } from '../../lib/thisMac';
-import { SETTINGS_PAGES, SETTINGS_SEARCH_ENTRIES, settingAnchorId, settingsNavItem, settingsTrail } from '../../features/settings/nav';
+import { SETTINGS_PAGES, settingsNavItem, settingsTrail } from '../../features/settings/nav';
+import { settingRows as settingSearchRows } from '../../features/settings/settingsSearch';
 import { updateSettings } from '../../features/settings/sections/shared';
 import { openFind } from '../../features/chat/ThreadSearch';
 import { emailSupport, openSupport } from '../../features/support/support';
@@ -16,8 +17,9 @@ import { startVoice } from '../../features/voice/useVoiceConversation';
 import { currentVoiceRoute } from '../../features/voice/macVoice';
 import { cloudLacks } from '../../features/cloud/cloudView';
 import { openWhatsNew } from '../../features/whatsNew/WhatsNew';
-import { foldQuery, matchFields, messageMatcher, pickedFor, rankGroups, splitByRanges, type PalettePick, type SearchField, type SearchRange } from './paletteSearch';
+import { foldQuery, matchFields, messageMatcher, pickedFor, rankGroups, type PalettePick, type SearchField, type SearchRange } from './paletteSearch';
 import { loadPicks, recentKeys, savePick } from './paletteRecent';
+import { Marked, PALETTE_ROW, PALETTE_ROW_ON, PaletteFooter } from './PaletteRow';
 
 /** a sub-page of the palette: a list to pick from, which the root search reaches too ("Theme: Dark") */
 type PageId = 'theme' | 'model' | 'effort' | 'new-thread' | 'settings';
@@ -163,16 +165,10 @@ function actions(botId: string | null, sub: Record<PageId, Page | null>): Row[] 
 
 /** Settings' pages and the settings on them, as rows the search finds (the list without a query shows none). */
 function settingRows(): Row[] {
-  const tabs: Row[] = SETTINGS_PAGES.map((t) => {
-    const trail = settingsTrail(t.id);
-    return { key: `tab:${t.id}`, icon: t.icon, label: t.label, sub: trail === t.label ? 'Settings' : `Settings › ${settingsNavItem(t.id).label}`, run: () => ui.openSettings(t.id), verb: 'Open', find: [keywords(t.description, 0.4)] };
-  });
-  const rows: Row[] = SETTINGS_SEARCH_ENTRIES.filter((e) => !tabs.some((t) => t.label === e.title)).map((e) => ({
-    key: `setting:${e.section}:${e.title}`, icon: settingsNavItem(e.section).icon, label: e.title, sub: `Settings › ${settingsTrail(e.section)}`,
-    run: () => ui.openSettings(e.section, settingAnchorId(e.title)), verb: 'Open',
-    find: [...(e.keywords ? [keywords(e.keywords)] : []), keywords(settingsTrail(e.section), 0.25)],
+  return settingSearchRows().map((r) => ({
+    key: r.key, icon: r.icon, label: r.label, sub: r.trail ? `Settings › ${r.trail}` : 'Settings',
+    run: () => ui.openSettings(r.section, r.anchor), verb: 'Open', find: r.find,
   }));
-  return [...tabs, ...rows];
 }
 
 const preview = (t: Pick<Thread, 'lastMessagePreview'> | undefined): string => {
@@ -190,13 +186,6 @@ function threadRow(t: Thread, botName: string, withBot: boolean): Row {
 }
 
 /** The name with what matched in semibold, as T3's palette marks it. */
-function Marked({ text, ranges }: { text: string; ranges?: SearchRange[] }): ReactNode {
-  if (!ranges?.length) return text;
-  return splitByRanges(text, ranges).map((p, i) => (p.hit ? <mark key={i} className="bg-transparent font-semibold text-fg">{p.text}</mark> : p.text));
-}
-
-const FOOTER_KEY = 'h-[18px] min-w-[18px] bg-[color-mix(in_srgb,var(--ab-fg)_8%,transparent)] text-fg';
-
 /**
  * ⌘K, the command palette (T3 Code's; the sidebar's search button opens it too): jump to a bot (its latest message
  * shows), a group or a chat (the selected bot's latest; with a query any bot's, and chats whose messages say it), run
@@ -460,7 +449,7 @@ export function QuickSwitcher({ open, onClose }: { open: boolean; onClose: () =>
                   // the field keeps the focus (and its caret)
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => choose(r)}
-                  className={cn('squircle flex min-h-9 w-full items-center gap-2.5 rounded-pop px-2 py-1.5 text-left outline-none', ROW_PRESS, i === at && 'bg-[color-mix(in_srgb,var(--ab-fg)_7%,transparent)]')}
+                  className={cn(PALETTE_ROW, i === at && PALETTE_ROW_ON)}
                 >
                   {r.bot ? <BotAvatar bot={r.bot} size={20} /> : <span className="flex size-5 shrink-0 items-center justify-center text-fg-2"><Icon icon={r.icon ?? SlidersHorizontal} size={16} /></span>}
                   {r.hit ? (
@@ -491,19 +480,7 @@ export function QuickSwitcher({ open, onClose }: { open: boolean; onClose: () =>
         {!rows.length ? <div role="presentation" className="px-3 py-10 text-center text-copy text-muted">{empty}</div> : null}
       </div>
       {/* T3's footer: the keys the list answers to */}
-      <div className="flex shrink-0 items-center gap-3 border-t border-[color-mix(in_srgb,var(--ab-fg)_7%,transparent)] bg-[color-mix(in_srgb,var(--ab-fg)_2.5%,transparent)] px-4 py-2.5 text-note font-medium text-muted">
-        <span className="flex items-center gap-1.5">
-          <Kbd className={FOOTER_KEY}><Icon icon={ArrowUp} size={11} /></Kbd>
-          <Kbd className={FOOTER_KEY}><Icon icon={ArrowDown} size={11} /></Kbd>
-          Navigate
-        </span>
-        {current ? <span className="flex items-center gap-1.5"><Kbd className={FOOTER_KEY}>↵</Kbd>{current.verb}</span> : null}
-        {page ? (
-          <span className="flex items-center gap-1.5"><Kbd className={FOOTER_KEY}>⌫</Kbd><Kbd className={FOOTER_KEY}>esc</Kbd>Back</span>
-        ) : (
-          <span className="flex items-center gap-1.5"><Kbd className={FOOTER_KEY}>esc</Kbd>Close</span>
-        )}
-      </div>
+      <PaletteFooter verb={current?.verb} escKeys={page ? ['⌫', 'esc'] : ['esc']} escLabel={page ? 'Back' : 'Close'} />
     </Dialog>
   );
 }
