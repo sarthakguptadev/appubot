@@ -79,7 +79,7 @@ export const en = {
   'instructions.saveFailed': 'Could not save the instructions',
   'instructions.count': '{count} characters',
   'settings.page.apps': 'Apps',
-  'settings.page.apps.desc': 'Gmail, Slack, GitHub and the other apps your bots use, through Composio.',
+  'settings.page.apps.desc': 'Gmail, Slack, GitHub and the other apps your bots use.',
   'settings.page.vault': 'Vault',
   'settings.page.vault.desc': 'Logins, cards, contact info and API keys your bots use without seeing them.',
   'settings.page.voice': 'Voice',

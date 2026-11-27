@@ -103,7 +103,7 @@ export class CloudExportService {
         'AppuBot/        your bots: their folders, files, memory (MEMORY.md), skills and inboxes',
         'appubot-data/   AppuBot’s own records: bots, threads (chats), routines, settings, the chats’ files',
         '',
-        'Left out on purpose: your agents’ keys and logins, the Vault, Composio’s tokens, Telegram tokens, paired devices and this computer’s own keys.',
+        'Left out on purpose: your agents’ keys and logins, the Vault, your apps sign-in, Telegram tokens, paired devices and this computer’s own keys.',
         ...(skipped.length ? ['', 'Too large for this zip:', ...skipped.map((s) => `  ${s}`)] : []),
         '',
       ].join('\n');

@@ -207,7 +207,7 @@ async function signIn(): Promise<void> {
   await owner.call('apps.signIn');
   const url = new URL(opened.at(-1)!);
   expect(url.origin + url.pathname).toBe('https://connect.composio.dev/oauth/authorize');
-  expect(await comeBack({ code: 'good-code', state: url.searchParams.get('state')! })).toContain('Signed in to Composio');
+  expect(await comeBack({ code: 'good-code', state: url.searchParams.get('state')! })).toContain('Apps are ready');
 }
 
 beforeAll(async () => {
@@ -274,7 +274,7 @@ describe('apps (Composio for You)', () => {
     expect((await owner.call('apps.status')).configured).toBe(false);
 
     const found = waitEvent('apps.updated', (p) => p.configured);
-    expect(await comeBack({ code: 'good-code', state })).toContain('Signed in to Composio');
+    expect(await comeBack({ code: 'good-code', state })).toContain('Apps are ready');
     expect(await found).toMatchObject({ configured: true, account: 'me@example.com', signingIn: false });
     // the state was used up
     expect(await comeBack({ code: 'good-code', state })).toContain('Not signed in');
@@ -414,7 +414,7 @@ describe('apps (Composio for You)', () => {
     const e = await failure(owner.call('apps.connect', { slug: 'airtable' }));
     expect(e.code).toBe('unsupported');
     // Composio's words to an agent ("show the user this link…") are not the person's
-    expect(e.message).toBe('Airtable can\'t be connected from AppuBot yet: Composio has no sign-in of its own for it.');
+    expect(e.message).toBe('Airtable can\'t be connected from AppuBot yet: there is no sign-in of its own for it.');
     expect((await owner.call('apps.status')).pending).not.toContain('airtable');
     core.ctx.store.flush();
     expect(appsFile().unavailable).toEqual({ airtable: 'needs-setup' });
@@ -433,7 +433,7 @@ describe('apps (Composio for You)', () => {
     try {
       const refused = await failure(agent.call('agent.apps.request', { slug: 'airtable' }));
       expect(refused.code).toBe('unsupported');
-      expect(refused.message).toMatch(/Composio has no sign-in of its own for it\. Tell the user so/);
+      expect(refused.message).toMatch(/there is no sign-in of its own for it\. Tell the user so/);
       // one that needs no sign-in is the bot's already
       expect(await agent.call('agent.apps.request', { slug: 'osv' })).toMatchObject({ slug: 'osv', connected: true, on: true });
     } finally { agent.close(); }
@@ -560,7 +560,7 @@ describe('apps (Composio for You)', () => {
 
       // Composio gives back the account there is instead of a sign-in: the person is told, nothing is left pending
       fake.noSecond = true;
-      expect((await failure(owner.call('apps.connect', { slug: 'gmail' }))).message).toBe("Composio didn't open a sign-in for another Gmail account. Try again in a moment.");
+      expect((await failure(owner.call('apps.connect', { slug: 'gmail' }))).message).toBe('No sign-in opened for another Gmail account. Try again in a moment.');
       expect((await owner.call('apps.status')).pending).not.toContain('gmail');
     } finally {
       fake.noSecond = false;
@@ -741,7 +741,7 @@ describe('Composio helpers', () => {
     expect(fileLinkIn(JSON.stringify({ data: { stdout: 'APPUBOT_FILE_ERROR=File not found: /x\n' } }))).toEqual({ error: 'File not found: /x' });
     expect(fileLinkIn(JSON.stringify({ data: { stdout: 'APPUBOT_FILE_URL=https://evil.example/f\n' } })).error).toMatch(/unexpected link/);
     expect(fileLinkIn(JSON.stringify({ data: { stdout: 'APPUBOT_FILE_URL=http://backend.composio.dev/f\n' } })).error).toMatch(/unexpected link/);
-    expect(fileLinkIn('nothing').error).toMatch(/no link/);
+    expect(fileLinkIn('nothing').error).toMatch(/No link/);
   });
 
   it('capitalises Composio\'s lowercase category names', () => {

@@ -356,7 +356,7 @@ function AppCardBody({ part, botName, botId, expired, onDecline, busy }: { part:
         <div className="flex items-center gap-2 pt-0.5">
           <span className="flex min-w-0 flex-1 items-center gap-1.5 text-note text-muted">
             <Icon icon={Plug} size={13} className="shrink-0" />
-            <span className="min-w-0">Through your own Composio account. You can turn it off for {botName} any time.</span>
+            <span className="min-w-0">You can turn it off for {botName} any time.</span>
           </span>
           <Button type="button" variant="ghost" size="sm" onClick={onDecline} loading={busy} disabled={busy || working}>Decline</Button>
           {state === 'ready'

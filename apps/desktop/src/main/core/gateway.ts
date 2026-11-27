@@ -260,7 +260,7 @@ function setMaxPayload(ws: WebSocket, bytes: number): void {
 const SIGNED_IN_PAGE = (ok: boolean, app?: string) => `<!doctype html><meta charset="utf-8"><title>AppuBot</title><meta name="color-scheme" content="light dark">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <body style="font:15px -apple-system,system-ui,sans-serif;display:grid;place-items:center;height:90vh;margin:0"><div style="text-align:center;padding:0 24px">
-<h2 style="font-weight:500">${ok ? (app ? `${app.replace(/[<>&"]/g, '')} is connected` : 'Signed in to Composio') : app ? `${app.replace(/[<>&"]/g, '')} isn’t connected` : 'Not signed in'}</h2><p style="opacity:.65">${ok ? (app ? 'You can close this tab and go back to AppuBot.' : 'You can close this tab and go back to AppuBot to connect your apps.') : 'The sign-in did not finish. Try again from Apps in AppuBot.'}</p></div>`;
+<h2 style="font-weight:500">${ok ? (app ? `${app.replace(/[<>&"]/g, '')} is connected` : 'Apps are ready') : app ? `${app.replace(/[<>&"]/g, '')} isn’t connected` : 'Not signed in'}</h2><p style="opacity:.65">${ok ? (app ? 'You can close this tab and go back to AppuBot.' : 'You can close this tab and go back to AppuBot to connect your apps.') : 'The sign-in did not finish. Try again from Apps in AppuBot.'}</p></div>`;
 
 export class Gateway {
   readonly app: Hono<Env>;

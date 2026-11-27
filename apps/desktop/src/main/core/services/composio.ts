@@ -30,8 +30,8 @@ import { DirectApps } from './directApps';
 import directoryJson from './composioDirectory.json';
 import unavailableJson from './composioUnavailable.json';
 
-export const NEEDS_SIGN_IN = 'Sign in to Composio in Apps';
-const SIGNED_OUT = 'Your Composio sign-in ended. Sign in again in Apps.';
+export const NEEDS_SIGN_IN = 'Sign in once in Apps to connect apps';
+const SIGNED_OUT = 'Your apps sign-in ended. Sign in again in Apps.';
 const DIRECTORY = listedDirectory(directoryJson as AppsDirectory, (unavailableJson as { unavailable: Record<string, UnavailableReason> }).unavailable);
 /** a browser sign-in may sit open while the user finds their password */
 const SIGN_IN_TIMEOUT_MS = 10 * 60_000;
@@ -121,9 +121,9 @@ function plainReason(said: string): string {
 
 /** Why an app can't be connected, in words for the person who pressed Add. */
 export function cantConnectText(name: string, why: UnavailableReason): string {
-  if (why === 'needs-setup') return `${name} can't be connected from AppuBot yet: Composio has no sign-in of its own for it.`;
-  if (why === 'retired') return `${name} has been retired by Composio and can't be connected any more.`;
-  return `${name} isn't offered through Composio for AppuBot.`;
+  if (why === 'needs-setup') return `${name} can't be connected from AppuBot yet: there is no sign-in of its own for it.`;
+  if (why === 'retired') return `${name} has been retired and can't be connected any more.`;
+  return `${name} isn't offered for AppuBot.`;
 }
 
 /** The code AppuBot runs in Composio's sandbox to get a link to a file there (its own `upload_local_file` helper). */
@@ -136,10 +136,10 @@ export function fileLinkIn(answer: string): { url?: string; error?: string } {
   const out = String((parseJson(answer)?.data as { stdout?: unknown } | undefined)?.stdout ?? answer);
   const failed = out.split(FILE_ERROR_MARK)[1]?.split('\n')[0]?.trim();
   const url = out.split(FILE_URL_MARK)[1]?.split(/\s/)[0]?.trim();
-  if (!url) return { error: failed ? failed.slice(0, 160) : 'Composio gave no link to it' };
+  if (!url) return { error: failed ? failed.slice(0, 160) : 'No link to it came back' };
   let host = '';
   try { const u = new URL(url); if (u.protocol === 'https:') host = u.hostname; } catch { /* not a link */ }
-  return /(^|\.)composio\.dev$/.test(host) ? { url } : { error: 'Composio gave an unexpected link' };
+  return /(^|\.)composio\.dev$/.test(host) ? { url } : { error: 'An unexpected link came back' };
 }
 
 /** Composio's text with its tool names as the bot knows them. */
@@ -238,7 +238,7 @@ export class ComposioService {
     if (deviceUri !== undefined && !isDeviceRedirect(deviceUri)) throw new RpcError('invalid_params', 'That return address isn’t an AppuBot app’s.');
     // an AppuBot Cloud computer has no browser of the user's and no loopback page they could reach: the device signing
     // in (the phone, or the desktop app with its own `appubot://` link) names its own return address, always
-    if (deviceUri === undefined && this.ctx.deps.cloud) throw new RpcError('unsupported', 'Sign in to Composio from AppuBot on your phone or computer: it opens the sign-in there and hands the result to your cloud computer.');
+    if (deviceUri === undefined && this.ctx.deps.cloud) throw new RpcError('unsupported', 'Sign in to apps from AppuBot on your phone or computer: it opens the sign-in there and hands the result to your cloud computer.');
     const redirectUri = deviceUri ?? this.redirectUri();
     const client = await this.clientFor(redirectUri, deviceUri !== undefined);
     if (this.signingIn) clearTimeout(this.signingIn.timer);
@@ -260,7 +260,7 @@ export class ComposioService {
     if (known) return { clientId: known };
     let clientId: string;
     try { ({ clientId } = await this.api.register(redirectUri)); }
-    catch (e) { throw new RpcError('apps_unavailable', `Couldn't reach Composio: ${errMsg(e)}`); }
+    catch (e) { throw new RpcError('apps_unavailable', `Couldn't reach the apps service: ${errMsg(e)}`); }
     // a computer's: another gateway port is another client; a device's: kept by address (a few at most)
     this.file.update((v) => device
       ? { ...v, deviceClients: Object.fromEntries([...Object.entries(v.deviceClients ?? {}), [redirectUri, clientId]].slice(-8)) }
@@ -289,7 +289,7 @@ export class ComposioService {
     try { tokens = await this.api.exchange({ clientId: s.clientId, redirectUri: s.redirectUri, code: q.code, verifier: s.verifier }); }
     catch (e) {
       this.ctx.log.warn('apps: the Composio sign-in did not finish', errMsg(e));
-      this.setError(`The Composio sign-in did not finish: ${errMsg(e)}`);
+      this.setError(`The apps sign-in did not finish: ${errMsg(e)}`);
       this.emit();
       return false;
     }
@@ -299,7 +299,7 @@ export class ComposioService {
     this.file.update((f) => ({ ...f, auth, connected: [], watched: [], sweptAt: undefined }));
     this.error = undefined;
     this.signedInOrOut();
-    this.ctx.s.notifications.notify({ title: 'Composio connected', body: 'Connect apps for your bots in Apps.', level: 'success', native: false });
+    this.ctx.s.notifications.notify({ title: 'Apps are ready', body: 'Connect apps for your bots in Apps.', level: 'success', native: false });
     // apps connected before (here or in Claude.ai, Codex…) show up and reach the bots
     void this.sweep().catch((e: unknown) => this.ctx.log.warn('apps: could not look for connected apps', errMsg(e)));
     return true;
@@ -341,7 +341,7 @@ export class ComposioService {
       try { next = await this.api.refresh({ clientId: auth.clientId, refreshToken: auth.refreshToken }); }
       catch (e) {
         if (e instanceof ComposioHttpError && (e.status === 400 || e.status === 401)) throw this.ended();
-        throw new RpcError('apps_unavailable', `Couldn't reach Composio: ${errMsg(e)}`);
+        throw new RpcError('apps_unavailable', `Couldn't reach the apps service: ${errMsg(e)}`);
       }
       // signed out (or in again) meanwhile: these tokens are stale
       if (this.auth()?.refreshToken !== auth.refreshToken) throw new RpcError('apps_not_configured', NEEDS_SIGN_IN);
@@ -374,7 +374,7 @@ export class ComposioService {
         if (e instanceof ComposioHttpError && e.status === 401 && attempt === 0) continue;
         if (e instanceof ComposioHttpError && e.status === 401) throw this.ended();
         if (e instanceof RpcError) throw e;
-        const msg = `Couldn't reach Composio: ${errMsg(e)}`;
+        const msg = `Couldn't reach the apps service: ${errMsg(e)}`;
         this.setError(msg);
         throw new RpcError('apps_unavailable', msg);
       }
@@ -409,7 +409,7 @@ export class ComposioService {
     for (let i = 0; i < batches.length; i += LIST_PARALLEL) {
       await Promise.all(batches.slice(i, i + LIST_PARALLEL).map(async (batch) => {
         const r = await this.call('COMPOSIO_MANAGE_CONNECTIONS', { toolkits: batch.map((name) => ({ name, action: 'list' })) });
-        if (r.isError) throw new RpcError('apps_unavailable', `Composio couldn't list the connections: ${r.text.slice(0, 200)}`);
+        if (r.isError) throw new RpcError('apps_unavailable', `Couldn't list the connections: ${r.text.slice(0, 200)}`);
         const found = accountsIn(r.text);
         for (const s of batch) out.set(s, found.get(s) ?? []);
       }));
@@ -556,13 +556,13 @@ export class ComposioService {
       }
       if (!r.isError && !redirectUrl && String(res?.status ?? '').toLowerCase() === 'active') {
         // asked for another account and given the one there is: said, rather than nothing happening
-        if (alias) throw new RpcError('apps_unavailable', `Composio didn't open a sign-in for another ${name} account. Try again in a moment.`);
+        if (alias) throw new RpcError('apps_unavailable', `No sign-in opened for another ${name} account. Try again in a moment.`);
         // connected already (somewhere else): nothing to sign in to, and it shows as connected
         await this.refreshSlugs([slug]);
         this.emit();
         return {};
       }
-      throw new RpcError('apps_unavailable', plainReason(said) || `Composio didn't start ${name}'s sign-in. Try again in a moment.`);
+      throw new RpcError('apps_unavailable', plainReason(said) || `${name}'s sign-in didn't start. Try again in a moment.`);
     }
     // another account of an app that has one: the one in use stays the default until the user picks the new one
     const listed = accountsIn(r.text).get(slug);
@@ -741,7 +741,7 @@ export class ComposioService {
 
   private allowedFor(botId: string): string[] {
     const apps = this.botApps(this.ctx.s.bots.require(botId));
-    if (!this.auth() && !apps.length) throw new RpcError('apps_not_configured', `Apps aren't set up: ask the user to sign in to Composio in ${this.appsPage}.`);
+    if (!this.auth() && !apps.length) throw new RpcError('apps_not_configured', `Apps aren't set up: ask the user to sign in once in ${this.appsPage}.`);
     if (!apps.length) throw new RpcError('forbidden', `You have no apps: ask the user to connect one in ${this.appsPage}, or to turn one on for you there.`);
     return apps;
   }
@@ -956,7 +956,7 @@ export class ComposioService {
 
   /** Fetches a file out of Composio's sandbox into the bot's folder: one upload there (to a link), one download here. */
   private async bringBack(botId: string, label: string, remotePath: string): Promise<{ path: string; bytes: number }> {
-    if (!REMOTE_PATH.test(remotePath) || remotePath.includes('..')) throw new Error('Composio named no file');
+    if (!REMOTE_PATH.test(remotePath) || remotePath.includes('..')) throw new Error('No file was named');
     // our own fixed code: nothing of the bot's runs there
     const up = await this.call('COMPOSIO_REMOTE_WORKBENCH', { code_to_execute: fileLinkCode(remotePath) });
     const { url, error } = fileLinkIn(up.text);

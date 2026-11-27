@@ -160,6 +160,8 @@ export function settingAnchorId(title: string): string {
 export const keepAwakeTitle = (): string => t('general.keepAwake', machineParams());
 export const openAtLoginTitle = (): string => t('general.openAtLogin');
 export const WHATS_NEW_TITLE = 'What’s new';
+/** Settings › Apps' last row (what was Sign out of the apps account) */
+export const DISCONNECT_APPS_TITLE = 'Disconnect all apps';
 /** Settings › Appearance's rows */
 export const colorSchemeTitle = (): string => t('appearance.colorScheme');
 export const backgroundTitle = (): string => t('appearance.background');
@@ -264,7 +266,7 @@ export const SETTINGS_SEARCH_ENTRIES: SettingsSearchEntry[] = [
   tr('instructions', 'instructions.title', 'global custom instructions every bot all agents shared rules system prompt preferences behaviour behavior'),
   ...(ACP_REGISTRY ? [{ section: 'providers' as const, title: 'More agents', keywords: 'acp registry add install gemini goose amp cline qwen kimi droid junie agents subscription' }] : []),
   { section: 'providers', title: 'Tailscale', keywords: 'tailnet network ip dns phone integrations' },
-  { section: 'apps', title: 'Composio', keywords: 'apps account sign in connect gmail slack github notion integrations' },
+  { section: 'apps', title: DISCONNECT_APPS_TITLE, keywords: 'apps account sign out log out disconnect remove access integrations' },
   { section: 'apps', title: 'Connected apps', keywords: 'apps gmail slack github notion bots access reconnect disconnect' },
   { section: 'devices', title: 'Paired devices', keywords: 'phone pair revoke rename qr push' },
   { section: 'devices', title: 'AppuBot Connect', keywords: 'tunnel cloudflare remote anywhere internet address reach phone' },

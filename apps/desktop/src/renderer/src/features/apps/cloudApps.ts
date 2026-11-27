@@ -50,7 +50,7 @@ export async function startCloudSignIn(): Promise<void> {
     setState({ apps: status });
     if (url) await native().openExternal(url);
   } catch (e) {
-    pushToast({ title: "Couldn't start the Composio sign-in", body: errorMessage(e), level: 'error' });
+    pushToast({ title: "Couldn't start the sign-in", body: errorMessage(e), level: 'error' });
   }
 }
 
@@ -72,7 +72,7 @@ function connected(client: GatewayLike, ms = CONNECT_WAIT_MS): Promise<void> {
 export async function finishCloudSignIn(back: { code?: string; state?: string; error?: string }): Promise<void> {
   const client = cloudGateway();
   if (!client) {
-    pushToast({ title: 'Couldn’t finish the Composio sign-in', body: 'Open your AppuBot computer in the sidebar and sign in again.', level: 'error' });
+    pushToast({ title: 'Couldn’t finish the sign-in', body: 'Open your AppuBot computer in the sidebar and sign in again.', level: 'error' });
     return;
   }
   // opened here only to hand this over: closed again unless the cloud is on screen by then (it keeps it awake)
@@ -81,10 +81,10 @@ export async function finishCloudSignIn(back: { code?: string; state?: string; e
     await connected(client);
     const r = await client.call('apps.finishSignIn', back);
     if (onCloud()) setState({ apps: r.status });
-    if (r.ok) pushToast({ title: 'Signed in to Composio', body: 'The bots on your AppuBot computer can use your apps now.', level: 'success' });
-    else if (!back.error) pushToast({ title: 'The Composio sign-in didn’t finish', body: r.status.error ?? 'Try again in Apps.', level: 'error' });
+    if (r.ok) pushToast({ title: 'Apps are ready', body: 'The bots on your AppuBot computer can use your apps now.', level: 'success' });
+    else if (!back.error) pushToast({ title: 'The sign-in didn’t finish', body: r.status.error ?? 'Try again in Apps.', level: 'error' });
   } catch (e) {
-    pushToast({ title: 'Couldn’t finish the Composio sign-in', body: errorMessage(e), level: 'error' });
+    pushToast({ title: 'Couldn’t finish the sign-in', body: errorMessage(e), level: 'error' });
   } finally {
     if (wasClosed && !onCloud() && client.state === 'connected') client.close();
   }

@@ -60,7 +60,7 @@ export function accountOf(idToken: unknown): string | undefined {
 }
 
 function tokensOf(j: Record<string, unknown>): ComposioTokens {
-  if (typeof j.access_token !== 'string') throw new Error('Composio sent no access token');
+  if (typeof j.access_token !== 'string') throw new Error('The sign-in sent no access token');
   const expiresIn = typeof j.expires_in === 'number' ? j.expires_in : 3600;
   return {
     accessToken: j.access_token,
@@ -121,7 +121,7 @@ export function composioConnect(fetchImpl: typeof fetch = fetch): ComposioConnec
       s = (async () => {
         const id = nextId++;
         const r = await post(token, { jsonrpc: '2.0', id, method: 'initialize', params: { protocolVersion: PROTOCOL_VERSION, capabilities: {}, clientInfo: { name: 'AppuBot', version: '1' } } }, undefined, CALL_TIMEOUT_MS);
-        if (!r.ok) throw await failure(r, "Couldn't reach Composio");
+        if (!r.ok) throw await failure(r, "Couldn't reach the apps service");
         const sid = r.headers.get('mcp-session-id') ?? undefined;
         await r.text().catch(() => '');
         const n = await post(token, { jsonrpc: '2.0', method: 'notifications/initialized' }, sid, CALL_TIMEOUT_MS);
@@ -150,9 +150,9 @@ export function composioConnect(fetchImpl: typeof fetch = fetch): ComposioConnec
         body: JSON.stringify({ client_name: 'AppuBot', redirect_uris: [redirectUri], grant_types: ['authorization_code', 'refresh_token'], response_types: ['code'], token_endpoint_auth_method: 'none' }),
         signal: AbortSignal.timeout(CALL_TIMEOUT_MS),
       });
-      if (!r.ok) throw await failure(r, "Composio didn't register AppuBot");
+      if (!r.ok) throw await failure(r, "The apps service didn't register AppuBot");
       const j = await r.json() as { client_id?: unknown };
-      if (typeof j.client_id !== 'string') throw new Error('Composio sent no client id');
+      if (typeof j.client_id !== 'string') throw new Error('The apps service sent no client id');
       return { clientId: j.client_id };
     },
 
@@ -165,11 +165,11 @@ export function composioConnect(fetchImpl: typeof fetch = fetch): ComposioConnec
     },
 
     exchange({ clientId, redirectUri, code, verifier }) {
-      return form(TOKEN_URL, { grant_type: 'authorization_code', code, redirect_uri: redirectUri, client_id: clientId, code_verifier: verifier }, "Composio didn't finish the sign-in");
+      return form(TOKEN_URL, { grant_type: 'authorization_code', code, redirect_uri: redirectUri, client_id: clientId, code_verifier: verifier }, "The sign-in didn't finish");
     },
 
     refresh({ clientId, refreshToken }) {
-      return form(TOKEN_URL, { grant_type: 'refresh_token', refresh_token: refreshToken, client_id: clientId }, "Composio didn't renew the sign-in");
+      return form(TOKEN_URL, { grant_type: 'refresh_token', refresh_token: refreshToken, client_id: clientId }, "The sign-in wasn't renewed");
     },
 
     async callTool(token, name, args) {
@@ -179,10 +179,10 @@ export function composioConnect(fetchImpl: typeof fetch = fetch): ComposioConnec
         const r = await post(token, { jsonrpc: '2.0', id, method: 'tools/call', params: { name, arguments: args } }, sid, TOOL_TIMEOUT_MS);
         // the MCP session ended on Composio's side: start another once
         if ((r.status === 404 || r.status === 400) && sid && attempt === 0) { await r.text().catch(() => ''); sessions.delete(token); continue; }
-        if (!r.ok) throw await failure(r, "Couldn't reach Composio");
+        if (!r.ok) throw await failure(r, "Couldn't reach the apps service");
         const msg = rpcAnswer(await r.text(), r.headers.get('content-type'), id);
-        if (!msg) throw new Error('Composio sent no answer');
-        if (msg.error) throw new Error(`Composio: ${msg.error.message ?? 'the call failed'}`);
+        if (!msg) throw new Error('The apps service sent no answer');
+        if (msg.error) throw new Error(`Apps: ${msg.error.message ?? 'the call failed'}`);
         const res = (msg.result ?? {}) as { content?: { type?: string; text?: string }[]; isError?: boolean };
         const text = (res.content ?? []).filter((c) => c.type === 'text' && typeof c.text === 'string').map((c) => c.text!).join('\n');
         return { text, isError: !!res.isError };

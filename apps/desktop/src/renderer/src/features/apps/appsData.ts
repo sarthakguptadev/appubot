@@ -229,7 +229,7 @@ export async function makeDefault(t: Pick<AppToolkit, 'name'>, c: AppConnection)
 export function removeAccount(t: Pick<AppToolkit, 'name'>, c: AppConnection, name: string): void {
   confirm({
     title: `Remove ${name}?`,
-    body: `Your bots lose access to this ${t.name} account, and so does anything else using your Composio account. ${t.name}'s other accounts stay connected.`,
+    body: `Your bots lose access to this ${t.name} account. ${t.name}'s other accounts stay connected.`,
     confirmLabel: 'Remove',
     danger: true,
     onConfirm: async () => {
@@ -245,7 +245,7 @@ export function disconnect(t: Pick<AppToolkit, 'name'>, conns: AppConnection[]):
     title: `Disconnect ${t.name}?`,
     body: conns.every((c) => isDirectApp(c.slug))
       ? `Your bots lose access to ${t.name}. You can add it again any time.`
-      : `Your bots lose access to ${several}, and so does anything else using your Composio account. You can add it again any time.`,
+      : `Your bots lose access to ${several}. You can add it again any time.`,
     confirmLabel: 'Disconnect',
     danger: true,
     onConfirm: async () => {
@@ -257,20 +257,20 @@ export function disconnect(t: Pick<AppToolkit, 'name'>, conns: AppConnection[]):
   });
 }
 
-/** Opens Composio's sign-in in the browser; `apps.updated` says when it's done. */
+/** Opens the apps sign-in (Composio's) in the browser; `apps.updated` says when it's done. */
 export async function signIn(): Promise<void> {
   // the cloud computer's sign-in comes back to this app's own link (`appubot://apps/signed-in`)
   if (onCloud()) return startCloudSignIn();
-  const s = await call('apps.signIn', undefined, { errorTitle: "Couldn't start the Composio sign-in" });
+  const s = await call('apps.signIn', undefined, { errorTitle: "Couldn't start the sign-in" });
   if (s) setState({ apps: s });
 }
 
-/** Signs out of Composio on this computer, after a confirm (the connections stay in the account). */
+/** Signs out of Composio on this computer, after a confirm (the connections stay in the account): "Disconnect all apps". */
 export function signOut(): void {
   confirm({
-    title: 'Sign out of Composio?',
-    body: 'Your bots lose access to your connected apps until you sign in again. The connections stay in your Composio account.',
-    confirmLabel: 'Sign out',
+    title: 'Disconnect all apps?',
+    body: 'Your bots lose access to every connected app until you connect one again.',
+    confirmLabel: 'Disconnect all',
     danger: true,
     onConfirm: async () => {
       const s = await call('apps.signOut', undefined, { errorTitle: "Couldn't sign out" });
