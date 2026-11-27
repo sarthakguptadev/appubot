@@ -15,6 +15,7 @@ import { GROUP_ID, mockGroupMessages, newThreadFor } from './mockData';
 import { HOST_NAME, IDS, LAN_IP, MODES, PORT, TS_DNS, TS_IP } from './mockIds';
 import { resumeAfterPermission, simulateReply } from './mockChat';
 import { createAppsHandlers } from './mockApps';
+import { createConnectorHandlers } from './mockConnectors';
 import { createVoiceHandlers } from './mockVoice';
 import { createCharacterHandlers } from './mockCharacters';
 import { createCloudHandlers, createDeviceLoginHandlers } from './mockCloud';
@@ -702,6 +703,7 @@ export function createHandlers(g: MockGateway): Handlers {
 
     /* ---------- apps (Composio) ---------- */
     ...createAppsHandlers(g),
+    ...createConnectorHandlers(g),
     ...createVoiceHandlers(g),
     ...createCharacterHandlers(g),
     ...createCloudHandlers(g),

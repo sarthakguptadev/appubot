@@ -947,7 +947,9 @@ export class ChatService {
     // whose logins the agent runs with (§6.11): a team member's own home, keys and apps on a team's computer set so
     const scope = this.ctx.s.logins.scopeOfBot(bot);
     const apps = this.ctx.s.composioFor(scope).botApps(bot).length > 0;
-    const appsKey = apps ? 'apps' : '';
+    // the custom connectors' tools it may use (the bridge offers them as its own): a change restarts the agent, like apps
+    const connectorsKey = this.ctx.s.connectors.signature(bot.id);
+    const appsKey = `${apps ? 'apps' : ''}\n${connectorsKey}`;
     // macOS, Windows and Linux (computerUseSupported): elsewhere the bridge offers no computer tools
     const computerUse = bot.computerUse && this.ctx.s.settings.get().computer.enabled && computerUseSupported(process.platform);
     // a change of logins (the team's setting, the bot's person) restarts the agent with its conversation resumed
@@ -977,6 +979,7 @@ export class ChatService {
       botName: bot.name,
       computerUse,
       apps,
+      connectors: !!connectorsKey,
       cloud: !!this.ctx.deps.cloud,
       // a linked computer's files (its name is in the instructions too, so linking restarts the agent: the profile key)
       macFiles: this.ctx.s.macFiles.linkedName(),

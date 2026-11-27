@@ -58,6 +58,8 @@ export const SHOW_COMPUTER_SETTINGS = COMPUTER_USE;
 
 /** Settings › Vault's section: the search finds it by this title. */
 export const VAULT_TITLE = 'Saved items';
+/** Settings › Apps' own MCP servers */
+export const CONNECTORS_TITLE = 'Custom connectors';
 
 /** A page whose label and line are read in the current language (`settings.page.<id>`, `.desc`). */
 const page = (id: SettingsSection, icon: LucideIcon): SettingsPage => ({
@@ -298,6 +300,7 @@ export const SETTINGS_SEARCH_ENTRIES: SettingsSearchEntry[] = [
   { section: 'channels', title: 'Bot token', keywords: 'telegram botfather' },
   { section: 'channels', title: 'Allowed users', keywords: 'telegram username pair' },
   { section: 'vault', title: VAULT_TITLE, keywords: 'vault passwords logins cards credit debit contact address phone email api keys secrets saved' },
+  { section: 'apps', title: CONNECTORS_TITLE, keywords: 'mcp server servers custom connector connectors integrations add remote local stdio sse http url command npx tools json config claude cursor' },
   { section: 'usage', title: USAGE_LIMITS_TITLE, keywords: 'usage limit limits quota remaining left reset resets 5-hour weekly plan subscription max pro plus rate limit claude chatgpt codex opencode go extra usage' },
   { section: 'usage', title: USAGE_TITLE, keywords: 'usage tokens cost spend price money billing api claude codex grok opencode copilot gemini pi cache savings statistics' },
   { section: 'usage', title: USAGE_ACTIVITY_TITLE, keywords: 'usage activity days year calendar grid heatmap streak history tokens most used' },

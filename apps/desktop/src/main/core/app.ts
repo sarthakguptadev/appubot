@@ -46,6 +46,7 @@ import { UsageService } from './services/usage';
 import { LimitsService } from './services/limits';
 import { ModelEndpointsService } from './services/modelEndpoints';
 import { VaultService } from './services/vault';
+import { ConnectorsService } from './services/connectors';
 import { StorageService } from './services/storage';
 import { CharactersService } from './services/characters';
 import { CloudExportService } from './services/cloudExport';
@@ -106,6 +107,7 @@ export function createCore(deps: CoreDeps): Core {
   s.providers = new ProvidersService(ctx);
   s.endpoints = new ModelEndpointsService(ctx);
   s.vault = new VaultService(ctx);
+  s.connectors = new ConnectorsService(ctx);
   s.acpRegistry = new AcpRegistryService(ctx);
   s.providerUpdates = new ProviderUpdatesService(ctx);
   s.computer = new ComputerService(ctx);
@@ -208,6 +210,8 @@ export function createCore(deps: CoreDeps): Core {
         void s.channels.start().catch((e) => log.error('channels start failed', errMsg(e)));
         // check (or make) the bots' Composio sessions before their first turns need them
         void s.composio.warm();
+        // the person's own MCP servers, so their status is known and their tools are fresh
+        s.connectors.start();
         // the work a restart for an update stopped
         s.appUpdate.scheduleResume();
       }
@@ -244,6 +248,7 @@ export function createCore(deps: CoreDeps): Core {
       s.goals.shutdown();
       await step('channels', () => s.channels.stop(false));
       await step('apps', () => s.composio.shutdown());
+      await step('connectors', () => s.connectors.shutdown());
       await step('agent bridge', () => s.agentBridge.shutdown());
       await step('chat', () => s.chat.shutdown());
       await step('runtime', () => Promise.race([ctx.runtime.shutdown(), new Promise((r) => setTimeout(r, 4000))]));

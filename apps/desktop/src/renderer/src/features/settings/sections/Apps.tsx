@@ -5,6 +5,7 @@ import { ComposioSettingRow } from '../../apps/ComposioSettingRow';
 import { activeSlugs } from '@appubot/chat-core';
 import { useAppsLive, useAppsUi, useConnectedApps } from '../../apps/appsData';
 import { SETTINGS_ROW, SETTINGS_ROW_DESCRIPTION, SETTINGS_ROW_TITLE, SettingsCard, SettingsEmptyState, SettingsGroup } from './shared';
+import { ConnectorsGroup } from './Connectors';
 
 /**
  * Settings › Apps: the Composio sign-in, then how many apps are connected and the way to them. The apps themselves,
@@ -43,6 +44,8 @@ export function AppsSection() {
           </SettingsCard>
         </SettingsGroup>
       ) : null}
+
+      <ConnectorsGroup />
     </div>
   );
 }
