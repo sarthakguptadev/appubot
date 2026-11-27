@@ -27,7 +27,7 @@ import { MessageActions } from './MessageActions';
 import { ThinkingRow, ThoughtRow, ToolGroupRow, ToolRow } from './ToolRow';
 import {
   capOpenTools, chunkWork, answerOnly, formatTurnHeaderLabel, layoutTurn, liveAnswerParts, segmentFlow, turnFileChanges, turnHeader, type Chunk, type Indexed,
-  linkMentions, reactionBy,
+  linkMentions, liveStepLabel, reactionBy,
 } from '@appubot/chat-core';
 import { useStore } from '../../lib/store';
 import { useMessagesTheme, useWorkTrail } from '../../lib/appearance';
@@ -252,21 +252,31 @@ const WORKING_STATES = {
 } as const;
 
 /**
- * The working row of the answers view, on Rare UI's status line: the bot's avatar, "Working" shimmering and how long.
- * Nothing about what it is doing (the owner's call, 2026-11-15, on seeing "Running nohup google-chrome --no-…" beside
- * it: the answers view names no tool and shows no command).
+ * The working row of the answers view, on Rare UI's status line: the bot's avatar, what it is doing in plain words,
+ * shimmering ("Reading report.md", "Using Gmail", "Typing…" once the reply comes in; chat-core's `liveStepLabel`), and
+ * how long. It says "Working" from the moment you send, before the bot's first step (the owner, 2026-11-27: an avatar
+ * alone with a bare clock read as nothing happening). It names no tool and shows no command (the owner's call, 2026-11-15, on
+ * seeing "Running nohup google-chrome --no-…" beside it): a step with no plain words for it says "Working".
  */
-const BotWorkingRow = memo(function BotWorkingRow({ threadId, since, botId }: { threadId: string; since: number; /** another bot working on a task handed to it from this chat (`Message.from`): it waits for you in its own chat */ botId?: string }) {
+const BotWorkingRow = memo(function BotWorkingRow({ threadId, since, botId, step }: {
+  threadId: string; since: number;
+  /** another bot working on a task handed to it from this chat (`Message.from`): it waits for you in its own chat */
+  botId?: string;
+  /** what the bot is doing now, in plain words */
+  step?: string;
+}) {
   const thread = useStore((s) => s.threads.find((t) => t.id === threadId));
   const bot = useStore((s) => s.bots.find((b) => b.id === (botId ?? thread?.botId)));
   const needsYou = useStore((s) => (botId ? s.threads.some((t) => t.botId === botId && t.source !== 'group' && t.status === 'waiting') : thread?.status === 'waiting'));
+  const label = needsYou ? (botId && bot ? `${bot.name} is waiting for you` : WORKING_STATES['needs-you'].label)
+    : botId && bot ? `${bot.name} is working` : (step ?? WORKING_STATES.working.label);
   return (
     <AiStatus
       ref={syncAnimationsToTimelineOrigin}
       className="py-1"
       state={needsYou ? 'needs-you' : 'working'}
       states={WORKING_STATES}
-      {...(botId && bot ? { label: needsYou ? `${bot.name} is waiting for you` : `${bot.name} is working` } : {})}
+      label={label}
       icon={<BotAvatar bot={bot} size={26} mood={needsYou ? 'needs-you' : 'working'} />}
       iconSize={26}
       time={<LiveElapsed since={since} />}
@@ -279,12 +289,13 @@ function LiveTurn({ msg, ctx, ended, answers, trail }: { msg: Message; ctx: Ctx;
   // the Messages theme: the bubbles so far are one run, its newest carrying the tail
   const themed = useMessagesTheme();
   const run = useMemo(() => (themed && answers ? bubbleRun(list) : undefined), [themed, answers, list]);
+  const step = useMemo(() => (answers && !msg.from ? liveStepLabel(msg.parts) : undefined), [answers, msg.from, msg.parts]);
   return (
     <div className="flex flex-col">
       {ended || answers ? null : <WorkingHeader since={msg.createdAt} />}
       {list.length ? <div className="pb-1"><Flow list={list} ctx={run ? { ...ctx, bubbleRun: run } : ctx} /></div> : null}
       {/* with the work trail on, its status line above says the bot is working */}
-      {ended || (answers && trail && !msg.from) ? null : answers ? <BotWorkingRow threadId={msg.threadId} since={msg.createdAt} botId={msg.from?.botId} /> : <ThinkingRow />}
+      {ended || (answers && trail && !msg.from) ? null : answers ? <BotWorkingRow threadId={msg.threadId} since={msg.createdAt} botId={msg.from?.botId} step={step} /> : <ThinkingRow />}
     </div>
   );
 }
