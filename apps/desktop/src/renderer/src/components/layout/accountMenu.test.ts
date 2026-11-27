@@ -56,10 +56,12 @@ describe('the account menu’s plan', () => {
 });
 
 describe('the account row', () => {
-  it('keeps no fill behind it while its menu is open, only a light hover and a press', () => {
+  const row = () => {
     const src = readFileSync(join(__dirname, 'Sidebar.tsx'), 'utf8');
-    const row = src.slice(src.indexOf('function AccountButton'), src.indexOf('export function Sidebar'));
-    expect(row).toMatch(/hover:bg-\[color-mix\(in_srgb,var\(--ab-fg\)_5%,transparent\)\]/);
-    expect(row).not.toMatch(/aria-expanded:/);
+    return src.slice(src.indexOf('function AccountButton'), src.indexOf('export function Sidebar'));
+  };
+
+  it('has no fill behind it, under the pointer, pressed or open', () => {
+    expect(row()).not.toMatch(/(?:hover|active|aria-expanded):bg-/);
   });
 });
