@@ -1,5 +1,5 @@
 /**
- * Agent updates, told in the app (the idea after OpenBot's provider-update notice, made our own): the computer checks
+ * Agent updates, told in the app: the computer checks
  * its agents' CLIs at launch and every hour (core `providerUpdates.ts`); the app raises one notice per agent whose newer
  * version AppuBot can install, which then carries the update itself (Update, Updating…, done or Try again).
  *

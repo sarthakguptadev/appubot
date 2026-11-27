@@ -1,4 +1,4 @@
-// How loud the microphone is, as a 0..1 level the turn detector and the waveform read (after OpenBot's meter): RMS in
+// How loud the microphone is, as a 0..1 level the turn detector and the waveform read: RMS in
 // dB over an adaptive noise floor that drops at once to anything quieter and creeps up slowly, so a fan or a hum
 // fades out while speech stands well above it. Pure, so it runs in tests.
 

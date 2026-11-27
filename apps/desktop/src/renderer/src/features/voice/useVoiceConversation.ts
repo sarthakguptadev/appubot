@@ -1,4 +1,4 @@
-// Voice mode: a spoken conversation with the bot on screen (OpenBot's voice loop, our own code). It listens, sends what
+// Voice mode: a spoken conversation with the bot on screen. It listens, sends what
 // you said once you pause (with its recording, for replay), reads the reply aloud as it streams, and listens again.
 // Everything that can happen ahead does: the speech models stay loaded and the bot's agent is started while voice mode
 // is open (`voice.warm`, `threads.warm`), what you say is heard phrase by phrase while you speak (`Hearing`), the

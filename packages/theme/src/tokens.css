@@ -155,7 +155,7 @@
   color-scheme: light;
 }
 /*
- * Dark is three flat tones (the owner's call 2026-11-11, read off Grok Bot's app): the sidebar and Settings' nav
+ * Dark is three flat tones (the owner's call 2026-11-11, read off a reference app): the sidebar and Settings' nav
  * #0e0e0e, the chat, pages and dialogs #121212 (a step up, no line between the two), and everything raised on them
  * (buttons, pills, the composer, menus) #1f1f1f, with #282828 for what sits on that; ink alphas for muted text,
  * borders and the bubble (--ab-surface-2 on the chat reads as the raised tone, --ab-surface-3 as the one above it).

@@ -1,13 +1,13 @@
 /**
  * Bot avatar: a body in the bot's colour wearing a dark visor with two eyes. The geometry and colours are chat-core's
  * (botAvatarLook), the motion too (botMotion.ts, shared with the phone: its state machine, poses and tracks, as CSS
- * from botAvatarMotion.ts plus botAvatar.css; the agent cursor's overlay uses them as well), copied from Grok Bot's
- * mascot, drawn as a solid (solidFace below: the round bot a shaded ball, other shapes a shaded volume, the visor and eyes
+ * from botAvatarMotion.ts plus botAvatar.css; the agent cursor's overlay uses them as well), measured from a
+ * reference recording, drawn as a solid (solidFace below: the round bot a shaded ball, other shapes a shaded volume, the visor and eyes
  * on its surface in CSS 3D, turned and nodded by the motion's yaw and pitch, going right round the back on a spin and
  * over the top on a flip): resting it sits still, upright and facing you, and when the pointer comes near it turns its head toward it and follows it with its eyes; a turn that starts makes its eyes big; thinking, it turns away and collapses into three
  * dots that light up in turn (in small places, `compact`, it stays itself, its eyes as at rest, and turns its head to
  * look up to one side, then the other); on a tool it runs
- * Grok Bot's working routine (glances, blinks, flips, looks about, rolls, spins and wobbles, each eye its own size);
+ * the reference's working routine (glances, blinks, flips, looks about, rolls, spins and wobbles, each eye its own size);
  * typing, it turns toward the text with big eyes; done, it grows back with happy eyes, wobbles like jelly and dances,
  * and stays happy a while. Every motion turns round the avatar's middle, so it stays centred. Needing you it hops for
  * attention. Pressed it squishes and springs back. `happy` draws the app icon's face (scripts/make-icon.mjs): both eyes closed in a smile, for

@@ -16,7 +16,7 @@ import { VIEWER_FULL, VIEWER_HEADER_H, VIEWER_MARGIN, VIEWER_PILL_H, botScreenLi
 /*
  * Open desktop (plan §4.4): your AppuBot computer's own screen (or a team's) in a dark panel centred in the app window,
  * a margin of the dimmed app around it (the traffic lights' row stays clear, so the window still drags by its top), after
- * Grok Bot's computer view: the computer's name and ✕ at the panel's top, the screen centred as large as it fits in its
+ * the reference's computer view: the computer's name and ✕ at the panel's top, the screen centred as large as it fits in its
  * own shape (`fitScreen`: a box of the screen's shape that noVNC's canvas fills, rounded, on the panel's own
  * background, so no letterbox shows), and right under it, centred, the Watching /
  * Take control pill (chat-core `controlPill`: "👁 Watching" + a white "Take control"; "You’re in control" + Give back,
@@ -347,7 +347,7 @@ function Viewer({ teach, signIn, title, full, onFull }: { teach: boolean; signIn
           ) : null}
         </div>
 
-        {/* Watching / Take control (Grok Bot's pill: a dark capsule, the button white); its height is kept while it's away */}
+        {/* Watching / Take control; its height is kept while it's away */}
         <div className="flex shrink-0 items-center justify-center" style={{ height: VIEWER_PILL_H, marginTop: VIEWER_MARGIN }}>
           {live || phase === 'reconnecting' ? (
             <div

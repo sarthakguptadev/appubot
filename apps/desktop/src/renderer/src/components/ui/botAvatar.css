@@ -1,5 +1,5 @@
 /* Bot avatars are alive (components/ui/BotAvatar.tsx). The motion itself is chat-core's (botMotion.ts: one state machine
-   for the desktop and the phone, copied from Grok Bot's mascot), turned into poses, keyframes and `.ab-bot` rules by
+   for the desktop and the phone, measured from a reference recording), turned into poses, keyframes and `.ab-bot` rules by
    botAvatarMotion.ts (BOT_MOTION_CSS). Layers, outside in: the span (press squish), the svg, .ab-bot-joy (the happy
    cheer), .ab-bot-body (a mood's loop), .ab-bot-tilt (the pose's lean), .ab-bot-morph (collapsing into the dots),
    .ab-bot-head (the outline narrowing as the head turns), .ab-bot-shape (the bot, fading to a plain dot), .ab-bot-face

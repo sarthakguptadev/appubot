@@ -25,7 +25,7 @@
 
 @keyframes caret-blink { to { visibility: hidden; } }
 
-/* The working row's label (components/rare/AiStatus.tsx `Shimmer`, after Grok Bot's): a bright band in the text's own
+/* The working row's label (components/rare/AiStatus.tsx `Shimmer`): a bright band in the text's own
    colour over a dim grey. The highlight sits mid gradient and the gradient is three labels wide, so each sweep starts
    off the label, crosses it in about 550ms and is gone for the rest of the 1.1s. */
 .ai-status-sweep {
@@ -35,7 +35,7 @@
 }
 @keyframes ai-status-sweep { from { background-position: 100% 0; } to { background-position: 0% 0; } }
 
-/* The chat's column (2026-11-27, after Grok Bot's): messages and the composer share both edges, at least 80px in from
+/* The chat's column (2026-11-27): messages and the composer share both edges, at least 80px in from
    the chat's sides and at most 960px wide, never narrower than the old 46rem column where there is room for it. */
 .chat-column { width: 100%; max-width: min(960px, max(46rem, 100% - 160px)); margin-inline: auto; }
 /* Chat text is set in the system's own face (SF Pro on a Mac) rather than the app's Geist, as messaging apps set it;
@@ -67,7 +67,7 @@ html:not([data-shape="squircle"]) .ab-pill { border-radius: 9999px; -electron-co
 /* the chat box round its round buttons: their radius plus the room between them and its edge */
 html:not([data-shape="squircle"]) .chat-composer { border-radius: 22px; }
 /* the composer's parts (Composer.tsx): + | the draft | the buttons on one line; once the draft runs to a second line
-   it takes the top, a little in from the edge, and + and the buttons drop to a row under it (Grok Bot's). The
+   it takes the top, a little in from the edge, and + and the buttons drop to a row under it. The
    Messages theme keeps its floating pieces in one row. */
 .chat-composer { grid-template-areas: "add field actions"; }
 html:not([data-theme="messages"]) .chat-composer[data-tall] { grid-template-areas: "field field field" "add . actions"; }
@@ -316,8 +316,8 @@ html[data-glass="off"] body { background-image: none; }
 :is(.chat-bubble-reply, .chat-bubble-sent) .chat-markdown > :last-child { margin-bottom: 0; }
 :is(.chat-bubble-reply, .chat-bubble-sent) .chat-markdown li + li { margin-top: 2px; }
 :is(.chat-bubble-reply, .chat-bubble-sent) .chat-markdown :is(h1, h2, h3, h4, h5, h6) { margin: 18px 0 0; font-size: 15px; line-height: 22px; letter-spacing: .01em; }
-/* Grok Bot's hairline: a filled control (the raised buttons, the chat's name chip, secondary buttons, the composer's +)
-   carries a 1px edge a step lighter than its fill in the dark, a step darker in the light (read off the owner's Grok
+/* The reference's hairline: a filled control (the raised buttons, the chat's name chip, secondary buttons, the composer's +)
+   carries a 1px edge a step lighter than its fill in the dark, a step darker in the light (read off the owner's reference
    shot: fill #242424 edged #303030), drawn inside the box so nothing moves. Chat bubbles, the bot's and yours, have
    none (the owner's call, 2026-11-27). In the components layer, so a focus ring utility still replaces it while
    focused. */
@@ -344,7 +344,7 @@ html[data-glass="off"] body { background-image: none; }
 /* streaming: no caret; text is revealed smoothly instead (Synara, see lib/streaming.ts) */
 
 /* ---------- question cards (adapted from Akeru's generative-ui.css, MIT) ---------- */
-/* QuestionCard, after Grok Bot's: a #1f1f1f card rounded 20, rows filled #2a2a2a under the pointer in the frame it
+/* QuestionCard: a #1f1f1f card rounded 20, rows filled #2a2a2a under the pointer in the frame it
    arrives, a 22px key chip (#414141) that turns the accent on the chosen row; light uses the same steps of grey ink */
 .gen-q { border-radius: 20px; padding: 14px 8px 8px; background: color-mix(in srgb, var(--ab-fg) 5%, var(--ab-content)); }
 .dark .gen-q { background: #1f1f1f; }

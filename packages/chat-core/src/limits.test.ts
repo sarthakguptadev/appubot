@@ -267,7 +267,7 @@ describe('words', () => {
   });
 });
 
-describe('OpenBot-style readers (Grok, Cursor, Kimi, Antigravity)', () => {
+describe('the Grok, Cursor, Kimi and Antigravity readers', () => {
   it('reads Grok’s billing period as one window of every model, zero when proto3 left the use out', () => {
     const l = limitsFromGrok('grok', { config: { creditUsagePercent: 37.5, currentPeriod: { start: '2026-11-02T00:00:00Z', end: '2026-11-09T00:00:00Z', type: 'USAGE_PERIOD_TYPE_WEEKLY' }, prepaidBalance: { val: 0 }, isUnifiedBillingUser: true }, subscription_tier: 'SuperGrok' }, NOW);
     expect(l).toMatchObject({ status: 'ok', source: 'grok', plan: 'SuperGrok' });

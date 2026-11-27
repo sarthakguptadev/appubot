@@ -2,7 +2,7 @@ import { createIcon, type IconComponent } from '../../components/ui/icons';
 import type { IconSvgElement } from '@hugeicons/react';
 
 /*
- * Settings' own icons: Lucide's line icons (ISC licence), the set Grok Bot's Settings draws with, so its nav and
+ * Settings' own icons: Lucide's line icons (ISC licence), the set the reference's Settings draws with, so its nav and
  * controls read the same (the owner's call 2026-11-27, Settings only). Drawn through the app's `createIcon`, so the
  * line weight matches every other icon. `createIcon` joins an icon's paths into one, so every path here opens with an
  * absolute move and names its line commands (Lucide's relative openings would start from the last path's end).
@@ -17,7 +17,7 @@ export const SettingsGear = lucide('SettingsGear',
   circle(12, 12, 3));
 export const SettingsMonitor = lucide('SettingsMonitor', 'M4 3h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z', 'M8 21h8', 'M12 17v4');
 export const SettingsShield = lucide('SettingsShield', 'M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z');
-/** a strongbox: a square with a lock's star in it (no open set has Grok Bot's vault glyph; drawn to match it) */
+/** a strongbox: a square with a lock's star in it (no open set has the reference's vault glyph; drawn to match it) */
 export const SettingsVault = lucide('SettingsVault',
   'M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z',
   'M9 9q3 1.6 6 0q-1.6 3 0 6q-3-1.6-6 0q1.6-3 0-6z', 'M7.5 7.5L9 9', 'M16.5 7.5L15 9', 'M16.5 16.5L15 15', 'M7.5 16.5L9 15');

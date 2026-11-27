@@ -50,7 +50,7 @@ export function Separator({ label }: { label: string }) {
 }
 
 /**
- * Where the replies you haven't seen begin (Grok Bot's "NEW"): a hairline across the column with NEW in the accent,
+ * Where the replies you haven't seen begin: a hairline across the column with NEW in the accent,
  * centred. It stays while the chat is open and is gone the next time it opens (lib/store.ts `unread`).
  */
 export function NewDivider() {
@@ -111,7 +111,7 @@ const AT_END_PX = 1;
 const SHOW_JUMP_DELAY_MS = 150;
 /** Scroll events this soon after our own scrollTo are layout, not the reader. */
 const PROGRAMMATIC_SCROLL_MS = 200;
-/** the glide to a message you just sent (Grok Bot's 150–170 ms, eased out); the message itself is there at once */
+/** the glide to a message you just sent; the message itself is there at once */
 export const SEND_GLIDE_MS = 160;
 
 const distanceFromEnd = (el: HTMLElement) => el.scrollHeight - el.scrollTop - el.clientHeight;

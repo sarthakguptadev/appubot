@@ -25,7 +25,7 @@ import { ResizeHandle } from './ResizeHandle';
 import { deleteGroup, updateGroup } from '../../features/groups/groups';
 
 /**
- * The roster's type and fills, one set for bots and groups (2026-11-27, after Grok Bot's sidebar). A row is 58px from
+ * The roster's type and fills, one set for bots and groups (2026-11-27). A row is 58px from
  * one to the next with no fill at rest; its two lines are as tall as its picture (18 + 1 + 17 = 36), so the name starts
  * level with the avatar's top; the second line sits a step back from the name, so the list reads by its names. The
  * hover and the chosen row's wash are rounded rectangles (two-line rows are never pills). No row says when it was last
@@ -244,7 +244,7 @@ function BotRowMenu({ bot, className }: { bot: Bot; className?: string }) {
 /**
  * A pinned bot at the top of the roster: its avatar large with its presence, its name under it; the open one filled
  * like a selected row. A reply you haven't seen puts a blue dot where the presence dot sits, at the avatar's
- * bottom-right (Grok Bot's tiles), while the bot isn't working or waiting on you. Right-click for its actions (Unpin…).
+ * bottom-right, while the bot isn't working or waiting on you. Right-click for its actions (Unpin…).
  */
 function BotTile({ bot, selected, unread, presence }: { bot: Bot; selected: boolean; unread: boolean; presence: BotPresence }) {
   const work = useWorkMood(presence === 'working' ? bot.id : undefined);
@@ -394,7 +394,7 @@ function BotThreads({ bot }: { bot: Bot }) {
 
 /**
  * The sidebar's round buttons (search, +, Connect apps) are the app's secondary button (components/ui/Button.tsx): an
- * ink fill with Grok Bot's hairline edge (index.css `.ab-edge`), a light step deeper under the pointer, and a dark one
+ * ink fill with the reference's hairline edge (index.css `.ab-edge`), a light step deeper under the pointer, and a dark one
  * while pressed or while what they open is open.
  */
 const RAISED = 'ab-edge bg-surface-2 hover:bg-[color-mix(in_srgb,var(--ab-fg)_7.5%,transparent)] active:bg-[color-mix(in_srgb,var(--ab-fg)_12%,transparent)]';

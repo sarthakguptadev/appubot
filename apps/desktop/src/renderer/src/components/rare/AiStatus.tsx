@@ -9,7 +9,7 @@
  * Changed for AppuBot: a ResizeObserver measures the row (upstream uses react-use-measure); an `icon` of the
  * caller's own is drawn as it is, at `iconSize`, and stays put across states (the chat passes the bot's avatar,
  * which has moods of its own; only the built-in state icons swap); `time` takes a ready-made node (the chat's live
- * timer) in place of the counter; the app's colours and type. After Grok Bot's status line (2026-11-27): a new label
+ * timer) in place of the counter; the app's colours and type. Since 2026-11-27: a new label
  * swaps in 50ms with a plain fade and the row takes its width at once, and the shimmer is a bright band that crosses
  * the label in about 550ms every 1.1s, linear, from a dim grey to the text's own colour.
  */

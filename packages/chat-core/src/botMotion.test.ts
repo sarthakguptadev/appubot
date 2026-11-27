@@ -80,7 +80,7 @@ describe('bot motion: tracks', () => {
   });
 });
 
-describe('bot motion: Grok Bot, measured', () => {
+describe('bot motion: measured', () => {
   it('eases every pose change with one first-order curve, and the CSS curve follows it', () => {
     expect(BOT_MOTION.snap).toBe(50);
     expect(BOT_MOTION.settle).toBe(125);
@@ -98,7 +98,7 @@ describe('bot motion: Grok Bot, measured', () => {
   it('turns like a solid: the face slides round the head, the far eye narrowing, the outline narrowing, round the back', () => {
     const front = botHead(0);
     expect(front).toEqual({ body: [1, 1], face: { x: 0, y: 0, sx: 1, sy: 1 }, eyes: [{ x: 0, s: 1, w: 1 }, { x: 0, s: 1, w: 1 }] });
-    // a 35° turn slides the face as far as Grok Bot's did (on screen: within the outline's narrowing)
+    // a 35° turn slides the face as far as the reference's did (on screen: within the outline's narrowing)
     const t35 = botHead(35);
     expect(Math.abs(t35.face.x * t35.body[0] - botTurn(35).x)).toBeLessThan(1.5);
     expect(t35.face.sx * t35.body[0]).toBeLessThan(0.82);
@@ -121,7 +121,7 @@ describe('bot motion: Grok Bot, measured', () => {
     expect(botHead(0, -16).face.y).toBeGreaterThan(6);
   });
 
-  it('turns its face like Grok Bot: sliding 0.17 of the body sideways and narrowing to cos 35° at a 35° turn', () => {
+  it('turns its face like the reference: sliding 0.17 of the body sideways and narrowing to cos 35° at a 35° turn', () => {
     expect(botTurn(0)).toEqual({ x: 0, sx: 1 });
     expect(botTurn(35).x / 88).toBeCloseTo(0.17, 2);
     expect(botTurn(35).sx).toBeCloseTo(0.82, 2);
@@ -167,7 +167,7 @@ describe('bot motion: Grok Bot, measured', () => {
     expect(BOT_DOTS.r * 2).toBeCloseTo(88 * BOT_DOTS.scale, 0);
   });
 
-  it("runs Grok Bot's working routine on a tool, on the measured timeline, from a still start", () => {
+  it("runs the reference's working routine on a tool, on the measured timeline, from a still start", () => {
     const tool = BOT_LOOPS.tool!;
     const find = (layer: string, prop: string) => tool.find((t) => t.layer === layer && t.prop === prop)!;
     const rotate = find('body', 'rotate');
@@ -193,7 +193,7 @@ describe('bot motion: Grok Bot, measured', () => {
       expect(t.layer === 'turn' ? ((end % 360) + 360) % 360 : end).toBe(rest);
     }
     // glances left at 2.9 s, its head turning: the face slides left and the outline narrows, the left eye bigger than
-    // the right as Grok Bot's was, the body sliding 12.6 after it
+    // the right as the reference's was, the body sliding 12.6 after it
     expect(at(slide, 2900)).toBeLessThan(-5);
     expect(at(find('turn', 'yaw'), 2900)).toBeLessThan(-10);
     expect(at(outline, 2900)).toBeLessThan(0.99);

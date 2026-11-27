@@ -1,5 +1,5 @@
 // The agent's ask_user question as an inline card (adapted from Akeru's PendingUserInputChoices,
-// ComposerPendingUserInputPanel and UserInputAnswerCard, MIT), after Grok Bot's: a bold question over lettered rows
+// ComposerPendingUserInputPanel and UserInputAnswerCard, MIT): a bold question over lettered rows
 // (an A/B key chip each, a fill under the pointer in the frame it arrives). Answering folds the card to the chosen
 // row: its chip turns the accent at once, the other rows close over 200 ms and the question dims, so what was
 // asked and answered stays where it was. Styles: `.gen-q*` in index.css.
