@@ -120,8 +120,11 @@ function compile(gl: WebGLRenderingContext, type: number, src: string): WebGLSha
   return shader;
 }
 
-/** Starts the canvas; returns what stops it. Throws when WebGL can't start. */
-function run(canvas: HTMLCanvasElement, wrap: HTMLElement, live: { current: Pick<FluidOrbProps, 'color' | 'getSpeed' | 'getScale'> }): () => void {
+/**
+ * Starts the canvas; returns what stops it. Throws when WebGL can't start. Each run gets a new program, so its first
+ * fit sets the viewport and size even on a canvas already that size (a dev double mount, a restored context).
+ */
+export function run(canvas: HTMLCanvasElement, wrap: HTMLElement, live: { current: Pick<FluidOrbProps, 'color' | 'getSpeed' | 'getScale'> }): () => void {
   const gl = canvas.getContext('webgl', { antialias: true, alpha: true });
   if (!gl) throw new Error('no webgl');
   const program = gl.createProgram();
@@ -145,12 +148,16 @@ function run(canvas: HTMLCanvasElement, wrap: HTMLElement, live: { current: Pick
   const uTime = gl.getUniformLocation(program, 'u_time');
   const uColor = gl.getUniformLocation(program, 'u_color');
 
+  let size = 0;
   const fit = () => {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const px = Math.max(1, Math.round(Math.min(wrap.clientWidth, wrap.clientHeight) * dpr));
-    if (canvas.width === px && canvas.height === px) return;
-    canvas.width = px;
-    canvas.height = px;
+    if (px === size) return;
+    size = px;
+    if (canvas.width !== px || canvas.height !== px) {
+      canvas.width = px;
+      canvas.height = px;
+    }
     gl.viewport(0, 0, px, px);
     gl.uniform2f(uResolution, px, px);
   };
