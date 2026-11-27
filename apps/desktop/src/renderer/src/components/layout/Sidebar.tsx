@@ -407,7 +407,8 @@ function ConnectApps() {
  * its word. Only a lost connection puts a dot on it. It opens the account menu, in three groups: the plan (its name and
  * how much of the agents' plan limits is used, opening Settings › Usage; Upgrade plan, not on the top plan; Invite
  * teammates, on a Work plan you run), then AppuBot on your phone, Support (a chat with us or an email) and Settings,
- * then Log out. The pill is a light step deeper under the pointer and dark while its menu is open.
+ * then Log out. The row is a light step deeper under the pointer and darker only while pressed: no fill stays behind it
+ * while its menu is open (the owner's call, 2026-11-27).
  */
 function AccountButton({ down }: { down: boolean }) {
   const t = useT();
@@ -449,7 +450,7 @@ function AccountButton({ down }: { down: boolean }) {
             onClick={() => { p.onClick(); void refreshLimits('stale'); }}
             type="button"
             aria-label={name ? `${name}, ${t('common.settings')}` : t('common.settings')}
-            className="ab-press ab-pill squircle no-drag flex h-[43px] w-full min-w-0 items-center gap-2.5 rounded-row px-1 text-left outline-none hover:bg-[color-mix(in_srgb,var(--ab-fg)_5%,transparent)] active:bg-[color-mix(in_srgb,var(--ab-fg)_10%,transparent)] focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)] aria-expanded:bg-[color-mix(in_srgb,var(--ab-fg)_10%,transparent)] aria-expanded:hover:bg-[color-mix(in_srgb,var(--ab-fg)_10%,transparent)]"
+            className="ab-press ab-pill squircle no-drag flex h-[43px] w-full min-w-0 items-center gap-2.5 rounded-row px-1 text-left outline-none hover:bg-[color-mix(in_srgb,var(--ab-fg)_5%,transparent)] active:bg-[color-mix(in_srgb,var(--ab-fg)_10%,transparent)] focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)]"
           >
             <span className="relative grid size-[35px] shrink-0 place-items-center">
               {email ? <PersonAvatar email={email} name={view?.account?.name} size={35} photoUrl={view?.account?.photoUrl} />

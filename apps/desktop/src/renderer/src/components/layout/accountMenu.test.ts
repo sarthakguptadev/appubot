@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import type { CloudAccountView, CloudComputer, CloudPlanId, CloudSubscription, CloudTeamView, CloudWorkPlanId, ProviderLimits } from '@appubot/protocol';
 import { accountPlan } from './accountMenu';
@@ -50,5 +52,14 @@ describe('the account menu’s plan', () => {
     expect(accountPlan(view({ plan: 'pro' }), limits(130)).used).toBe(100);
     const out = [{ ...limits(90)[0]!, status: 'signed_out' }] as ProviderLimits[];
     expect(accountPlan(view({ plan: 'pro' }), out).used).toBeNull();
+  });
+});
+
+describe('the account row', () => {
+  it('keeps no fill behind it while its menu is open, only a light hover and a press', () => {
+    const src = readFileSync(join(__dirname, 'Sidebar.tsx'), 'utf8');
+    const row = src.slice(src.indexOf('function AccountButton'), src.indexOf('export function Sidebar'));
+    expect(row).toMatch(/hover:bg-\[color-mix\(in_srgb,var\(--ab-fg\)_5%,transparent\)\]/);
+    expect(row).not.toMatch(/aria-expanded:/);
   });
 });
