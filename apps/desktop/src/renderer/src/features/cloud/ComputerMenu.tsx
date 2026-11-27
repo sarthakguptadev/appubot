@@ -32,7 +32,7 @@ function CloudMark({ team, size, warn }: { team?: string; size: number; warn?: b
 }
 
 /**
- * The sidebar's computer picker (plan §4.3), the first of the round buttons at the right of its top strip, always
+ * The sidebar's computer picker (plan §4.3), a round button at its foot beside Connect apps (2026-11-27), always
  * there: the icon alone of the computer on screen (this Mac's laptop, a cloud for the person's own cloud computer, a
  * team's in its colour; a spinner while switching), no name (the owner's call, 2026-11-17; the name is its label and in
  * the menu). Its menu: this Mac by its own name (`useMacName`; left out while "Only in the cloud" holds: chat-core
@@ -127,7 +127,8 @@ export function ComputerMenu({ inSettings = false }: {
     );
   }
 
-  // the sidebar's: the computer's icon alone in a round button, like search and + beside it (its name is in the menu)
+  // the sidebar's: the computer's icon alone in a round button at its foot, beside Connect apps (its name is in the menu),
+  // a blue dot always on its top-right edge so it reads as a switch (the owner, 2026-11-27: "so able to look switch")
   return (
     <Menu
       align="end"
@@ -141,11 +142,12 @@ export function ComputerMenu({ inSettings = false }: {
           aria-label={`Computer: ${label}`}
           title={label}
           className={cn(
-            'ab-press ab-pill squircle no-drag grid size-9 shrink-0 place-items-center rounded-control bg-surface-2 outline-none',
+            'ab-edge ab-press ab-pill squircle no-drag relative grid size-[35px] shrink-0 place-items-center rounded-control bg-surface-2 outline-none',
             'hover:bg-surface-3 focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]', p['aria-expanded'] && 'bg-surface-3',
           )}
         >
           {mark}
+          <span aria-hidden className="absolute top-px right-px size-2 rounded-full bg-unread ring-2 ring-[var(--ab-coat-solid,var(--ab-bg))]" />
         </button>
       )}
     />

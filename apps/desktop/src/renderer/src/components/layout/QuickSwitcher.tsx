@@ -1,6 +1,6 @@
 import { Fragment, useDeferredValue, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { botThreads, offeredModels, shownPreview, stripMarkdown, type Bot, type Thread } from '@appubot/protocol';
-import { ArrowLeft, AudioLines, Brain, Check, ChevronRight, GraduationCap, Mail, MessageCircle, MessageSquare, Monitor, Moon, MousePointerClick, Plug, Plus, QrCode, RefreshCw, Search, Settings, SlidersHorizontal, Sparkles, SquarePen, Sun, Users, Zap, type LucideIcon } from '../ui/icons';
+import { AppsAdd, ArrowLeft, AudioLines, Brain, Check, ChevronRight, GraduationCap, Mail, MessageCircle, MessageSquare, Monitor, Moon, MousePointerClick, Plus, QrCode, RefreshCw, Search, Settings, SlidersHorizontal, Sparkles, SquarePen, Sun, Users, Zap, type LucideIcon } from '../ui/icons';
 import { BotAvatar, Dialog, Icon, Kbd, cn } from '../ui';
 import { openBot, openThread, startThread, updateBot } from '../../lib/actions';
 import { buildRoster, effortsFor, messageRawText, threadTitle, timeAgo } from '@appubot/chat-core';
@@ -143,7 +143,7 @@ function actions(botId: string | null, sub: Record<PageId, Page | null>): Row[] 
     ...(s.selectedThreadId ? [a('find', Search, 'Find in chat', openFind, shortcut('F'), 'search')] : []),
     ...page('model', 'Switch model…', 'agent llm'),
     ...page('effort', 'Reasoning effort…', 'thinking think'),
-    a('apps', Plug, 'Connect apps', () => ui.openApps(), undefined, 'integrations gmail slack composio'),
+    a('apps', AppsAdd, 'Connect apps', () => ui.openApps(), undefined, 'integrations gmail slack composio'),
     a('pair', QrCode, 'Pair a phone', () => ui.openModal({ kind: 'pair' }), undefined, 'phone iphone android mobile qr devices'),
     // teach mode records the user's clicks and keys: where computer use runs
     ...(TEACH && !lacks.teach ? [a('teach', GraduationCap, 'Teach a task', () => ui.openModal({ kind: 'teach' }), undefined, 'record skill')] : []),

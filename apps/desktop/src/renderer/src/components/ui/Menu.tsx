@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import type { LucideIcon } from './icons';
+import { ChevronRight, type LucideIcon } from './icons';
 import { cn } from './cn';
 import { Icon } from './Icon';
 import { menuTarget } from './menuKeys';
@@ -16,6 +16,8 @@ export interface MenuItem {
   hint?: ReactNode;
   /** the picker's current choice: a long list opens scrolled to it */
   current?: boolean;
+  /** a submenu: shown beside the item while the pointer is on it, or by click, Enter or →; ← and Esc go back */
+  items?: Omit<MenuItem, 'items'>[];
 }
 
 /**
@@ -69,6 +71,12 @@ export function Menu({ trigger, items, align = 'end', className, anchorClassName
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
   /** what had focus when the menu opened (its trigger, usually), given it back when the menu closes from the keyboard */
   const returnTo = useRef<HTMLElement | null>(null);
+  /** the item whose submenu is open, where it is, and whether its first item takes the focus (a key opened it) */
+  const [sub, setSub] = useState<{ index: number; rect: DOMRect; focus: boolean } | null>(null);
+  const subMenu = useRef<HTMLDivElement>(null);
+  const [subPos, setSubPos] = useState<{ top: number; left: number } | null>(null);
+  const subAt = useRef<number | null>(null);
+  subAt.current = sub?.index ?? null;
   const count = items.filter((it) => it !== 'separator').length;
   const maxHeight = count > scrollAfter ? `min(${(scrollAfter + 0.5) * ITEM_H + MENU_PAD}px, calc(100vh - 16px))` : undefined;
 
@@ -97,8 +105,27 @@ export function Menu({ trigger, items, align = 'end', className, anchorClassName
     el?.focus({ preventScroll: true });
   }, [open]);
 
+  // a submenu sits beside its item (to the right, else the left), its first row level with the item
+  useLayoutEffect(() => {
+    if (!sub) { setSubPos(null); return; }
+    const w = subMenu.current?.offsetWidth ?? 200;
+    const h = subMenu.current?.offsetHeight ?? 0;
+    const left = sub.rect.right + 4 + w > window.innerWidth - 8 ? Math.max(8, sub.rect.left - 4 - w) : sub.rect.right + 4;
+    setSubPos({ top: Math.max(8, Math.min(sub.rect.top - MENU_PAD / 2, window.innerHeight - h - 8)), left });
+    if (sub.focus) menuItems(subMenu.current)[0]?.focus({ preventScroll: true });
+  }, [sub]);
+
+  const openSub = (index: number, el: HTMLElement, focus: boolean) => setSub({ index, rect: el.getBoundingClientRect(), focus });
+  /** closes the submenu; `back`: the focus goes back to its item */
+  const closeSub = (back: boolean) => {
+    const at = subAt.current;
+    setSub(null);
+    if (back && at !== null) menu.current?.querySelector<HTMLElement>(`[data-index="${at}"]`)?.focus({ preventScroll: true });
+  };
+
   const close = (refocus: boolean) => {
     setOpen(false);
+    setSub(null);
     if (refocus && returnTo.current?.isConnected) returnTo.current.focus({ preventScroll: true });
   };
 
@@ -106,6 +133,21 @@ export function Menu({ trigger, items, align = 'end', className, anchorClassName
     const list = menuItems(menu.current);
     if (!list.length) return;
     if (e.key === 'Tab') { e.preventDefault(); close(true); return; }
+    const focused = document.activeElement as HTMLElement;
+    const index = Number(focused?.dataset.index);
+    const it = items[index];
+    if (e.key === 'ArrowRight' && it && it !== 'separator' && it.items) { e.preventDefault(); openSub(index, focused, true); return; }
+    const to = menuTarget(e.key, list.indexOf(focused), list.length);
+    if (to === null) return;
+    e.preventDefault();
+    setSub(null);
+    list[to]?.focus();
+  };
+
+  const onSubKey = (e: ReactKeyboardEvent) => {
+    if (e.key === 'Tab') { e.preventDefault(); close(true); return; }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); closeSub(true); return; }
+    const list = menuItems(subMenu.current);
     const to = menuTarget(e.key, list.indexOf(document.activeElement as HTMLElement), list.length);
     if (to === null) return;
     e.preventDefault();
@@ -116,9 +158,15 @@ export function Menu({ trigger, items, align = 'end', className, anchorClassName
     if (!open) return;
     const onDown = (e: MouseEvent) => {
       const t = e.target as Node;
-      if (!menu.current?.contains(t) && !anchor.current?.contains(t)) setOpen(false);
+      if (!menu.current?.contains(t) && !subMenu.current?.contains(t) && !anchor.current?.contains(t)) close(false);
     };
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(true); } };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      e.preventDefault();
+      e.stopPropagation();
+      if (subAt.current !== null) closeSub(true);
+      else close(true);
+    };
     window.addEventListener('mousedown', onDown);
     window.addEventListener('keydown', onKey, true);
     return () => { window.removeEventListener('mousedown', onDown); window.removeEventListener('keydown', onKey, true); };
@@ -146,15 +194,52 @@ export function Menu({ trigger, items, align = 'end', className, anchorClassName
                     role="menuitem"
                     disabled={it.disabled}
                     data-current={it.current || undefined}
-                    onClick={() => { close(true); it.onSelect(); }}
-                    className={cn(MENU_ITEM, it.danger ? MENU_ITEM_DANGER : MENU_ITEM_IDLE)}
+                    data-index={i}
+                    aria-haspopup={it.items ? 'menu' : undefined}
+                    aria-expanded={it.items ? sub?.index === i : undefined}
+                    onMouseEnter={(e) => { if (it.items) openSub(i, e.currentTarget, false); else if (sub) setSub(null); }}
+                    onClick={(e) => {
+                      if (it.items) { openSub(i, e.currentTarget, e.detail === 0); return; }
+                      close(true);
+                      it.onSelect();
+                    }}
+                    className={cn(MENU_ITEM, it.danger ? MENU_ITEM_DANGER : MENU_ITEM_IDLE, sub?.index === i && ROW_ON)}
                   >
                     {it.leading ?? (it.icon ? <Icon icon={it.icon} size={16} className={it.danger ? '' : 'text-muted'} /> : null)}
                     <span className="flex-1">{it.label}</span>
                     {it.hint}
+                    {it.items ? <Icon icon={ChevronRight} size={14} className="-mr-0.5 text-muted" /> : null}
                   </button>
                 ),
               )}
+            </div>,
+            document.body,
+          )
+        : null}
+      {open && sub
+        ? createPortal(
+            <div
+              ref={subMenu}
+              role="menu"
+              aria-label={(items[sub.index] as MenuItem).label}
+              onKeyDown={onSubKey}
+              style={{ top: subPos?.top ?? -9999, left: subPos?.left ?? -9999 }}
+              className="glass-popover no-drag fixed z-[61] min-w-[180px] rounded-pop p-1.5"
+            >
+              {((items[sub.index] as MenuItem).items ?? []).map((s) => (
+                <button
+                  key={s.label}
+                  type="button"
+                  role="menuitem"
+                  disabled={s.disabled}
+                  onClick={() => { close(true); s.onSelect(); }}
+                  className={cn(MENU_ITEM, s.danger ? MENU_ITEM_DANGER : MENU_ITEM_IDLE)}
+                >
+                  {s.leading ?? (s.icon ? <Icon icon={s.icon} size={16} className={s.danger ? '' : 'text-muted'} /> : null)}
+                  <span className="flex-1">{s.label}</span>
+                  {s.hint}
+                </button>
+              ))}
             </div>,
             document.body,
           )

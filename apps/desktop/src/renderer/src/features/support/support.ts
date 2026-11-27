@@ -1,10 +1,10 @@
 /**
- * "Chat with Sarthak", the support chat: a widget like the website's, a bubble at the bottom right of the window that
- * expands into Crisp's chat (`SupportWidget`; Crisp's hosted page is main's own view laid over the panel,
- * electron/supportChat.ts, so Crisp's script never runs in this window, which holds the gateway's owner token).
- * Opened from the bubble, the quick switcher, Settings › About, the Help menu and the tray.
+ * "Chat with Sarthak", the support chat: Crisp's chat in a panel at the bottom left of the window (`SupportWidget`;
+ * Crisp's hosted page is main's own view laid over the panel, electron/supportChat.ts, so Crisp's script never runs in
+ * this window, which holds the gateway's owner token). Opened from the account menu's Support, the quick switcher,
+ * Settings › About, the Help menu and the tray.
  */
-import { getState, setState } from '../../lib/store';
+import { setState } from '../../lib/store';
 import { native } from '../../lib/native';
 
 /** for those who'd rather write an email */
@@ -23,7 +23,6 @@ export function supportUser(): { email?: string } {
 
 export function openSupport(): void { setState({ supportOpen: true }); }
 export function closeSupport(): void { setState({ supportOpen: false }); }
-export function toggleSupport(): void { setState({ supportOpen: !getState().supportOpen }); }
 
 export function emailSupport(): void {
   void native().openExternal(`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('AppuBot support')}`);

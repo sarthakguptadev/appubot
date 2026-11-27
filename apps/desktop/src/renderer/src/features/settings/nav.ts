@@ -209,6 +209,9 @@ export const FIX_COMPUTER_TITLE = 'Fix your computer';
 /** Settings › Billing's groups */
 export const BILLING_PLAN_TITLE = 'Your plan';
 export const BILLING_PLANS_TITLE = 'Plans';
+/** Settings › Team opened on a team's invite (the account menu's Invite teammates), and the team it names */
+export const teamInviteTarget = (team: string): string => `invite:${team}`;
+export const invitedTeam = (target: string | null): string | null => (target?.startsWith('invite:') ? target.slice(7) : null);
 export const BILLING_TEAMS_TITLE = 'Teams';
 /** Settings › Team's groups */
 export const TEAM_PEOPLE_TITLE = 'People';

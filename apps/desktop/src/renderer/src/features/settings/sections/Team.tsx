@@ -5,6 +5,8 @@ import { loadTeam, useCloud } from '../../cloud/cloudAccount';
 import { DangerGroup, InviteDialog, LoginsGroup, PeopleGroup, SeatsDialog, TeamHeader } from '../../cloud/CloudTeams';
 import { useCloudRefresh } from '../../cloud/useCloudRefresh';
 import { SectionLoading, SettingsEmptyState } from './shared';
+import { useStore } from '../../../lib/store';
+import { invitedTeam } from '../nav';
 
 /*
  * Settings › Team (only while the person is on a team; the 2026-11-05 revamp, direction A "Plan cards"): the team's
@@ -16,8 +18,9 @@ import { SectionLoading, SettingsEmptyState } from './shared';
 export function TeamSection() {
   const view = useCloud((s) => s.view);
   const teams = view?.signedIn ? (view.teams ?? []) : [];
-  const [picked, setPicked] = useState<string | null>(null);
-  const [inviting, setInviting] = useState(false);
+  // the account menu's Invite teammates opens the page on that team's invite
+  const [picked, setPicked] = useState<string | null>(() => invitedTeam(useStore.getState().settingsTarget));
+  const [inviting, setInviting] = useState(() => !!invitedTeam(useStore.getState().settingsTarget));
   const [seats, setSeats] = useState(false);
   const t = teams.find((x) => x.team.id === picked) ?? teams[0];
   useCloudRefresh();
