@@ -3,7 +3,8 @@ import { useT } from '../../lib/i18n';
 // + at the left (it attaches files, nothing else), the editor (one line, growing with the draft) and at the right the
 // mic (dictation: what you say is added to the draft) and the round button: send, voice mode while the draft is empty
 // and, while the bot works, Stop until something is typed (a message sent then still reaches it mid-task). The row of
-// pickers under it is off (COMPOSER_PICKERS). Enter sends, Shift+Enter breaks the line (or ⌘Enter sends: Settings › Appearance);
+// pickers under it is off (COMPOSER_PICKERS). 43px tall on one line with 28px buttons; from a second line (or with
+// attachments) the draft takes the top and the buttons drop to a row under it, as Grok Bot's, in the frame it wraps. Enter sends, Shift+Enter breaks the line (or ⌘Enter sends: Settings › Appearance);
 // slash commands, per-chat drafts, pasted/dropped images and files, and attached files carry over.
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ClipboardEvent, type DragEvent, type KeyboardEvent, type ReactNode, type RefObject } from 'react';
 import type { Bot, SlashCommand, Thread } from '@appubot/protocol';
@@ -164,6 +165,17 @@ const SEND = cn(
   'focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-bg),0_0_0_4px_var(--ab-ring)] disabled:opacity-20',
 );
 
+/** How wide a line of text runs in the field's own font (one line, no wrapping). */
+let measure: CanvasRenderingContext2D | null = null;
+function textWidth(text: string, el: HTMLElement): number {
+  measure ??= document.createElement('canvas').getContext('2d');
+  if (!measure) return 0;
+  const s = getComputedStyle(el);
+  measure.font = s.font;
+  measure.letterSpacing = s.letterSpacing === 'normal' ? '0px' : s.letterSpacing;
+  return measure.measureText(text).width + parseFloat(s.paddingLeft) + parseFloat(s.paddingRight);
+}
+
 /** The browser engine's file dialog: it hands the files' bytes, which a remote computer needs. */
 function pickBrowserFiles(onFiles: (files: globalThis.File[]) => void): void {
   const input = document.createElement('input');
@@ -173,7 +185,7 @@ function pickBrowserFiles(onFiles: (files: globalThis.File[]) => void): void {
   input.click();
 }
 
-const ADD = 'chat-round ab-edge ab-press ab-pill squircle flex size-8 shrink-0 items-center justify-center rounded-control bg-surface-2 text-fg/80 hover:bg-surface-3 hover:text-fg focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)] aria-expanded:bg-surface-3 aria-expanded:text-fg';
+const ADD = 'chat-round ab-edge ab-press ab-pill squircle flex size-7 shrink-0 items-center justify-center rounded-control bg-surface-2 text-fg/80 hover:bg-surface-3 hover:text-fg focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)] aria-expanded:bg-surface-3 aria-expanded:text-fg';
 
 /**
  * The pill's +: it attaches files and nothing else, so a press opens the file dialog at once. Voice mode and dictation
@@ -289,6 +301,13 @@ export function Composer({ thread, bot, draftKey, placeholder, onSend, autoFocus
   useEffect(() => setMentionActive(0), [mentions.length, at?.query]);
   /** where the menu floats: over the @ itself, from the composer's left and bottom */
   const box = useRef<HTMLDivElement>(null);
+  /**
+   * the draft runs past one line (or carries attachments or quotes): the buttons drop to a row under it. Back to one
+   * line once the text would fit the one-line field again (its width kept from the last one-line layout, so the wider
+   * field doesn't flip it back and forth at the edge).
+   */
+  const [tall, setTall] = useState(false);
+  const oneLineWidth = useRef(0);
   const [menuAt, setMenuAt] = useState({ left: 0, bottom: 0 });
   const open = mentions.length > 0;
   useLayoutEffect(() => {
@@ -301,11 +320,23 @@ export function Composer({ thread, bot, draftKey, placeholder, onSend, autoFocus
     setMenuAt({ left: Math.max(0, Math.min(r.left - w.left + p.left - 10, w.width - 210)), bottom: w.bottom - (r.top + p.top) + 6 });
   }, [open, at?.start, text]);
 
+  useLayoutEffect(() => {
+    const el = ta.current;
+    if (!el) return;
+    const multi = text.includes('\n') || images.length + paths.length + files.length + quotes.length > 0;
+    if (!tall) {
+      oneLineWidth.current = el.clientWidth;
+      if (multi || (text && el.scrollHeight > parseFloat(getComputedStyle(el).lineHeight) * 1.5)) setTall(true);
+      return;
+    }
+    if (!multi && textWidth(text, el) <= oneLineWidth.current - 8) setTall(false);
+  }, [text, images.length, paths.length, files.length, quotes.length, tall]);
+
   const hasDraft = text.trim().length > 0 || images.length > 0 || paths.length > 0 || files.length > 0 || quotes.length > 0;
   // the bot working doesn't hold a message back: it goes into the turn (Claude Code) or right after it
   const canSend = hasDraft;
   // the round button: the ink circle (the bot's colour on it read badly, the owner's call 2026-11-17)
-  const ROUND = cn(SEND, 'size-8 transition-[filter] duration-100 hover:brightness-90');
+  const ROUND = cn(SEND, 'size-7 transition-[filter] duration-100 hover:brightness-90');
   // ChatGPT's composer: with nothing typed, send's slot starts voice mode instead
   const voiceSlot = voice && !!bot && !hasDraft && !sending && !dictating;
 
@@ -453,17 +484,21 @@ export function Composer({ thread, bot, draftKey, placeholder, onSend, autoFocus
         {/* Synara's pill: + (files) at the left, the editor, then the mic (dictation) and send (or voice mode) at the right */}
         <div
           className={cn(
-            'chat-composer chat-composer-surface squircle relative flex items-end gap-2 rounded-card p-1.5 transition-[border-radius,border-color] duration-200 ease-rare',
+            'chat-composer chat-composer-surface squircle relative grid grid-cols-[auto_minmax(0,1fr)_auto] items-end gap-2 rounded-card p-[6.5px] transition-[border-radius,border-color] duration-200 ease-rare',
             dragging && 'border-accent',
             docked && 'rounded-t-md border-t-transparent',
           )}
           data-dragging={dragging ? '' : undefined}
+          data-tall={tall ? '' : undefined}
         >
-          {plain ? (
-            // a group's room: files by path on this Mac (the bots read them there), and the caller's rows
-            <AddButton files={!remote} extra={plainItems} onFiles={attachFiles} focus={ta} />
-          ) : <AddButton onFiles={attachFiles} onBlobs={remote ? keepFiles : undefined} focus={ta} />}
-          <div className={cn('chat-composer-field min-w-0 flex-1 py-[6.25px]', plain && 'pl-2.5')}>
+          {/* the parts by grid area (index.css .chat-composer): + | the draft | the buttons, the draft on a row of its own once tall */}
+          <div className="flex [grid-area:add]">
+            {plain ? (
+              // a group's room: files by path on this Mac (the bots read them there), and the caller's rows
+              <AddButton files={!remote} extra={plainItems} onFiles={attachFiles} focus={ta} />
+            ) : <AddButton onFiles={attachFiles} onBlobs={remote ? keepFiles : undefined} focus={ta} />}
+          </div>
+          <div className={cn('chat-composer-field min-w-0 py-[3.5px] [grid-area:field]', plain && 'pl-2.5')}>
             {quotes.length ? (
               <div className="mt-1 mb-2 flex flex-col gap-1.5">
                 {quotes.map((q) => (
@@ -508,7 +543,7 @@ export function Composer({ thread, bot, draftKey, placeholder, onSend, autoFocus
               className="block max-h-56 min-h-[1lh] w-full resize-none bg-transparent text-copy leading-[1.5] text-fg outline-none [field-sizing:content] placeholder:text-muted/50 placeholder:opacity-100"
             />
           </div>
-          <div className="flex shrink-0 items-end gap-1">
+          <div className="flex shrink-0 items-end justify-end gap-1 [grid-area:actions]">
           {/* talk to type: what you say goes into the draft (a group's room has its own speak-and-send button instead) */}
           {voice && !onVoiceText ? <DictateButton onText={insert} onActive={setDictating} /> : null}
           {/* while the bot works and nothing is typed: Stop (typing brings Send back, and that message reaches it mid-task) */}
