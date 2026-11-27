@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { WATCHING_KEEPS_AWAKE, controlNote, controlPill, computerDisplayName } from '@appubot/chat-core';
 import { Eye, Hand, RotateCw, X } from '../../components/ui/icons';
-import { Button, Icon, Spinner, Tooltip } from '../../components/ui';
+import { Button, Icon, MODAL_BACKDROP, Spinner, Tooltip } from '../../components/ui';
 import { cn } from '../../components/ui/cn';
 import { useNow } from '../../lib/hooks';
 import { useStore } from '../../lib/store';
@@ -11,12 +11,13 @@ import { cloudClientIfAny } from './cloudClient';
 import {
   giveBack, keepControl, noteInput, placeSurface, refitScreen, releaseScreen, retryScreen, screenCanvas, takeControl, useCloudDesktop, useScreen, wantScreen,
 } from './screenSession';
-import { VIEWER_MARGIN, VIEWER_PILL_H, botScreenLine, fitScreen } from './screenView';
+import { VIEWER_HEADER_H, VIEWER_INSET, VIEWER_MARGIN, VIEWER_PILL_H, botScreenLine, fitScreen } from './screenView';
 
 /*
- * Open desktop (plan §4.4): your AppuBot computer's own screen (or a team's) full screen over the app window, after
- * Grok Bot's computer view: only ✕ at the top (the traffic lights' row), the screen centred as large as it fits in its
- * own shape (`fitScreen`: a box of the screen's shape that noVNC's canvas fills, rounded, on the window's own
+ * Open desktop (plan §4.4): your AppuBot computer's own screen (or a team's) in a dark panel centred in the app window,
+ * a margin of the dimmed app around it (the traffic lights' row stays clear, so the window still drags by its top), after
+ * Grok Bot's computer view: the computer's name and ✕ at the panel's top, the screen centred as large as it fits in its
+ * own shape (`fitScreen`: a box of the screen's shape that noVNC's canvas fills, rounded, on the panel's own
  * background, so no letterbox shows), and right under it, centred, the Watching /
  * Take control pill (chat-core `controlPill`: "👁 Watching" + a white "Take control"; "You’re in control" + Give back,
  * counting down with Keep control near the end of the two idle minutes). Nothing else: the quality follows the link
@@ -113,16 +114,22 @@ export function DesktopView() {
           animate={reveal ? { opacity: 1, clipPath: 'inset(0px 0px 0px 0px round 0px)' } : { opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: reduce ? 0.12 : 0.28, ease: [0.25, 1, 0.5, 1] }}
-          className="fixed inset-0 z-[70] flex flex-col bg-[#0a0a0a] text-white"
+          className="fixed inset-0 z-[70] flex"
+          style={{ padding: `${VIEWER_INSET.top}px ${VIEWER_INSET.side}px ${VIEWER_INSET.side}px` }}
         >
-          <Viewer teach={teach} signIn={signIn} />
+          {/* the dimmed app around the panel: a press there closes it (not while you're in control); its top row drags the window */}
+          <div className={cn('absolute inset-0', MODAL_BACKDROP)} onMouseDown={() => { if (!useScreen.getState().mine) closeCloudDesktop(); }} />
+          <div className="drag absolute inset-x-0 top-0" style={{ height: VIEWER_INSET.top }} />
+          <div className="no-drag squircle relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-sheet bg-[#0a0a0a] text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_25px_50px_-12px_rgba(0,0,0,.6)]">
+            <Viewer teach={teach} signIn={signIn} title={title} />
+          </div>
         </motion.div>
       ) : null}
     </AnimatePresence>
   );
 }
 
-function Viewer({ teach, signIn }: { teach: boolean; signIn?: string }) {
+function Viewer({ teach, signIn, title }: { teach: boolean; signIn?: string; title: string }) {
   // false while it fades out after closing: the picture goes back to the preview at once
   const open = useCloudDesktop((s) => s.open);
   const phase = useScreen((s) => s.phase);
@@ -161,8 +168,11 @@ function Viewer({ teach, signIn }: { teach: boolean; signIn?: string }) {
   // the room for the screen and the pill (inside the margins), measured as it changes: window resizes, full screen,
   // the side panel; the screen's box follows it and the screen's own size (`fb`), and noVNC refits to the box
   const roomRef = useRef<HTMLDivElement | null>(null);
-  // first guess: the window less the header (measured before the first paint anyway), so the picture lands at its size
-  const [room, setRoom] = useState(() => ({ w: window.innerWidth - 2 * VIEWER_MARGIN, h: window.innerHeight - 42 - VIEWER_MARGIN }));
+  // first guess: the window less the panel's inset and header (measured before the first paint anyway), so the picture lands at its size
+  const [room, setRoom] = useState(() => ({
+    w: window.innerWidth - 2 * VIEWER_INSET.side - 2 * VIEWER_MARGIN,
+    h: window.innerHeight - VIEWER_INSET.top - VIEWER_INSET.side - VIEWER_HEADER_H - VIEWER_MARGIN,
+  }));
   useLayoutEffect(() => {
     const el = roomRef.current;
     if (!el) return;
@@ -222,9 +232,12 @@ function Viewer({ teach, signIn }: { teach: boolean; signIn?: string }) {
 
   return (
     <>
-      {/* the top: the traffic lights' row (left clear; right of Windows' and Linux's window buttons), only ✕ */}
-      <header className="drag flex h-[42px] shrink-0 items-center justify-end gap-3 pr-[calc(10px+var(--wco-right))]">
-        {!teach && !signIn ? <ScreenSwitcher /> : null}
+      {/* the panel's top: the computer's name, the screens where bots have their own, and ✕ */}
+      <header className="flex shrink-0 items-center gap-3 pr-2 pl-4" style={{ height: VIEWER_HEADER_H }}>
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          <span className="min-w-0 shrink truncate text-copy text-white/60">{title}</span>
+          {!teach && !signIn ? <ScreenSwitcher /> : null}
+        </div>
         <Tooltip label="Close (Esc)">
           <button
             type="button"
@@ -325,8 +338,7 @@ function ScreenSwitcher() {
     }),
   ];
   return (
-    // clear of macOS's traffic lights at the left
-    <nav aria-label="Screens" className="no-drag mr-auto ml-[78px] flex min-w-0 items-center gap-1 overflow-x-auto">
+    <nav aria-label="Screens" className="flex min-w-0 items-center gap-1 overflow-x-auto">
       {chips.map((c) => {
         const on = c.id === current;
         return (

@@ -92,6 +92,10 @@ export function controlUntil(lastInput: number): number {
 /** the full viewer's layout, in CSS pixels: the room around the screen, the pill under it and the gap between */
 export const VIEWER_MARGIN = 12;
 export const VIEWER_PILL_H = 40;
+/** the panel's top row (the computer's name and ✕) */
+export const VIEWER_HEADER_H = 44;
+/** the panel's place in the window: below the traffic lights' row, and this much of the dimmed app on the other sides */
+export const VIEWER_INSET = { top: 42, side: 24 } as const;
 /** the shape a screen is drawn in before its size is known (the cloud computer's own 1440×900) */
 export const DEFAULT_SCREEN = { w: 1440, h: 900 } as const;
 
