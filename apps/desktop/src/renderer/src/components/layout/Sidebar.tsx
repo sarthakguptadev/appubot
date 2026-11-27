@@ -408,7 +408,7 @@ function ConnectApps() {
  * how much of the agents' plan limits is used, opening Settings › Usage; Upgrade plan, not on the top plan; Invite
  * teammates, on a Work plan you run), then AppuBot on your phone, Support (a chat with us or an email) and Settings,
  * then Log out. The row has no fill of its own, under the pointer, pressed or open (the owner's call, 2026-11-27: "rm
- * this hover bro on name").
+ * this hover bro on name"). The name is grey at rest and turns white under the pointer and while the menu is open.
  */
 function AccountButton({ down }: { down: boolean }) {
   const t = useT();
@@ -450,14 +450,14 @@ function AccountButton({ down }: { down: boolean }) {
             onClick={() => { p.onClick(); void refreshLimits('stale'); }}
             type="button"
             aria-label={name ? `${name}, ${t('common.settings')}` : t('common.settings')}
-            className="ab-press ab-pill squircle no-drag flex h-[43px] w-full min-w-0 items-center gap-2.5 rounded-row px-1 text-left outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)]"
+            className="ab-press ab-pill squircle no-drag flex h-[43px] w-full min-w-0 items-center gap-2.5 rounded-row px-1 text-left text-muted outline-none hover:text-fg aria-expanded:text-fg focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)]"
           >
             <span className="relative grid size-[35px] shrink-0 place-items-center">
               {email ? <PersonAvatar email={email} name={view?.account?.name} size={35} photoUrl={view?.account?.photoUrl} />
                 : <span className="grid size-[35px] place-items-center rounded-full bg-surface-2 text-fg-2"><Icon icon={Settings} size={16} /></span>}
               {down ? <span className="absolute right-0 bottom-0 size-2.5 rounded-full bg-attention ring-2 ring-[var(--ab-coat-solid,var(--ab-bg))]" /> : null}
             </span>
-            <span className="min-w-0 truncate text-copy font-medium text-fg">{name ?? t('common.settings')}</span>
+            <span className="min-w-0 truncate text-copy font-medium">{name ?? t('common.settings')}</span>
           </button>
         </Tooltip>
       )}

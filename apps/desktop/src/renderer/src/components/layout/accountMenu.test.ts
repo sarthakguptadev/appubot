@@ -64,4 +64,9 @@ describe('the account row', () => {
   it('has no fill behind it, under the pointer, pressed or open', () => {
     expect(row()).not.toMatch(/(?:hover|active|aria-expanded):bg-/);
   });
+
+  it('shows the name grey at rest and white under the pointer or while open', () => {
+    expect(row()).toMatch(/text-muted [^"]*hover:text-fg aria-expanded:text-fg/);
+    expect(row()).not.toMatch(/font-medium text-fg/);
+  });
 });
