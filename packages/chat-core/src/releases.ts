@@ -9,6 +9,61 @@ import type { ReleaseNotes } from './whatsNew';
  */
 export const RELEASES: readonly ReleaseNotes[] = [
   {
+    version: '2026.1128.1',
+    features: [
+      {
+        id: 'new-look-1127',
+        title: 'A fresh new look',
+        description: 'AppuBot has a cleaner, roomier look: pinned bots are tiles in the sidebar, chats are wider and a bot’s messages group together, the message box is slimmer, and search, menus and dialogs open the moment you ask for them.',
+      },
+      {
+        id: 'avatars-3d',
+        title: 'Bots in 3D',
+        description: 'Bot avatars are now 3D characters. The round bot is a shaded ball that turns to look at your pointer, glances about, spins and flips while it works, and does a little happy dance when it’s done.',
+      },
+      {
+        id: 'new-settings',
+        title: 'A new Settings',
+        description: 'Settings opens over your chats as its own window, with one search box that finds any setting, rounded cards, larger text and blue switches. Esc or a click outside closes it.',
+      },
+      {
+        id: 'custom-connectors',
+        title: 'Add your own connectors',
+        description: 'In Settings › Apps you can add your own MCP servers, remote or on this computer, or paste a config from another app. Your bots can use their tools, and you choose which bots get each one and which tools are on.',
+      },
+      {
+        id: 'bot-screens',
+        title: 'A screen for each bot',
+        description: 'On AppuBot Cloud every bot gets a screen of its own, so several bots can use the cloud computer at once. A bot’s Computer tab shows its screen live, with Take control and Full size.',
+      },
+      {
+        id: 'media-in-chat',
+        title: 'Audio, video and pictures in chat',
+        description: 'Songs, recordings and clips play right in the chat in AppuBot’s own player, with their real length, a scrubber and Open or Download. Pictures show as themselves in a rounded box, and the ones you send sit right over your message.',
+      },
+      {
+        id: 'what-its-doing',
+        title: 'See what a bot is doing',
+        description: 'While a bot works, its chat says what it is doing right now, like “Reading report.md” or “Searching the web”, and “Working” shows the moment you send.',
+      },
+      {
+        id: 'new-replies',
+        title: 'New replies stand out',
+        description: 'Pinned bots show a blue dot when they have a reply for you, and a chat marks where its new replies begin.',
+      },
+      {
+        id: 'clearer-questions',
+        title: 'Clearer questions',
+        description: 'When a bot asks you something, its options are lettered A, B, C and fold to the one you pick, and the message box tells you that typing answers it.',
+      },
+      {
+        id: 'several-messages',
+        title: 'Several messages in a row',
+        description: 'Bots can send as many separate messages in a row as you ask for.',
+      },
+    ],
+  },
+  {
     version: '2026.1126.2',
     features: [
       {
