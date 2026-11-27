@@ -15,7 +15,7 @@ import { createCore, type Core } from '../app';
 import { FakeRuntime } from '../testing/fakeRuntime';
 import { silentLogger } from '../util';
 import { MID_JOB_HINT, OPENING_NOTE_AFTER_MS } from './chat';
-import { NOTE_BURST, NOTE_EVERY_MS, NOTE_MAX_CHARS, ROUTINE_NOTE_REASON } from './notes';
+import { NOTE_MAX_CHARS, NOTE_TURN_MAX, ROUTINE_NOTE_REASON } from './notes';
 
 let core: Core;
 let runtime: FakeRuntime;
@@ -177,8 +177,6 @@ describe('what the bot sends on its own while it works (send_message)', () => {
   };
 
   it('is a bubble in the reply being written, raises no notice, and the turn’s end raises the one there is', async () => {
-    // a quiet stretch first: how often it may write carries over from the turns before
-    vi.useFakeTimers({ toFake: ['Date'], now: Date.now() + 10 * NOTE_EVERY_MS });
     await startSlowTurn();
     const slow = messages().at(-1)!;
     notices.length = 0;
@@ -197,51 +195,53 @@ describe('what the bot sends on its own while it works (send_message)', () => {
     expect(notices[0]).not.toContain('On it');
   });
 
-  it('is turned down when it repeats the last one, is too long, or comes too often, in words the bot can act on', async () => {
-    vi.useFakeTimers({ toFake: ['Date'], now: Date.now() + 20 * NOTE_EVERY_MS });
+  it('is turned down when it repeats the last one or is too long, in words the bot can act on', async () => {
     await startSlowTurn();
     const slow = messages().at(-1)!;
     expect(refused('Reading the statement.')).toBe('');
     expect(refused('reading the statement')).toMatch(/already told the user/);
     expect(refused('x'.repeat(NOTE_MAX_CHARS + 1))).toMatch(new RegExp(`${NOTE_MAX_CHARS + 1} characters is too long`));
-    for (let i = 1; i < NOTE_BURST; i++) expect(refused(`Step ${i} is done.`)).toBe('');
-    expect(refused('One more step is done.')).toMatch(/too many messages in a row/);
-    // only the ones that went out are in the chat
-    expect(said(messages().find((m) => m.id === slow.id))).toEqual(['Reading the statement.', ...Array.from({ length: NOTE_BURST - 1 }, (_, i) => `Step ${i + 1} is done.`)]);
-    // a minute later one more may go
-    vi.setSystemTime(Date.now() + NOTE_EVERY_MS);
-    expect(refused('The PDF is built.')).toBe('');
-    expect(refused('And checked.')).toMatch(/too many messages in a row/);
+    // only the one that went out is in the chat
+    expect(said(messages().find((m) => m.id === slow.id))).toEqual(['Reading the statement.']);
+    runtime.finishSlow(session());
+    await idle();
+  });
+
+  it('sends ten separate messages in a row as ten bubbles, and stops only a turn that runs away', async () => {
+    await startSlowTurn();
+    const slow = messages().at(-1)!;
+    const ten = Array.from({ length: 10 }, (_, i) => `Message ${i + 1}`);
+    for (const t of ten) expect(refused(t)).toBe('');
+    expect(said(messages().find((m) => m.id === slow.id))).toEqual(ten);
+    for (let i = ten.length; i < NOTE_TURN_MAX; i++) expect(refused(`Step ${i} is done.`)).toBe('');
+    expect(refused('One step too many.')).toMatch(/far more messages than one reply needs/);
+    expect(said(messages().find((m) => m.id === slow.id))).toHaveLength(NOTE_TURN_MAX);
     runtime.finishSlow(session());
     await idle();
 
-    // a new turn may open as the last one did, but not sooner than the minute allows
+    // a new turn starts afresh, and may open as the last one did
     await startSlowTurn();
-    expect(refused('The PDF is built.')).toMatch(/too many messages in a row/);
-    vi.setSystemTime(Date.now() + NOTE_EVERY_MS);
-    expect(refused('The PDF is built.')).toBe('');
+    expect(refused(`Step ${NOTE_TURN_MAX - 1} is done.`)).toBe('');
     runtime.finishSlow(session());
     await idle();
   });
 
   it('always lets the answer to a message the user wrote mid-job out, once', async () => {
-    vi.useFakeTimers({ toFake: ['Date'], now: Date.now() + 40 * NOTE_EVERY_MS });
     runtime.steering = true;
     runtime.steerAnswerMs = 400;
     await startSlowTurn();
-    for (let i = 0; i < NOTE_BURST; i++) expect(refused(`Milestone ${i}.`)).toBe('');
-    expect(refused('One too many.')).toMatch(/too many messages in a row/);
+    for (let i = 0; i < NOTE_TURN_MAX; i++) expect(refused(`Milestone ${i}.`)).toBe('');
+    expect(refused('One too many.')).toMatch(/far more messages than one reply needs/);
     const sent = send('what is 17 times 3?');
     await vi.waitFor(() => expect(messages().at(-1)?.id).toBe(sent.agentMessageId));
     expect(refused('51.')).toBe('');
-    expect(refused('And another thing.')).toMatch(/too many messages in a row/);
+    expect(refused('And another thing.')).toMatch(/far more messages than one reply needs/);
     // it sits in the reply under the question, which is still being written
     expect(said(messages().at(-1))).toEqual(['51.']);
     await idle();
   });
 
   it('sends nothing on a routine’s run, where nobody is watching, but answers a message the user writes into it', async () => {
-    vi.useFakeTimers({ toFake: ['Date'], now: Date.now() + 50 * NOTE_EVERY_MS });
     runtime.steering = true;
     runtime.steerAnswerMs = 400;
     const before = runtime.prompts.length;
@@ -271,7 +271,6 @@ describe('the line a bot writes before it starts on a job', () => {
   };
 
   it('shows as a note once the job has run a while, with no notice, and the reply at the end still stands', async () => {
-    vi.useFakeTimers({ toFake: ['Date'], now: Date.now() + 60 * NOTE_EVERY_MS });
     core.services.chat.openingNoteAfterMs = 1000;
     const job = await startJob();
     notices.length = 0;
@@ -291,7 +290,6 @@ describe('the line a bot writes before it starts on a job', () => {
   });
 
   it('stays out of the chat when the task was quick', async () => {
-    vi.useFakeTimers({ toFake: ['Date'], now: Date.now() + 80 * NOTE_EVERY_MS });
     core.services.chat.openingNoteAfterMs = 1000;
     const job = await startJob();
     runtime.finishSlow(session());
@@ -301,7 +299,6 @@ describe('the line a bot writes before it starts on a job', () => {
   });
 
   it('stays as it is when the bot sent a note itself, or when the message wasn’t the user’s own', async () => {
-    vi.useFakeTimers({ toFake: ['Date'], now: Date.now() + 100 * NOTE_EVERY_MS });
     core.services.chat.openingNoteAfterMs = 1000;
     const job = await startJob();
     core.services.chat.say(thread.id, 'On it: three reports to compare.');
@@ -311,7 +308,6 @@ describe('the line a bot writes before it starts on a job', () => {
     await idle();
 
     // a routine's run: nobody is watching the chat for it
-    vi.setSystemTime(Date.now() + 10 * NOTE_EVERY_MS);
     core.services.chat.openingNoteAfterMs = 100;
     const before = runtime.prompts.length;
     core.services.chat.send({ threadId: thread.id, text: 'a long job, every morning', attachments: [], images: [] }, 'routine');
@@ -325,7 +321,6 @@ describe('the line a bot writes before it starts on a job', () => {
   });
 
   it('is the answer to a message taken mid-job when the bot wrote it instead of sending it: it shows at once', async () => {
-    vi.useFakeTimers({ toFake: ['Date'], now: Date.now() + 120 * NOTE_EVERY_MS });
     runtime.steering = true;
     runtime.steerAnswerMs = 20;
     runtime.steerThenStep = true;

@@ -192,7 +192,6 @@ describe('a note sent mid-job is not the reply', () => {
   });
 
   it('never carries a block as the line a bot wrote before its first step, and that block offers nothing', async () => {
-    // the third note of this chat: as many as may go out in a row
     core.services.chat.openingNoteAfterMs = 50;
     const job = await startJob();
     for (const op of words(1, `I’ll pull the three reports and compare them.${BLOCK}`)) runtime.hooks.onTurnOp(job.sid, op);
