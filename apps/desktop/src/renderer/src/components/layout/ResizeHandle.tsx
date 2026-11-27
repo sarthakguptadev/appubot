@@ -34,7 +34,7 @@ export function ResizeHandle({ width, onWidth, min, max, side, onReset, label = 
       className={cn('no-drag group absolute top-0 bottom-0 z-10 w-2 cursor-col-resize', side === 'right' ? '-right-1' : '-left-1')}
     >
       {/* the hover line: the app's ink, a step stronger than a hairline (it was an indigo no other control used) */}
-      <div className="mx-auto h-full w-px bg-transparent transition-colors group-hover:bg-[color-mix(in_srgb,var(--ab-fg)_20%,transparent)] group-active:bg-[color-mix(in_srgb,var(--ab-fg)_32%,transparent)]" />
+      <div className="mx-auto h-full w-px bg-transparent group-hover:bg-[color-mix(in_srgb,var(--ab-fg)_20%,transparent)] group-active:bg-[color-mix(in_srgb,var(--ab-fg)_32%,transparent)]" />
     </div>
   );
 }

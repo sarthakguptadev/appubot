@@ -7,21 +7,21 @@ import type { Bot, Thread } from '@appubot/protocol';
 import { BotAvatar, Tooltip, cn } from '../../components/ui';
 import { setState, ui, useStore } from '../../lib/store';
 
-/** a crumb inside the capsule: 32px, so the capsule is 40 with its 4px around them */
-export const CRUMB = 'ab-pill no-drag flex h-8 min-w-0 items-center gap-2 rounded-control transition-colors duration-100 hover:bg-fg/5 focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]';
+/**
+ * the capsule's one crumb is the capsule's whole face: the raised fill of the sidebar's own controls, a shade deeper
+ * under the pointer edge to edge (no ring of the capsule left around it), 40px tall, a pill in the Round look
+ */
+export const CRUMB = 'ab-edge ab-pill no-drag squircle flex h-10 min-w-0 items-center gap-2 rounded-control-lg bg-surface-2 hover:bg-surface-3 focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]';
 /**
  * The header's strip: three columns, so the capsule sits in the chat's middle whatever is at its right. 64px tall (main's `TOP_STRIP`: the capsule keeps 12px above it, as from the sides) and
  * a drag region like the sidebar's strip beside it; at the window's right edge (no side panel) the buttons keep clear
  * of Windows' and Linux's window buttons (`--wco-right`, set by the caller).
  */
 export const HEADER_STRIP = 'app-header drag grid h-16 shrink-0 grid-cols-[minmax(0,1fr)_minmax(0,auto)_minmax(0,1fr)] items-center gap-2 pr-3 pl-3';
-/**
- * The breadcrumb's capsule: the raised fill of the sidebar's own controls, 40px tall with a 24px avatar and the name in
- * 14px medium (7.5px before the avatar, 13.5 after the name), a pill in the Round look.
- */
-export const CRUMB_CAPSULE = 'ab-pill no-drag squircle flex min-w-0 max-w-full items-center rounded-control-lg bg-surface-2 p-1';
-/** the capsule's one crumb: an avatar (the bot, a group's members) and a name */
-export const CRUMB_LEAD = 'shrink-0 pr-[9.5px] pl-[3.5px]';
+/** The breadcrumb's capsule: the strip's middle column, holding its one crumb. */
+export const CRUMB_CAPSULE = 'no-drag flex min-w-0 max-w-full items-center';
+/** the crumb's content: an avatar of 24px (the bot, a group's members) and the name in 14px medium, 7.5px before the avatar and 13.5 after the name */
+export const CRUMB_LEAD = 'shrink-0 pr-[13.5px] pl-[7.5px]';
 /** the name in it */
 export const CRUMB_TEXT = 'truncate text-copy font-medium leading-5 text-fg';
 export function ChatHeader({ bot, thread }: { bot: Bot; thread: Thread | undefined }) {

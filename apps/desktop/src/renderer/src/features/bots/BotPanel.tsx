@@ -128,7 +128,7 @@ function Instructions({ bot, onBack }: { bot: Bot; onBack: () => void }) {
         <button
           type="button"
           onClick={() => { flush(); onBack(); }}
-          className="ab-pill squircle -ml-1.5 inline-flex h-8 items-center gap-1 rounded-control-sm pr-3 pl-1.5 text-copy text-fg outline-none transition-colors hover:bg-fg/5 focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]"
+          className="ab-pill squircle -ml-1.5 inline-flex h-8 items-center gap-1 rounded-control-sm pr-3 pl-1.5 text-copy text-fg outline-none hover:bg-fg/5 focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]"
         >
           <Icon icon={ChevronLeft} size={15} className="shrink-0 text-muted" />
           Instructions
@@ -202,7 +202,7 @@ export function BotPanel() {
               type="button"
               onClick={() => ui.openSettings('permissions', settingAnchorId(PERMISSIONS_TITLE))}
               aria-label="macOS hasn’t given AppuBot Accessibility and Screen Recording yet. Allow"
-              className="ab-pill squircle -mr-2 inline-flex h-7 shrink-0 items-center gap-1.5 rounded-control-sm px-2 text-ui text-warning outline-none transition-colors hover:bg-fg/5 focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]"
+              className="ab-pill squircle -mr-2 inline-flex h-7 shrink-0 items-center gap-1.5 rounded-control-sm px-2 text-ui text-warning outline-none hover:bg-fg/5 focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]"
             >
               <Icon icon={AlertCircle} size={14} className="shrink-0" />
               Allow
@@ -218,7 +218,7 @@ export function BotPanel() {
         <button
           type="button"
           onClick={() => ui.openApps('connected')}
-          className={cn(ROW, 'w-full text-left outline-none transition-colors hover:bg-fg/[.04] focus-visible:bg-fg/[.04]')}
+          className={cn(ROW, 'w-full text-left outline-none hover:bg-fg/[.04] focus-visible:bg-fg/[.04]')}
         >
           <span className={ROW_LABEL}>Apps</span>
           <span className="flex-1" />
@@ -227,7 +227,7 @@ export function BotPanel() {
         <button
           type="button"
           onClick={() => setInstructionsFor(bot.id)}
-          className={cn(ROW, 'w-full text-left outline-none transition-colors hover:bg-fg/[.04] focus-visible:bg-fg/[.04]')}
+          className={cn(ROW, 'w-full text-left outline-none hover:bg-fg/[.04] focus-visible:bg-fg/[.04]')}
         >
           <span className={ROW_LABEL}>Instructions</span>
           <span className="min-w-0 flex-1 truncate text-right text-ui text-muted">{bot.instructions?.trim() ? '' : 'None yet'}</span>

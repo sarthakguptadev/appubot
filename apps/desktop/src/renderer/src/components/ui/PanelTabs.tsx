@@ -21,7 +21,7 @@ export function PanelTabs<T extends string>({ items, value, onChange, small }: {
             aria-selected={active}
             onClick={() => onChange(t.id)}
             className={cn(
-              'ab-pill squircle relative inline-flex items-center rounded-control-sm px-2 whitespace-nowrap transition-colors duration-150 ease-rare',
+              'ab-pill squircle relative inline-flex items-center rounded-control-sm px-2 whitespace-nowrap',
               small ? 'h-6 text-note font-medium' : 'h-7 text-ui font-medium',
               'focus-visible:outline-none focus-visible:shadow-[inset_0_0_0_1.5px_color-mix(in_srgb,var(--ab-fg)_35%,transparent)]',
               active ? 'text-fg' : 'text-muted hover:text-fg',

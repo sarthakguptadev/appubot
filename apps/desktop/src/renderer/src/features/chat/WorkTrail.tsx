@@ -122,10 +122,10 @@ function StatusLine({ msg, live, waiting, endAt, expandable, open, drop, onToggl
     <span className="relative flex size-4 shrink-0 items-center justify-center">
       {open ? <Chevron open /> : (
         <>
-          <span className={cn('flex transition-opacity duration-200', expandable && 'group-hover:opacity-0')}>
+          <span className={cn('flex', expandable && 'group-hover:opacity-0')}>
             <BotAvatar bot={bot} size={16} mood={live ? (waiting ? 'needs-you' : 'working') : undefined} still={!live} />
           </span>
-          {expandable ? <Chevron className="absolute opacity-0 transition-opacity duration-200 group-hover:opacity-100" /> : null}
+          {expandable ? <Chevron className="absolute opacity-0 group-hover:opacity-100" /> : null}
         </>
       )}
     </span>
@@ -136,7 +136,7 @@ function StatusLine({ msg, live, waiting, endAt, expandable, open, drop, onToggl
       {waiting ? 'Waiting for you' : <>Working for <span className="tabular-nums"><LiveElapsed since={msg.createdAt} /></span></>}
     </span>
   ) : (
-    <span className="wt-dim wt-hover-up min-w-0 flex-1 truncate text-copy transition-colors duration-200">{formatTurnHeaderLabel(turnHeader(msg, endAt))}</span>
+    <span className="wt-dim wt-hover-up min-w-0 flex-1 truncate text-copy">{formatTurnHeaderLabel(turnHeader(msg, endAt))}</span>
   );
   const row = cn(STATUS_ROW, open && drop && 'wt-fold-drop');
   if (!expandable) return <div className={row}>{icon}{label}</div>;
@@ -287,7 +287,7 @@ function ThoughtStep({ text, streaming }: { text: string; streaming: boolean }) 
   return (
     <div className="flex min-w-0 flex-col">
       <button type="button" aria-expanded={open} onClick={() => setOpen((o) => !o)} className={cn('group', ROW, 'text-left')}>
-        <span className={cn('wt-dim wt-hover-up min-w-0 flex-1 truncate text-copy transition-colors duration-200', pulse)}>{open ? 'Thinking' : line}</span>
+        <span className={cn('wt-dim wt-hover-up min-w-0 flex-1 truncate text-copy', pulse)}>{open ? 'Thinking' : line}</span>
       </button>
       <DisclosureRegion open={open} className="min-w-0 pb-2"><ChatMarkdown text={text} variant="muted" className="wt-reasoning text-copy" /></DisclosureRegion>
     </div>
@@ -302,7 +302,7 @@ function NoteStep({ text }: { text: string }) {
   return (
     <div className="flex min-w-0 flex-col">
       <button type="button" aria-expanded={open} onClick={() => setOpen((o) => !o)} className={cn('group', ROW, 'text-left')}>
-        <span className="wt-target min-w-0 flex-1 truncate text-copy transition-colors duration-200 group-hover:text-fg">{line}</span>
+        <span className="wt-target min-w-0 flex-1 truncate text-copy group-hover:text-fg">{line}</span>
       </button>
       <DisclosureRegion open={open} className="min-w-0 pb-2"><ChatMarkdown text={text} variant="muted" className="text-copy" /></DisclosureRegion>
     </div>
@@ -408,7 +408,7 @@ function ActivityGroup({ steps, opts, active, lastIndex }: { steps: TrailStep[];
     <span ref={syncAnimationsToTimelineOrigin} className="shimmer min-w-0 truncate text-copy text-muted">{title}</span>
   ) : (
     // dimmed to sit with the icons: the work is chrome around the reply, and only the reply reads at full strength
-    <span className="wt-dim wt-hover-up min-w-0 truncate text-copy transition-colors duration-200">{title}</span>
+    <span className="wt-dim wt-hover-up min-w-0 truncate text-copy">{title}</span>
   );
   return (
     <div className="flex min-w-0 flex-col">

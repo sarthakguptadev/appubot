@@ -164,7 +164,7 @@ export function ToolGroupRow({ tools, settled, liveTail, interrupted, endedAt, f
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
-        className="inline-flex max-w-full items-center gap-1.5 py-0.5 text-left text-copy leading-normal text-muted transition-colors duration-200 hover:text-fg"
+        className="inline-flex max-w-full items-center gap-1.5 py-0.5 text-left text-copy leading-normal text-muted hover:text-fg"
       >
         <IconBox icon={newest ? toolIcon(newest) : CATEGORY_ICON[summary.icon]} />
         <span className="min-w-0 truncate">{label}</span>

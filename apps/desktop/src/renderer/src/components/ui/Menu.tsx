@@ -19,12 +19,21 @@ export interface MenuItem {
 }
 
 /**
- * A menu row (Rare UI's menu shell: `p-1.5`, rows of 36px, 14px, the icon muted: pills in the Round look (`ab-pill`), squircle corners in the Squircle one); hover and
- * keyboard focus fill it with an ink tint. Shared by the app's other lists that read as menus.
+ * A row's fill, everywhere a list sits in a box: a light ink wash under the pointer, a darker one while it's pressed,
+ * picked (the keyboard's row, the current choice) or holding its menu open. Instant, like every surface.
+ */
+export const ROW_HOVER = 'hover:bg-[color-mix(in_srgb,var(--ab-fg)_5%,transparent)]';
+export const ROW_PRESS = 'active:bg-[color-mix(in_srgb,var(--ab-fg)_10%,transparent)]';
+export const ROW_ON = 'bg-[color-mix(in_srgb,var(--ab-fg)_10%,transparent)]';
+
+/**
+ * A menu row (Rare UI's menu shell: `p-1.5`, rows of 36px, 14px, the icon muted). A rounded rectangle in both looks,
+ * its corners the menu's own less the 6px between them (14 − 6 = 8), never a pill: a pill only sits in a pill.
+ * Shared by the app's other lists that read as menus.
  */
 export const MENU_ITEM =
-  'ab-pill squircle flex h-9 w-full items-center gap-2.5 rounded-control-sm px-2.5 text-left text-copy transition-colors duration-100 outline-none disabled:opacity-40';
-export const MENU_ITEM_IDLE = 'text-fg hover:bg-[color-mix(in_srgb,var(--ab-fg)_8%,transparent)] focus-visible:bg-[color-mix(in_srgb,var(--ab-fg)_8%,transparent)]';
+  'squircle flex h-9 w-full items-center gap-2.5 rounded-control-sm px-2.5 text-left text-copy outline-none disabled:opacity-40';
+export const MENU_ITEM_IDLE = cn('text-fg focus-visible:bg-[color-mix(in_srgb,var(--ab-fg)_10%,transparent)]', ROW_HOVER, ROW_PRESS);
 export const MENU_ITEM_DANGER = 'text-danger hover:bg-danger-soft focus-visible:bg-danger-soft';
 /** A separator between groups of a menu: the Settings cards' row hairline. */
 export const MENU_SEPARATOR = 'mx-2 my-1 h-px bg-[color-mix(in_srgb,var(--ab-fg)_7%,transparent)]';

@@ -119,8 +119,8 @@ function GlOrb({ color, phase, muted, fallback }: { color: string; phase: VoiceP
   const getScale = () => 0.86 + 0.012 * Math.sin((performance.now() / 3600) * Math.PI * 2) + Math.min(1, motion.current.level) * 0.1;
   return (
     <Fallback fallback={fallback}>
-      {/* the canvas shows once its chunk is here */}
-      <Suspense fallback={<div className="size-full" />}>
+      {/* the CSS orb stands in until the canvas's chunk is here, so the orb is never missing */}
+      <Suspense fallback={fallback}>
         <FluidOrb className="size-full" color={color} muted={muted} getSpeed={getSpeed} getScale={getScale} aria-hidden />
       </Suspense>
     </Fallback>

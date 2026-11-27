@@ -39,7 +39,7 @@ export function SetupPill({ icon, label, onAction, onDismiss, chip }: { icon: ty
         onClick={onAction}
         className={chip
           ? cn(LANDING_CHIP, 'max-w-full gap-2')
-          : 'ab-pill ab-press squircle inline-flex h-8 max-w-full items-center gap-2 rounded-control bg-surface-2 pr-3.5 pl-3 text-copy text-fg outline-none transition-colors hover:bg-surface-3 focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]'}
+          : 'ab-pill ab-press squircle inline-flex h-8 max-w-full items-center gap-2 rounded-control bg-surface-2 pr-3.5 pl-3 text-copy text-fg outline-none hover:bg-surface-3 focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]'}
       >
         <Icon icon={icon} size={15} className="shrink-0 text-fg-2" />
         <span className="truncate">{label}</span>

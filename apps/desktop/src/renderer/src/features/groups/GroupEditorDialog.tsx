@@ -66,7 +66,7 @@ export function GroupEditorDialog({ open, onClose, groupId, withBotId }: { open:
           {bots.length ? bots.map((b) => {
             const on = botIds.includes(b.id);
             return (
-              <div key={b.id} onClick={() => toggle(b.id)} className="flex cursor-default items-center gap-3 px-4 py-2.5 transition-colors hover:bg-fg/[.025]">
+              <div key={b.id} onClick={() => toggle(b.id)} className="flex cursor-default items-center gap-3 px-4 py-2.5 hover:bg-fg/[.025]">
                 <BotAvatar bot={b} size={26} still />
                 <span className="flex min-w-0 flex-1 flex-col">
                   <span className="flex items-center gap-1.5 text-copy font-medium text-fg">
@@ -85,7 +85,7 @@ export function GroupEditorDialog({ open, onClose, groupId, withBotId }: { open:
             <Menu
               align="end"
               trigger={(p) => (
-                <button {...p} type="button" aria-label={`Lead: ${leadLabel}`} className="flex h-8 items-center gap-1.5 ab-pill squircle rounded-control px-2 text-copy text-fg transition-colors hover:bg-fg/5 aria-expanded:bg-fg/5">
+                <button {...p} type="button" aria-label={`Lead: ${leadLabel}`} className="flex h-8 items-center gap-1.5 ab-pill squircle rounded-control px-2 text-copy text-fg hover:bg-fg/5 aria-expanded:bg-fg/5">
                   {leadBot ?? firstChief ? <BotAvatar bot={(leadBot ?? firstChief)!} size={18} still /> : null}
                   <span className="max-w-[12rem] truncate">{leadLabel}</span>
                   <Icon icon={ChevronDown} size={13} className="text-muted" />

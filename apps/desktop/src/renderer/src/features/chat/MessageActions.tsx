@@ -19,7 +19,7 @@ export const HOVER_ACTIONS = 'opacity-0 transition-opacity duration-150 group-ho
 const fullTime = (t: number) =>
   new Date(t).toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', ...clockHours() });
 
-const ACTION_BUTTON = 'ab-pill inline-flex size-6 items-center justify-center rounded-md text-muted transition-colors hover:bg-fg/5 hover:text-fg focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]';
+const ACTION_BUTTON = 'ab-pill inline-flex size-6 items-center justify-center rounded-md text-muted hover:bg-fg/5 hover:text-fg focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]';
 
 const SOURCE_ICONS: Record<InfoSource, IconComponent> = { computer: Laptop, phone: Smartphone, telegram: Telegram, routine: Repeat, appubot: Bot, bot: Bot };
 const ROW_ICONS: Record<string, IconComponent> = { Sent: Clock, Spoken: Mic, Attached: Paperclip };

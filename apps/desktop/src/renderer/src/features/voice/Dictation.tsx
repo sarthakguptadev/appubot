@@ -21,7 +21,7 @@ type DictationState = 'idle' | 'opening' | 'recording' | 'transcribing';
 
 /** A quiet round control in the composer: a faint fill and hairline, the glyph a step back from the text (+, the mic, ✕). */
 export const QUIET_ROUND =
-  'ab-press ab-pill squircle flex size-8 shrink-0 items-center justify-center rounded-control bg-fg/[.06] text-fg/60 shadow-[inset_0_0_0_.5px_color-mix(in_srgb,var(--ab-fg)_9%,transparent)] transition-colors duration-100 hover:bg-fg/10 hover:text-fg focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)] disabled:opacity-50';
+  'ab-press ab-pill squircle flex size-8 shrink-0 items-center justify-center rounded-control bg-fg/[.06] text-fg/60 shadow-[inset_0_0_0_.5px_color-mix(in_srgb,var(--ab-fg)_9%,transparent)] hover:bg-fg/10 hover:text-fg focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)] disabled:opacity-50';
 
 /** how many bars the listening strip draws: the newest on the right */
 const BARS = 18;

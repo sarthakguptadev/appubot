@@ -110,13 +110,13 @@ export function NewBotDialog({ open, onClose }: { open: boolean; onClose: () => 
               placeholder="Name your bot"
               aria-label="Name"
               maxLength={60}
-              className="ab-pill squircle h-9 w-full rounded-control bg-transparent px-10 text-center text-lead text-fg outline-none transition-colors duration-150 placeholder:text-muted hover:bg-fg/[.04] focus:bg-fg/[.05]"
+              className="ab-pill squircle h-9 w-full rounded-control bg-transparent px-10 text-center text-lead text-fg outline-none placeholder:text-muted hover:bg-fg/[.04] focus:bg-fg/[.05]"
             />
             <button
               type="button"
               onClick={reroll}
               aria-label="Another name"
-              className="ab-pill ab-press squircle absolute top-1/2 right-1 grid size-7 -translate-y-1/2 place-items-center rounded-control-sm text-muted outline-none transition-colors hover:bg-surface-2 hover:text-fg focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]"
+              className="ab-pill ab-press squircle absolute top-1/2 right-1 grid size-7 -translate-y-1/2 place-items-center rounded-control-sm text-muted outline-none hover:bg-surface-2 hover:text-fg focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]"
             >
               <Icon icon={Dice} size={16} />
             </button>

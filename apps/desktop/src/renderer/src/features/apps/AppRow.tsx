@@ -39,7 +39,7 @@ export function AppLogoStack({ toolkits, ring, max = 4 }: { toolkits: Pick<AppTo
 
 const PILL =
   'ab-press ab-pill squircle no-drag inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-[9px] bg-surface-2 px-3.5 text-ui font-semibold tracking-ui text-fg ' +
-  'transition-colors duration-100 hover:bg-surface-3 focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-bg),0_0_0_4px_var(--ab-ring)]';
+  'hover:bg-surface-3 focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-bg),0_0_0_4px_var(--ab-ring)]';
 
 /**
  * The row's right side: Add / Connect, a spinner while signing in, or "Added" (with Add another account and Disconnect
@@ -76,7 +76,7 @@ export function AppAction({ toolkit: t, conns, listed = false }: { toolkit: AppT
             {...p}
             type="button"
             className={cn(
-              'ab-pill squircle no-drag group/added inline-flex h-8 shrink-0 items-center gap-1 rounded-[9px] px-2 text-ui transition-colors hover:bg-surface-2 focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]',
+              'ab-pill squircle no-drag group/added inline-flex h-8 shrink-0 items-center gap-1 rounded-[9px] px-2 text-ui hover:bg-surface-2 focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]',
               // the word ends at the row's edge, like the pills above and below it
               listed ? '-mr-2 font-medium text-success' : 'text-muted hover:text-fg',
             )}

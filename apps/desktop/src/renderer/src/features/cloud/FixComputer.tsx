@@ -152,7 +152,7 @@ export function RepairDialog({ kind, team, version, onClose }: { kind: CloudRepa
                   const l = backupLabel(b, now);
                   const on = b.id === picked;
                   return (
-                    <button key={b.id} type="button" role="radio" aria-checked={on} onClick={() => setPicked(b.id)} className={cn('flex w-full items-center gap-3 px-3.5 py-2.5 text-left transition-colors hover:bg-surface-2', on && 'bg-surface-2')}>
+                    <button key={b.id} type="button" role="radio" aria-checked={on} onClick={() => setPicked(b.id)} className={cn('flex w-full items-center gap-3 px-3.5 py-2.5 text-left hover:bg-surface-2', on && 'bg-surface-2')}>
                       <span className={cn('flex size-4 shrink-0 items-center justify-center rounded-full border', on ? 'border-accent bg-accent text-white' : 'border-fg/30')}>{on ? <Icon icon={Check} size={10} /> : null}</span>
                       <span className="min-w-0 flex-1 text-copy text-fg tabular-nums">{l.title}</span>
                       <span className="shrink-0 text-note text-muted">{l.detail}</span>

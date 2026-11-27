@@ -239,7 +239,7 @@ export function ImageTab({ onPicked }: { onPicked: (id: string) => void }) {
         onDrop={onDrop}
         disabled={busy}
         className={cn(
-          'squircle flex min-h-[132px] w-full flex-col items-center justify-center gap-2 rounded-card border border-dashed px-4 py-5 text-center outline-none transition-colors focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]',
+          'squircle flex min-h-[132px] w-full flex-col items-center justify-center gap-2 rounded-card border border-dashed px-4 py-5 text-center outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]',
           over ? 'border-[color-mix(in_srgb,var(--ab-fg)_40%,transparent)] bg-fg/[.05]' : 'border-[color-mix(in_srgb,var(--ab-fg)_16%,transparent)] hover:bg-fg/[.03]',
         )}
       >
@@ -354,7 +354,7 @@ export function GenerateTab({ color, providerId, modelId, botId, open, onPicked 
               ))
               : state.candidates.map((d, i) => (
                 <button key={i} type="button" disabled={saving !== null} onClick={() => void pick(d, i)} title={d.name}
-                  className={cn('squircle flex h-[84px] min-w-0 flex-col items-center justify-center gap-1 rounded-card bg-surface-2 px-1.5 outline-none transition-colors hover:bg-surface-3 focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]', saving === i && 'bg-surface-3')}>
+                  className={cn('squircle flex h-[84px] min-w-0 flex-col items-center justify-center gap-1 rounded-card bg-surface-2 px-1.5 outline-none hover:bg-surface-3 focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]', saving === i && 'bg-surface-3')}>
                   <BotAvatar figure={d} color={color} size={44} still={saving !== i} mood={saving === i ? 'working' : 'rest'} />
                   <span className="max-w-full truncate text-note text-fg-2">{d.name}</span>
                 </button>

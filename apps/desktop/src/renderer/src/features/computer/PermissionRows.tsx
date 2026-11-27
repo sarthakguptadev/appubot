@@ -78,7 +78,7 @@ export function PermissionEnd({ state, label = 'Allowed', action, onAction, busy
       disabled={busy}
       aria-label={title ? `${title}: ${action ?? 'Allow'}` : undefined}
       className={cn(
-        'ab-pill squircle -mr-2 inline-flex h-7 shrink-0 items-center gap-1.5 rounded-control-sm px-2 text-ui outline-none transition-colors hover:bg-fg/5 focus-visible:shadow-[0_0_0_2px_var(--ab-ring)] disabled:opacity-60',
+        'ab-pill squircle -mr-2 inline-flex h-7 shrink-0 items-center gap-1.5 rounded-control-sm px-2 text-ui outline-none hover:bg-fg/5 focus-visible:shadow-[0_0_0_2px_var(--ab-ring)] disabled:opacity-60',
         optional ? 'text-fg-2' : 'text-warning',
       )}
     >

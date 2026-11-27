@@ -22,11 +22,9 @@
 }
 
 @keyframes caret-blink { to { visibility: hidden; } }
-/* a popover or tooltip arriving (T3 Code's): a fade from 98%, no travel, no blur */
+/* a small badge arriving: a fade from 98%. Menus, popovers, tooltips and dialogs don't use it: they open and close in
+   one frame */
 @keyframes pop-in { from { opacity: 0; transform: scale(.98); } to { opacity: 1; transform: none; } }
-/* the way out of a popover (components/ui/useLeaving.ts keeps it mounted for LEAVE_MS): the way in, backwards */
-@keyframes pop-out { to { opacity: 0; transform: scale(.98); } }
-.ab-leaving { animation: pop-out 150ms var(--ease-t3) forwards !important; pointer-events: none; }
 @keyframes message-enter { from { opacity: 0; transform: translateY(3px) scale(.992); } to { opacity: 1; transform: none; } }
 
 /* A message you just sent eases in (Synara's chat-message-send-enter); transform/opacity only. */
@@ -88,14 +86,10 @@ html:not([data-shape="squircle"]) .chat-composer { border-radius: 22px; }
 .dark ::-webkit-scrollbar-thumb:hover { background-color: rgba(255, 255, 255, .14); }
 
 /* ---------- press ---------- */
-/* What a control does under the pointer (T3 Code's): it gives a little, to 97%, and comes back the same way; a menu's
-   or popover's trigger stays still. */
+/* What a control does under the pointer: its colours change in the frame the pointer arrives (no fade), and pressed it
+   gives a little, to 97%, and comes back the same way; a menu's or popover's trigger stays still. */
 @layer components {
-  .ab-press {
-    transition:
-      background-color 150ms var(--ease-t3), color 150ms var(--ease-t3), border-color 150ms var(--ease-t3),
-      box-shadow 150ms var(--ease-t3), opacity 150ms var(--ease-t3), transform 150ms var(--ease-t3);
-  }
+  .ab-press { transition: transform 150ms var(--ease-t3); }
   .ab-press:active:not(:disabled):not([aria-haspopup]) { transform: scale(.97); }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -305,6 +299,16 @@ html[data-glass="off"] body { background-image: none; }
 :is(.chat-bubble-reply, .chat-bubble-sent) .chat-markdown > :last-child { margin-bottom: 0; }
 :is(.chat-bubble-reply, .chat-bubble-sent) .chat-markdown li + li { margin-top: 2px; }
 :is(.chat-bubble-reply, .chat-bubble-sent) .chat-markdown :is(h1, h2, h3, h4, h5, h6) { margin: 18px 0 0; font-size: 15px; line-height: 22px; letter-spacing: .01em; }
+/* Grok Bot's hairline: a filled control (the raised buttons, the chat's name chip, secondary buttons, the composer's +)
+   carries a 1px edge a step lighter than its fill in the dark, a step darker in the light (read off the owner's Grok
+   shot: fill #242424 edged #303030), drawn inside the box so nothing moves. Chat bubbles, the bot's and yours, have
+   none (the owner's call, 2026-11-27). In the components layer, so a focus ring utility still replaces it while
+   focused. */
+:root { --ab-edge: color-mix(in srgb, var(--ab-fg) 7%, transparent); }
+@layer components {
+  .ab-edge { box-shadow: inset 0 0 0 1px var(--ab-edge); }
+  .chat-composer-surface { border-color: color-mix(in srgb, var(--ab-fg) 11%, transparent); }
+}
 /* the sheen: a faint light at the bubble's top that fades down it, stronger on the light scheme's wash than in the dark,
    where it would read as a shine; quieter still over your own colour */
 :is(.chat-bubble-reply, .chat-page) { background-image: linear-gradient(rgb(255 255 255 / .16), transparent); }

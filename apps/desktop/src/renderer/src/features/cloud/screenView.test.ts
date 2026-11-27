@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CONTROL_IDLE_MS } from '@appubot/protocol';
-import { DEFAULT_SCREEN, VIEWER_MARGIN, VIEWER_PILL_H, botScreenLine, controlUntil, fitScreen, localControl, mayStream, screenCaption, screenCard, screenUrl, shortcutKeysym } from './screenView';
+import { DEFAULT_SCREEN, VIEWER_HEADER_H, VIEWER_MARGIN, VIEWER_PILL_H, botScreenLine, controlUntil, fitScreen, fullRoom, localControl, mayStream, popupSize, screenCaption, screenCard, screenUrl, shortcutKeysym } from './screenView';
 
 describe('a bot’s own screen', () => {
   it('asks the screen port for that screen, keeping the signed link’s own query', () => {
@@ -120,5 +120,35 @@ describe('⌘ shortcuts on the computer', () => {
     expect(shortcutKeysym('Slash')).toBe(0x2f);
     expect(shortcutKeysym('ArrowLeft')).toBeNull();
     expect(shortcutKeysym('MetaLeft')).toBeNull();
+  });
+});
+
+describe('popupSize', () => {
+  it('opens as a popup of at most 70% of the window, the screen in its own shape, with room on every side', () => {
+    const p = popupSize({ w: 1440, h: 900 }, { w: 1440, h: 900 });
+    expect(p.w).toBeLessThanOrEqual(1440 * 0.7);
+    expect(1440 - p.w).toBeGreaterThanOrEqual(96);
+    expect(900 - p.h).toBeGreaterThanOrEqual(96);
+    const screen = { w: p.w - 2 * VIEWER_MARGIN, h: p.h - VIEWER_HEADER_H - VIEWER_PILL_H - 2 * VIEWER_MARGIN };
+    expect(Math.abs(screen.w / screen.h - 1.6)).toBeLessThan(0.01);
+  });
+
+  it('is held by the height in a short window and scales with the window', () => {
+    const short = popupSize({ w: 1920, h: 700 }, { w: 1920, h: 1080 });
+    expect(700 - short.h).toBeGreaterThanOrEqual(96);
+    expect(short.w).toBeLessThan(1920 * 0.7);
+    expect(popupSize({ w: 1920, h: 1080 }, undefined).w).toBeGreaterThan(popupSize({ w: 1440, h: 900 }, undefined).w);
+  });
+});
+
+
+describe('full size', () => {
+  it('is the whole window less its top row, 28px at each side and 12px at the foot, the screen letterboxed in its shape', () => {
+    const room = fullRoom({ w: 1440, h: 900 });
+    expect(room).toEqual({ w: 1440 - 56, h: 900 - VIEWER_HEADER_H - 12 });
+    const box = fitScreen(room, { w: 1440, h: 900 });
+    expect(box.h).toBe(room.h - VIEWER_PILL_H - VIEWER_MARGIN);
+    expect(box.w).toBeLessThan(room.w);
+    expect(Math.abs(box.w / box.h - 1.6)).toBeLessThan(0.01);
   });
 });

@@ -117,7 +117,7 @@ export function WhatsNewCard() {
               type="button"
               onClick={() => useWhatsNew.setState({ view: { kind: 'release', version: card.version } })}
               aria-label={`What’s new: ${lead.title}`}
-              className="no-drag flex w-full flex-col rounded-[14px] bg-[color-mix(in_srgb,var(--ab-fg)_3.5%,transparent)] px-3 pt-2.5 pb-3 pr-9 text-left shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--ab-fg)_7%,transparent)] transition-colors duration-150 hover:bg-[color-mix(in_srgb,var(--ab-fg)_6%,transparent)] focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-bg),0_0_0_4px_var(--ab-ring)]"
+              className="no-drag flex w-full flex-col rounded-[14px] bg-[color-mix(in_srgb,var(--ab-fg)_3.5%,transparent)] px-3 pt-2.5 pb-3 pr-9 text-left shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--ab-fg)_7%,transparent)] hover:bg-[color-mix(in_srgb,var(--ab-fg)_6%,transparent)] focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-bg),0_0_0_4px_var(--ab-ring)]"
             >
               <span className="flex items-center gap-1.5 text-note leading-[18px] font-semibold text-[color-mix(in_srgb,var(--ab-fg)_46%,transparent)]">
                 <Logo size={14} />
@@ -159,7 +159,7 @@ function ReleaseRow({ notes, defaultOpen, divider }: { notes: ReleaseNotes; defa
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="ab-pill flex w-full items-center gap-2.5 rounded-control py-2.5 text-left focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]"
+        className="flex w-full items-center gap-2.5 rounded-control py-2.5 text-left focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]"
       >
         <Icon icon={ChevronRight} size={14} className={cn('shrink-0 text-muted transition-transform duration-200', open && 'rotate-90')} />
         <span className="text-copy font-medium text-fg">{releaseDate(notes.version)}</span>

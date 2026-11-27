@@ -17,7 +17,7 @@ export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'icon' | 'icon-sm' |
 const variants: Record<ButtonVariant, string> = {
   primary: 'bg-primary text-primary-fg hover:bg-[color-mix(in_srgb,var(--ab-primary)_84%,var(--ab-bg))] active:bg-primary',
   accent: 'bg-accent text-white hover:bg-[color-mix(in_srgb,var(--ab-accent)_88%,black)] active:bg-accent-strong',
-  secondary: 'bg-surface-2 text-fg hover:bg-surface-3 active:bg-[color-mix(in_srgb,var(--ab-fg)_12%,transparent)]',
+  secondary: 'ab-edge bg-surface-2 text-fg hover:bg-surface-3 active:bg-[color-mix(in_srgb,var(--ab-fg)_12%,transparent)]',
   outline: 'bg-transparent text-fg shadow-[inset_0_0_0_1px_var(--ab-border)] hover:bg-surface-2 active:bg-surface-3',
   ghost: 'text-fg-2 hover:bg-surface-2 hover:text-fg active:bg-surface-3',
   danger: 'bg-danger-soft text-danger hover:bg-[color-mix(in_srgb,var(--ab-danger)_15%,transparent)]',

@@ -8,7 +8,7 @@ import { HugeiconsIcon, type IconSvgElement } from '@hugeicons/react';
 import { mergeIconParts, type IconPart } from './iconParts';
 import { CallEnd01Icon, ClipboardPasteIcon, DiceFaces03Icon } from '@hugeicons/core-free-icons';
 import {
-  AccessIcon, Target02Icon, ArrowExpand01Icon, PersonStandingIcon, HardDriveIcon, RoboticIcon, CreditCardIcon, ContactBookIcon, LockPasswordIcon, AiBrain01Icon, Alert02Icon, Analytics01Icon, AlertCircleIcon, ArrowDown01Icon, ArrowDown02Icon, ArrowLeft01Icon, ArrowLeft02Icon,
+  AccessIcon, Target02Icon, ArrowExpand01Icon, ArrowShrink01Icon, PersonStandingIcon, HardDriveIcon, RoboticIcon, CreditCardIcon, ContactBookIcon, LockPasswordIcon, AiBrain01Icon, Alert02Icon, Analytics01Icon, AlertCircleIcon, ArrowDown01Icon, ArrowDown02Icon, ArrowLeft01Icon, ArrowLeft02Icon,
   ArrowRight01Icon, ArrowRight02Icon, ArrowUp01Icon, ArrowUp02Icon, Attachment01Icon, BellIcon,
   BookOpen01Icon, BubbleChatIcon, Cancel01Icon, CancelCircleIcon, CheckListIcon,
   CheckmarkCircle02Icon, Clock01Icon, ComputerIcon, ComputerPhoneSyncIcon, ComputerScreenShareIcon,
@@ -227,6 +227,7 @@ export const Keyboard = createIcon(KeyboardIcon, 'Keyboard');
 export const Laptop = createIcon(LaptopIcon, 'Laptop');
 export const Monitor = createIcon(ComputerIcon, 'Monitor');
 export const Maximize2 = createIcon(ArrowExpand01Icon, 'Maximize2');
+export const Minimize2 = createIcon(ArrowShrink01Icon, 'Minimize2');
 export const MonitorUp = createIcon(ComputerScreenShareIcon, 'MonitorUp');
 export const MonitorSmartphone = createIcon(ComputerPhoneSyncIcon, 'MonitorSmartphone');
 export const Smartphone = createIcon(SmartPhone01Icon, 'Smartphone');

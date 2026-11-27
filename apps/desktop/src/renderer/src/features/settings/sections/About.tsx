@@ -119,7 +119,7 @@ export function AboutSection() {
       <div id={settingAnchorId(CREDITS_TITLE)} className="mt-8 flex scroll-mt-24 justify-center">
         <button
           type="button" onClick={() => setCredits(true)}
-          className="ab-press ab-pill rounded-control px-2.5 py-1 text-note text-muted/80 transition-colors hover:text-fg focus-visible:text-fg"
+          className="ab-press ab-pill rounded-control px-2.5 py-1 text-note text-muted/80 hover:text-fg focus-visible:text-fg"
         >
           View credits
         </button>

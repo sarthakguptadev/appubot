@@ -182,7 +182,7 @@ function EndpointForm({ type, edit, onDone, actions }: { type: EndpointKind; edi
             {shown.length ? shown.map((m) => (
               <button
                 key={m} type="button" onClick={() => toggle(m)}
-                className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-copy transition-colors hover:bg-[color-mix(in_srgb,var(--ab-fg)_4%,transparent)]"
+                className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-copy hover:bg-[color-mix(in_srgb,var(--ab-fg)_4%,transparent)]"
               >
                 <span className={cn('ab-pill flex size-4 shrink-0 items-center justify-center rounded-[5px] border', picked.has(m) ? 'border-accent bg-accent text-white' : 'border-border')}>
                   {picked.has(m) ? <Icon icon={Check} size={11} strokeWidth={2.6} /> : null}

@@ -282,7 +282,7 @@ export function PasswordInput({
           onPointerDown={(event) => event.preventDefault()}
           onClick={toggle}
           className={cn(
-            'ab-pill grid shrink-0 place-items-center rounded-lg text-black/50 outline-none transition-colors hover:text-black focus-visible:ring-2 focus-visible:ring-[#FC4C01]/50 dark:text-white/50 dark:hover:text-white',
+            'ab-pill grid shrink-0 place-items-center rounded-lg text-black/50 outline-none hover:text-black focus-visible:ring-2 focus-visible:ring-[#FC4C01]/50 dark:text-white/50 dark:hover:text-white',
             scale.toggle,
           )}
         >

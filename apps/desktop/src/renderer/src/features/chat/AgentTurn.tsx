@@ -191,7 +191,7 @@ function WorkBlock({ list, ctx, tail, className }: { list: Chunk[]; ctx: Ctx; ta
       <div className={ctx.live ? 'space-y-0.5' : 'space-y-px'}>{cap.chunks.map((c) => chunkRow(c, ctx, tail && c === last))}</div>
       {cap.hidden ? (
         <div className="py-0.5">
-          <button type="button" onClick={() => setExpanded((e) => !e)} className="text-copy text-muted transition-colors duration-150 hover:text-fg">
+          <button type="button" onClick={() => setExpanded((e) => !e)} className="text-copy text-muted hover:text-fg">
             {expanded ? 'Show less' : `+${cap.hidden} more tool calls`}
           </button>
         </div>
@@ -308,7 +308,7 @@ function SettledTurn({ msg, ctx, cwd, endAt, fold, answers, trail }: { msg: Mess
       {L.hasWork && !answers ? (
         <div className="mb-3">
           <div className="-ml-0.5 pb-2 text-copy leading-normal text-muted">
-            <button type="button" aria-expanded={open} onClick={() => setOpen((o) => !o)} className="inline-flex min-w-0 items-center text-left transition-colors duration-200 hover:text-fg">
+            <button type="button" aria-expanded={open} onClick={() => setOpen((o) => !o)} className="inline-flex min-w-0 items-center text-left hover:text-fg">
               <span className="inline-flex min-w-0 items-center gap-1">
                 <span>{label}</span>
                 <DisclosureChevron open={open} className="text-muted/70" />

@@ -30,7 +30,7 @@ const CONNECTED_SHOWN = 12;
 /** one column, two from 560px (the dialog is at most 880px wide) */
 const COLUMNS = 'grid grid-cols-1 gap-x-8 @min-[560px]:grid-cols-2';
 const BACK =
-  'no-drag ab-pill squircle -ml-1 inline-flex h-7 items-center gap-1 rounded-control-sm pr-2.5 pl-1 text-copy text-muted transition-colors hover:bg-surface-2 hover:text-fg ' +
+  'no-drag ab-pill squircle -ml-1 inline-flex h-7 items-center gap-1 rounded-control-sm pr-2.5 pl-1 text-copy text-muted hover:bg-surface-2 hover:text-fg ' +
   'focus-visible:outline-none focus-visible:shadow-[inset_0_0_0_1.5px_color-mix(in_srgb,var(--ab-fg)_35%,transparent)]';
 
 /**
@@ -96,7 +96,7 @@ function Section({ title, hint, action, children, sectionRef }: { title: ReactNo
 }
 
 function ViewAll({ onClick }: { onClick: () => void }) {
-  return <button type="button" onClick={onClick} className="no-drag shrink-0 text-copy text-muted transition-colors hover:text-fg">View all</button>;
+  return <button type="button" onClick={onClick} className="no-drag shrink-0 text-copy text-muted hover:text-fg">View all</button>;
 }
 
 function Problem({ text, onRetry }: { text: string; onRetry?: () => void }) {
@@ -400,7 +400,7 @@ function Accounts({ toolkit: t, conns }: { toolkit: AppToolkit; conns: AppConnec
           aria-label={`Add another ${t.name} account`}
           disabled={busy}
           onClick={() => void startConnect(t)}
-          className="no-drag -ml-1 inline-flex h-6 items-center gap-1.5 rounded-control-sm px-1 text-copy text-muted transition-colors hover:text-fg disabled:opacity-60 focus-visible:outline-none focus-visible:shadow-[inset_0_0_0_1.5px_color-mix(in_srgb,var(--ab-fg)_35%,transparent)]"
+          className="no-drag -ml-1 inline-flex h-6 items-center gap-1.5 rounded-control-sm px-1 text-copy text-muted hover:text-fg disabled:opacity-60 focus-visible:outline-none focus-visible:shadow-[inset_0_0_0_1.5px_color-mix(in_srgb,var(--ab-fg)_35%,transparent)]"
         >
           {busy ? <Spinner size={13} /> : <Icon icon={Plus} size={14} />}Add another account
         </button>
@@ -457,7 +457,7 @@ function Connected() {
               ? Array.from({ length: shown }, (_, i) => <AppRowSkeleton key={i} />)
               : connected.toolkits.slice(0, shown).map((t) => <ConnectedRow key={t.slug} toolkit={t} conns={bySlug.get(t.slug) ?? NO_CONNS} />)}
           </div>
-          {shown < total ? <button type="button" onClick={() => setAll(true)} className="no-drag mt-2 text-copy text-muted transition-colors hover:text-fg">Show all {total} apps</button> : null}
+          {shown < total ? <button type="button" onClick={() => setAll(true)} className="no-drag mt-2 text-copy text-muted hover:text-fg">Show all {total} apps</button> : null}
         </Section>
       </div>
     </div>
@@ -483,7 +483,7 @@ function ConnectedLink() {
     <button
       type="button"
       onClick={() => ui.openApps('connected')}
-      className="no-drag ab-pill squircle -mt-0.5 inline-flex h-7 shrink-0 items-center gap-2 rounded-control-sm pr-1.5 pl-2 text-ui text-muted transition-colors hover:bg-surface-2 hover:text-fg focus-visible:outline-none focus-visible:shadow-[inset_0_0_0_1.5px_color-mix(in_srgb,var(--ab-fg)_35%,transparent)]"
+      className="no-drag ab-pill squircle -mt-0.5 inline-flex h-7 shrink-0 items-center gap-2 rounded-control-sm pr-1.5 pl-2 text-ui text-muted hover:bg-surface-2 hover:text-fg focus-visible:outline-none focus-visible:shadow-[inset_0_0_0_1.5px_color-mix(in_srgb,var(--ab-fg)_35%,transparent)]"
     >
       {/* the logos of the apps it counts: a signed-out one shows only when nothing else is connected */}
       <AppLogoStack toolkits={working.length ? toolkits.filter((t) => working.includes(t.slug)) : toolkits} ring="var(--ab-content)" />

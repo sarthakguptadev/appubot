@@ -91,7 +91,7 @@ export function ComputerStep({ stage, trialDays, cheapest, onCloud, onOwn, onHav
             <Icon icon={ChevronRight} size={15} className="text-muted" />
           </button>
           {onHave ? (
-            <button type="button" onClick={onHave} className="ab-pill squircle no-drag rounded-control-sm px-3 py-1.5 text-ui text-muted transition-colors hover:text-fg focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]">
+            <button type="button" onClick={onHave} className="ab-pill squircle no-drag rounded-control-sm px-3 py-1.5 text-ui text-muted hover:text-fg focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]">
               {c.have}
             </button>
           ) : null}

@@ -8,7 +8,7 @@
 import { useRef, useState, type KeyboardEvent } from 'react';
 import type { SessionMode } from '@appubot/protocol';
 import { Check, ChevronDown, ShieldAlert, ShieldCheck, type IconComponent } from '../../components/ui/icons';
-import { Icon, Popover, cn } from '../../components/ui';
+import { Icon, Popover, ROW_HOVER, ROW_PRESS, cn } from '../../components/ui';
 import { CHROME_TRIGGER, FIELD_TRIGGER } from './ModelPicker';
 import { useChoices } from './useChoices';
 
@@ -109,8 +109,8 @@ export function PermissionPicker({ providerId, value, onChange, modes: own, gene
                 autoFocus={on || (!current && i === 0)}
                 onClick={() => { setOpen(false); if (!on) onChange(generic ? GENERIC_ID[MODE_KIND[m.id] ?? ''] ?? m.id : m.id); }}
                 className={cn(
-                  'squircle flex w-full items-start gap-2.5 rounded-card px-2.5 py-2.5 text-left transition-colors duration-100 outline-none',
-                  on ? 'bg-accent-soft' : 'hover:bg-[color-mix(in_srgb,var(--ab-fg)_8%,transparent)] focus-visible:bg-[color-mix(in_srgb,var(--ab-fg)_8%,transparent)]',
+                  'squircle flex w-full items-start gap-2.5 rounded-control px-2.5 py-2.5 text-left outline-none',
+                  on ? 'bg-accent-soft' : cn(ROW_HOVER, ROW_PRESS, 'focus-visible:bg-[color-mix(in_srgb,var(--ab-fg)_10%,transparent)]'),
                 )}
               >
                 <Icon icon={iconOf(m.id)} size={16} className={cn('mt-px shrink-0', on ? 'text-accent' : 'text-fg-2')} />

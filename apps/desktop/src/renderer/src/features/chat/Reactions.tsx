@@ -84,7 +84,7 @@ export function ReactionButton({ msg, className }: { msg: Message; className?: s
           aria-label="React"
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
-          className="ab-pill inline-flex size-6 items-center justify-center rounded-md text-muted transition-colors hover:bg-fg/5 hover:text-fg focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]"
+          className="ab-pill inline-flex size-6 items-center justify-center rounded-md text-muted hover:bg-fg/5 hover:text-fg focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]"
         >
           <Icon icon={Smile} size={14} />
         </button>
@@ -126,7 +126,7 @@ export function ReactionButton({ msg, className }: { msg: Message; className?: s
                 trailing={(
                   <button
                     type="button" aria-label="More reactions" aria-expanded={more} onClick={() => setMore((v) => !v)}
-                    className={cn('relative z-10 ml-0.5 flex size-[34px] items-center justify-center rounded-full text-[#868593] transition-colors hover:bg-black/5 hover:text-black dark:hover:bg-white/10 dark:hover:text-white', more && 'bg-black/5 text-black dark:bg-white/10 dark:text-white')}
+                    className={cn('relative z-10 ml-0.5 flex size-[34px] items-center justify-center rounded-full text-[#868593] hover:bg-black/5 hover:text-black dark:hover:bg-white/10 dark:hover:text-white', more && 'bg-black/5 text-black dark:bg-white/10 dark:text-white')}
                   >
                     <Icon icon={Plus} size={16} />
                   </button>
@@ -149,7 +149,7 @@ export function ReactionChip({ msg, by, botName }: { msg: Message; by: 'user' | 
   // `chat-reaction`: the Messages theme redraws it as a chip on the bubble's edge (themes/messages.css)
   const CHIP = 'chat-reaction ab-pill squircle inline-flex h-6 items-center rounded-control-sm border border-[var(--ab-hairline)] bg-[color-mix(in_srgb,var(--ab-fg)_9%,var(--ab-surface))] px-2 text-copy leading-none shadow-[0_1px_2px_rgba(0,0,0,.08)]';
   return by === 'user' ? (
-    <button type="button" title={label} aria-label={label} onClick={() => void reactTo(msg, null)} className={cn(CHIP, 'transition-colors hover:bg-surface-2')}>{emoji}</button>
+    <button type="button" title={label} aria-label={label} onClick={() => void reactTo(msg, null)} className={cn(CHIP, 'hover:bg-surface-2')}>{emoji}</button>
   ) : (
     <span title={label} aria-label={label} className={CHIP}>{emoji}</span>
   );

@@ -8,7 +8,6 @@ export interface TabItem<T extends string> { id: T; label: string; icon?: Lucide
 export const SEGMENT_TRACK = 'ab-pill squircle no-drag inline-flex items-center gap-0.5 rounded-[11px] bg-surface-2 p-[3px]';
 export const SEGMENT =
   'ab-pill squircle relative inline-flex items-center justify-center gap-1.5 rounded-control-sm font-semibold tracking-ui whitespace-nowrap ' +
-  'transition-colors duration-150 ease-rare ' +
   // keyboard focus: a quiet ring inside the segment instead of the global offset outline
   'focus-visible:outline-none focus-visible:shadow-[inset_0_0_0_1.5px_color-mix(in_srgb,var(--ab-fg)_35%,transparent)]';
 export const SEGMENT_SIZE = { sm: 'h-6 px-2.5 text-note', md: 'h-7 px-3 text-ui' } as const;

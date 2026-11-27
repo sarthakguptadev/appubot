@@ -40,7 +40,7 @@ export const ContextRing = memo(function ContextRing({ thread, bot }: { thread?:
           aria-expanded={open}
           title={`Context ${pct}% full`}
           onClick={() => { if (!open) wantCommands(thread.id); setOpen((o) => !o); }}
-          className={cn('flex size-7 items-center justify-center rounded-full transition-colors hover:bg-surface-2 focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]', tone)}
+          className={cn('flex size-7 items-center justify-center rounded-full hover:bg-surface-2 focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]', tone)}
         >
           <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
             <circle cx="9" cy="9" r={R} fill="none" stroke="currentColor" strokeOpacity="0.18" strokeWidth="2.2" />

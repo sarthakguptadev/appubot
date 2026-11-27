@@ -1,7 +1,5 @@
 import { useEffect, useId, useRef, useSyncExternalStore, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { AnimatePresence, motion } from 'motion/react';
-import { EASE_T3 } from '../../lib/motion';
 import { X } from './icons';
 import { cn } from './cn';
 import { Button } from './Button';
@@ -36,10 +34,10 @@ export function useModalPresence(open: boolean): void {
 const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 /**
- * The Settings window's look, shared by every dialog: the page dimmed toward the content colour and softly blurred
- * behind a solid content surface with a hairline edge, 2xl corners and a deep shadow (T3 Code's dialog).
+ * The Settings window's look, shared by every dialog: the page dimmed toward the content colour, with no blur, behind a
+ * solid content surface with a hairline edge, 2xl corners and a deep shadow. A dialog opens and closes in one frame.
  */
-export const MODAL_BACKDROP = 'bg-[color-mix(in_srgb,var(--ab-content)_64%,transparent)] backdrop-blur-[4px]';
+export const MODAL_BACKDROP = 'bg-[color-mix(in_srgb,var(--ab-content)_64%,transparent)]';
 export const MODAL_SURFACE =
   'squircle rounded-sheet bg-[var(--ab-content)] text-fg shadow-[0_0_0_1px_var(--ab-hairline),0_25px_50px_-12px_rgba(0,0,0,.4)]';
 
@@ -101,12 +99,8 @@ function Panel({ onClose, title, description, children, footer, size = 'md', cla
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
-      <motion.div
-        className={cn('absolute inset-0', MODAL_BACKDROP)}
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: EASE_T3 }}
-        onMouseDown={onClose}
-      />
-      <motion.div
+      <div className={cn('absolute inset-0', MODAL_BACKDROP)} onMouseDown={onClose} />
+      <div
         ref={ref}
         role="dialog"
         aria-modal="true"
@@ -116,11 +110,6 @@ function Panel({ onClose, title, description, children, footer, size = 'md', cla
         aria-describedby={description ? `${id}-description` : undefined}
         tabIndex={-1}
         className={cn(MODAL_SURFACE, 'no-drag relative flex max-h-[calc(100vh-48px)] flex-col overflow-hidden outline-none', sizes[size], className)}
-        // T3 Code's dialog: a 200ms fade from 98%, the same way out
-        initial={{ opacity: 0, scale: 0.98 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.98 }}
-        transition={{ duration: 0.2, ease: EASE_T3 }}
       >
         {title || !hideClose ? (
           // Settings' page header, a step down: the title in the system face, semibold, its line under it
@@ -135,7 +124,7 @@ function Panel({ onClose, title, description, children, footer, size = 'md', cla
         ) : null}
         <div className={cn('min-h-0 flex-1 overflow-y-auto px-6 py-4', bodyClassName)}>{children}</div>
         {footer ? <div className="flex items-center justify-end gap-2 border-t border-[color-mix(in_srgb,var(--ab-fg)_6%,transparent)] px-6 py-3.5">{footer}</div> : null}
-      </motion.div>
+      </div>
     </div>
   );
 }
@@ -144,5 +133,5 @@ export function Dialog(props: DialogProps) {
   const { open, ...rest } = props;
   // no DOM (a server render in tests): nothing to portal into
   if (typeof document === 'undefined') return null;
-  return createPortal(<AnimatePresence>{open ? <Panel key="dialog" {...rest} /> : null}</AnimatePresence>, document.body);
+  return open ? createPortal(<Panel {...rest} />, document.body) : null;
 }
