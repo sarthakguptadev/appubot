@@ -460,7 +460,7 @@ export function QuickSwitcher({ open, onClose }: { open: boolean; onClose: () =>
                   // the field keeps the focus (and its caret)
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => choose(r)}
-                  className={cn('ab-pill squircle flex min-h-9 w-full items-center gap-2.5 rounded-control-sm px-2 py-1.5 text-left outline-none', i === at && 'bg-[color-mix(in_srgb,var(--ab-fg)_8%,transparent)]')}
+                  className={cn('squircle flex min-h-9 w-full items-center gap-2.5 rounded-row px-2 py-1.5 text-left outline-none', i === at && 'bg-[color-mix(in_srgb,var(--ab-fg)_8%,transparent)]')}
                 >
                   {r.bot ? <BotAvatar bot={r.bot} size={20} /> : <span className="flex size-5 shrink-0 items-center justify-center text-fg-2"><Icon icon={r.icon ?? SlidersHorizontal} size={16} /></span>}
                   {r.hit ? (

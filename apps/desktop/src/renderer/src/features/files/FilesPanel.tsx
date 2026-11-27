@@ -166,9 +166,9 @@ function AudioRow({ f }: { f: FileAttachment }) {
   const seed = useMemo(() => seedOf(f.id), [f.id]);
   const [open, setOpen] = useState(false);
   return (
-    <div className={cn('group ab-pill rounded-[10px] px-2 py-1.5 transition-colors', !open && ROW_HOVER)}>
+    <div className={cn('group rounded-row px-2 py-1.5 transition-colors', !open && ROW_HOVER)}>
       <div className="flex items-center gap-2">
-        <button type="button" aria-expanded={open} onClick={() => setOpen((o) => !o)} className="ab-pill flex min-w-0 flex-1 items-center gap-2.5 rounded-[8px] text-left outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]" title={f.name}>
+        <button type="button" aria-expanded={open} onClick={() => setOpen((o) => !o)} className="flex min-w-0 flex-1 items-center gap-2.5 rounded-[8px] text-left outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]" title={f.name}>
           <span className={cn('ab-pill flex size-8 shrink-0 items-center justify-center rounded-[8px] bg-surface-2', open ? 'text-fg' : 'text-fg-2')}>
             <Icon icon={Music} size={16} />
           </span>
@@ -222,8 +222,8 @@ function FileRow({ f }: { f: FileAttachment }) {
   const busy = progressLabel(useFileProgress(f));
   const pdf = f.mimeType === 'application/pdf' || f.mimeType.startsWith('text/');
   return (
-    <div className={cn('group ab-pill flex items-center gap-2 rounded-[10px] px-2 py-1.5 transition-colors', ROW_HOVER)}>
-      <button type="button" onClick={open} className="ab-pill flex min-w-0 flex-1 items-center gap-2.5 rounded-[8px] text-left outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]" title={f.name}>
+    <div className={cn('group flex items-center gap-2 rounded-row px-2 py-1.5 transition-colors', ROW_HOVER)}>
+      <button type="button" onClick={open} className="flex min-w-0 flex-1 items-center gap-2.5 rounded-[8px] text-left outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]" title={f.name}>
         <span className="ab-pill flex size-8 shrink-0 items-center justify-center rounded-[8px] bg-surface-2 text-fg-2">
           <Icon icon={pdf ? FileText : File} size={16} />
         </span>
@@ -274,7 +274,7 @@ function Section({ sec, count, children }: { sec: (typeof SECTIONS)[number]; cou
         type="button"
         aria-expanded={open}
         onClick={toggle}
-        className={cn('ab-pill flex w-full items-center gap-2.5 rounded-[10px] px-2 py-1.5 text-left outline-none transition-colors focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]', ROW_HOVER)}
+        className={cn('flex w-full items-center gap-2.5 rounded-row px-2 py-1.5 text-left outline-none transition-colors focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]', ROW_HOVER)}
       >
         <span className="ab-pill flex size-8 shrink-0 items-center justify-center rounded-[8px] bg-surface-2 text-fg-2"><Icon icon={sec.icon} size={16} /></span>
         <span className="min-w-0 flex-1 truncate text-copy font-medium text-fg">{sec.label}</span>
