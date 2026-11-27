@@ -1,11 +1,8 @@
 import { useT } from '../../lib/i18n';
 import { useEffect, useRef, useState, type ComponentType, type KeyboardEvent } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
-import { ChevronLeft, Search, X } from '../../components/ui/icons';
-import { Icon, Kbd, cn, isDialogOpen } from '../../components/ui';
+import { Search, X } from '../../components/ui/icons';
+import { Button, Icon, Kbd, MODAL_BACKDROP, MODAL_SURFACE, cn, isDialogOpen } from '../../components/ui';
 import { useHotkey } from '../../lib/hooks';
-import { IS_MAC } from '../../lib/platform';
-import { EASE_T3_OUT } from '../../lib/motion';
 import { ui, useStore, type SettingsSection } from '../../lib/store';
 import { SETTINGS_NAV_ITEMS, rankSettingsSearch, transferTitle, settingAnchorId, settingsNavItem, settingsPage, settingsTrail, type SettingsNavItem, type SettingsSearchEntry } from './nav';
 import { AboutSection } from './sections/About';
@@ -36,9 +33,10 @@ import { useCloudLacks } from '../cloud/useCloudLacks';
 import { useCloud } from '../cloud/cloudAccount';
 
 /*
- * Settings is T3 Code's settings window: a large modal over the app (Esc, ✕ or a click outside closes it) with the
- * section nav at its left (search with "/", small group headings, 32px rows) and, beside it, the section's page: its
- * title and one line, then titled cards, all on one left edge; ✕ floats at the top right.
+ * Settings is a centred overlay over the dimmed app, about 898×700 (2026-11-27, after Grok Bot's): Esc, ✕ or a click
+ * outside closes it, and it opens and closes in one frame. The section nav runs down its left (search with "/", 36px
+ * rows) and the section's page sits beside it: its title and one line, then titled cards, all on one left edge; ✕ at
+ * the top right.
  */
 
 const PAGES: Record<SettingsSection, ComponentType> = {
@@ -174,11 +172,9 @@ function SettingsNav() {
   );
 
   return (
-    <nav aria-label={t('settings.nav.aria')} className="flex w-[272px] shrink-0 flex-col border-e border-[var(--ab-hairline)] bg-[var(--ab-settings-nav)]">
-      {/* the top strip, as tall as the chat's header: only the search button, at its right (the Back that sat right of
-          the Mac's traffic lights went on 2026-11-17: "Back to app" at the nav's foot and Esc are the ways out). The
-          strip itself drags the window, like the sidebar's; nothing may lie over it */}
-      <div className={cn('drag flex h-16 shrink-0 items-center', IS_MAC ? 'pl-[92px]' : 'pl-2.5')}>
+    <nav aria-label={t('settings.nav.aria')} className="flex w-[224px] shrink-0 flex-col border-e border-[var(--ab-hairline)] bg-[var(--ab-settings-nav)]">
+      {/* the top strip: only the search button, at its right */}
+      <div className="flex h-14 shrink-0 items-center pl-2.5">
         <span className="min-w-0 flex-1" />
         <button
           type="button"
@@ -256,22 +252,11 @@ function SettingsNav() {
           rows
         )}
       </div>
-      {/* a second way out where the eye ends up after the list: the bottom-left corner (the top's Back stays) */}
-      <div className="shrink-0 px-2.5 pt-1 pb-2.5">
-        <button
-          type="button"
-          onClick={ui.closeSettings}
-          className="ab-press squircle no-drag flex h-9 w-full items-center gap-2 rounded-control-lg px-2.5 text-ui font-medium tracking-ui text-muted outline-none hover:bg-[color-mix(in_srgb,var(--ab-fg)_5%,transparent)] hover:text-fg active:bg-[color-mix(in_srgb,var(--ab-fg)_10%,transparent)] focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]"
-        >
-          <Icon icon={ChevronLeft} size={15} className="shrink-0" />
-          {t('settings.backToApp')}
-        </button>
-      </div>
     </nav>
   );
 }
 
-/** The section's page: its title and line with ✕ at the top right, then its settings scrolling below them. */
+/** The section's page: its title and line (✕ sits at the overlay's top right), then its settings scrolling below them. */
 function SettingsContent() {
   const t = useT();
   const section = useStore((s) => s.settingsSection) ?? 'general';
@@ -302,10 +287,8 @@ function SettingsContent() {
     <div className="relative flex min-h-0 min-w-0 flex-1 flex-col">
       {/* a header row above the scroller, so ✕ never sits on the scrollbar or a card: the page's title and line on the
           content's left edge (the same gutter as the scroller below, so they line up), ✕ level with the title */}
-      <div className="relative mr-1.5 shrink-0 overflow-hidden [scrollbar-gutter:stable]">
-        {/* the page's empty top edge drags the window too (its title starts below it) */}
-        <div aria-hidden className="drag h-6" />
-        <header className="mx-auto flex w-full max-w-4xl flex-col gap-1 px-6 pb-4">
+      <div className="relative mr-1.5 shrink-0 overflow-hidden pt-6 [scrollbar-gutter:stable]">
+        <header className="mx-auto flex w-full max-w-4xl flex-col gap-1 pr-14 pl-6 pb-4">
           <h1 className="text-heading leading-7 font-semibold tracking-[-0.02em] text-fg">{title}</h1>
           {/* a cloud computer has no lid, sleep or startup to speak of */}
           <p className="text-copy leading-normal text-muted">{section === 'general' && onCloud ? t('settings.page.general.desc.cloud') : page.description}</p>
@@ -322,7 +305,7 @@ function SettingsContent() {
                     aria-selected={on}
                     onClick={() => ui.openSettings(id)}
                     className={cn(
-                      'relative -mb-px flex h-9 items-center gap-1.5 px-2.5 text-copy font-semibold tracking-ui transition-colors duration-150 ease-rare outline-none focus-visible:ring-2 focus-visible:ring-[var(--ab-ring)] focus-visible:ring-inset',
+                      'relative -mb-px flex h-9 items-center gap-1.5 px-2.5 text-copy font-semibold tracking-ui outline-none focus-visible:ring-2 focus-visible:ring-[var(--ab-ring)] focus-visible:ring-inset',
                       on ? 'text-fg' : 'text-muted hover:text-fg',
                     )}
                   >
@@ -347,11 +330,15 @@ function SettingsContent() {
   );
 }
 
+const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 /**
- * Settings fills the window (the owner's call 2026-11-14; before, T3 Code's large dialog over a dimmed app): its nav
- * down the left (Back at its top, right of the Mac's traffic lights) and the page beside it. Back or Escape closes it.
+ * Settings over the dimmed app (the owner's call 2026-11-27, after Grok Bot's; from 2026-11-14 it filled the window):
+ * an ≈898×700 panel, smaller windows keep a 24px margin. It opens and closes in one frame. Escape (once a field has
+ * let go), ✕ or a click on the dimmed app closes it, and Tab stays inside it.
  */
 export function SettingsModal() {
+  const t = useT();
   const open = useStore((s) => s.settingsSection !== null);
   const popup = useRef<HTMLDivElement>(null);
 
@@ -361,26 +348,37 @@ export function SettingsModal() {
     if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement) el.blur();
     else ui.closeSettings();
   }, open);
-  // focus the window, not its first control: arrows and page keys scroll it, no stray focus ring
+  // focus the panel, not its first control: arrows and page keys scroll it, no stray focus ring
   useEffect(() => { if (open) popup.current?.focus({ preventScroll: true }); }, [open]);
 
+  // Tab goes round the panel's own controls, never to the app behind it
+  const onKey = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== 'Tab' || e.defaultPrevented || !popup.current) return;
+    const items = Array.from(popup.current.querySelectorAll<HTMLElement>(FOCUSABLE)).filter((x) => x.offsetParent !== null && x.tabIndex >= 0);
+    if (!items.length) return;
+    const first = items[0]!, last = items[items.length - 1]!;
+    const at = document.activeElement;
+    if (e.shiftKey && (at === first || at === popup.current)) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && at === last) { e.preventDefault(); first.focus(); }
+  };
+
+  if (!open) return null;
   return (
-    <AnimatePresence>
-      {open ? (
-        <motion.div
-          key="settings"
-          ref={popup}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Settings"
-          tabIndex={-1}
-          className="fixed inset-0 z-40 flex min-h-0 min-w-0 overflow-hidden bg-[var(--ab-content)] text-fg outline-none"
-          initial={{ opacity: 0, scale: 0.985 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.985 }} transition={{ duration: 0.15, ease: EASE_T3_OUT }}
-        >
-          <SettingsNav />
-          <SettingsContent />
-        </motion.div>
-      ) : null}
-    </AnimatePresence>
+    <div className="fixed inset-0 z-40 flex items-center justify-center p-6">
+      <div aria-hidden className={cn('absolute inset-0', MODAL_BACKDROP)} onMouseDown={ui.closeSettings} />
+      <div
+        ref={popup}
+        role="dialog"
+        aria-modal="true"
+        aria-label={t('common.settings')}
+        tabIndex={-1}
+        onKeyDown={onKey}
+        className={cn(MODAL_SURFACE, 'no-drag relative flex h-[min(700px,calc(100vh-48px))] w-[min(898px,calc(100vw-48px))] min-h-0 min-w-0 overflow-hidden outline-none')}
+      >
+        <SettingsNav />
+        <SettingsContent />
+        <Button variant="ghost" size="icon-sm" icon={X} aria-label={t('common.close')} onClick={ui.closeSettings} className="absolute top-4 right-4" />
+      </div>
+    </div>
   );
 }

@@ -25,8 +25,8 @@ describe('instant surfaces', () => {
     expect(readFileSync(join(SRC, 'index.css'), 'utf8')).toMatch(/\.ab-press \{ transition: transform 150ms var\(--ease-t3\); \}/);
   });
 
-  it('opens dialogs, the palette, popovers, menus and tooltips with no fade, scale or blur', () => {
-    const files = ['components/ui/Dialog.tsx', 'components/ui/Popover.tsx', 'components/ui/Menu.tsx', 'components/ui/Tooltip.tsx', 'components/layout/QuickSwitcher.tsx', 'features/chat/MentionMenu.tsx', 'features/chat/SlashMenu.tsx', 'features/apps/BotAccess.tsx'];
+  it('opens dialogs, Settings, the palette, popovers, menus and tooltips with no fade, scale or blur', () => {
+    const files = ['components/ui/Dialog.tsx', 'features/settings/SettingsView.tsx', 'components/ui/Popover.tsx', 'components/ui/Menu.tsx', 'components/ui/Tooltip.tsx', 'components/layout/QuickSwitcher.tsx', 'features/chat/MentionMenu.tsx', 'features/chat/SlashMenu.tsx', 'features/apps/BotAccess.tsx'];
     for (const f of files) {
       const text = readFileSync(join(SRC, f), 'utf8');
       expect(text, f).not.toMatch(/animate-\[pop-in|backdrop-blur|from 'motion\/react'|AnimatePresence/);

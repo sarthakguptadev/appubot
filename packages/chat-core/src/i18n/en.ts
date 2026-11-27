@@ -40,7 +40,6 @@ export const en = {
   'settings.search.none': 'No settings found',
   'settings.search.results': 'Settings search results',
   'settings.closeHint': 'Close (Esc)',
-  'settings.backToApp': 'Back to app',
   'settings.needsAttention': 'needs attention',
   'settings.group.you': 'You',
   'settings.group.bots': 'Bots',
