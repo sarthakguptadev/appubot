@@ -65,6 +65,18 @@ describe('bot motion', () => {
     expect(Math.max(...ys)).toBeLessThanOrEqual(0);
   });
 
+  it('gives a working bot a 300ms beat every 2.5s: squashed to 0.92 tall, stretched to 1.08, still in between', () => {
+    const scale = BOT_LOOPS.working.find((x) => x.layer === 'body' && x.prop === 'scale')!;
+    expect(scale.ms).toBe(2500);
+    const sy = Array.from({ length: 2500 }, (_, i) => sampleTrack(scale, i, true, 1));
+    expect(Math.min(...sy)).toBeCloseTo(0.92, 2);
+    expect(Math.max(...sy)).toBeCloseTo(1.08, 2);
+    const moving = sy.flatMap((v, i) => (Math.abs(v - 1) > 0.001 ? [i] : []));
+    expect(moving.at(-1)! - moving[0]!).toBeLessThanOrEqual(300);
+    const roll = BOT_LOOPS.working.find((x) => x.layer === 'body' && x.prop === 'rotate')!;
+    expect(Math.min(...Array.from({ length: 2500 }, (_, i) => sampleTrack(roll, i, true)))).toBeLessThan(-5);
+  });
+
   it('cheers only when work is done, and knows where every body stands', () => {
     expect(cheersAt('working', 'rest')).toBe(true);
     expect(cheersAt('needs-you', 'rest')).toBe(false);
