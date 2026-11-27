@@ -175,8 +175,11 @@ export interface AppState {
   selectedThreadId: string | null;
   /** the thread the user opened per bot (in memory): selecting the bot again shows it, not the current one */
   threadPick: Record<string, string>;
-  /** threads with an agent reply the user hasn't seen (device-local, persisted) */
-  unread: Record<string, true>;
+  /**
+   * threads with an agent reply the user hasn't seen (device-local, persisted): the first such reply's message id, where
+   * the chat's "NEW" line goes (`true` from before 2026-11-27, or a reply with no id: unread, no line)
+   */
+  unread: Record<string, Unread>;
   rightOpen: boolean;
   rightTab: RightTab;
   rightWidth: number;
@@ -205,15 +208,17 @@ export interface AppState {
   voiceMode: { botId: string; threadId: string | null } | null;
 }
 
+/** A thread's unread mark: the id of the first reply not seen yet, or `true` when that isn't known. */
+export type Unread = string | true;
 const UNREAD_KEY = 'appubot:unread:v1';
-function loadUnread(): Record<string, true> {
-  try { return JSON.parse(localStorage.getItem(UNREAD_KEY) ?? '{}') as Record<string, true>; } catch { return {}; }
+function loadUnread(): Record<string, Unread> {
+  try { return JSON.parse(localStorage.getItem(UNREAD_KEY) ?? '{}') as Record<string, Unread>; } catch { return {}; }
 }
 /** The menu bar's call window (`?view=voicebar`): it shares this origin's storage, so it leaves the main window's marks alone. */
 export const isVoiceBarView = (): boolean =>
   typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('view') === 'voicebar';
 
-function saveUnread(u: Record<string, true>): void {
+function saveUnread(u: Record<string, Unread>): void {
   if (isVoiceBarView()) return;
   try { localStorage.setItem(UNREAD_KEY, JSON.stringify(u)); } catch { /* storage unavailable */ }
 }
@@ -567,7 +572,7 @@ export function dropThreads(ids: string[]): void {
     const threadPick = Object.fromEntries(Object.entries(s.threadPick).filter(([, id]) => !gone.has(id)));
     let unread = s.unread;
     if (ids.some((id) => s.unread[id])) {
-      unread = Object.fromEntries(Object.entries(s.unread).filter(([id]) => !gone.has(id))) as Record<string, true>;
+      unread = Object.fromEntries(Object.entries(s.unread).filter(([id]) => !gone.has(id))) as Record<string, Unread>;
       saveUnread(unread);
     }
     return {
@@ -645,10 +650,11 @@ export const ui = {
       return next === s.selectedThreadId ? {} : { selectedThreadId: next };
     });
   },
-  markUnread(threadId: string): void {
+  /** a reply the user hasn't seen: the thread's first one keeps the mark (the chat's "NEW" line goes above it) */
+  markUnread(threadId: string, messageId?: string): void {
     setState((s) => {
       if (s.unread[threadId]) return {};
-      const unread: Record<string, true> = { ...s.unread, [threadId]: true };
+      const unread: Record<string, Unread> = { ...s.unread, [threadId]: messageId ?? true };
       saveUnread(unread);
       return { unread };
     });

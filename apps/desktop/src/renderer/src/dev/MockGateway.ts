@@ -9,6 +9,7 @@
  *               ?settings=providers (or any Settings section)
  *               ?bot=bot_ledger (another bot than Appu)   ?approval=0   ?forms=1 (a form and a Vault card)   ?apps=onboarding|none|one|many|accounts (signed out of Composio, nothing connected, one Gmail, fifteen connected, apps with several accounts)
  *               ?threads=1 (the thread switcher open, one of Appu's older threads unread)
+ *               ?unread=1 (Ledger pinned, its GSTR-1 reply not seen yet: the tile's blue dot, the chat's NEW line)
  *               ?editor=1 (the bot's side panel open on Details, where it is set up)
  *               ?botscreens=1 (your AppuBot computer's bots with screens of their own: a bot's Computer tab, the viewer's switcher)
  *               ?characters=off|fail|worn (a computer without characters / Generate failing / Ledger wearing one)
@@ -240,6 +241,7 @@ export class MockGateway implements GatewayLike {
       ui.markUnread(IDS.appuScreens);
       setState({ rightOpen: true, rightTab: 'threads' });
     }
+    if (this.opts.unread) ui.markUnread(IDS.ledgerChat, 'm_gst_2');
     if (this.opts.editor) setState({ rightOpen: true, rightTab: 'bot' });
     if (this.opts.newBot) ui.openModal({ kind: 'new-bot' });
   }

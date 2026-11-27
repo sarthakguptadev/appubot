@@ -149,7 +149,7 @@ function applyServerEvent(event: EventName | 'hello', payload: unknown): void {
       // a reply you haven't looked at yet: a dot on the thread and its bot (Telegram chats are read in Telegram)
       const seen = threadOnScreen(s, d.threadId) && document.hasFocus();
       const known = s.threads.some((t) => t.id === d.threadId);
-      if (known && !isChannelThread(s, d.threadId) && !isGroupThread(s, d.threadId) && d.status !== 'cancelled' && !seen && !nothingNew) ui.markUnread(d.threadId);
+      if (known && !isChannelThread(s, d.threadId) && !isGroupThread(s, d.threadId) && d.status !== 'cancelled' && !seen && !nothingNew) ui.markUnread(d.threadId, d.messageId);
       if (d.status === 'error' && !seenOnScreen(s, d.threadId) && toastHere(s)) {
         pushToast({ title: 'A run failed', body: d.error ?? 'The agent stopped with an error.', level: 'error', threadId: d.threadId });
       }
