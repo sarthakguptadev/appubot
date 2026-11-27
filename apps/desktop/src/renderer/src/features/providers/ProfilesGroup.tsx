@@ -107,7 +107,7 @@ export function AddProfileRow({ base }: { base: Provider }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className={cn(PROFILE_ROW, 'flex w-full items-center gap-3 text-left text-copy text-muted transition-colors hover:bg-fg/2 hover:text-fg')}
+        className={cn(PROFILE_ROW, 'flex w-full items-center gap-3 text-left text-copy text-muted hover:bg-fg/2 hover:text-fg')}
       >
         <span className="ab-pill flex size-7 shrink-0 items-center justify-center rounded-[10px] border border-dashed border-[color-mix(in_srgb,var(--ab-fg)_22%,transparent)]">
           <Icon icon={Plus} size={14} />

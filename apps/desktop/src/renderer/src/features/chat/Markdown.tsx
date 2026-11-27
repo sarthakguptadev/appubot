@@ -36,7 +36,7 @@ export function CopyButton({ text, className, label = 'Copy', iconOnly }: { text
       onClick={copy}
       aria-label={done ? 'Copied' : label}
       title={done ? 'Copied' : label}
-      className={cn('ab-pill inline-flex items-center gap-1 rounded-md text-muted transition-colors hover:text-fg', iconOnly ? 'size-6 justify-center' : 'px-1.5 py-1 text-note', className)}
+      className={cn('ab-pill inline-flex items-center gap-1 rounded-md text-muted hover:text-fg', iconOnly ? 'size-6 justify-center' : 'px-1.5 py-1 text-note', className)}
     >
       <Icon icon={done ? Check : Copy} size={iconOnly ? 12 : 14} />
       {iconOnly ? null : done ? 'Copied' : label}

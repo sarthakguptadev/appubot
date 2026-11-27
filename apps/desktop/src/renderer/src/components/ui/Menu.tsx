@@ -23,7 +23,7 @@ export interface MenuItem {
  * keyboard focus fill it with an ink tint. Shared by the app's other lists that read as menus.
  */
 export const MENU_ITEM =
-  'ab-pill squircle flex h-9 w-full items-center gap-2.5 rounded-control-sm px-2.5 text-left text-copy transition-colors duration-100 outline-none disabled:opacity-40';
+  'ab-pill squircle flex h-9 w-full items-center gap-2.5 rounded-control-sm px-2.5 text-left text-copy outline-none disabled:opacity-40';
 export const MENU_ITEM_IDLE = 'text-fg hover:bg-[color-mix(in_srgb,var(--ab-fg)_8%,transparent)] focus-visible:bg-[color-mix(in_srgb,var(--ab-fg)_8%,transparent)]';
 export const MENU_ITEM_DANGER = 'text-danger hover:bg-danger-soft focus-visible:bg-danger-soft';
 /** A separator between groups of a menu: the Settings cards' row hairline. */

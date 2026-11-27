@@ -22,11 +22,9 @@
 }
 
 @keyframes caret-blink { to { visibility: hidden; } }
-/* a popover or tooltip arriving (T3 Code's): a fade from 98%, no travel, no blur */
+/* a small badge arriving: a fade from 98%. Menus, popovers, tooltips and dialogs don't use it: they open and close in
+   one frame */
 @keyframes pop-in { from { opacity: 0; transform: scale(.98); } to { opacity: 1; transform: none; } }
-/* the way out of a popover (components/ui/useLeaving.ts keeps it mounted for LEAVE_MS): the way in, backwards */
-@keyframes pop-out { to { opacity: 0; transform: scale(.98); } }
-.ab-leaving { animation: pop-out 150ms var(--ease-t3) forwards !important; pointer-events: none; }
 @keyframes message-enter { from { opacity: 0; transform: translateY(3px) scale(.992); } to { opacity: 1; transform: none; } }
 
 /* A message you just sent eases in (Synara's chat-message-send-enter); transform/opacity only. */
@@ -88,14 +86,10 @@ html:not([data-shape="squircle"]) .chat-composer { border-radius: 22px; }
 .dark ::-webkit-scrollbar-thumb:hover { background-color: rgba(255, 255, 255, .14); }
 
 /* ---------- press ---------- */
-/* What a control does under the pointer (T3 Code's): it gives a little, to 97%, and comes back the same way; a menu's
-   or popover's trigger stays still. */
+/* What a control does under the pointer: its colours change in the frame the pointer arrives (no fade), and pressed it
+   gives a little, to 97%, and comes back the same way; a menu's or popover's trigger stays still. */
 @layer components {
-  .ab-press {
-    transition:
-      background-color 150ms var(--ease-t3), color 150ms var(--ease-t3), border-color 150ms var(--ease-t3),
-      box-shadow 150ms var(--ease-t3), opacity 150ms var(--ease-t3), transform 150ms var(--ease-t3);
-  }
+  .ab-press { transition: transform 150ms var(--ease-t3); }
   .ab-press:active:not(:disabled):not([aria-haspopup]) { transform: scale(.97); }
 }
 @media (prefers-reduced-motion: reduce) {

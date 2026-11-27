@@ -140,7 +140,7 @@ export function CloudSetupStep({ stage, pick, trialDays, opening, onOpen, onPlan
     >
       {screen.note ? <p className="text-center text-ui leading-relaxed text-balance text-muted">{screen.note}</p> : null}
       {screen.quiet ? (
-        <button type="button" onClick={onOwn} className="ab-pill squircle no-drag mx-auto mt-3 block rounded-control-sm px-3 py-1.5 text-ui text-muted transition-colors hover:text-fg focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]">
+        <button type="button" onClick={onOwn} className="ab-pill squircle no-drag mx-auto mt-3 block rounded-control-sm px-3 py-1.5 text-ui text-muted hover:text-fg focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]">
           {own}
         </button>
       ) : null}

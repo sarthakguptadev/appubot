@@ -362,7 +362,7 @@ function TabButton({ on, onClick, label, count }: { on: boolean; onClick: () => 
       role="tab"
       aria-selected={on}
       onClick={onClick}
-      className={cn('ab-pill squircle h-7 rounded-md px-2.5 text-copy transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[var(--ab-ring)]', on ? 'bg-surface-3 text-fg' : 'text-muted hover:text-fg')}
+      className={cn('ab-pill squircle h-7 rounded-md px-2.5 text-copy outline-none focus-visible:ring-2 focus-visible:ring-[var(--ab-ring)]', on ? 'bg-surface-3 text-fg' : 'text-muted hover:text-fg')}
     >
       {label}<span className="ml-1.5 text-muted tabular-nums">{count}</span>
     </button>

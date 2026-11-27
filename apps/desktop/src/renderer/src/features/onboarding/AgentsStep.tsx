@@ -111,7 +111,7 @@ export function AgentsStep({ onNext, onBack }: { onNext: () => void; onBack: () 
       {!list.length ? <div className="py-8 text-center text-copy text-muted">Looking for AI apps on {THIS_MACHINE}…</div> : null}
       <div className="mt-4 flex items-center justify-center gap-1 text-ui text-muted">
         {hidden > 0 ? (
-          <button type="button" onClick={() => setMore(true)} className="ab-pill squircle flex items-center gap-1 rounded-control-sm px-2 py-1 transition-colors hover:text-fg">
+          <button type="button" onClick={() => setMore(true)} className="ab-pill squircle flex items-center gap-1 rounded-control-sm px-2 py-1 hover:text-fg">
             {hidden} more <Icon icon={ChevronDown} size={13} />
           </button>
         ) : null}
@@ -119,7 +119,7 @@ export function AgentsStep({ onNext, onBack }: { onNext: () => void; onBack: () 
         <button
           type="button" disabled={checking}
           onClick={async () => { setChecking(true); await refreshProviders(); setChecking(false); }}
-          className="ab-pill squircle flex items-center gap-1 rounded-control-sm px-2 py-1 transition-colors hover:text-fg disabled:opacity-60"
+          className="ab-pill squircle flex items-center gap-1 rounded-control-sm px-2 py-1 hover:text-fg disabled:opacity-60"
         >
           <Icon icon={RefreshCw} size={12} className={cn(checking && 'animate-spin')} />
           {checking ? 'Checking…' : 'Check again'}

@@ -88,7 +88,7 @@ function GroupRow({ group, selected }: { group: Group; selected: boolean }) {
   return (
     <div
       onContextMenu={(e) => { e.preventDefault(); e.currentTarget.querySelector<HTMLButtonElement>('[data-group-actions]')?.click(); }}
-      className={cn('group/row squircle relative flex w-full items-center rounded-row transition-colors duration-100', !selected && ROW_HOVER)}
+      className={cn('group/row squircle relative flex w-full items-center rounded-row', !selected && ROW_HOVER)}
     >
       {selected ? <RowWash /> : null}
       <button type="button" aria-current={selected || undefined} onClick={() => ui.selectGroup(group.id)} className={ROW_BUTTON}>
@@ -139,7 +139,7 @@ function GroupPinTile({ group, selected }: { group: Group; selected: boolean }) 
   return (
     <div
       onContextMenu={(e) => { e.preventDefault(); e.currentTarget.querySelector<HTMLButtonElement>('[data-group-actions]')?.click(); }}
-      className={cn('group/tile squircle relative min-w-0 rounded-[14px] transition-colors duration-100', !selected && ROW_HOVER)}
+      className={cn('group/tile squircle relative min-w-0 rounded-[14px]', !selected && ROW_HOVER)}
     >
       {selected ? <RowWash tile /> : null}
       <button
@@ -171,7 +171,7 @@ function BotRow({ bot, latest, selected, unread, presence, expanded, onToggle }:
       // right-click opens the bot's actions (the menu button only shows for keyboard focus)
       onContextMenu={(e) => { e.preventDefault(); e.currentTarget.querySelector<HTMLButtonElement>('[data-bot-actions]')?.click(); }}
       className={cn(
-        'group/row squircle relative flex w-full items-center rounded-row transition-colors duration-100',
+        'group/row squircle relative flex w-full items-center rounded-row',
         !selected && ROW_HOVER,
       )}
     >
@@ -237,7 +237,7 @@ function BotTile({ bot, selected, unread, presence }: { bot: Bot; selected: bool
     <div
       onContextMenu={(e) => { e.preventDefault(); e.currentTarget.querySelector<HTMLButtonElement>('[data-bot-actions]')?.click(); }}
       className={cn(
-        'group/tile squircle relative min-w-0 rounded-[14px] transition-colors duration-100',
+        'group/tile squircle relative min-w-0 rounded-[14px]',
         !selected && ROW_HOVER,
       )}
     >
@@ -352,7 +352,7 @@ function BotThreads({ bot }: { bot: Bot }) {
 
   // a hairline drops from the bot's avatar (its centre: the row's 8px inset + half the 36px avatar) and the titles
   // line up with the bot's name (54px in); rows hover inside the line, quieter than the bot row's own fill
-  const ROW = 'no-drag ml-1.5 flex h-7 w-[calc(100%-6px)] min-w-0 items-center gap-2 squircle rounded-row pr-2 pl-[21px] text-left text-ui leading-normal outline-none transition-colors duration-100 hover:bg-[color-mix(in_srgb,var(--ab-fg)_3.5%,transparent)] focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)]';
+  const ROW = 'no-drag ml-1.5 flex h-7 w-[calc(100%-6px)] min-w-0 items-center gap-2 squircle rounded-row pr-2 pl-[21px] text-left text-ui leading-normal outline-none hover:bg-[color-mix(in_srgb,var(--ab-fg)_3.5%,transparent)] focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)]';
   return (
     <ul className="mt-0.5 mb-2 ml-[26px] flex flex-col border-l border-[color-mix(in_srgb,var(--ab-fg)_10%,transparent)]" aria-label={`${bot.name}'s threads`}>
       {threads.slice(0, shown).map((t) => {

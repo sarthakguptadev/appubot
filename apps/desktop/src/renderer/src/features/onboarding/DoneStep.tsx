@@ -68,7 +68,7 @@ export function DoneStep({ onBack, onFinish, finishing, onCloud, trialDays = 0 }
             key={t.title} type="button" disabled={!bot || !!sending} onClick={() => void tryIt(t.prompt)}
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.15 + 0.07 * i, ease: [0.25, 1, 0.5, 1] }}
             className={cn(
-              'glass-raised squircle group flex flex-col rounded-[18px] p-4 text-left transition-colors duration-150 hover:bg-surface-2 disabled:pointer-events-none',
+              'glass-raised squircle group flex flex-col rounded-[18px] p-4 text-left hover:bg-surface-2 disabled:pointer-events-none',
               sending && sending !== t.prompt && 'opacity-50',
             )}
           >
@@ -85,7 +85,7 @@ export function DoneStep({ onBack, onFinish, finishing, onCloud, trialDays = 0 }
         <motion.button
           type="button" onClick={onCloud} disabled={!!sending}
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.45 }}
-          className="ab-pill squircle group mx-auto mt-5 flex max-w-full items-center gap-2.5 rounded-control px-3.5 py-2 text-left text-ui text-muted transition-colors hover:bg-surface-2 hover:text-fg disabled:pointer-events-none"
+          className="ab-pill squircle group mx-auto mt-5 flex max-w-full items-center gap-2.5 rounded-control px-3.5 py-2 text-left text-ui text-muted hover:bg-surface-2 hover:text-fg disabled:pointer-events-none"
         >
           <Icon icon={Cloud} size={16} className="shrink-0 text-accent" />
           <span className="min-w-0">{withMachine(SETUP_LATER.line, MACHINE)}</span>

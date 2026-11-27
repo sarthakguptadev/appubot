@@ -117,7 +117,7 @@ export function CloudPromoCard() {
               onClick={() => ui.openSettings('billing')}
               onMouseEnter={() => setCheer((n) => n + 1)}
               aria-label={`${CLOUD_PROMO.title}: ${cta}`}
-              className="no-drag squircle flex w-full flex-col overflow-hidden rounded-[14px] bg-surface-2 text-left transition-colors duration-150 hover:bg-surface-3 focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-bg),0_0_0_4px_var(--ab-ring)]"
+              className="no-drag squircle flex w-full flex-col overflow-hidden rounded-[14px] bg-surface-2 text-left hover:bg-surface-3 focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-bg),0_0_0_4px_var(--ab-ring)]"
             >
               <Scene cheer={cheer} />
               <span className="flex flex-col px-3 pt-1.5 pb-3">
@@ -126,7 +126,7 @@ export function CloudPromoCard() {
                 <span className="mt-2.5 flex items-center gap-2">
                   {/* the offer, as the app's own small secondary button (the whole card is the button): a white one
                       was the loudest thing in the sidebar */}
-                  <span className="ab-pill squircle inline-flex h-7 shrink-0 items-center gap-1 rounded-control-sm bg-[color-mix(in_srgb,var(--ab-fg)_10%,transparent)] pr-2 pl-2.5 text-[12.5px] leading-none font-semibold text-fg transition-colors duration-150 group-hover:bg-[color-mix(in_srgb,var(--ab-fg)_15%,transparent)]">
+                  <span className="ab-pill squircle inline-flex h-7 shrink-0 items-center gap-1 rounded-control-sm bg-[color-mix(in_srgb,var(--ab-fg)_10%,transparent)] pr-2 pl-2.5 text-[12.5px] leading-none font-semibold text-fg group-hover:bg-[color-mix(in_srgb,var(--ab-fg)_15%,transparent)]">
                     {cta}
                     <Icon icon={ArrowRight} size={13} className="transition-transform duration-200 group-hover:translate-x-0.5" />
                   </span>
@@ -141,7 +141,7 @@ export function CloudPromoCard() {
               onClick={snooze}
               aria-label="Hide for a day"
               title="Hide for a day"
-              className="no-drag ab-pill absolute top-2 right-2 grid size-6 place-items-center rounded-full bg-[color-mix(in_srgb,var(--ab-fg)_14%,var(--ab-tone-side))] text-[color-mix(in_srgb,var(--ab-fg)_62%,transparent)] opacity-0 transition-opacity duration-150 outline-none group-hover:opacity-100 hover:text-fg focus-visible:opacity-100 focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]"
+              className="no-drag ab-pill absolute top-2 right-2 grid size-6 place-items-center rounded-full bg-[color-mix(in_srgb,var(--ab-fg)_14%,var(--ab-tone-side))] text-[color-mix(in_srgb,var(--ab-fg)_62%,transparent)] opacity-0 outline-none group-hover:opacity-100 hover:text-fg focus-visible:opacity-100 focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]"
             >
               <Icon icon={X} size={12} strokeWidth={2.2} />
             </button>

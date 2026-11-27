@@ -16,7 +16,7 @@ export const SlashMenu = memo(function SlashMenu({ items, active, onPick, onHove
   if (!items.length) return null;
   return (
     // past 8 commands it scrolls (half of the 9th shows), following the one picked with the arrow keys
-    <div role="listbox" aria-label="Commands" className="glass-popover absolute right-0 bottom-full left-0 z-20 mb-2 max-h-[280px] animate-[pop-in_.3s_var(--ease-spring-soft)] overflow-y-auto overscroll-contain rounded-pop p-1.5">
+    <div role="listbox" aria-label="Commands" className="glass-popover absolute right-0 bottom-full left-0 z-20 mb-2 max-h-[280px] overflow-y-auto overscroll-contain rounded-pop p-1.5">
       {items.map((c, i) => (
         <button
           key={c.name}

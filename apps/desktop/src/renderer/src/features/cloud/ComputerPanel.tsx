@@ -112,7 +112,7 @@ export function ComputerPanel() {
             />
           ) : null}
           {card.kind === 'live' || card.kind === 'reconnecting' ? (
-            <span className="pointer-events-none absolute top-2 right-2 flex size-7 items-center justify-center rounded-full bg-black/55 text-white opacity-0 backdrop-blur transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100">
+            <span className="pointer-events-none absolute top-2 right-2 flex size-7 items-center justify-center rounded-full bg-black/55 text-white opacity-0 backdrop-blur group-hover:opacity-100 group-focus-within:opacity-100">
               <Icon icon={Maximize2} size={14} />
             </span>
           ) : null}

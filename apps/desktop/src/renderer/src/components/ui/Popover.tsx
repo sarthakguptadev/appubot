@@ -1,7 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from './cn';
-import { useLeaving } from './useLeaving';
 
 const GAP = 6;
 const EDGE = 8;
@@ -25,10 +24,9 @@ export function Popover({ open, onClose, anchor, side = 'bottom', align = 'start
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
   const close = useRef(onClose);
   close.current = onClose;
-  const { mounted, leaving } = useLeaving(open);
 
-  // the place is kept while the panel leaves, and forgotten once it is gone
-  useEffect(() => { if (!mounted) setPos(null); }, [mounted]);
+  // the place is forgotten once the panel closes, so it opens measured afresh
+  useEffect(() => { if (!open) setPos(null); }, [open]);
 
   useLayoutEffect(() => {
     if (!open) return;
@@ -73,7 +71,7 @@ export function Popover({ open, onClose, anchor, side = 'bottom', align = 'start
     return () => { window.removeEventListener('mousedown', onDown); window.removeEventListener('keydown', onKey, true); };
   }, [open, anchor]);
 
-  if (!mounted) return null;
+  if (!open) return null;
   return createPortal(
     <div
       ref={panel}
@@ -81,7 +79,7 @@ export function Popover({ open, onClose, anchor, side = 'bottom', align = 'start
       aria-label={label}
       // placed off-screen until measured (not hidden: its search field takes focus as it opens)
       style={pos ? { top: pos.top, left: pos.left } : { top: -9999, left: -9999 }}
-      className={cn('glass-popover no-drag fixed z-[70] flex max-h-[calc(100vh-16px)] max-w-[calc(100vw-16px)] animate-[pop-in_150ms_var(--ease-t3)] flex-col overflow-hidden', className, leaving && 'ab-leaving')}
+      className={cn('glass-popover no-drag fixed z-[70] flex max-h-[calc(100vh-16px)] max-w-[calc(100vw-16px)] flex-col overflow-hidden', className)}
     >
       {children}
     </div>,

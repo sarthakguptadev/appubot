@@ -207,7 +207,7 @@ function Choice({ on, onPick, tag, icons, title, line }: { on: boolean; onPick: 
     <button
       type="button" role="radio" aria-checked={on} onClick={onPick}
       className={cn(
-        'no-drag relative flex flex-col gap-3 rounded-[20px] border-[1.5px] p-5 text-left transition-colors focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]',
+        'no-drag relative flex flex-col gap-3 rounded-[20px] border-[1.5px] p-5 text-left focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]',
         on ? 'border-accent bg-accent-soft' : 'border-[var(--ab-hairline)] bg-surface-2 hover:bg-surface-3',
       )}
     >
@@ -397,7 +397,7 @@ function Chip({ on, disabled, onChange, children }: { on: boolean; disabled?: bo
     <button
       type="button" role="checkbox" aria-checked={on} disabled={disabled} onClick={() => onChange(!on)}
       className={cn(
-        'ab-pill squircle flex h-[30px] items-center gap-1.5 rounded-control-sm border pr-2.5 pl-1.5 text-ui transition-colors focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)] disabled:cursor-default',
+        'ab-pill squircle flex h-[30px] items-center gap-1.5 rounded-control-sm border pr-2.5 pl-1.5 text-ui focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)] disabled:cursor-default',
         on ? 'border-[color-mix(in_srgb,var(--ab-accent)_45%,transparent)] bg-accent-soft text-fg' : 'border-[var(--ab-hairline)] text-muted hover:text-fg',
       )}
     >

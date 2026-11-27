@@ -254,7 +254,7 @@ const Avatar = ({ top, layoutId, transition, className }: { top: ActivityTop; la
 );
 
 const TopRow = ({ top, layoutId, transition }: { top: ActivityTop; layoutId: string; transition: Transition }) => (
-  <div className="mx-2 flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-[color-mix(in_srgb,var(--ab-fg)_5%,transparent)]">
+  <div className="mx-2 flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-[color-mix(in_srgb,var(--ab-fg)_5%,transparent)]">
     <Avatar top={top} layoutId={layoutId} transition={transition} />
     <span className="flex-1 truncate text-sm text-fg">{top.name}</span>
     <span className="text-sm text-fg-2 tabular-nums">{top.count}</span>

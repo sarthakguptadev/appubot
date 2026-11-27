@@ -99,7 +99,7 @@ function FastToggle({ on, onToggle }: { on: boolean; onToggle: (next: boolean) =
       title={on ? 'Fast mode on' : 'Fast mode off'}
       onClick={() => onToggle(!on)}
       className={cn(
-        'ab-pill rounded-md p-1 transition-colors outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]',
+        'ab-pill rounded-md p-1 outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]',
         on ? 'bg-accent-soft text-accent' : 'text-muted hover:bg-surface-2 hover:text-fg',
       )}
     >
@@ -225,7 +225,7 @@ function EffortFooter({ efforts, value, defaultEffort, onPick, fast }: {
           title={resettable ? `Back to ${defaultName}` : undefined}
           disabled={none || !resettable}
           onClick={() => onPick(defaultEffort)}
-          className="ab-pill justify-self-end rounded-md p-1 text-muted transition-colors outline-none hover:bg-surface-2 hover:text-fg focus-visible:shadow-[0_0_0_2px_var(--ab-ring)] disabled:pointer-events-none disabled:opacity-35"
+          className="ab-pill justify-self-end rounded-md p-1 text-muted outline-none hover:bg-surface-2 hover:text-fg focus-visible:shadow-[0_0_0_2px_var(--ab-ring)] disabled:pointer-events-none disabled:opacity-35"
         >
           <Icon icon={Undo} size={13} />
         </button>
@@ -250,7 +250,7 @@ const HOVER_CARD_MS = 300;
 /** The chrome trigger (the composer's footer, beside send): 28px with 12px labels that brighten on hover. */
 export const CHROME_TRIGGER = cn(
   'ab-pill squircle inline-flex h-7 max-w-full min-w-0 items-center gap-1.5 overflow-hidden rounded-control-sm px-2.5 text-note whitespace-nowrap text-muted',
-  'transition-colors hover:bg-surface-2 hover:text-fg focus-visible:bg-surface-2 focus-visible:outline-none aria-expanded:bg-surface-2 aria-expanded:text-fg',
+  'hover:bg-surface-2 hover:text-fg focus-visible:bg-surface-2 focus-visible:outline-none aria-expanded:bg-surface-2 aria-expanded:text-fg',
 );
 /**
  * The field trigger (bot editor, Settings): the app's input as a pill, its choice from the left, the chevron at the
@@ -526,7 +526,7 @@ export function ModelPicker({
                 title={name}
                 onClick={() => { setTab(id); setQuery(''); }}
                 className={cn(
-                  'relative flex h-8 min-w-8 shrink-0 items-center justify-center gap-1.5 rounded-t-lg px-2 text-note transition-colors outline-none focus-visible:bg-surface-2',
+                  'relative flex h-8 min-w-8 shrink-0 items-center justify-center gap-1.5 rounded-t-lg px-2 text-note outline-none focus-visible:bg-surface-2',
                   on ? 'text-fg' : 'text-muted hover:bg-surface-2 hover:text-fg',
                 )}
               >
@@ -573,7 +573,7 @@ export function ModelPicker({
                 onMouseLeave={() => { cancelHover(); setHoverCard((h) => (h?.key === r.key ? null : h)); }}
                 onClick={() => choose(r)}
                 className={cn(
-                  'group/row ab-pill squircle flex h-9 cursor-default items-center gap-2 rounded-control-sm pr-1 pl-2.5 text-copy transition-colors duration-75',
+                  'group/row ab-pill squircle flex h-9 cursor-default items-center gap-2 rounded-control-sm pr-1 pl-2.5 text-copy',
                   i === active ? 'bg-[color-mix(in_srgb,var(--ab-fg)_8%,transparent)]' : cur ? 'bg-[color-mix(in_srgb,var(--ab-fg)_4%,transparent)]' : '',
                 )}
               >

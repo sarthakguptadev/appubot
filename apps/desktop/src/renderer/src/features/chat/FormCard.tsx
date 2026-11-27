@@ -132,7 +132,7 @@ function RatingInput({ field, id, value, onChange, disabled }: { field: FormFiel
           disabled={disabled}
           onMouseEnter={() => setHover(i)}
           onClick={() => onChange(n === i ? '' : String(i))}
-          className={cn('grid size-7 place-items-center rounded-full transition-colors', i <= lit ? 'text-[var(--ab-accent)]' : 'text-muted/60 hover:text-muted')}
+          className={cn('grid size-7 place-items-center rounded-full', i <= lit ? 'text-[var(--ab-accent)]' : 'text-muted/60 hover:text-muted')}
         >
           <Icon icon={Star} size={18} className={i <= lit ? 'fill-current' : undefined} />
         </button>
@@ -489,7 +489,7 @@ export function FormCard({ part, botName, botId, botColor, expired }: { part: Qu
                 aria-selected={mode === m}
                 disabled={disabled}
                 onClick={() => { setMode(m); setError(null); }}
-                className={cn('ab-pill squircle h-6 rounded-[6px] px-3 transition-colors', mode === m ? 'bg-surface-3 text-fg' : 'text-muted hover:text-fg')}
+                className={cn('ab-pill squircle h-6 rounded-[6px] px-3', mode === m ? 'bg-surface-3 text-fg' : 'text-muted hover:text-fg')}
               >
                 {m === 'saved' ? `Use one you saved (${vault.saved.length})` : 'Add a new one'}
               </button>

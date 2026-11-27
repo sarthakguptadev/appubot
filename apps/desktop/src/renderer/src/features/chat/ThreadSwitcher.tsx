@@ -34,7 +34,7 @@ export function ThreadRow({ t, active, onScreen, unread, waiting, now, renaming,
       data-thread-row={t.id}
       onMouseMove={onHover}
       className={cn(
-        'group/thread relative rounded-row transition-colors duration-100',
+        'group/thread relative rounded-row',
         onScreen ? 'bg-[color-mix(in_srgb,var(--ab-fg)_8%,transparent)]' : active && 'bg-[color-mix(in_srgb,var(--ab-fg)_4.5%,transparent)]',
       )}
     >

@@ -202,7 +202,7 @@ function Page({ hero, tracker, title, body, children, actions, note }: { hero?: 
   );
 }
 
-const QUIET = 'ab-pill squircle no-drag rounded-control-sm px-2 py-1 text-ui text-muted transition-colors hover:text-fg disabled:opacity-50';
+const QUIET = 'ab-pill squircle no-drag rounded-control-sm px-2 py-1 text-ui text-muted hover:text-fg disabled:opacity-50';
 
 /** the three steps: done ones checked (and a way back), this one in the accent */
 function Tracker({ step, onPick, locked }: { step: GiftStep; onPick: (s: GiftStep) => void; locked?: boolean }) {

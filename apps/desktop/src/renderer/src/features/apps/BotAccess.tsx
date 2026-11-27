@@ -39,7 +39,7 @@ function BotsPopover({ anchor, toolkit: t, onClose }: { anchor: HTMLElement; too
       role="dialog"
       aria-label={`Bots that can use ${t.name}`}
       style={{ top: pos?.top ?? -9999, left: pos?.left ?? -9999 }}
-      className="glass-popover no-drag fixed z-[60] w-[280px] animate-[pop-in_.3s_var(--ease-spring-soft)] rounded-pop p-1.5"
+      className="glass-popover no-drag fixed z-[60] w-[280px] rounded-pop p-1.5"
     >
       <div className="px-2.5 pt-1.5 pb-1 text-note font-medium text-muted">Bots that can use {t.name}</div>
       <ul className="flex max-h-[320px] flex-col overflow-y-auto">
@@ -47,7 +47,7 @@ function BotsPopover({ anchor, toolkit: t, onClose }: { anchor: HTMLElement; too
           const on = appOn(b, t.slug);
           return (
             <li key={b.id}>
-              <label className="ab-pill squircle flex h-9 cursor-default items-center gap-2.5 rounded-control-sm px-2.5 transition-colors hover:bg-[color-mix(in_srgb,var(--ab-fg)_8%,transparent)]">
+              <label className="ab-pill squircle flex h-9 cursor-default items-center gap-2.5 rounded-control-sm px-2.5 hover:bg-[color-mix(in_srgb,var(--ab-fg)_8%,transparent)]">
                 <BotAvatar bot={b} size={20} />
                 <span className="min-w-0 flex-1 truncate text-copy text-fg">{b.name}</span>
                 <Switch checked={on} onChange={(v) => void setAppOn(b, t.slug, v)} label={`${b.name} can use ${t.name}`} />
@@ -76,7 +76,7 @@ export function BotAccess({ toolkit: t }: { toolkit: AppToolkit }) {
         aria-label={`Bots that can use ${t.name}: ${label}`}
         onClick={(e) => setAnchor(anchor ? null : e.currentTarget)}
         className={cn(
-          'no-drag ab-pill -ml-1.5 flex h-[22px] max-w-full min-w-0 items-center gap-1.5 rounded-md px-1.5 text-left text-copy transition-colors hover:bg-surface-2',
+          'no-drag ab-pill -ml-1.5 flex h-[22px] max-w-full min-w-0 items-center gap-1.5 rounded-md px-1.5 text-left text-copy hover:bg-surface-2',
           'focus-visible:outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)]',
           anchor && 'bg-surface-2',
         )}

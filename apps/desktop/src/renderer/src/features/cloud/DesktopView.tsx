@@ -230,7 +230,7 @@ function Viewer({ teach, signIn }: { teach: boolean; signIn?: string }) {
             type="button"
             aria-label="Close"
             onClick={close}
-            className="no-drag flex size-7 shrink-0 items-center justify-center rounded-full bg-white/[0.08] text-white/80 transition-colors hover:bg-white/[0.14] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+            className="no-drag flex size-7 shrink-0 items-center justify-center rounded-full bg-white/[0.08] text-white/80 hover:bg-white/[0.14] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
           >
             <Icon icon={X} size={15} />
           </button>
@@ -294,7 +294,7 @@ function Viewer({ teach, signIn }: { teach: boolean; signIn?: string }) {
                   type="button"
                   disabled={pill.action.disabled || !live}
                   onClick={onPill}
-                  className="ab-pill squircle h-8 shrink-0 rounded-control bg-[#f4f4f4] px-3.5 text-copy font-medium text-[#111] transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 disabled:bg-white/10 disabled:text-white/40"
+                  className="ab-pill squircle h-8 shrink-0 rounded-control bg-[#f4f4f4] px-3.5 text-copy font-medium text-[#111] hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 disabled:bg-white/10 disabled:text-white/40"
                 >
                   {pill.action.label}
                 </button>

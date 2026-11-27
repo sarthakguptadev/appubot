@@ -109,7 +109,7 @@ export function PermissionPicker({ providerId, value, onChange, modes: own, gene
                 autoFocus={on || (!current && i === 0)}
                 onClick={() => { setOpen(false); if (!on) onChange(generic ? GENERIC_ID[MODE_KIND[m.id] ?? ''] ?? m.id : m.id); }}
                 className={cn(
-                  'squircle flex w-full items-start gap-2.5 rounded-card px-2.5 py-2.5 text-left transition-colors duration-100 outline-none',
+                  'squircle flex w-full items-start gap-2.5 rounded-card px-2.5 py-2.5 text-left outline-none',
                   on ? 'bg-accent-soft' : 'hover:bg-[color-mix(in_srgb,var(--ab-fg)_8%,transparent)] focus-visible:bg-[color-mix(in_srgb,var(--ab-fg)_8%,transparent)]',
                 )}
               >

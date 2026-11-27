@@ -152,7 +152,7 @@ function ModelRowView({ row, onPick }: { row: VoiceModelRow; onPick: () => void 
       aria-current={row.picked ? 'true' : undefined}
       onClick={onPick}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onPick(); } }}
-      className={cn(SETTINGS_ROW, 'flex cursor-default items-start gap-4 outline-none transition-colors hover:bg-[color-mix(in_srgb,var(--ab-fg)_3%,transparent)] focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)]')}
+      className={cn(SETTINGS_ROW, 'flex cursor-default items-start gap-4 outline-none hover:bg-[color-mix(in_srgb,var(--ab-fg)_3%,transparent)] focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)]')}
     >
       <div className="min-w-0 flex-1 space-y-0.5">
         <div className="flex min-h-5 flex-wrap items-center gap-2">
@@ -192,7 +192,7 @@ function ModelList({ kind, models, v, onBack }: { kind: VoiceKind; models: Voice
               aria-expanded={more}
               aria-controls={moreId}
               onClick={() => setMore((o) => !o)}
-              className={cn(SETTINGS_ROW, 'flex w-full items-center gap-2 text-left text-copy text-fg-2 outline-none transition-colors hover:bg-[color-mix(in_srgb,var(--ab-fg)_3%,transparent)] focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)]')}
+              className={cn(SETTINGS_ROW, 'flex w-full items-center gap-2 text-left text-copy text-fg-2 outline-none hover:bg-[color-mix(in_srgb,var(--ab-fg)_3%,transparent)] focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)]')}
             >
               <span className="flex-1">{othersLabel(others.length)}</span>
               <Icon icon={ChevronRight} size={14} className={cn('shrink-0 text-muted transition-transform duration-150', more && 'rotate-90')} />
@@ -228,7 +228,7 @@ function Storage({ models }: { models: VoiceModelStatus[] }) {
           aria-controls={bodyId}
           onClick={() => setOpen((o) => !o)}
           // the focus ring sits inside the button: an outline outside it would be clipped by the card into a stray line
-          className={cn(SETTINGS_ROW, 'flex w-full items-center gap-2 text-left outline-none transition-colors hover:bg-[color-mix(in_srgb,var(--ab-fg)_3%,transparent)] focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)]')}
+          className={cn(SETTINGS_ROW, 'flex w-full items-center gap-2 text-left outline-none hover:bg-[color-mix(in_srgb,var(--ab-fg)_3%,transparent)] focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)]')}
         >
           <span className={cn('flex-1', SETTINGS_ROW_TITLE)}>
             Voice files <span className="font-normal text-muted">· {voiceModelSize(bytes)}</span>

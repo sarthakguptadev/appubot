@@ -30,7 +30,7 @@ export const SETTINGS_ROW_DESCRIPTION = 'max-w-2xl text-ui leading-[18px] text-m
 export const SETTINGS_SECTION_TITLE = 'flex min-h-7 items-center gap-2 text-title font-semibold tracking-ui text-fg';
 /** A row that is a button (a menu of choices drawn as a card): Settings' nav hover, a quiet fill. */
 export const SETTINGS_ROW_BUTTON =
-  'flex w-full items-center gap-3 text-left outline-none transition-colors hover:bg-[color-mix(in_srgb,var(--ab-fg)_4%,transparent)] ' +
+  'flex w-full items-center gap-3 text-left outline-none hover:bg-[color-mix(in_srgb,var(--ab-fg)_4%,transparent)] ' +
   'focus-visible:bg-[color-mix(in_srgb,var(--ab-fg)_4%,transparent)]';
 
 /** Card shell for groups that draw their own rows. */

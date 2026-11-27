@@ -120,7 +120,7 @@ function InlineField({ value, placeholder, label, max, required, onSave, classNa
       type="button"
       onClick={start}
       aria-label={`${label}: ${value || placeholder || ''}. Change`}
-      className={cn('no-drag squircle min-h-7 max-w-full rounded-control-sm px-2 py-0.5 text-center outline-none transition-colors duration-150 hover:bg-fg/5 focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]', className)}
+      className={cn('no-drag squircle min-h-7 max-w-full rounded-control-sm px-2 py-0.5 text-center outline-none hover:bg-fg/5 focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]', className)}
     >
       {value ? <span className="line-clamp-2 [overflow-wrap:anywhere]">{value}</span> : <span className="text-muted/70">{placeholder}</span>}
     </button>

@@ -11,7 +11,7 @@ import { ChatMarkdown } from './Markdown';
 import { MessageActions } from './MessageActions';
 import { ReactionChip } from './Reactions';
 
-const LINE = 'ab-pill squircle inline-flex max-w-full min-w-0 items-center gap-1.5 rounded-control px-2.5 py-1 text-ui text-muted transition-colors hover:bg-fg/5 hover:text-fg-2 focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]';
+const LINE = 'ab-pill squircle inline-flex max-w-full min-w-0 items-center gap-1.5 rounded-control px-2.5 py-1 text-ui text-muted hover:bg-fg/5 hover:text-fg-2 focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]';
 
 function Chevron({ open }: { open: boolean }) {
   return <Icon icon={ChevronDown} size={12} className={cn('shrink-0 transition-transform duration-150', open && 'rotate-180')} />;

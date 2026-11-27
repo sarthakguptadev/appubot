@@ -20,7 +20,7 @@ export const MentionMenu = memo(function MentionMenu({ items, active, at, onPick
       role="listbox"
       aria-label="Mention a bot"
       style={{ left: at.left, bottom: at.bottom }}
-      className="glass-popover absolute z-20 max-h-[min(318px,50vh)] w-max max-w-[280px] min-w-[200px] animate-[pop-in_150ms_var(--ease-t3)] overflow-y-auto overscroll-contain rounded-pop p-1.5"
+      className="glass-popover absolute z-20 max-h-[min(318px,50vh)] w-max max-w-[280px] min-w-[200px] overflow-y-auto overscroll-contain rounded-pop p-1.5"
     >
       {items.map((it, i) => (
         <button

@@ -199,7 +199,7 @@ function SettingsNav() {
         {/* whose settings these are: this Mac, the person's cloud computer or a team's (nothing where there is only this one) */}
         <div className="pb-2 empty:hidden"><ComputerMenu inSettings /></div>
         {searchOpen || searching ? (
-        <label className="ab-pill squircle flex h-9 items-center gap-2.5 rounded-control-sm bg-surface-2 px-2.5 text-copy font-medium text-muted transition-colors duration-150 ease-rare hover:bg-surface-3 focus-within:shadow-[0_0_0_2px_var(--ab-ring)]">
+        <label className="ab-pill squircle flex h-9 items-center gap-2.5 rounded-control-sm bg-surface-2 px-2.5 text-copy font-medium text-muted hover:bg-surface-3 focus-within:shadow-[0_0_0_2px_var(--ab-ring)]">
           <Icon icon={Search} size={16} className="shrink-0 text-muted/80" />
           <input
             ref={input}
@@ -260,7 +260,7 @@ function SettingsNav() {
         <button
           type="button"
           onClick={ui.closeSettings}
-          className="ab-press ab-pill squircle no-drag flex h-9 w-full items-center gap-2 rounded-control px-2.5 text-ui font-medium tracking-ui text-muted outline-none transition-colors duration-100 hover:bg-[color-mix(in_srgb,var(--ab-fg)_6%,transparent)] hover:text-fg focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]"
+          className="ab-press ab-pill squircle no-drag flex h-9 w-full items-center gap-2 rounded-control px-2.5 text-ui font-medium tracking-ui text-muted outline-none hover:bg-[color-mix(in_srgb,var(--ab-fg)_6%,transparent)] hover:text-fg focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]"
         >
           <Icon icon={ChevronLeft} size={15} className="shrink-0" />
           {t('settings.backToApp')}

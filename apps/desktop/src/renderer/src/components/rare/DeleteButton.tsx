@@ -67,7 +67,7 @@ function Circle({ label, onClick, edge, children }: { label: string; onClick: ()
         whileTap={reduced ? undefined : { scale: 0.84 }}
         transition={PRESS}
         style={{ width: edge, height: edge }}
-        className={cn('grid place-items-center rounded-full bg-surface text-fg-2 shadow-lift transition-colors duration-200 hover:text-fg dark:bg-[rgba(255,255,255,.12)]', FOCUS)}
+        className={cn('grid place-items-center rounded-full bg-surface text-fg-2 shadow-lift hover:text-fg dark:bg-[rgba(255,255,255,.12)]', FOCUS)}
       >
         <svg {...ICON} width={edge / 2} height={edge / 2} stroke="currentColor" strokeWidth="3.5">{children}</svg>
       </motion.button>
@@ -165,7 +165,7 @@ export function DeleteButton({ className, onConfirm, onCancel, size = 32, label 
         whileTap={reduced ? undefined : { scale: 0.94 }}
         transition={TAP}
         style={{ width: tile, height: tile, borderRadius: radius }}
-        className={cn('squircle relative z-10 grid place-items-center transition-colors duration-150 hover:text-danger', open && 'text-danger', FOCUS)}
+        className={cn('squircle relative z-10 grid place-items-center hover:text-danger', open && 'text-danger', FOCUS)}
       >
         <AnimatePresence mode="wait" initial={false}>
           {status === 'deleted' ? (

@@ -169,7 +169,7 @@ export function QuietLink({ children, onClick, disabled, className }: { children
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={cn('rounded text-fg-2 underline decoration-[color-mix(in_srgb,var(--ab-fg)_25%,transparent)] underline-offset-[3px] transition-colors hover:text-fg hover:decoration-current focus-visible:ring-2 focus-visible:ring-[var(--ab-ring)] focus-visible:outline-none disabled:opacity-50', className)}
+      className={cn('rounded text-fg-2 underline decoration-[color-mix(in_srgb,var(--ab-fg)_25%,transparent)] underline-offset-[3px] hover:text-fg hover:decoration-current focus-visible:ring-2 focus-visible:ring-[var(--ab-ring)] focus-visible:outline-none disabled:opacity-50', className)}
     >
       {children}
     </button>
