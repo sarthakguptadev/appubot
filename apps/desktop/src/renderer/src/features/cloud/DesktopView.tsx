@@ -11,7 +11,7 @@ import { cloudClientIfAny } from './cloudClient';
 import {
   giveBack, keepControl, noteInput, placeSurface, refitScreen, releaseScreen, retryScreen, screenCanvas, takeControl, useCloudDesktop, useScreen, wantScreen,
 } from './screenSession';
-import { VIEWER_HEADER_H, VIEWER_INSET, VIEWER_MARGIN, VIEWER_PILL_H, botScreenLine, fitScreen, popupSize } from './screenView';
+import { VIEWER_FULL, VIEWER_HEADER_H, VIEWER_MARGIN, VIEWER_PILL_H, botScreenLine, fitScreen, popupSize } from './screenView';
 
 /*
  * Open desktop (plan §4.4): your AppuBot computer's own screen (or a team's) in a dark panel centred in the app window,
@@ -127,14 +127,17 @@ export function DesktopView() {
           exit={{ opacity: 0 }}
           transition={{ duration: reduce ? 0.12 : 0.28, ease: [0.25, 1, 0.5, 1] }}
           className="fixed inset-0 z-[70] flex items-center justify-center"
-          style={full ? { padding: `${VIEWER_INSET.top}px ${VIEWER_INSET.side}px ${VIEWER_INSET.side}px` } : undefined}
         >
           {/* the app around the popup, dimmed almost away so none of its controls read beside the popup's own: a press
               there closes it (not while you're in control); its top row still drags the window */}
           <div className="absolute inset-0 bg-[color-mix(in_srgb,var(--ab-content)_88%,transparent)]" onMouseDown={() => { if (!useScreen.getState().mine) closeCloudDesktop(); }} />
-          <div className="drag absolute inset-x-0 top-0" style={{ height: VIEWER_INSET.top }} />
+          <div className="drag absolute inset-x-0 top-0" style={{ height: VIEWER_HEADER_H }} />
+          {/* the popup, or at full size the whole window: one dark surface edge to edge, no card around it */}
           <div
-            className={cn('no-drag squircle relative flex min-h-0 min-w-0 flex-col overflow-hidden rounded-sheet bg-[#0a0a0a] text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_25px_50px_-12px_rgba(0,0,0,.6)]', full ? 'size-full' : 'shrink-0')}
+            className={cn(
+              'no-drag relative flex min-h-0 min-w-0 flex-col overflow-hidden text-white',
+              full ? 'size-full bg-[#161616]' : 'squircle shrink-0 rounded-sheet bg-[#0a0a0a] shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_25px_50px_-12px_rgba(0,0,0,.6)]',
+            )}
             style={full ? undefined : { width: popup.w, height: popup.h }}
           >
             <Viewer teach={teach} signIn={signIn} title={title} full={full} onFull={() => setFull((f) => !f)} />
@@ -158,13 +161,17 @@ function Viewer({ teach, signIn, title, full, onFull }: { teach: boolean; signIn
   const now = useNow(mine ? 500 : 30_000);
   const close = () => closeCloudDesktop();
 
-  // Esc closes, unless you're in control: then the key is the computer's (noVNC takes it on its canvas; ✕ still closes)
+  // Esc closes the popup and collapses full size back to it, unless you're in control: then the key is the computer's
+  // (noVNC takes it on its canvas; ✕ or the collapse button still work)
+  const fullNow = useRef(full);
+  fullNow.current = full;
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape' || useScreen.getState().mine) return;
       e.preventDefault();
       e.stopPropagation();
-      close();
+      if (fullNow.current) onFull();
+      else close();
     };
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
@@ -184,24 +191,27 @@ function Viewer({ teach, signIn, title, full, onFull }: { teach: boolean; signIn
   // the room for the screen and the pill (inside the margins), measured as it changes: window resizes, full screen,
   // the side panel; the screen's box follows it and the screen's own size (`fb`), and noVNC refits to the box
   const roomRef = useRef<HTMLDivElement | null>(null);
-  // first guess: the window less the panel's inset and header (measured before the first paint anyway), so the picture lands at its size
-  const [room, setRoom] = useState(() => ({
-    w: window.innerWidth - 2 * VIEWER_INSET.side - 2 * VIEWER_MARGIN,
-    h: window.innerHeight - VIEWER_INSET.top - VIEWER_INSET.side - VIEWER_HEADER_H - VIEWER_MARGIN,
-  }));
+  // the edges around the screen and the pill: the popup's margin, or full size's wider sides and its foot
+  const side = full ? VIEWER_FULL.side : VIEWER_MARGIN;
+  const foot = full ? VIEWER_FULL.bottom : VIEWER_MARGIN;
+  // first guess: the popup less its top row and margins (measured before the first paint anyway), so the picture lands at its size
+  const [room, setRoom] = useState(() => {
+    const p = popupSize({ w: window.innerWidth, h: window.innerHeight }, useScreen.getState().fb);
+    return { w: p.w - 2 * VIEWER_MARGIN, h: p.h - VIEWER_HEADER_H - VIEWER_MARGIN };
+  });
   useLayoutEffect(() => {
     const el = roomRef.current;
     if (!el) return;
     const read = () => {
-      const w = el.clientWidth - 2 * VIEWER_MARGIN;
-      const h = el.clientHeight - VIEWER_MARGIN;
+      const w = el.clientWidth - 2 * side;
+      const h = el.clientHeight - foot;
       setRoom((r) => (r.w === w && r.h === h ? r : { w, h }));
     };
     read();
     const ro = new ResizeObserver(read);
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  }, [side, foot]);
   const box = fitScreen(room, fb);
   // noVNC would refit a frame later on its own: fit it before this paints
   useLayoutEffect(() => { refitScreen(); }, [box.w, box.h]);
@@ -248,40 +258,61 @@ function Viewer({ teach, signIn, title, full, onFull }: { teach: boolean; signIn
 
   return (
     <>
-      {/* the panel's top: the computer's name, the screens where bots have their own, full size and ✕ */}
-      <header className="flex shrink-0 items-center gap-1.5 pr-2 pl-4" style={{ height: VIEWER_HEADER_H }}>
-        <div className="flex min-w-0 flex-1 items-center gap-3">
-          <span className="min-w-0 shrink truncate text-note text-white/60">{title}</span>
-          {!teach && !signIn ? <ScreenSwitcher /> : null}
-        </div>
-        <Tooltip label={full ? 'Smaller' : 'Full size'}>
-          <button
-            type="button"
-            aria-label={full ? 'Smaller' : 'Full size'}
-            aria-pressed={full}
-            onClick={onFull}
-            className="flex size-7 shrink-0 items-center justify-center rounded-full text-white/70 hover:bg-white/[0.08] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
-          >
-            <Icon icon={full ? Minimize2 : Maximize2} size={14} />
-          </button>
-        </Tooltip>
-        <Tooltip label="Close (Esc)">
-          <button
-            type="button"
-            aria-label="Close"
-            onClick={close}
-            className="no-drag flex size-7 shrink-0 items-center justify-center rounded-full bg-white/[0.08] text-white/80 hover:bg-white/[0.14] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
-          >
-            <Icon icon={X} size={15} />
-          </button>
-        </Tooltip>
-      </header>
+      {full ? (
+        // full size's top: the traffic lights' row, which drags the window; the screens where bots have their own in
+        // its middle, and only the collapse button at the right (left of Windows' and Linux's window buttons)
+        <header className="drag relative flex shrink-0 items-center justify-end pr-[calc(8px+var(--wco-right))]" style={{ height: VIEWER_HEADER_H }}>
+          {!teach && !signIn ? (
+            <div className="no-drag absolute top-1/2 left-1/2 flex max-w-[calc(100%-240px)] -translate-x-1/2 -translate-y-1/2 justify-center">
+              <ScreenSwitcher />
+            </div>
+          ) : null}
+          <Tooltip label="Smaller (Esc)">
+            <button
+              type="button"
+              aria-label="Smaller"
+              onClick={onFull}
+              className="no-drag flex size-7 shrink-0 items-center justify-center rounded-full text-white/70 hover:bg-white/[0.08] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+            >
+              <Icon icon={Minimize2} size={14} />
+            </button>
+          </Tooltip>
+        </header>
+      ) : (
+        <header className="flex shrink-0 items-center gap-1.5 pr-2 pl-4" style={{ height: VIEWER_HEADER_H }}>
+          {/* the popup's top: the computer's name, the screens where bots have their own, full size and ✕ */}
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <span className="min-w-0 shrink truncate text-note text-white/60">{title}</span>
+            {!teach && !signIn ? <ScreenSwitcher /> : null}
+          </div>
+          <Tooltip label="Full size">
+            <button
+              type="button"
+              aria-label="Full size"
+              onClick={onFull}
+              className="flex size-7 shrink-0 items-center justify-center rounded-full text-white/70 hover:bg-white/[0.08] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+            >
+              <Icon icon={Maximize2} size={14} />
+            </button>
+          </Tooltip>
+          <Tooltip label="Close (Esc)">
+            <button
+              type="button"
+              aria-label="Close"
+              onClick={close}
+              className="no-drag flex size-7 shrink-0 items-center justify-center rounded-full bg-white/[0.08] text-white/80 hover:bg-white/[0.14] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+            >
+              <Icon icon={X} size={15} />
+            </button>
+          </Tooltip>
+        </header>
+      )}
 
-      {/* the screen and, right under it, the pill: one group centred in the room, a margin around it */}
+      {/* the screen and, right under it, the pill: one group centred in the room, an edge around it */}
       <div
         ref={roomRef}
         className="flex min-h-0 flex-1 flex-col items-center justify-center"
-        style={{ padding: `0 ${VIEWER_MARGIN}px ${VIEWER_MARGIN}px` }}
+        style={{ padding: `0 ${side}px ${foot}px` }}
         onPointerMoveCapture={() => noteInput()}
         onPointerDownCapture={onPointerDown}
         onKeyDownCapture={onKeyDown}
@@ -323,7 +354,7 @@ function Viewer({ teach, signIn, title, full, onFull }: { teach: boolean; signIn
               role="group"
               aria-label="Watching or in control"
               title={note}
-              className="ab-pill squircle flex h-10 max-w-full items-center gap-1 rounded-pop border border-white/[0.08] bg-[#1c1c1c] py-1 pr-1 pl-3.5 shadow-[0_8px_24px_rgba(0,0,0,0.45)]"
+              className="ab-pill squircle flex h-10 max-w-full items-center gap-1 rounded-pop border border-white/[0.08] bg-[#1f1f1f] py-1 pr-1 pl-3.5 shadow-[0_8px_24px_rgba(0,0,0,0.45)]"
             >
               <span className={cn('flex min-w-0 items-center gap-2 pr-2 text-copy', pill.mode === 'mine' ? 'text-white' : 'text-white/55')}>
                 <Icon icon={pill.mode === 'mine' ? Hand : Eye} size={16} className="shrink-0" />

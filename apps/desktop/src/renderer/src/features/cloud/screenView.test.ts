@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CONTROL_IDLE_MS } from '@appubot/protocol';
-import { DEFAULT_SCREEN, VIEWER_HEADER_H, VIEWER_MARGIN, VIEWER_PILL_H, botScreenLine, controlUntil, fitScreen, localControl, mayStream, popupSize, screenCaption, screenCard, screenUrl, shortcutKeysym } from './screenView';
+import { DEFAULT_SCREEN, VIEWER_HEADER_H, VIEWER_MARGIN, VIEWER_PILL_H, botScreenLine, controlUntil, fitScreen, fullRoom, localControl, mayStream, popupSize, screenCaption, screenCard, screenUrl, shortcutKeysym } from './screenView';
 
 describe('a bot’s own screen', () => {
   it('asks the screen port for that screen, keeping the signed link’s own query', () => {
@@ -141,3 +141,14 @@ describe('popupSize', () => {
   });
 });
 
+
+describe('full size', () => {
+  it('is the whole window less its top row, 28px at each side and 12px at the foot, the screen letterboxed in its shape', () => {
+    const room = fullRoom({ w: 1440, h: 900 });
+    expect(room).toEqual({ w: 1440 - 56, h: 900 - VIEWER_HEADER_H - 12 });
+    const box = fitScreen(room, { w: 1440, h: 900 });
+    expect(box.h).toBe(room.h - VIEWER_PILL_H - VIEWER_MARGIN);
+    expect(box.w).toBeLessThan(room.w);
+    expect(Math.abs(box.w / box.h - 1.6)).toBeLessThan(0.01);
+  });
+});
