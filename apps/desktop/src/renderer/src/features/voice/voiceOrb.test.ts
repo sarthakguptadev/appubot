@@ -10,7 +10,9 @@ describe('the voice orb', () => {
     expect(read('features/voice/VoiceView.tsx')).toContain("'--orb': 'max(120px, min(320px, 50cqh, 76cqw))'");
   });
 
-  it('has the bottom of the window to itself: the support bubble steps away in voice mode', () => {
-    expect(read('features/support/SupportWidget.tsx')).toContain('if (voice && !open) return null;');
+  it('has the bottom of the window to itself: there is no support bubble, only the panel the account menu opens', () => {
+    const widget = read('features/support/SupportWidget.tsx');
+    expect(widget).not.toContain('<button');
+    expect(widget).toContain('<AnimatePresence>\n      {open ? (');
   });
 });

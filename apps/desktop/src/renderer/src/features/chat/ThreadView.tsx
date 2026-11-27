@@ -326,7 +326,7 @@ export function ThreadView() {
             )}
             {/* Synara's composer column: the 20px gutter around a 46rem frame, 16px under the composer */}
             <div className="relative shrink-0 px-5 pb-4">
-              <div className="mx-auto w-full max-w-[46rem]" data-support-avoid>
+              <div className="mx-auto w-full max-w-[46rem]">
                 <AnimatePresence initial={false}>
                   {elsewhere.length && !docked.length ? <ElsewhereNotice key="elsewhere" requests={elsewhere} /> : null}
                   {/* one at a time, below what's waiting for the user: approvals, then the bot at work on the computer

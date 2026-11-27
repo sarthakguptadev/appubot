@@ -278,7 +278,7 @@ function RoomComposer({ group, chatId, working, members }: { group: Group; chatI
   // the chat's own composer, words only: the room takes no files, and the pickers under it belong to a bot's thread
   return (
     <div className="relative shrink-0 px-5 pb-4">
-      <div className="mx-auto w-full max-w-[46rem]" data-support-avoid>
+      <div className="mx-auto w-full max-w-[46rem]">
         {pending.length ? <ApprovalBar requests={pending} botName={asker?.name ?? 'A bot'} /> : goal ? <GoalCard goal={goal} unit="messages" onAct={(action) => void call('groups.goal', { id: group.id, ...(chatId !== group.id ? { chatId } : {}), action }, { errorTitle: 'Couldn’t change the goal' })} /> : null}
         <Composer
           key={chatId}
