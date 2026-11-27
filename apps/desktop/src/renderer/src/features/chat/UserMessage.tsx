@@ -1,6 +1,6 @@
 // A sent message (after Synara's user bubble, MIT): right-aligned, in the bot's colour (chat-core `sentBubble`: a
-// text-message chat with that bot), user-variant markdown in its ink, image
-// thumbnails inside; copy and (i) (where it was sent from, the exact time: MessageActions) show on hover to the bubble's
+// text-message chat with that bot), user-variant markdown in its ink; the pictures you sent (pasted or attached) right
+// over it in one box, their right edges on the bubble's, files as tiles; copy and (i) (where it was sent from, the exact time: MessageActions) show on hover to the bubble's
 // left. Under it only the bot's reaction and, for a routine's prompt, "Routine" (it reads as yours otherwise).
 // In the Messages theme (lib/appearance.ts) the bubble is the theme's own (`Bubble`: neutral, a tail, the time and
 // ticks inside) and the bot's reaction sits on its bottom edge.
@@ -17,8 +17,7 @@ import { Bubble } from './Bubble';
 import { ChatMarkdown } from './Markdown';
 import { MessageActions } from './MessageActions';
 import { ReactionChip } from './Reactions';
-import { FileTile, ImageBox, PathChip, imageSrc, isPictureFile } from './MediaParts';
-import { galleryProps, openGalleryAt } from './imageGallery';
+import { FileTile, ImageBox, PathChip, isPictureFile, type Picture } from './MediaParts';
 import { useCloudFiles } from '../cloud/cloudClient';
 import { VoiceNote, type VoicePart } from '../voice/VoiceNote';
 import { MAC_KEY, discardSend, isLocalId, retrySend, useOutbox, type QueuedSend } from '../../lib/outbox';
@@ -118,20 +117,14 @@ export const UserMessage = memo(function UserMessage({ msg, botName, waiting }: 
   const voices = msg.parts.filter((p): p is VoicePart => p.type === 'voice');
   const pending = useOutbox((s) => (isLocalId(msg.id) ? s.sends[msg.id] : undefined));
   const look = useSendLook(pending);
-  const pictures = files.flatMap((f, i) => (isPictureFile(f.file) ? [{ file: f.file, sending: pending ? fileSending(pending, i) : undefined }] : []));
+  const pictures: Picture[] = [
+    ...images.map((part) => ({ part })),
+    ...files.flatMap((f, i) => (isPictureFile(f.file) ? [{ file: f.file, sending: pending ? fileSending(pending, i) : undefined }] : [])),
+  ];
   const themed = useMessagesTheme();
   // the bubble's inside, the same in either theme
   const inside = (
     <>
-      {images.length ? (
-        <div className="mb-1.5 flex flex-wrap gap-1.5 last:mb-0">
-          {images.map((im, i) => (
-            <button key={i} type="button" aria-label="Open image" {...galleryProps(imageSrc(im))} onClick={openGalleryAt} className="cursor-zoom-in overflow-hidden rounded-card">
-              <img src={imageSrc(im)} alt="" draggable={false} className="h-20 max-w-[180px] object-cover" />
-            </button>
-          ))}
-        </div>
-      ) : null}
       {paths.length ? <div className="mb-1.5 flex flex-wrap justify-end gap-1.5 last:mb-0">{paths.map((p) => <PathChip key={p} path={p} />)}</div> : null}
       {body ? <ChatMarkdown text={body} variant="user" /> : null}
     </>
@@ -151,7 +144,7 @@ export const UserMessage = memo(function UserMessage({ msg, botName, waiting }: 
         {voices.map((v) => (
           <VoiceNote key={v.file.id} part={v} color={botColor} className="mb-1" />
         ))}
-        {body || images.length || paths.length ? (
+        {body || paths.length ? (
           <div className="flex max-w-full min-w-0 items-center gap-1.5">
             <MessageActions text={raw} sent={msg} at={msg.createdAt} side="left" />
             {themed ? (

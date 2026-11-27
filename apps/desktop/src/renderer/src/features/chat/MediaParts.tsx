@@ -74,7 +74,7 @@ function PictureCell({ picture, single, wide }: { picture: Picture; single?: boo
   }, [single, src, shapeKey]);
   const [w, h] = shape ?? [4, 3];
   const box = single
-    ? { style: { aspectRatio: `${w} / ${h}`, width: `min(100%, ${Math.round(Math.min(MAX_W, (MAX_H * w) / h))}px)` }, className: 'rounded-[16px] squircle' }
+    ? { style: { aspectRatio: `${w} / ${h}`, width: Math.round(Math.min(MAX_W, (MAX_H * w) / h)), maxWidth: '100%' }, className: 'rounded-[16px] squircle' }
     : { style: undefined, className: wide ? 'col-span-2 aspect-[2/1]' : 'aspect-square' };
   const action = 'flex size-7 items-center justify-center rounded-[8px] bg-black/55 text-white backdrop-blur-sm hover:bg-black/70';
   return (
