@@ -24,7 +24,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { bytes, computerDisplayName } from '@appubot/chat-core';
 import type { BotExportPart, ExportableBot } from '@appubot/protocol';
 import { BotAvatar, Button, Icon, Logo, Spinner, cn, useModalPresence } from '../../components/ui';
-import { AlertTriangle, ArrowRight, Blocks, Check, CircleCheck, Cloud, Laptop, Plug, RotateCw, Send, Smartphone, X } from '../../components/ui/icons';
+import { AlertTriangle, AppsAdd, ArrowRight, Blocks, Check, CircleCheck, Cloud, Laptop, RotateCw, Send, Smartphone, X } from '../../components/ui/icons';
 import { localGateway } from '../../lib/gateway';
 import { IS_MAC, MACHINE } from '../../lib/platform';
 import { ui, useStore, type Modal } from '../../lib/store';
@@ -452,7 +452,7 @@ function NextStep({ onBack, onClose }: { onBack?: () => void; onClose: () => voi
             </div>
           ) : <Button size="sm" variant="secondary" onClick={go(() => ui.openSettings('providers'))}>Sign in</Button>}
         </NextRow>
-        <NextRow icon={Plug} title="Connect your apps" line="Gmail, Calendar, Notion and more.">
+        <NextRow icon={AppsAdd} title="Connect your apps" line="Gmail, Calendar, Notion and more.">
           <Button size="sm" variant="secondary" onClick={go(() => ui.openApps())}>Connect</Button>
         </NextRow>
         <NextRow icon={Send} title="Set up Telegram" line="Message your bots from anywhere.">

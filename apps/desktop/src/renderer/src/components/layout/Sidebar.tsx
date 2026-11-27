@@ -2,7 +2,7 @@ import { useT } from '../../lib/i18n';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { botThreads, type Bot, type Group, type Thread } from '@appubot/protocol';
 import { GROUP_TILE_MAX, GROUP_TILE_TURN_S, buildRoster, groupTileLayout, rosterPreview, threadTitle } from '@appubot/chat-core';
-import { ChevronRight, FolderOpen, Pencil, Pin, Plug, Plus, Search, Settings, SquarePen, Trash2, User, Users } from '../ui/icons';
+import { AppsAdd, ChevronRight, FolderOpen, Pencil, Pin, Plus, Search, Settings, SquarePen, Trash2, User, Users } from '../ui/icons';
 import { BotAvatar, Button, Icon, Menu, Spinner, Tooltip, cn, type BotPresence } from '../ui';
 import { call, deleteBot, deleteThread, openBot, openBotDetails, openThread, renameThread, setPinned, startThread } from '../../lib/actions';
 import { rpc } from '../../lib/gateway';
@@ -392,7 +392,7 @@ function ConnectApps() {
   return (
     <Tooltip label="Connect apps" side="top">
       <button type="button" aria-label="Connect apps" aria-haspopup="dialog" onClick={() => ui.openApps()} className={cn(STRIP_BUTTON, RAISED, open && RAISED_ON)}>
-        <Icon icon={Plug} size={16} />
+        <Icon icon={AppsAdd} size={16} />
       </button>
     </Tooltip>
   );

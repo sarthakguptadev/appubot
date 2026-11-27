@@ -152,7 +152,7 @@ export const Sparkles = createIcon(SparklesIcon, 'Sparkles');
 export const Zap = createIcon(FlashIcon, 'Zap');
 export const SlidersHorizontal = createIcon(FilterHorizontalIcon, 'SlidersHorizontal');
 export const Plug = createIcon(Plug01Icon, 'Plug');
-/** apps (Settings › Apps, Connect apps): three squares and a +, the owner's pick (2026-11-27) */
+/** apps (Settings › Apps and its search results, the sidebar's Connect apps, the palette's action, the cloud welcome's row): three squares and a +, the owner's pick (2026-11-27) */
 export const AppsAdd = createIcon(DashboardSquareAddIcon, 'AppsAdd');
 export const ToggleLeft = createIcon(ToggleOnIcon, 'ToggleLeft');
 export const Wrench = createIcon(Wrench01Icon, 'Wrench');
