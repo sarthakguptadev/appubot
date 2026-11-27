@@ -13,6 +13,7 @@ export * from './computerSummary';
 export * from './toolText';
 export * from './turn';
 export * from './workTrail';
+export * from './liveStep';
 export * from './messageInfo';
 export * from './streaming';
 export * from './markdownTableRepair';

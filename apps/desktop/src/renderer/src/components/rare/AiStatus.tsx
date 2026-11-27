@@ -9,7 +9,9 @@
  * Changed for AppuBot: a ResizeObserver measures the row (upstream uses react-use-measure); an `icon` of the
  * caller's own is drawn as it is, at `iconSize`, and stays put across states (the chat passes the bot's avatar,
  * which has moods of its own; only the built-in state icons swap); `time` takes a ready-made node (the chat's live
- * timer) in place of the counter; the app's colours and type.
+ * timer) in place of the counter; the app's colours and type. After Grok Bot's status line (2026-11-27): a new label
+ * swaps in 50ms with a plain fade and the row takes its width at once, and the shimmer is a bright band that crosses
+ * the label in about 550ms every 1.1s, linear, from a dim grey to the text's own colour.
  */
 import { useEffect, useLayoutEffect, useRef, useState, type ComponentProps, type ReactNode } from 'react';
 import { AnimatePresence, motion, useReducedMotion, type Transition, type Variants } from 'motion/react';
@@ -54,6 +56,9 @@ const TWINKLE_PATH = 'M18 2Q18.4 4.6 21 5Q18.4 5.4 18 8Q17.6 5.4 15 5Q17.6 4.6 1
 const SWAP: Transition = { type: 'spring', duration: 0.5, bounce: 0.15 };
 const ICON: Transition = { type: 'spring', duration: 0.55, bounce: 0.35 };
 const INSTANT: Transition = { duration: 0 };
+/** a new label: a 50ms fade, nothing lifting or blurring */
+const LABEL_SWAP: Transition = { duration: 0.05, ease: 'linear' };
+const labelVariants: Variants = { enter: { opacity: 0 }, center: { opacity: 1 }, exit: { opacity: 0 } };
 
 const swapVariants: Variants = {
   enter: { y: 8, opacity: 0, filter: 'blur(4px)' },
@@ -67,8 +72,6 @@ const iconVariants: Variants = {
   exit: { scale: 0.5, opacity: 0, rotate: 30, filter: 'blur(4px)' },
 };
 
-// the highlight sits mid gradient and the size leaves room either side, so each sweep starts off screen
-const SHIMMER = 'linear-gradient(90deg, var(--ai-status-ink) 40%, var(--ai-status-shine) 50%, var(--ai-status-ink) 60%)';
 
 const STROKE = { fill: 'none', stroke: 'currentColor', strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
 const LOOP = { repeat: Infinity, ease: 'easeInOut' } as const;
@@ -170,15 +173,15 @@ export function AiStatus({
       </span>
 
       {/* the row springs between widths, so the detail and timer glide instead of jumping */}
-      <motion.div className="relative min-w-0 overflow-x-clip" initial={false} animate={{ width: width || 'auto' }} transition={swap}>
+      <motion.div className="relative min-w-0 overflow-x-clip" initial={false} animate={{ width: width || 'auto' }} transition={INSTANT}>
         <div ref={measureRef} className="flex w-max items-center gap-1.5 whitespace-nowrap">
           <span className="relative grid">
             <AnimatePresence initial={false} mode="popLayout">
               <motion.span
                 key={text}
-                variants={swapVariants}
+                variants={labelVariants}
                 initial="enter" animate="center" exit="exit"
-                transition={swap}
+                transition={reduced ? INSTANT : LABEL_SWAP}
                 data-slot="ai-status-label"
                 className={cn('font-semibold tracking-ui', !shimmering && 'text-muted')}
               >
@@ -309,14 +312,7 @@ export function AiStatusIcon({ state }: { state: AiStatusState | (string & {}) }
 function Shimmer({ reduced, children }: { reduced: boolean; children: ReactNode }) {
   if (reduced) return <span className="text-muted">{children}</span>;
   return (
-    <motion.span
-      className="bg-clip-text text-transparent [--ai-status-ink:var(--ab-muted)] [--ai-status-shine:var(--ab-fg)]"
-      style={{ backgroundImage: SHIMMER, backgroundSize: '250% 100%' }}
-      initial={{ backgroundPosition: '100% 0' }}
-      animate={{ backgroundPosition: '0% 0' }}
-      transition={{ duration: 1.6, ease: 'linear', repeat: Infinity }}
-    >
-      {children}
-    </motion.span>
+    // a CSS animation (index.css .ai-status-sweep): motion's own tween of the background's position never moved it
+    <span className="ai-status-sweep bg-clip-text text-transparent">{children}</span>
   );
 }
