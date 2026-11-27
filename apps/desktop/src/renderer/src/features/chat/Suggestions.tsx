@@ -4,13 +4,14 @@
  * reply (its follow-ups: chat-core followUps.ts), then a random few things to try next, picked by chat-core
  * `pickPills` from what this person hasn't done yet (no apps connected, no phone, no Telegram, no routine...): two to
  * five of them, fewer beside the bot's own. A follow-up or an ask is sent to the bot as a message; a setup opens its
- * place in AppuBot. Each pill's ✕ (under the pointer) puts it away for this run, and one used isn't offered again in
- * this run.
+ * place in AppuBot. A pill's ✕ (under the pointer) puts the whole row of suggestions away for that reply, and pressing
+ * a pill sends it and does the same (the owner's "if kross one dont show else", 2026-11-27); either way that pill
+ * isn't offered again in this run. A short reply ("Sent!", chat-core `shortReply`) gets no suggestions at all.
  */
 import { useEffect, useMemo, useState } from 'react';
 import type { Bot } from '@appubot/protocol';
 import { appOn } from '@appubot/protocol';
-import { activeSlugs, cleanFollowUps, followUpKey, pickPills, type SuggestionFacts, type SuggestionId } from '@appubot/chat-core';
+import { activeSlugs, cleanFollowUps, followUpKey, pickPills, shortReply, type SuggestionFacts, type SuggestionId } from '@appubot/chat-core';
 import {
   ArrowRight, Bell, Bot as BotIcon, Brain, CalendarClock, Cloud, Download, FolderOpen, GraduationCap, Mail, MessageCircle, Mic,
   Search, Smartphone, Sparkles, Telegram, Users, X, Zap,
@@ -31,7 +32,7 @@ import { startVoice } from '../voice/useVoiceConversation';
  * under the pointer, puts it away for this run. `chip`: in an empty chat it is one of the landing's own chips, in
  * their row (a filled pill of its own over the composer's corner read as a stray button: "fix the let olive btn").
  */
-export function SetupPill({ icon, label, onAction, onDismiss, chip }: { icon: typeof Bell; label: string; onAction: () => void; onDismiss: () => void; chip?: boolean }) {
+export function SetupPill({ icon, label, onAction, onDismiss, chip, dismissLabel = `Not now: ${label}` }: { icon: typeof Bell; label: string; onAction: () => void; onDismiss: () => void; chip?: boolean; dismissLabel?: string }) {
   return (
     <span className="group/pill relative inline-flex max-w-full">
       <button
@@ -46,7 +47,7 @@ export function SetupPill({ icon, label, onAction, onDismiss, chip }: { icon: ty
       </button>
       <button
         type="button"
-        aria-label={`Not now: ${label}`}
+        aria-label={dismissLabel}
         onClick={onDismiss}
         className="absolute -top-1.5 -right-1.5 hidden size-[18px] place-items-center rounded-full bg-surface-3 text-muted shadow-[0_0_0_2px_var(--ab-content)] outline-none hover:text-fg focus-visible:grid group-hover/pill:grid"
       >
@@ -67,6 +68,8 @@ const ICONS: Record<SuggestionId, typeof Bell> = {
 const hidden = new Set<SuggestionId>();
 /** a bot's follow-ups put away or used in this run, by the reply they came with and the line */
 const hiddenFollowUps = new Set<string>();
+/** the replies whose row of suggestions was put away (a ✕ pressed or a pill used) in this run, by chat and reply */
+const hiddenRows = new Set<string>();
 
 /** What is known about this person and bot, for `pickSuggestions`; a fact not read yet stays undefined. */
 function useFacts(bot: Bot): SuggestionFacts {
@@ -121,8 +124,9 @@ export function SuggestionPills({ bot, threadId, seed, room, followUps }: { bot:
   }) : []), [conv]);
   const offered = useMemo(() => cleanFollowUps(followUps ?? []).filter((line) => !hiddenFollowUps.has(`${seed}\n${followUpKey(line)}`)), [followUps, seed, hiddenFollowUps.size]);
   const picked = useMemo(() => pickPills({ facts, seed: `${bot.id}:${seed}`, room, hide: hidden, followUps: offered, sent }), [facts, seed, room, bot.id, hidden.size, offered, sent]);
-  const away = (id: SuggestionId) => { hidden.add(id); redraw((n) => n + 1); };
-  const followUpAway = (line: string) => { hiddenFollowUps.add(`${seed}\n${followUpKey(line)}`); redraw((n) => n + 1); };
+  const row = `${threadId}\n${seed}`;
+  const away = (id: SuggestionId) => { hidden.add(id); hiddenRows.add(row); redraw((n) => n + 1); };
+  const followUpAway = (line: string) => { hiddenFollowUps.add(`${seed}\n${followUpKey(line)}`); hiddenRows.add(row); redraw((n) => n + 1); };
   const run = (id: SuggestionId, label: string, kind: 'ask' | 'setup') => {
     away(id);
     if (kind === 'ask') { void sendMessage(bot.id, threadId, label, []); return; }
@@ -138,13 +142,15 @@ export function SuggestionPills({ bot, threadId, seed, room, followUps }: { bot:
       default: break;
     }
   };
+  const reply = conv?.byId[seed];
+  if (hiddenRows.has(row) || (reply?.role === 'agent' && shortReply(reply.parts))) return null;
   return (
     <>
       {picked.followUps.map((line) => (
-        <SetupPill key={`follow-up:${line}`} icon={ArrowRight} label={line} onAction={() => { followUpAway(line); void sendMessage(bot.id, threadId, line, []); }} onDismiss={() => followUpAway(line)} />
+        <SetupPill key={`follow-up:${line}`} icon={ArrowRight} label={line} onAction={() => { followUpAway(line); void sendMessage(bot.id, threadId, line, []); }} onDismiss={() => followUpAway(line)} dismissLabel="Hide suggestions" />
       ))}
       {picked.suggestions.map((s) => (
-        <SetupPill key={s.id} icon={ICONS[s.id]} label={s.label} onAction={() => run(s.id, s.label, s.kind)} onDismiss={() => away(s.id)} />
+        <SetupPill key={s.id} icon={ICONS[s.id]} label={s.label} onAction={() => run(s.id, s.label, s.kind)} onDismiss={() => away(s.id)} dismissLabel="Hide suggestions" />
       ))}
     </>
   );

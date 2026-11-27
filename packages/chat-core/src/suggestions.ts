@@ -189,3 +189,20 @@ export function pickPills(o: {
   const said = new Set([...followUps, ...(o.sent ?? [])].map(followUpKey));
   return { followUps, suggestions: pickSuggestions(o.facts, o.seed, Math.min(own, room - followUps.length), o.hide, said) };
 }
+
+/** a reply this long or longer, in its words, can carry suggestions under it */
+export const SHORT_REPLY_CHARS = 80;
+/** what a reply shows besides words: with one of these it isn't a short reply */
+const SHOWS: ReadonlySet<string> = new Set(['image', 'file', 'page', 'voice', 'plan', 'question']);
+
+/**
+ * A short reply ("Sent!", "Done.", "On it"), which gets no suggestions under it (2026-11-27, the owner's "in small
+ * messages dont give suggestions"): its words are one line under `SHORT_REPLY_CHARS`, with no list, table or code,
+ * and it shows nothing else (no picture, file, page, voice note, plan or question). The work it did (tools,
+ * thoughts) doesn't count.
+ */
+export function shortReply(parts: readonly { type: string; text?: string }[]): boolean {
+  if (parts.some((p) => SHOWS.has(p.type))) return false;
+  const words = parts.flatMap((p) => (p.type === 'text' && p.text ? [p.text] : [])).join('\n').trim();
+  return words.length < SHORT_REPLY_CHARS && !words.includes('\n') && !/`|\|/.test(words) && !/^\s*([-*+]|\d+[.)])\s/.test(words);
+}
