@@ -176,7 +176,7 @@ export function SignInButton({ size = 'md', again = false }: { size?: 'sm' | 'md
   const go = async () => { setBusy(true); await signIn(); setBusy(false); };
   return (
     <Button size={size} variant="primary" iconRight={ExternalLink} loading={busy} onClick={() => void go()}>
-      {waiting ? 'Open sign-in again' : again ? 'Sign in again' : 'Sign in with Composio'}
+      {waiting ? 'Open sign-in again' : again ? 'Sign in again' : 'Sign in to add apps'}
     </Button>
   );
 }

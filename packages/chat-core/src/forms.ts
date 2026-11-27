@@ -278,7 +278,7 @@ export function appCardState(live: { signedIn: boolean; connected: boolean; on: 
 /** An app card's button and the line under it, per state. */
 export function appCardText(state: AppCardState, appName: string, botName: string): { button: string; line: string } {
   switch (state) {
-    case 'sign-in': return { button: 'Sign in to Apps', line: `Apps run through your own Composio account. Sign in once, then connect ${appName}.` };
+    case 'sign-in': return { button: 'Sign in to Apps', line: `Sign in once, then connect ${appName}.` };
     case 'connect': return { button: `Connect ${appName}`, line: `Signs in to ${appName} in your browser. ${botName} then uses it through AppuBot, within what you allow.` };
     case 'turn-on': return { button: `Turn on for ${botName}`, line: `${appName} is connected, but turned off for ${botName}.` };
     case 'ready': return { button: 'Connected', line: `${botName} can use ${appName} now.` };

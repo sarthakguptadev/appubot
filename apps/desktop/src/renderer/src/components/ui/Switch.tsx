@@ -8,6 +8,7 @@ export function Switch({ checked, onChange, disabled, label, className }: {
     <button
       type="button"
       role="switch"
+      data-slot="switch"
       aria-checked={checked}
       aria-label={label}
       disabled={disabled}

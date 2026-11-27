@@ -884,7 +884,7 @@ export const RELEASES: readonly ReleaseNotes[] = [
       {
         id: 'apps-sign-in',
         title: 'Connect apps by signing in',
-        description: 'Connect Gmail, GitHub, Notion and more by signing in to your Composio account in the browser, with no keys to copy. Apps you already connected elsewhere show up by themselves.',
+        description: 'Connect Gmail, GitHub, Notion and more by signing in once in the browser, with no keys to copy. Apps you already connected elsewhere show up by themselves.',
       },
       {
         id: 'settings',

@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { SETTINGS_NAV_GROUPS, SETTINGS_NAV_ITEMS, SETTINGS_PAGES, SETTINGS_SEARCH_ENTRIES, rankSettingsSearch, settingAnchorId, settingsNavItem, settingsTrail } from './nav';
+import { SETTINGS_NAV_GROUPS, SETTINGS_NAV_ITEMS, SETTINGS_PAGES, SETTINGS_SEARCH_ENTRIES, settingAnchorId, settingsNavItem, settingsTrail } from './nav';
+import { searchSettings, settingRows } from './settingsSearch';
+
+/** Settings' search as the overlay and the palette run it: pages and settings, the palette's ranking */
+const rankSettingsSearch = (query: string, limit: number) => searchSettings(settingRows(), query).slice(0, limit).map((r) => ({ section: r.section, title: r.label }));
 
 describe('settings nav', () => {
   it('puts every section in a known group', () => {
@@ -34,7 +38,7 @@ describe('settings nav', () => {
   });
 });
 
-describe('rankSettingsSearch', () => {
+describe('settings search', () => {
   it('returns nothing for a blank query', () => {
     expect(rankSettingsSearch('  ', 10)).toEqual([]);
   });
@@ -43,7 +47,7 @@ describe('rankSettingsSearch', () => {
     expect(rankSettingsSearch('color', 10).map((e) => e.title)[0]).toBe('Color scheme');
     // a keyword still finds it
     expect(rankSettingsSearch('theme', 10).map((e) => e.title)).toContain('Color scheme');
-    expect(rankSettingsSearch('notif', 10).map((e) => e.title)).toEqual(['Desktop notifications', 'Phone notifications', 'Permissions']);
+    expect(rankSettingsSearch('notif', 10).map((e) => e.title)).toEqual(['Desktop notifications', 'Phone notifications', 'Permissions', 'General']);
     expect(rankSettingsSearch('botfather', 10).map((e) => e.title)).toEqual(['Bot token']);
     expect(rankSettingsSearch('tailnet', 10).map((e) => e.title)).toEqual(['Tailscale']);
   });
@@ -75,7 +79,7 @@ describe('voice settings', () => {
     expect(rankSettingsSearch('hindi', 1)[0]).toMatchObject({ section: 'voice', title: 'Speech model' });
     expect(rankSettingsSearch('kokoro', 1)[0]).toMatchObject({ section: 'voice', title: 'Voice model' });
     expect(rankSettingsSearch('remove', 10).map((e) => e.title)).toContain('Storage');
-    expect(rankSettingsSearch('voice', 2).map((e) => [e.section, e.title])).toEqual([['voice', 'Voice model'], ['voice', 'Voice']]);
+    expect(rankSettingsSearch('voice', 2).map((e) => [e.section, e.title])).toEqual([['voice', 'Voice'], ['voice', 'Voice model']]);
     expect(rankSettingsSearch('telegram voice', 10).map((e) => e.title)).toEqual(['Answer voice messages with voice']);
     expect(rankSettingsSearch('voice replies', 10).map((e) => e.title)).toEqual(['Answer voice messages with voice']);
   });

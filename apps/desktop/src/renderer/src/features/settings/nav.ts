@@ -1,4 +1,8 @@
-import { BarChart3, Blocks, CreditCard, Download, FileText, HardDrive, Info, KeyRound, Mic, MousePointerClick, Plug, Send, MonitorSmartphone, ShieldCheck, SlidersHorizontal, Sparkles, Sun, Upload, User, Users, type LucideIcon } from '../../components/ui/icons';
+import { AppsAdd, type LucideIcon } from '../../components/ui/icons';
+import {
+  SettingsBlocks, SettingsCard, SettingsChart, SettingsDevices, SettingsDownload, SettingsDrive, SettingsFileText, SettingsGear, SettingsInfo,
+  SettingsMic, SettingsMonitor, SettingsSend, SettingsShield, SettingsSparkles, SettingsSun, SettingsUpload, SettingsUser, SettingsUsers, SettingsVault,
+} from './settingsIcons';
 import type { SettingsSection } from '../../lib/store';
 import { ACP_REGISTRY } from '@appubot/protocol';
 import { COMPUTER_USE, IS_MAC } from '../../lib/platform';
@@ -70,26 +74,26 @@ const page = (id: SettingsSection, icon: LucideIcon): SettingsPage => ({
 });
 
 export const SETTINGS_PAGES: SettingsPage[] = [
-  page('account', User),
-  page('billing', CreditCard),
-  page('team', Users),
-  page('providers', Blocks),
-  page('usage', BarChart3),
-  page('instructions', FileText),
-  page('apps', Plug),
-  page('vault', KeyRound),
-  page('voice', Mic),
-  page('channels', Send),
-  page('transfer', Upload),
-  page('import', Download),
-  page('general', SlidersHorizontal),
-  page('appearance', Sun),
-  page('computer', MousePointerClick),
-  page('permissions', ShieldCheck),
-  page('devices', MonitorSmartphone),
-  page('about', Info),
-  page('whats-new', Sparkles),
-  page('storage', HardDrive),
+  page('account', SettingsUser),
+  page('billing', SettingsCard),
+  page('team', SettingsUsers),
+  page('providers', SettingsBlocks),
+  page('usage', SettingsChart),
+  page('instructions', SettingsFileText),
+  page('apps', AppsAdd),
+  page('vault', SettingsVault),
+  page('voice', SettingsMic),
+  page('channels', SettingsSend),
+  page('transfer', SettingsUpload),
+  page('import', SettingsDownload),
+  page('general', SettingsGear),
+  page('appearance', SettingsSun),
+  page('computer', SettingsMonitor),
+  page('permissions', SettingsShield),
+  page('devices', SettingsDevices),
+  page('about', SettingsInfo),
+  page('whats-new', SettingsSparkles),
+  page('storage', SettingsDrive),
 ];
 
 export function settingsPage(id: SettingsSection): SettingsPage {
@@ -160,6 +164,8 @@ export function settingAnchorId(title: string): string {
 export const keepAwakeTitle = (): string => t('general.keepAwake', machineParams());
 export const openAtLoginTitle = (): string => t('general.openAtLogin');
 export const WHATS_NEW_TITLE = 'What’s new';
+/** Settings › Apps' last row (what was Sign out of the apps account) */
+export const DISCONNECT_APPS_TITLE = 'Disconnect all apps';
 /** Settings › Appearance's rows */
 export const colorSchemeTitle = (): string => t('appearance.colorScheme');
 export const backgroundTitle = (): string => t('appearance.background');
@@ -264,7 +270,7 @@ export const SETTINGS_SEARCH_ENTRIES: SettingsSearchEntry[] = [
   tr('instructions', 'instructions.title', 'global custom instructions every bot all agents shared rules system prompt preferences behaviour behavior'),
   ...(ACP_REGISTRY ? [{ section: 'providers' as const, title: 'More agents', keywords: 'acp registry add install gemini goose amp cline qwen kimi droid junie agents subscription' }] : []),
   { section: 'providers', title: 'Tailscale', keywords: 'tailnet network ip dns phone integrations' },
-  { section: 'apps', title: 'Composio', keywords: 'apps account sign in connect gmail slack github notion integrations' },
+  { section: 'apps', title: DISCONNECT_APPS_TITLE, keywords: 'apps account sign out log out disconnect remove access integrations' },
   { section: 'apps', title: 'Connected apps', keywords: 'apps gmail slack github notion bots access reconnect disconnect' },
   { section: 'devices', title: 'Paired devices', keywords: 'phone pair revoke rename qr push' },
   { section: 'devices', title: 'AppuBot Connect', keywords: 'tunnel cloudflare remote anywhere internet address reach phone' },
@@ -322,24 +328,3 @@ export const SETTINGS_SEARCH_ENTRIES: SettingsSearchEntry[] = [
   { section: 'storage', title: KEEP_LOGS_TITLE, keywords: 'storage logs delete old days retention clean' },
   { section: 'voice', title: VOICE_STORAGE_TITLE, keywords: 'voice files speech models download remove delete disk space size parakeet whisper indicconformer supertonic kokoro' },
 ];
-
-/** Ranked matches: title prefix, then a word in the title, then anywhere in title, keywords or section name. */
-export function rankSettingsSearch(query: string, limit: number): SettingsSearchEntry[] {
-  const q = query.trim().toLowerCase();
-  if (!q) return [];
-  const score = (e: SettingsSearchEntry): number => {
-    const title = e.title.toLowerCase();
-    if (title.startsWith(q)) return 0;
-    if (title.split(/[^\p{L}\p{N}]+/u).some((w) => w.startsWith(q))) return 1;
-    if (title.includes(q)) return 2;
-    if (e.keywords?.includes(q)) return 3;
-    if (settingsTrail(e.section).toLowerCase().includes(q)) return 4;
-    return -1;
-  };
-  return SETTINGS_SEARCH_ENTRIES
-    .map((e, i) => ({ e, i, s: score(e) }))
-    .filter((x) => x.s >= 0)
-    .sort((a, b) => a.s - b.s || a.i - b.i)
-    .slice(0, limit)
-    .map((x) => x.e);
-}

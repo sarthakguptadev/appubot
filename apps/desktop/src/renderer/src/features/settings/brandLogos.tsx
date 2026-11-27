@@ -1,5 +1,4 @@
-/** Brand tiles for the services in Settings (Composio, Tailscale, Telegram), sized and framed like the agents' ProviderMark. */
-import composioLogo from '../../assets/composio.svg';
+/** Brand tiles for the services in Settings (Tailscale, Telegram), sized and framed like the agents' ProviderMark. */
 import { cn } from '../../components/ui';
 
 const TILE = 'ab-pill inline-flex shrink-0 items-center justify-center overflow-hidden rounded-[10px] shadow-[inset_0_0_0_.5px_var(--ab-hairline),0_.5px_1px_color-mix(in_srgb,#000_6%,transparent)]';
@@ -13,15 +12,6 @@ export function TailscaleMark({ size = 36, className }: { size?: number; classNa
       <svg viewBox="0 0 24 24" width={Math.round(size * 0.5)} height={Math.round(size * 0.5)} aria-hidden>
         <path d={TAILSCALE} fill="currentColor" />
       </svg>
-    </span>
-  );
-}
-
-/** Composio's own logo (a full dark tile, from logos.composio.dev, bundled so it shows offline). */
-export function ComposioMark({ size = 36, className }: { size?: number; className?: string }) {
-  return (
-    <span className={cn(TILE, 'bg-black', className)} style={{ width: size, height: size }}>
-      <img src={composioLogo} alt="" draggable={false} className="size-full" />
     </span>
   );
 }

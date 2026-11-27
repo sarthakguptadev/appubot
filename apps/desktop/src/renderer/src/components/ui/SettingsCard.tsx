@@ -8,7 +8,8 @@ import { SEGMENT, SEGMENT_SIZE, SEGMENT_TRACK, SegmentChip } from './Tabs';
 /*
  * The Settings window's building blocks (T3 Code's settingsLayout.tsx / SettingsGroup.tsx, in AppuBot colours), shared
  * by every dialog so a bot's editor, a routine or Add custom read like a Settings page: titled cards of rows with
- * hairlines between them, a 14px row title over a 12px description, the control at the right.
+ * hairlines between them, a 14px row title over a 12px description, the control at the right. The `settings-*` class
+ * names mark the parts for Settings' own look (features/settings/settings.css); elsewhere they do nothing.
  */
 
 /**
@@ -16,18 +17,18 @@ import { SEGMENT, SEGMENT_SIZE, SEGMENT_TRACK, SegmentChip } from './Tabs';
  * border); rows stack with dividers. Focus outlines sit inside it (the card clips anything outside, which left a
  * stray line under a focused row).
  */
-export const SETTINGS_CARD = '[&_:focus-visible]:outline-offset-[-2px] squircle overflow-hidden rounded-card bg-surface shadow-raised';
+export const SETTINGS_CARD = 'settings-card [&_:focus-visible]:outline-offset-[-2px] squircle overflow-hidden rounded-card bg-surface shadow-raised';
 /**
  * Hairlines between stacked rows of a card or inset list. The last row carries the hairline's colour too: a row that
  * stops being last (a folded group opening) would otherwise fade its new border in from the text colour, a white flash.
  */
 export const ROW_DIVIDERS = 'divide-y divide-[color-mix(in_srgb,var(--ab-fg)_5%,transparent)] *:border-[color-mix(in_srgb,var(--ab-fg)_5%,transparent)]';
 /** Row padding inside a settings card. */
-export const SETTINGS_ROW = 'px-4 py-3.5';
-export const SETTINGS_ROW_TITLE = 'text-copy font-semibold tracking-ui text-fg';
-export const SETTINGS_ROW_DESCRIPTION = 'max-w-2xl text-ui leading-[18px] text-muted';
+export const SETTINGS_ROW = 'settings-row px-4 py-3.5';
+export const SETTINGS_ROW_TITLE = 'settings-row-title text-copy font-semibold tracking-ui text-fg';
+export const SETTINGS_ROW_DESCRIPTION = 'settings-row-desc max-w-2xl text-ui leading-[18px] text-muted';
 /** A section's title above its card: T3 Code's 16px semibold heading. */
-export const SETTINGS_SECTION_TITLE = 'flex min-h-7 items-center gap-2 text-title font-semibold tracking-ui text-fg';
+export const SETTINGS_SECTION_TITLE = 'settings-section-title flex min-h-7 items-center gap-2 text-title font-semibold tracking-ui text-fg';
 /** A row that is a button (a menu of choices drawn as a card): Settings' nav hover, a quiet fill. */
 export const SETTINGS_ROW_BUTTON =
   'flex w-full items-center gap-3 text-left outline-none hover:bg-[color-mix(in_srgb,var(--ab-fg)_4%,transparent)] ' +

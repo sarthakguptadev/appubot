@@ -111,7 +111,7 @@ export function createAppsHandlers(g: MockGateway): Pick<Handlers, 'apps.status'
 
   const status = (): AppsStatus => ({ configured: signedIn, account: signedIn ? 'sarthak@appubot.com' : undefined, signingIn, pending: [...pending], direct: true });
   const emit = () => g.emit('apps.updated', status());
-  const need = () => { if (!signedIn) throw new GatewayError('apps_not_configured', 'Sign in to Composio in Apps'); };
+  const need = () => { if (!signedIn) throw new GatewayError('apps_not_configured', 'Sign in once in Apps to connect apps'); };
   const toolkit = (slug: string) => TOOLKITS.find((t) => t.slug === slug);
   const activate = (slug: string) => {
     // a signed-out account is replaced; one that works stays, and the new one is another account beside it

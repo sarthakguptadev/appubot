@@ -1,0 +1,64 @@
+/*
+ * Settings, drawn as Grok Bot's Settings is (the owner's call 2026-11-27): colours and sizes measured from his 2x
+ * screenshot of it. The sheet sets its own text and surface colours, and restyles the shared Settings parts it holds
+ * (cards, rows, switches, selects, buttons: components/ui/SettingsCard.tsx marks them) without touching them in the
+ * dialogs that use them too. Hovers change in the frame they arrive (#55's instant surfaces).
+ */
+.settings-sheet {
+  --ab-content: #ffffff; --ab-fg: #171717; --ab-fg-2: rgb(23 23 23 / .78); --ab-muted: #737373; --ab-hairline: #dedede;
+  --st-card: #f5f5f5; --st-card-edge: #e6e6e6; --st-card-hover: #ededed;
+  --st-selected: #ebebeb; --st-hover: #f4f4f4; --st-divider: #ebebeb; --st-field-edge: #e3e3e3;
+  --st-button: #ececec; --st-button-hover: #e4e4e4; --st-button-edge: #dedede;
+  --st-label: #737373; --st-on: #326ccb; --st-off: #e1e1e1; --st-avatar: #e9e9e9;
+}
+.dark .settings-sheet {
+  --ab-content: #121212; --ab-fg: #f5f5f5; --ab-fg-2: rgb(245 245 245 / .78); --ab-muted: #999999; --ab-hairline: #292929;
+  --st-card: #1f1f1f; --st-card-edge: #2c2c2c; --st-card-hover: #262626;
+  --st-selected: #242424; --st-hover: #1b1b1b; --st-divider: #1f1f1f; --st-field-edge: #272727;
+  --st-button: #272727; --st-button-hover: #2f2f2f; --st-button-edge: #2f2f2f;
+  --st-label: #989898; --st-on: #326ccb; --st-off: #272727; --st-avatar: #292929;
+}
+
+/* cards: a lighter fill, a hairline inside, 16px corners, 8px above the first row and under the last; no lines between rows */
+.settings-sheet .settings-card {
+  background: var(--st-card); box-shadow: inset 0 0 0 .5px var(--st-card-edge); border-radius: 16px;
+  padding-block: 8px; -electron-corner-smoothing: 0%;
+}
+.settings-sheet .settings-card > * { border-width: 0; }
+/* rows: 48px with a 15px label in the text colour, 13px in from the card's edge; a description under it in grey */
+.settings-sheet .settings-row { padding: 14px 13px; }
+.settings-sheet .settings-row-title { font-size: 15px; line-height: 20px; font-weight: 400; letter-spacing: normal; }
+.settings-sheet .settings-row-desc { font-size: 15px; line-height: 20px; color: var(--ab-muted); }
+/* the small grey label over a card */
+.settings-sheet .settings-section-title { min-height: 16px; font-size: 13px; line-height: 16px; font-weight: 400; letter-spacing: normal; color: var(--st-label); }
+
+/* switches: 32×20, Grok Bot's blue when on, grey when off, a white 16px knob */
+.settings-sheet [data-slot="switch"] { width: 32px; height: 20px; background: var(--st-off); transition: none; }
+.settings-sheet [data-slot="switch"][aria-checked="false"]:hover { background: color-mix(in srgb, var(--st-off), var(--ab-fg) 7%); }
+.settings-sheet [data-slot="switch"][aria-checked="true"] { background: var(--st-on); }
+.settings-sheet [data-slot="switch"] > span { left: 2px; width: 16px; height: 16px; background: #fff; box-shadow: 0 1px 2px rgb(0 0 0 / .2); }
+.settings-sheet [data-slot="switch"][aria-checked="true"] > span { --tw-translate-x: 12px; }
+.settings-sheet [data-slot="switch"]:active > span { width: 18px; }
+.settings-sheet [data-slot="switch"][aria-checked="true"]:active > span { --tw-translate-x: 10px; }
+
+/* selects and the model and permission pickers: a 28px pill with a hairline round it on the card's own fill, a small chevron */
+.settings-sheet select[data-slot="select"] {
+  height: 28px; border-radius: 9999px; padding: 0 28px 0 11px; font-size: 15px; line-height: 20px;
+  background: transparent; box-shadow: inset 0 0 0 1px var(--st-field-edge); transition: none; -electron-corner-smoothing: 0%;
+}
+.settings-sheet .field-trigger {
+  height: 28px; border-radius: 9999px; padding-inline: 11px 9px; font-size: 15px;
+  background: transparent; box-shadow: inset 0 0 0 1px var(--st-field-edge); transition: none; -electron-corner-smoothing: 0%;
+}
+.settings-sheet :is(select[data-slot="select"], .field-trigger):hover { background: var(--st-card-hover); }
+.settings-sheet select[data-slot="select"] + svg { right: 10px; width: 12px; height: 12px; color: var(--ab-fg); }
+
+/* buttons on a page: 32px pills, a grey fill with a hairline, a 15px label */
+.settings-sheet .settings-page [data-slot="button"]:is([data-variant="secondary"], [data-variant="outline"]):is([data-size="sm"], [data-size="md"], [data-size="lg"]) {
+  height: 32px; padding-inline: 12px; border-radius: 9999px; background: var(--st-button);
+  box-shadow: inset 0 0 0 .5px var(--st-button-edge); font-size: 15px; font-weight: 400; letter-spacing: normal;
+  -electron-corner-smoothing: 0%;
+}
+.settings-sheet .settings-page [data-slot="button"]:is([data-variant="secondary"], [data-variant="outline"]):is([data-size="sm"], [data-size="md"], [data-size="lg"]):hover {
+  background: var(--st-button-hover);
+}

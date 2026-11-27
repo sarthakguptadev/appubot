@@ -256,7 +256,7 @@ export const CHROME_TRIGGER = cn(
  * The field trigger (bot editor, Settings): the app's input as a pill, its choice from the left, the chevron at the
  * end. It fills its wrapper; a wrapper of auto width (Settings' rows) makes it hug what it says.
  */
-export const FIELD_TRIGGER = cn(FIELD_CLASS, 'ab-pill flex h-9 w-full min-w-0 items-center gap-2 overflow-hidden rounded-control ps-3 pe-2.5 text-left whitespace-nowrap');
+export const FIELD_TRIGGER = cn(FIELD_CLASS, 'field-trigger ab-pill flex h-9 w-full min-w-0 items-center gap-2 overflow-hidden rounded-control ps-3 pe-2.5 text-left whitespace-nowrap');
 
 /**
  * The agents' tab row: it scrolls sideways when the tabs don't fit, with an arrow at the end that has more (shown on

@@ -95,8 +95,8 @@ export function ComputerMenu({ inSettings = false }: {
     ...(addOwn ? [{ label: ADD_COMPUTER_LABEL, leading: <AddComputerIcon />, onSelect: addComputer }] : []),
   ];
   const mark = busy ? <Spinner size={inSettings ? 15 : 13} className="shrink-0 text-muted" />
-    : onCloud ? <CloudMark team={team ? (shown?.teamName ?? label) : undefined} size={inSettings ? 17 : 16} warn={shown?.warn} />
-      : <Icon icon={Laptop} size={inSettings ? 17 : 16} className="shrink-0 text-fg-2" />;
+    : onCloud ? <CloudMark team={team ? (shown?.teamName ?? label) : undefined} size={16} warn={shown?.warn} />
+      : <Icon icon={Laptop} size={16} className="shrink-0 text-fg-2" />;
 
   if (inSettings) {
     // this computer alone, and no cloud computer to add (or, only in the cloud, one cloud computer): nothing to switch between
@@ -113,12 +113,13 @@ export function ComputerMenu({ inSettings = false }: {
             type="button"
             aria-label={`Settings for: ${label}`}
             className={cn(
-              'ab-press ab-pill squircle no-drag flex h-10 w-full min-w-0 items-center gap-2.5 rounded-control bg-surface-2 pr-2 pl-3 text-left outline-none',
-              'hover:bg-surface-3 focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]', p['aria-expanded'] && 'bg-surface-3',
+              // Settings' nav row (SettingsView), with a hairline round it: it picks whose settings these are
+              'no-drag flex h-8 w-full min-w-0 items-center gap-2 rounded-[10px] pr-2 pl-[9px] text-left outline-none shadow-[inset_0_0_0_1px_var(--st-field-edge)]',
+              'hover:bg-[var(--st-hover)] focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]', p['aria-expanded'] && 'bg-[var(--st-selected)] hover:bg-[var(--st-selected)]',
             )}
           >
             {mark}
-            <span className="min-w-0 flex-1 truncate text-ui font-semibold tracking-ui text-fg">{label}</span>
+            <span className="min-w-0 flex-1 truncate text-[15px] text-fg">{label}</span>
             <Icon icon={ChevronsUpDown} size={14} className="shrink-0 text-muted" />
           </button>
         )}
