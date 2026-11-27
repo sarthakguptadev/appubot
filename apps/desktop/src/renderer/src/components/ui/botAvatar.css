@@ -1,13 +1,19 @@
-/* Bot avatars are alive (components/ui/BotAvatar.tsx). The motion itself is chat-core's (botMotion.ts: one table for
-   the desktop and the phone), turned into keyframes and `.ab-bot` rules by botAvatarMotion.ts (BOT_MOTION_CSS). Layers,
-   outside in: the span (press squish), the svg (hover jelly), .ab-bot-joy (the cheer), .ab-bot-body (hops and bobs,
-   squash and stretch), .ab-bot-tilt (sway, lean, wobble, breath), .ab-bot-look (glance, scan, think, squeeze, glow)
-   and each .ab-bot-eye (blink, happy squint). Squashes sit on the body's bottom. --ab-seed (0..1) offsets every loop so
-   a row of bots never moves in step. Transform/opacity only. Plain CSS (no Tailwind): index.css imports it, and the
-   agent cursor's overlay page (main/electron/agentCursorPage.ts) gets it as a string, with BOT_MOTION_CSS, so the
-   bot on the screen moves exactly like the one in the app. */
+/* Bot avatars are alive (components/ui/BotAvatar.tsx). The motion itself is chat-core's (botMotion.ts: one state machine
+   for the desktop and the phone, copied from Grok Bot's mascot), turned into poses, keyframes and `.ab-bot` rules by
+   botAvatarMotion.ts (BOT_MOTION_CSS). Layers, outside in: the span (press squish), the svg, .ab-bot-joy (the happy
+   cheer), .ab-bot-body (a mood's loop), .ab-bot-tilt (the pose's lean), .ab-bot-morph (collapsing into the dots),
+   .ab-bot-head (the outline narrowing as the head turns), .ab-bot-shape (the bot, fading to a plain dot), .ab-bot-face
+   (where the face is on the turned head: visor and eyes, clipped to the body), .ab-bot-look (where
+   the eyes look), each .ab-bot-deep (an eye on the turned head, chat-core botHead), each .ab-bot-eye (its shape: .ab-bot-pill and the happy .ab-bot-arc; .ab-bot-eyeL/R in the tool routine),
+   and .ab-bot-dots (the three
+   dots: .ab-bot-side growing in, .ab-bot-mid taking over from the shrunk body, each .ab-bot-dot lighting up in turn).
+   The body is drawn with its middle (--ab-cy, chat-core BOT_MIDDLE: its area's centroid) on the box's centre, and joy,
+   body and tilt turn and scale round it, so whatever it does it stays centred where it sits and never moves the layout. --ab-seed (0..1) offsets every loop so a row of bots never moves in step.
+   Transform/opacity only. Plain CSS (no Tailwind): index.css imports it, and the agent cursor's overlay page
+   (main/electron/agentCursorPage.ts) gets it as a string, with BOT_MOTION_CSS, so the bot on the screen moves exactly
+   like the one in the app. */
 @keyframes ab-bot-sweep { 0% { transform: translateX(-46px) skewX(-22deg); } 55%, 100% { transform: translateX(46px) skewX(-22deg); } }
-/* hover: a jelly squash and stretch that rings out */
+/* the agent cursor's click: a jelly squash and stretch that rings out */
 @keyframes ab-bot-boing {
   0%, 100% { transform: scale(1, 1); }
   16% { transform: scale(1.16, 0.86); }
@@ -16,25 +22,37 @@
   72% { transform: scale(0.98, 1.02); }
   86% { transform: scale(1.01, 0.99); }
 }
-.ab-bot :is(.ab-bot-joy, .ab-bot-body, .ab-bot-tilt, .ab-bot-look, .ab-bot-eye, .ab-bot-sweep) { transform-box: fill-box; transform-origin: center; }
-.ab-bot :is(.ab-bot-joy, .ab-bot-body, .ab-bot-tilt) { transform-origin: 50% 100%; }
+.ab-bot :is(.ab-bot-look, .ab-bot-deep, .ab-bot-eye, .ab-bot-arc, .ab-bot-dot, .ab-bot-sweep) { transform-box: fill-box; transform-origin: center; }
+.ab-bot :is(.ab-bot-joy, .ab-bot-body, .ab-bot-tilt, .ab-bot-head) { transform-box: view-box; transform-origin: 50px calc(var(--ab-cy, 50) * 1px); }
 .ab-bot .ab-bot-svg { transform-origin: 50% 100%; }
-/* hovered (itself, or the row/button it leads): one jelly boing; pressed: squished down, springing back on release */
+/* pressed (itself, or the row/button it leads): squished down, springing back on release */
 .ab-bot { transform-origin: 50% 100%; transition: scale 0.5s cubic-bezier(0.34, 2.1, 0.55, 1); }
-:is(.ab-bot:hover, :where(button, a, [role='button'], [role='option']):hover > .ab-bot) .ab-bot-svg {
-  animation: ab-bot-boing var(--ab-boing) cubic-bezier(0.3, 0.7, 0.4, 1);
-}
 :is(.ab-bot:active, :where(button, a, [role='button'], [role='option']):active > .ab-bot) {
   scale: 1.1 0.88;
   transition: scale 0.09s ease-out;
 }
-/* `ab-bot-calm`: no boing or squish under the pointer (the chat header's capsule, 2026-11-18); its moods still move */
-.ab-bot.ab-bot-calm .ab-bot-svg { animation: none; }
+/* `ab-bot-calm`: no squish under the pointer and no looking at it (the chat header's capsule); its moods still move */
 .ab-bot.ab-bot-calm { scale: none; transition: none; }
-.ab-bot[data-mood='working'] .ab-bot-sweep { animation: ab-bot-sweep var(--ab-sweep) ease-in-out calc(var(--ab-seed) * -2s) infinite; }
-.ab-bot[data-still] * { animation: none !important; }
-.ab-bot[data-still] { transition: none; scale: none; }
+.ab-bot[data-still] *, .ab-bot[data-still] { animation: none !important; transition: none !important; }
+.ab-bot[data-still] { scale: none; }
+/* no motion: the dots hold still, the middle one lit */
+.ab-bot[data-still] .ab-bot-dot-1 { opacity: 1; }
 @media (prefers-reduced-motion: reduce) {
-  .ab-bot * { animation: none !important; }
-  .ab-bot { transition: none; scale: none !important; }
+  .ab-bot *, .ab-bot { animation: none !important; transition: none !important; }
+  .ab-bot { scale: none !important; }
+  .ab-bot.ab-bot .ab-bot-dot-1 { opacity: 1; }
 }
+
+/* The solid face (BotAvatar.tsx solidFace): the drawing on a 100×100 stage (one viewBox unit a px) scaled to the
+   avatar's size; the visor's slices and the eyes on planes round a ball in CSS 3D. --ab-yaw and --ab-pitch (the head's
+   turn and nod, degrees) are animatable numbers, so poses ease them and loops key them like any other property. */
+@property --ab-yaw { syntax: '<number>'; inherits: true; initial-value: 0; }
+@property --ab-pitch { syntax: '<number>'; inherits: true; initial-value: 0; }
+.ab-bot-stage { position: absolute; left: 0; top: 0; width: 100px; height: 100px; }
+.ab-bot-stage :is(.ab-bot-fill, .ab-bot-joy, .ab-bot-body, .ab-bot-tilt, .ab-bot-morph, .ab-bot-turn, .ab-bot-head, .ab-bot-shape, .ab-bot-clip, .ab-bot-solid, .ab-bot-ball, .ab-bot-layer) { position: absolute; inset: 0; display: block; width: 100px; height: 100px; }
+.ab-bot-stage .ab-bot-layer { overflow: visible; }
+.ab-bot-ball { transform-style: preserve-3d; }
+.ab-bot-plane { position: absolute; display: block; overflow: hidden; backface-visibility: hidden; }
+.ab-bot-plane:has(svg) { overflow: visible; }
+.ab-bot-visor { position: absolute; top: 0; display: block; }
+

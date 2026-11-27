@@ -1,18 +1,16 @@
 /**
  * The top of a bot's side panel: its avatar, name and job, each changed where it stands (there is no editor dialog).
- * Under the pointer the avatar's own outline lights up (no pencil, no tile behind it: the owner's call, 2026-11-17)
- * and a click opens the look picker (shape, a saved or generated character, colour) in a popover under it; every pick
+ * Under the pointer a light rounded-rect fill shows behind the avatar, darker while its picker is open (no pencil, and
+ * no ring round the avatar's outline, which stayed put while the avatar moved: the owner's call, 2026-11-27), and a
+ * click opens the look picker (shape, a saved or generated character, colour) in a popover under it; every pick
  * applies at once, so the avatar is its own preview. The name and the job turn into a field on a click: Enter or
  * leaving saves, Esc puts it back.
  */
 import { useEffect, useRef, useState } from 'react';
 import type { Bot } from '@appubot/protocol';
-import type { BotFigure } from '@appubot/chat-core';
 import { BotAvatar, Popover, cn } from '../../components/ui';
 import { updateBot } from '../../lib/actions';
-import { useStore } from '../../lib/store';
 import { CharacterPicker, type Look } from './CharacterPicker';
-import { OutlineRing } from './LookTile';
 
 const NAME_MAX = 60;
 const JOB_MAX = 120;
@@ -23,9 +21,6 @@ function HeroAvatar({ bot, working }: { bot: Bot; working: boolean }) {
   // the avatar cheers at each pick
   const [cheer, setCheer] = useState<number | undefined>(undefined);
   useEffect(() => { setOpen(false); setCheer(undefined); }, [bot.id]);
-  // what it wears: a saved character, else its shape
-  const worn = useStore((st) => (bot.characterId ? st.characters.find((c) => c.id === bot.characterId) : undefined));
-  const figure: BotFigure = worn ?? bot.shape;
   const pick = (patch: Partial<Look>) => {
     void updateBot(bot, patch, { errorTitle: 'Could not change the look' });
     setCheer((n) => (n ?? 0) + 1);
@@ -38,20 +33,11 @@ function HeroAvatar({ bot, working }: { bot: Bot; working: boolean }) {
         aria-label={`Change ${bot.name}’s look`}
         aria-haspopup="dialog"
         aria-expanded={open}
-        className="group/avatar no-drag relative inline-flex rounded-[24px] p-2 outline-none"
+        className={cn(
+          'no-drag relative inline-flex rounded-[24px] p-2 outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)]',
+          open ? 'bg-[color-mix(in_srgb,var(--ab-fg)_9%,transparent)]' : 'hover:bg-[color-mix(in_srgb,var(--ab-fg)_5%,transparent)]',
+        )}
       >
-        {/* the highlight is the avatar's own outline, a few px out (LookTile's ring): faint under the pointer,
-            darker while its picker is open or it has the keyboard; no pencil and no tile behind it */}
-        <OutlineRing
-          figure={figure}
-          size={72}
-          gap={4}
-          line={1.5}
-          className={cn(
-            'top-2 left-2 text-fg transition-opacity duration-150',
-            open ? 'opacity-50' : 'opacity-0 group-hover/avatar:opacity-30 group-focus-visible/avatar:opacity-50',
-          )}
-        />
         <BotAvatar bot={bot} size={72} mood={working ? 'working' : 'rest'} cheerKey={cheer} className="ab-bot-calm" />
       </button>
       <Popover open={open} onClose={() => setOpen(false)} anchor={anchor} side="bottom" align="start" label={`${bot.name}’s look`} className="squircle w-[348px] rounded-card">

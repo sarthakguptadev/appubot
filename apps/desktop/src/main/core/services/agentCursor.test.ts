@@ -113,9 +113,9 @@ describe('agent cursor', () => {
     await c.before(click(1, 1), 't1', at);
     c.after(click(1, 1), 't1');
     vi.advanceTimersByTime(THINK_MS - 1);
-    expect(calls).not.toContain('mood working');
+    expect(calls).not.toContain('mood tool');
     vi.advanceTimersByTime(1);
-    expect(calls.at(-1)).toBe('mood working');
+    expect(calls.at(-1)).toBe('mood tool');
     await c.before({ type: 'key', key: 'Tab' }, 't1', null);
     expect(calls.at(-1)).toBe('mood rest');
     // typing is an action for as long as it lasts
@@ -137,7 +137,7 @@ describe('agent cursor', () => {
     answer('p2');
     expect(calls.at(-1)).toBe('mood needs-you');
     answer('p1');
-    expect(calls.at(-1)).toBe('mood working');
+    expect(calls.at(-1)).toBe('mood tool');
   });
 
   it('ignores actions without a bot turn (take-over from a phone) and respects the setting', async () => {

@@ -2,7 +2,7 @@
  * Agent cursor: while a bot uses the computer, its own avatar rides a small pointer on the screen. The pointer
  * glides to each target before the click lands; the avatar reacts to what the bot does (a press and a ripple on a
  * click, a grab on a drag, eyes that follow a scroll, keystroke bounces while it types, a wide-eyed look when it takes
- * a snapshot), thinks between actions (its `working` mood) and asks for you while the turn waits for a permission. It
+ * a snapshot), thinks between actions (its `tool` mood: round eyes, wandering) and asks for you while the turn waits for a permission. It
  * stays until the bot's turn ends (Cua Driver has the same idea, but its overlay needs Cua's standalone GUI service,
  * which an embedded app can't use). The drawing lives behind `AgentCursorHost` (an Electron overlay window in the
  * app, absent in tests); this controller decides when the cursor shows, moves, reacts and hides. The bot's real input
@@ -59,7 +59,7 @@ export interface AgentCursorHost {
   react(kind: CursorReaction): void;
   /** A loop for as long as the bot keeps doing something (`typing`); `null` ends it with a small nod. */
   activity(kind: 'typing' | null): void;
-  /** The avatar's mood loop: `rest` while it acts, `working` while it thinks, `needs-you` while it waits for you. */
+  /** The avatar's mood: `rest` while it acts, `tool` while it thinks, `needs-you` while it waits for you. */
   mood(mood: BotMood): void;
   hide(): void;
   dispose(): void;
@@ -257,7 +257,7 @@ export class AgentCursorController {
   }
 
   private applyMood(): void {
-    const m: BotMood = this.waiting.size ? 'needs-you' : this.thinking ? 'working' : 'rest';
+    const m: BotMood = this.waiting.size ? 'needs-you' : this.thinking ? 'tool' : 'rest';
     if (!this.threadId || m === this.mood) return;
     this.mood = m;
     try { this.host?.mood(m); } catch (e) { this.ctx.log.debug('agent cursor: mood failed', errMsg(e)); }
