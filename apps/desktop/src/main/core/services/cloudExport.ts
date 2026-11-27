@@ -18,7 +18,7 @@ import { errMsg, RpcError, todayStamp } from '../util';
 
 /** files of the data folder that never go in an export: secrets, this computer's own identity and pairings, scratch */
 export const EXCLUDED_DATA_FILES: ReadonlySet<string> = new Set([
-  'agent-keys.json', 'vault.json', 'connect.json', 'apps.json', 'devices.json', 'sent-ids.json', 'model-endpoints.json',
+  'agent-keys.json', 'vault.json', 'connect.json', 'apps.json', 'connectors.json', 'devices.json', 'sent-ids.json', 'model-endpoints.json',
   'cloud-state.json', 'cloud-wake.json', 'cloud.json', 'login-item.json', 'analytics-id', 'analytics-version', 'update-attempt.json',
   'version-policy.json', 'provider-choices.json', 'provider-updates.json', 'acp-registry.json', 'agent-auth.json',
 ]);
