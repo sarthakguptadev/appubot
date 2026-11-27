@@ -20,7 +20,7 @@ import {
   Refresh01Icon, Search01Icon, SecurityCheckIcon, SecurityIcon, SecurityWarningIcon, SentIcon,
   Settings02Icon, SmileIcon, SmartPhone01Icon, SparklesIcon, SquareIcon, StarIcon, StopIcon, Sun03Icon,
   TelegramIcon, Tick02Icon, UndoIcon, TimeScheduleIcon, TouchInteraction01Icon, UnfoldMoreIcon, Wifi01Icon, WifiOff01Icon, FilterHorizontalIcon,
-  ToggleOnIcon, Wrench01Icon, BulbIcon,
+  ToggleOnIcon, Wrench01Icon, BulbIcon, DashboardSquareAddIcon,
   KeyboardIcon, Navigation03Icon, SquareTerminalIcon, TextWrapIcon, FileEmpty02Icon, ViewIcon, ViewOffSlashIcon,
   MusicNote01Icon, Video01Icon, Message01Icon, Mail01Icon, MicOff02Icon, AudioLinesIcon, SourceCodeIcon,
   CloudIcon, ScrollTextIcon, MinusSignIcon, UserGroupIcon, UserIcon, UserAdd01Icon, Crown02Icon,
@@ -152,6 +152,8 @@ export const Sparkles = createIcon(SparklesIcon, 'Sparkles');
 export const Zap = createIcon(FlashIcon, 'Zap');
 export const SlidersHorizontal = createIcon(FilterHorizontalIcon, 'SlidersHorizontal');
 export const Plug = createIcon(Plug01Icon, 'Plug');
+/** apps (Settings › Apps, Connect apps): three squares and a +, the owner's pick (2026-11-27) */
+export const AppsAdd = createIcon(DashboardSquareAddIcon, 'AppsAdd');
 export const ToggleLeft = createIcon(ToggleOnIcon, 'ToggleLeft');
 export const Wrench = createIcon(Wrench01Icon, 'Wrench');
 export const BarChart3 = createIcon(Analytics01Icon, 'BarChart3');
