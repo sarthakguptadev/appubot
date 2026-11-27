@@ -12,6 +12,20 @@ export const PALETTE_ROW_ON = 'bg-[color-mix(in_srgb,var(--ab-fg)_7%,transparent
 
 const FOOTER_KEY = 'h-[18px] min-w-[18px] bg-[color-mix(in_srgb,var(--ab-fg)_8%,transparent)] text-fg';
 
+/** Five grey rows in the palette's rows' place while a search runs, each a little shorter than the one before. */
+export function PaletteSkeleton() {
+  return (
+    <div role="presentation" aria-busy="true">
+      {[72, 58, 64, 46, 52].map((w, i) => (
+        <div key={i} className={PALETTE_ROW}>
+          <span className="size-5 shrink-0 rounded-full bg-[color-mix(in_srgb,var(--ab-fg)_8%,transparent)]" />
+          <span className="h-2.5 rounded-full bg-[color-mix(in_srgb,var(--ab-fg)_8%,transparent)]" style={{ width: `${w}%` }} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /** A name with its matched words in semibold. */
 export function Marked({ text, ranges }: { text: string; ranges?: SearchRange[] }): ReactNode {
   if (!ranges?.length) return text;
