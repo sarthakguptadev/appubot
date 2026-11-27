@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { currentChat, type PermissionRequest } from '@appubot/protocol';
-import { screenWaitText, threadTitle } from '@appubot/chat-core';
+import { screenWaitText, threadScreen, threadTitle } from '@appubot/chat-core';
 import { Bell, Clock, ComputerUse, Eye, MonitorSmartphone, Plus, ShieldQuestion } from '../../components/ui/icons';
 import { Button, EmptyState, Icon, cn } from '../../components/ui';
 import { openThread, sendMessage } from '../../lib/actions';
@@ -83,8 +83,8 @@ function ComputerNotice({ botName, threadId }: { botName: string; threadId: stri
   const waiting = useStore((s) => (s.computer?.waiting?.threadId === threadId ? s.computer.waiting : undefined));
   const app = useStore((s) => (s.lastAction?.threadId === threadId ? s.lastAction.action.app : undefined));
   // live view's Take control: its step waits for the person in control, or (your AppuBot computer) for its turn on the screen
-  const wait = useStore((s) => s.computer?.waits?.find((w) => w.threadId === threadId));
-  const control = useStore((s) => s.computer?.control);
+  const wait = useStore((s) => threadScreen(s.computer, threadId)?.waits?.find((w) => w.threadId === threadId));
+  const control = useStore((s) => threadScreen(s.computer, threadId)?.control);
   const holderBot = useStore((s) => {
     const t = wait?.holder ? s.threads.find((x) => x.id === wait.holder) : undefined;
     return t ? s.bots.find((b) => b.id === t.botId)?.name : undefined;
@@ -188,7 +188,10 @@ export function ThreadView() {
   // this Mac's own notifications, also with an AppuBot computer on screen (its bots' notices show here)
   const showNotifications = notificationsBlocked && !dismissed.has('notifications');
   // the bot uses the computer in this thread's turn (it stays this thread's until the turn ends)
-  const usingComputer = useStore((s) => !!thread && computerOn && (s.computer?.activeThreadId === thread.id || !!s.computer?.waits?.some((w) => w.threadId === thread.id)));
+  const usingComputer = useStore((s) => {
+    const on = thread ? threadScreen(s.computer, thread.id) : undefined;
+    return !!thread && computerOn && (on?.activeThreadId === thread.id || !!on?.waits?.some((w) => w.threadId === thread.id));
+  });
   const isEmpty = useStore((s) => {
     if (!thread) return true;
     const c = s.convo[thread.id];

@@ -1,4 +1,4 @@
-import { CONTROL_IDLE_MS, type ScreenControl } from '@appubot/protocol';
+import { CONTROL_IDLE_MS, type BotScreen, type ScreenControl } from '@appubot/protocol';
 import type { CloudPhase } from './cloudView';
 import type { QualityLevels } from './desktopQuality';
 
@@ -45,6 +45,30 @@ export function screenCard(o: { cloud: CloudPhase; conn: LinkConn; linkError?: s
   if (o.phase === 'linking' || o.phase === 'connecting') return { kind: 'connecting', title: 'Connecting…' };
   if (ASLEEP.includes(o.cloud) && o.conn !== 'connected') return { kind: 'asleep', title: 'Asleep', line: 'Wake it to watch its screen.' };
   return { kind: 'connecting', title: 'Connecting…' };
+}
+
+/**
+ * The screen port's socket for one screen: a bot's own (`screen`: its id, the gateway's `?screen=`), else the
+ * computer's main screen (the link as it came).
+ */
+export function screenUrl(websocketUrl: string, screen: string | undefined): string {
+  if (!screen) return websocketUrl;
+  const u = new URL(websocketUrl);
+  u.searchParams.set('screen', screen);
+  return u.toString();
+}
+
+/**
+ * What a bot's own screen is doing, in a few words (the bot's Computer tab, the viewer's switcher): who has control,
+ * else working, else its state. Never started yet reads as asleep: it starts with its first step, or when opened.
+ */
+export function botScreenLine(s: BotScreen | undefined): string {
+  if (!s) return 'Asleep';
+  if (s.control) return `${s.control.name} has control`;
+  if (s.state === 'starting') return 'Starting…';
+  if (s.state === 'asleep') return 'Asleep';
+  if (s.busy || s.activeThreadId) return 'Working';
+  return 'Idle';
 }
 
 /** Under the preview: which bot is using it now, else whose computer it is. */

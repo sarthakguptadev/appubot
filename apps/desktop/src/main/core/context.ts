@@ -13,6 +13,7 @@ import type { ProvidersService } from './services/providers';
 import type { AcpRegistryService, PackageRunner } from './services/acpRegistry';
 import type { ProviderUpdatesService, UpdateIo } from './services/providerUpdates';
 import type { ComputerService, ComputerBackend } from './services/computer';
+import type { BotScreenHost, BotScreens } from './services/botScreens';
 import type { LiveViewService } from './services/liveView';
 import type { TeachService } from './services/teach';
 import type { SkillsService } from './services/skills';
@@ -256,8 +257,10 @@ export interface CoreDeps {
    * `unlock-screen`); returns the unsubscribe. AppuBot Connect checks its relay socket then (`ConnectService.nudge`).
    */
   onWake?: (fn: (why: string) => void) => () => void;
-  /** override computer backends (tests); default: [Cua, Native] */
-  computerBackends?: () => ComputerBackend[];
+  /** override computer backends (tests; `screen`: a bot's own screen, `botScreens`); default: [Cua, Native] */
+  computerBackends?: (screen?: string) => ComputerBackend[];
+  /** your AppuBot computer: a display of its own per bot (`services/botScreens.ts`); absent: the bots share one screen */
+  botScreens?: BotScreenHost;
   /**
    * Live view's pictures where there is no native helper (the AppuBot Cloud computer's screen through its own VNC
    * display, `ScreenSource`); input then goes through the computer-use backend's desktop scope. Made on the first
@@ -315,6 +318,8 @@ export interface Services {
   acpRegistry: AcpRegistryService;
   providerUpdates: ProviderUpdatesService;
   computer: ComputerService;
+  /** which screen a bot's computer use goes to: its own (your AppuBot computer), else `computer` */
+  screens: BotScreens;
   liveView: LiveViewService;
   teach: TeachService;
   skills: SkillsService;

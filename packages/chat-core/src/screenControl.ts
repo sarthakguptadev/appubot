@@ -5,7 +5,18 @@
  * control; while they do, every bot's computer use waits, and control goes back on Watching, on leaving, or after
  * CONTROL_IDLE_MS without input (the last CONTROL_WARN_MS count down, with Keep control).
  */
-import { CONTROL_WARN_MS, type ScreenControl, type ScreenWait } from '@appubot/protocol';
+import { CONTROL_WARN_MS, type ComputerStatus, type ScreenControl, type ScreenWait } from '@appubot/protocol';
+
+/**
+ * The screen a thread's bot uses the computer on: its own (your AppuBot computer, `ComputerStatus.screens`) while it
+ * works or waits there, else the computer's main one. A chat's "working", its wait line and who has control are that
+ * screen's.
+ */
+export function threadScreen(st: ComputerStatus | null | undefined, threadId: string | undefined): Pick<ComputerStatus, 'activeThreadId' | 'waits' | 'control'> | undefined {
+  if (!st) return undefined;
+  const own = threadId ? st.screens?.find((x) => x.activeThreadId === threadId || !!x.waits?.some((w) => w.threadId === threadId)) : undefined;
+  return own ?? st;
+}
 
 export type ControlAction = 'take' | 'give' | 'keep';
 export interface ControlPill {

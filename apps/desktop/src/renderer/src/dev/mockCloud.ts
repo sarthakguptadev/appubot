@@ -474,7 +474,8 @@ export function createCloudHandlers(g: MockGateway): CloudHandlers {
         hostName: 'AppuBot computer', role: 'owner' as const, pairedAt: Date.now() - DAY,
       } : null;
     },
-    'cloudAccount.desktopLink': () => ({ websocketUrl: 'wss://example.invalid/websockify', expiresAt: Date.now() + 60_000 }),
+    // `?vnc=ws://127.0.0.1:<port>/websockify`: a real screen port to stream from (renders of a live screen)
+    'cloudAccount.desktopLink': () => ({ websocketUrl: new URLSearchParams(location.search).get('vnc') ?? 'wss://example.invalid/websockify', expiresAt: Date.now() + 60_000 }),
     'cloudAccount.start': (p) => {
       if (p.team) { const t = needTeam(p.team); t.state = 'waking'; g.later(() => { t.state = 'running'; refresh(); }, 1200); g.later(refresh, 50); return teamsOf(state)[0]!.computer!; }
       move('running', 1200); return { ...computer(), state: 'waking' as const };

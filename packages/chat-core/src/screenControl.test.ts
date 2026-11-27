@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CONTROL_IDLE_MS, CONTROL_WARN_MS, type ScreenControl } from '@appubot/protocol';
-import { controlDeadline, controlNote, controlPill, screenWaitText } from './screenControl';
+import { controlDeadline, controlNote, controlPill, screenWaitText, threadScreen } from './screenControl';
 
 const ctl = (o: Partial<ScreenControl> = {}): ScreenControl => ({ id: 'ctl_1', name: 'Sam’s iPhone', via: 'live', since: 0, expiresAt: CONTROL_IDLE_MS, left: CONTROL_IDLE_MS, ...o });
 
@@ -39,5 +39,20 @@ describe('a chat’s wait line', () => {
     expect(screenWaitText({ wait: { for: 'control' }, control: null, mine: false })).toBe('Paused while someone has control');
     expect(screenWaitText({ wait: { for: 'screen' }, mine: false, holderBot: 'Ada' })).toBe('Waiting for the screen: Ada is using it');
     expect(screenWaitText({ wait: { for: 'screen' }, mine: false })).toBe('Waiting for the screen');
+  });
+});
+
+describe('the screen a chat’s bot works on', () => {
+  it('is the bot’s own while it works or waits there, else the computer’s main one', () => {
+    const main = { backend: 'cua-driver' as const, available: true, permissions: { accessibility: true, screenRecording: true }, busy: false, paused: false, liveView: true, background: false, activeThreadId: 'thr_main', control: ctl({ name: 'Ada’s Mac' }) };
+    const st = { ...main, screens: [
+      { botId: 'bot_a', state: 'on' as const, busy: true, activeThreadId: 'thr_a' },
+      { botId: 'bot_b', state: 'on' as const, busy: false, waits: [{ threadId: 'thr_b', for: 'control' as const, since: 0 }], control: ctl() },
+    ] };
+    expect(threadScreen(st, 'thr_a')).toMatchObject({ activeThreadId: 'thr_a' });
+    expect(threadScreen(st, 'thr_b')?.control?.name).toBe('Sam’s iPhone');
+    expect(threadScreen(st, 'thr_main')).toBe(st);
+    expect(threadScreen(main, 'thr_a')).toBe(main);
+    expect(threadScreen(null, 'thr_a')).toBeUndefined();
   });
 });

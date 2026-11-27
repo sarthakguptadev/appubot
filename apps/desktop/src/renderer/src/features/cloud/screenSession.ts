@@ -5,14 +5,15 @@ import { errorMessage } from '../../lib/gateway';
 import { pushToast } from '../../lib/store';
 import { desktopLink, useCloud } from './cloudAccount';
 import { RECONNECT_GIVE_UP, autoStart, rateOver, reconnectDelayMs, stepQuality, type AutoState } from './desktopQuality';
-import { CLIPBOARD_MAX, PREVIEW_LEVELS, PREVIEW_PACE_MS, XK_CONTROL_L, controlUntil, localControl, shortcutKeysym, type ScreenPhase } from './screenView';
+import { CLIPBOARD_MAX, PREVIEW_LEVELS, PREVIEW_PACE_MS, XK_CONTROL_L, controlUntil, localControl, screenUrl, shortcutKeysym, type ScreenPhase } from './screenView';
 import { ViewerChannel } from './viewerChannel';
 import { ScreenWants } from './screenWants';
 
 /*
  * The screen of your AppuBot computer (or a team's), one connection for every view of it in this window: the side
  * panel's small preview (Computer tab) and the full-screen viewer (`DesktopView`). A view asks for it with
- * `wantScreen(key, {full, team})` and lets go with `releaseScreen(key)`; nobody wanting it for `RELEASE_GRACE_MS`
+ * `wantScreen(key, {full, team, screen})` (`screen`: a bot's own screen on the computer, by the bot's id; one screen at a
+ * time, the full viewer's choice first) and lets go with `releaseScreen(key)`; nobody wanting it for `RELEASE_GRACE_MS`
  * (`screenWants.ts`) closes the socket, so nothing keeps the computer awake for nothing, while a view coming back
  * within it (a tab switched, the panel collapsed for a moment) finds the same live connection. The picture is one
  * element (`screenElement`), moved into whichever view is up (`ScreenSurface`: the full viewer wins) and refitted to
@@ -55,6 +56,8 @@ export interface ScreenState {
   /** the full viewer is up (else only the preview) */
   full: boolean;
   team?: string;
+  /** a bot's own screen on the computer (its id; absent: the computer's main screen) */
+  screen?: string;
   /** the last picture (a data URL) shown while reconnecting or paused */
   lastFrame?: string;
   /** the computer's screen size in pixels (its framebuffer), once known: the full viewer fits a box of its shape */
@@ -68,7 +71,7 @@ export const useScreen = create<ScreenState>()(() => ({ phase: 'idle', why: '', 
  * is taken as the screen opens, since its terminal or browser waits for you there). `control`: the id of the screen control this window
  * holds now (the chats say "Paused while you’re in control").
  */
-export const useCloudDesktop = create<{ open: boolean; team?: string; teach: boolean; signIn?: string; control?: string; from?: DOMRect }>()(() => ({ open: false, teach: false }));
+export const useCloudDesktop = create<{ open: boolean; team?: string; screen?: string; takeOver?: boolean; teach: boolean; signIn?: string; control?: string; from?: DOMRect }>()(() => ({ open: false, teach: false }));
 
 /** no mouse or keyboard in this window for this long: pause */
 const IDLE_PAUSE_MS = 15 * 60_000;
@@ -78,11 +81,12 @@ const WAKING_MS = 2500;
 const RATE_WINDOW_MS = 2000;
 const RATE_TICK_MS = 500;
 
-interface Want { full: boolean; team?: string; takeControl?: boolean }
+interface Want { full: boolean; team?: string; screen?: string; takeControl?: boolean }
 const wants = new ScreenWants<Want>({ change: (list) => reconcile(list), idle: () => stop() });
 
 let running = false;
 let runningTeam: string | undefined;
+let runningScreen: string | undefined;
 /** every link fetch and connection belongs to one generation; anything from an older one is ignored */
 let gen = 0;
 let client: RFB | null = null;
@@ -169,20 +173,21 @@ function reconcile(list: Want[]): void {
   }
   const fullWant = list.find((w) => w.full);
   const full = !!fullWant;
-  const team = (fullWant ?? list[0]!).team;
-  if (running && runningTeam !== team) stop();
+  const { team, screen } = fullWant ?? list[0]!;
+  if (running && (runningTeam !== team || runningScreen !== screen)) stop();
   if (list.some((w) => w.takeControl)) takeOnConnect = true;
   const wasFull = useScreen.getState().full;
-  set({ full, team });
-  if (!running) { start(team); return; }
+  set({ full, team, screen });
+  if (!running) { start(team, screen); return; }
   applyMode(full);
   if (wasFull && !full) giveBack();
   if (takeOnConnect && useScreen.getState().phase === 'connected') { takeOnConnect = false; takeControl(); }
 }
 
-function start(team: string | undefined): void {
+function start(team: string | undefined, screen: string | undefined): void {
   running = true;
   runningTeam = team;
+  runningScreen = screen;
   failures = 0;
   lastTouch = Date.now();
   window.addEventListener('pointermove', touch, LISTEN);
@@ -331,7 +336,7 @@ async function connect(link: CloudDesktopLink, my: number): Promise<void> {
   target.replaceChildren();
   // the socket is ours: what comes through it is measured for the auto quality, and its text frames are the control
   // channel (who has control; this view's input reaches the screen only while it has it)
-  const sock = new WebSocket(link.websocketUrl);
+  const sock = new WebSocket(screenUrl(link.websocketUrl, runningScreen));
   socket = sock;
   sock.addEventListener('message', (e) => {
     const bytes = e.data instanceof ArrayBuffer ? e.data.byteLength : typeof e.data === 'string' ? e.data.length : 0;
