@@ -19,7 +19,7 @@ import { cloudLacks } from '../../features/cloud/cloudView';
 import { openWhatsNew } from '../../features/whatsNew/WhatsNew';
 import { foldQuery, matchFields, messageMatcher, pickedFor, rankGroups, type PalettePick, type SearchField, type SearchRange } from './paletteSearch';
 import { loadPicks, recentKeys, savePick } from './paletteRecent';
-import { Marked, PALETTE_ROW, PALETTE_ROW_ON, PaletteFooter } from './PaletteRow';
+import { Marked, PALETTE_ROW, PALETTE_ROW_ON, PaletteFooter, PaletteSkeleton } from './PaletteRow';
 
 /** a sub-page of the palette: a list to pick from, which the root search reaches too ("Theme: Dark") */
 type PageId = 'theme' | 'model' | 'effort' | 'new-thread' | 'settings';
@@ -76,6 +76,8 @@ const THREAD_LIMIT = 12;
 const SETTINGS_LIMIT = 6;
 /** chats found by their messages, under the rest */
 const MESSAGE_LIMIT = 8;
+/** how long a search runs with nothing found before grey rows stand in for its results */
+const SKELETON_AFTER_MS = 120;
 
 const keywords = (value: string, weight = 0.6): SearchField => ({ value, weight, keyword: true });
 
@@ -216,6 +218,15 @@ export function QuickSwitcher({ open, onClose }: { open: boolean; onClose: () =>
   const listId = `qs-${useId().replace(/:/g, '')}`;
   // typing stays quick while a long list (or the messages) is searched
   const query = useDeferredValue(q);
+  // the list keeps an earlier query's results while the new one is searched; a search that takes a moment (a long
+  // history on a slow Mac) puts grey rows in their place, and one that doesn't never flashes them
+  const searching = q !== query;
+  const [slow, setSlow] = useState(false);
+  useEffect(() => {
+    if (!searching) { setSlow(false); return; }
+    const t = setTimeout(() => setSlow(true), SKELETON_AFTER_MS);
+    return () => clearTimeout(t);
+  }, [searching]);
   const pageId = stack[stack.length - 1]?.id ?? null;
 
   useEffect(() => { if (open) { setQ(''); setStack([]); setActive(0); setPicks(loadPicks()); } }, [open]);
@@ -351,7 +362,8 @@ export function QuickSwitcher({ open, onClose }: { open: boolean; onClose: () =>
     input.current?.focus();
   };
   const choose = (r: Row | undefined) => {
-    if (!r) return;
+    // (while grey rows stand in, the highlight is an earlier query's)
+    if (!r || slow) return;
     if (r.page) { enter(r.page); return; }
     savePick(r.key, foldQuery(q));
     onClose();
@@ -429,8 +441,8 @@ export function QuickSwitcher({ open, onClose }: { open: boolean; onClose: () =>
           className="h-12 min-w-0 flex-1 bg-transparent text-copy text-fg outline-none placeholder:text-muted"
         />
       </div>
-      <div ref={list} id={listId} role="listbox" aria-label="Results" className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2">
-        {view.map((g) => (
+      <div ref={list} id={listId} role="listbox" aria-label="Results" aria-busy={searching || undefined} className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2">
+        {(slow ? [] : view).map((g) => (
           <Fragment key={g.id}>
             {g.label ? <div role="presentation" className="px-2 pt-1.5 pb-1 text-note font-medium text-muted/80 first:pt-0.5">{g.label}</div> : null}
             {g.rows.map((r) => {
@@ -477,10 +489,12 @@ export function QuickSwitcher({ open, onClose }: { open: boolean; onClose: () =>
             })}
           </Fragment>
         ))}
-        {!rows.length ? <div role="presentation" className="px-3 py-10 text-center text-copy text-muted">{empty}</div> : null}
+        {/* a search that takes a moment: grey rows in place of an earlier query's results (Grok Bot's) */}
+        {slow ? <PaletteSkeleton /> : null}
+        {!rows.length && !slow ? <div role="presentation" className="px-3 py-10 text-center text-copy text-muted">{empty}</div> : null}
       </div>
       {/* T3's footer: the keys the list answers to */}
-      <PaletteFooter verb={current?.verb} escKeys={page ? ['⌫', 'esc'] : ['esc']} escLabel={page ? 'Back' : 'Close'} />
+      <PaletteFooter verb={slow ? undefined : current?.verb} escKeys={page ? ['⌫', 'esc'] : ['esc']} escLabel={page ? 'Back' : 'Close'} />
     </Dialog>
   );
 }
