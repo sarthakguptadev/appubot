@@ -17,7 +17,7 @@ export function EmptyThread({ bot, setup }: {
 }) {
   return (
     <div className="relative flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-6 pb-8">
-      <div className="flex max-w-[46rem] animate-[message-enter_240ms_var(--ease-out-quint)_both] flex-col items-center text-center">
+      <div className="chat-column flex animate-[message-enter_240ms_var(--ease-out-quint)_both] flex-col items-center text-center">
         <BotAvatar bot={bot} size={40} />
         {setup ? <div className="mt-6 flex flex-wrap justify-center gap-2">{setup}</div> : null}
       </div>

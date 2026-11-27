@@ -44,7 +44,7 @@ const isLocalSend = (m: Message | undefined) => m?.role === 'user' && m.via === 
 export function Separator({ label }: { label: string }) {
   return (
     <div role="separator" aria-label={label} className="chat-separator mt-4 mb-3 flex items-center justify-center px-1 first:mt-0">
-      <span className="shrink-0 text-xs text-muted tabular-nums">{label}</span>
+      <span className="shrink-0 text-xs text-muted tabular-nums dark:text-[#a8a8a8]">{label}</span>
     </div>
   );
 }
@@ -61,12 +61,13 @@ const Row = memo(function Row({ threadId, id, botName, cwd, animate, separator }
   });
   const [enter] = useState(() => animate && isLocalSend(msg));
   if (!msg) return null;
-  // Synara's row: px-1 inside the 46rem column; a sent message pb-3.5, the same gap a settled reply leaves under itself
-  // in the answers view, so the chat changes sides at one even step (bubbles of one side sit 4px apart)
+  // a row runs edge to edge of the chat's column, so bubbles line up with the composer under them; a sent message pb-3.5,
+  // the same gap a settled reply leaves under itself in the answers view, so the chat changes sides at one even step
+  // (bubbles of one side sit 4px apart)
   return (
     <>
       {separator ? <Separator label={separator} /> : null}
-      <div data-message-id={id} className={cn('flex flex-col px-1', msg.role === 'user' && 'pb-3.5', enter && 'chat-message-send-enter')}>
+      <div data-message-id={id} className={cn('flex flex-col', msg.role === 'user' && 'pb-3.5', enter && 'chat-message-send-enter')}>
         {msg.role === 'agent' ? <AgentTurn msg={msg} botName={botName} cwd={cwd} />
           : msg.via === 'routine' ? <RoutinePromptLine msg={msg} botName={botName} /> : <UserMessage msg={msg} botName={botName} waiting={waiting} />}
       </div>
@@ -460,11 +461,11 @@ export function Transcript({ threadId, botName, cwd, footer }: {
         onTouchStart={detach}
         onTouchMove={detach}
         onTouchEnd={release}
-        // Synara's list: the 20px gutter and the scrollbar's own 10px track sit outside the 46rem column
+        // Synara's list: the 20px gutter and the scrollbar's own 10px track sit outside the chat's column (index.css .chat-column)
         className="h-full overflow-x-hidden overflow-y-auto px-5 [overflow-anchor:none] [scrollbar-gutter:stable]"
         style={mask ? { maskImage: mask, WebkitMaskImage: mask } : undefined}
       >
-        <div ref={content} className="mx-auto flex w-full max-w-[46rem] flex-col pt-4">
+        <div ref={content} className="chat-column flex flex-col pt-4">
           {loading ? <div className="flex justify-center py-10 text-muted"><Spinner size={18} /></div> : null}
           <div ref={top} aria-hidden className="h-px shrink-0" />
           {paging ? <div className="flex justify-center pb-3 text-muted"><Spinner size={14} /></div> : null}

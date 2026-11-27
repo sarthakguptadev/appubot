@@ -16,7 +16,7 @@ import { PagePart } from './PagePart';
 import { DISCLOSURE_CLEANUP_MS, DISCLOSURE_MS, DisclosureChevron, DisclosureRegion } from './Disclosure';
 import { LiveElapsed } from './LiveTimer';
 import { ChatMarkdown } from './Markdown';
-import { FileTile, ImageTiles } from './MediaParts';
+import { FileTile, ImageBox, isPictureFile, type Picture } from './MediaParts';
 import { VoiceNote } from '../voice/VoiceNote';
 import { Notice, PlanChecklist } from './Notices';
 import { FailureCard } from './FailureCard';
@@ -33,8 +33,6 @@ import { useStore } from '../../lib/store';
 import { useMessagesTheme, useWorkTrail } from '../../lib/appearance';
 import { WorkTrail } from './WorkTrail';
 import { Bubble, type BubbleSpot } from './Bubble';
-
-type ImagePart = Extract<Part, { type: 'image' }>;
 
 /** How long a turn that just ended keeps its live layout before folding (Synara's ACTIVE_TURN_LAYOUT_SETTLE_DELAY_MS). */
 export const SETTLE_HOLD_MS = 180;
@@ -66,12 +64,12 @@ interface Ctx {
   mentions?: readonly Bot[];
 }
 
-/** A text message's corners: round all over; the last bubble of a bot's run ends it on a small tail, its bottom corner on the bot's side tightened. */
+/** A text message's corners (16px): bubbles of one run join like a messaging app's, the corners between them on the bot's side tightened to 4px. */
 export const BUBBLE_CORNERS: Record<BubbleSpot, string> = {
-  only: 'squircle rounded-[18px] rounded-bl-[6px]',
-  first: 'squircle rounded-[18px]',
-  middle: 'squircle rounded-[18px]',
-  last: 'squircle rounded-[18px] rounded-bl-[6px]',
+  only: 'squircle rounded-[16px]',
+  first: 'squircle rounded-[16px] rounded-bl-[4px]',
+  middle: 'squircle rounded-[16px] rounded-l-[4px]',
+  last: 'squircle rounded-[16px] rounded-tl-[4px]',
 };
 
 /** The reply's text bubbles in order, each with its place in the run (the corners of a chat's grouped messages). */
@@ -82,10 +80,10 @@ function bubbleRun(list: Chunk[]): Map<number, BubbleSpot> {
 
 /**
  * The bot's bubble: an ink wash under a faint sheen at its top (index.css `.chat-bubble-reply`), no outline or shadow in
- * either scheme, a text message's padding (12 by 7 around 15px text) and width (a group room's bots wear the same:
- * features/groups/GroupView.tsx).
+ * either scheme, a text message's padding (12 by 7 around 15px text) and a messaging app's width, 58% of the column (a table or code block may take more: index.css). A group room's bots wear
+ * the same: features/groups/GroupView.tsx.
  */
-export const REPLY_BUBBLE = 'chat-bubble-reply w-fit max-w-[88%] min-w-9 bg-agent-bubble px-3 py-[7px]';
+export const REPLY_BUBBLE = 'chat-bubble-reply w-fit max-w-[58%] min-w-9 bg-agent-bubble px-3 py-[7px]';
 
 /**
  * The bot's reply as a text message (answers-only view): a left-aligned bubble sized to its text, the user bubble's
@@ -133,15 +131,25 @@ function Block({ item, ctx }: { item: Indexed; ctx: Ctx }): ReactNode {
   }
 }
 
-/** Parts in order; consecutive images share one tile grid. */
+/** a picture the turn shows as itself: an image, or a file that is one */
+function pictureOf(part: Part): Picture | undefined {
+  if (part.type === 'image') return part.data || part.url ? { part } : undefined;
+  return part.type === 'file' && isPictureFile(part.file) ? { file: part.file } : undefined;
+}
+
+/** Parts in order; consecutive pictures share one box. */
 function blocks(items: Indexed[], ctx: Ctx): ReactNode[] {
   const out: ReactNode[] = [];
   for (let k = 0; k < items.length; k++) {
     const item = items[k]!;
-    if (item.part.type === 'image') {
-      const run: ImagePart[] = [item.part];
-      while (items[k + 1]?.part.type === 'image') run.push(items[++k]!.part as ImagePart);
-      out.push(<ImageTiles key={`img${item.index}`} images={run} />);
+    const first = pictureOf(item.part);
+    if (first) {
+      const run: Picture[] = [first];
+      let next: Picture | undefined;
+      while (k + 1 < items.length && (next = pictureOf(items[k + 1]!.part))) { run.push(next); k++; }
+      out.push(<ImageBox key={`img${item.index}`} pictures={run} />);
+    } else if (item.part.type === 'image') {
+      continue;
     } else {
       out.push(<Block key={item.index} item={item} ctx={ctx} />);
     }

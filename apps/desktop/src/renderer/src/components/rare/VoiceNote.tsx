@@ -252,6 +252,8 @@ function VoiceNote({
   const audioRef = useRef<HTMLAudioElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const scrubbing = useRef(false);
+  // a recording saved as it was made (WebM, some Ogg) has no length in its header: it's found by seeking past the end
+  const probing = useRef(false);
   // performance.now() baseline for the clip that has no audio file behind it
   const startedAt = useRef(0);
 
@@ -500,8 +502,20 @@ function VoiceNote({
           src={src}
           preload={preload}
           onLoadedMetadata={(event) => {
-            const value = event.currentTarget.duration;
-            setMetaDuration(Number.isFinite(value) && value > 0 ? value : duration);
+            const audio = event.currentTarget;
+            if (audio.duration === Infinity) {
+              probing.current = true;
+              audio.currentTime = 1e101;
+              return;
+            }
+            setMetaDuration(Number.isFinite(audio.duration) && audio.duration > 0 ? audio.duration : duration);
+          }}
+          onDurationChange={(event) => {
+            const audio = event.currentTarget;
+            if (!probing.current || !Number.isFinite(audio.duration)) return;
+            probing.current = false;
+            audio.currentTime = 0;
+            setMetaDuration(audio.duration > 0 ? audio.duration : duration);
           }}
           onError={() => {
             setFailed(true);

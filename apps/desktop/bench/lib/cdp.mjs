@@ -78,7 +78,7 @@ export async function launchChrome({ port = 9520 + Math.floor(Math.random() * 30
   const proc = spawn(CHROME, [
     '--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${dir}`, `--window-size=${width},${height}`,
     '--no-first-run', '--no-default-browser-check', '--disable-extensions', '--disable-background-timer-throttling',
-    '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows', 'about:blank',
+    '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows', '--autoplay-policy=no-user-gesture-required', 'about:blank',
   ], { stdio: 'ignore' });
   const stop = async () => { proc.kill('SIGTERM'); await sleep(300); try { proc.kill('SIGKILL'); } catch { /* gone */ } rmSync(dir, { recursive: true, force: true }); };
   // a bench that fails midway still leaves no browser behind

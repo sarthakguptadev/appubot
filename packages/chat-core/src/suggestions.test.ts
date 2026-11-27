@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { eligibleSuggestions, pickPills, pickSuggestions, suggestionCount, SUGGESTIONS_BESIDE_FOLLOW_UPS, SUGGESTIONS_MAX, SUGGESTIONS_MIN, type SuggestionFacts } from './suggestions';
+import { eligibleSuggestions, pickPills, pickSuggestions, shortReply, suggestionCount, SUGGESTIONS_BESIDE_FOLLOW_UPS, SUGGESTIONS_MAX, SUGGESTIONS_MIN, type SuggestionFacts } from './suggestions';
 
 const NEW: SuggestionFacts = {
   botName: 'Appu', bots: 1, routines: 0, groups: 0, phonePaired: false, telegram: false, appsSignedIn: false,
@@ -181,5 +181,24 @@ describe('with the bot’s own follow-ups', () => {
       expect(asked.suggestions.map((s) => s.id)).not.toContain('plan-week');
       expect(asked.suggestions).toHaveLength(suggestionCount(seed));
     }
+  });
+});
+
+describe('short replies', () => {
+  const text = (s: string) => ({ type: 'text', text: s });
+  it('are a line of words under 80 characters, whatever work came before them', () => {
+    for (const s of ['Sent!', 'Done.', 'On it', '  Booked for 7 pm on Friday.  ']) expect(shortReply([text(s)])).toBe(true);
+    expect(shortReply([{ type: 'tool_call' }, { type: 'thought', text: 'sending the email' }, text('Sent!')])).toBe(true);
+    expect(shortReply([])).toBe(true);
+  });
+  it('are not long, several lines, a list, a table, code, or a reply that shows something', () => {
+    expect(shortReply([text('x'.repeat(80))])).toBe(false);
+    expect(shortReply([text('Sent!'), text('Anything else?')])).toBe(false);
+    expect(shortReply([text('Done.\nIt took a minute.')])).toBe(false);
+    expect(shortReply([text('- milk')])).toBe(false);
+    expect(shortReply([text('1. milk')])).toBe(false);
+    expect(shortReply([text('| a | b |')])).toBe(false);
+    expect(shortReply([text('Run `ls`')])).toBe(false);
+    for (const type of ['image', 'file', 'page', 'voice', 'plan', 'question']) expect(shortReply([text('Here it is'), { type }])).toBe(false);
   });
 });

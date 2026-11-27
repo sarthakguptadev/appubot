@@ -22,6 +22,7 @@ import { usePageSrc } from '../chat/PagePart';
 import { useCloudFiles } from '../cloud/cloudClient';
 import { downloadRemoteFile, progressLabel, useFileProgress, useFileSrc, useRemoteComputer } from '../cloud/remoteFiles';
 import { openInApp } from './FileViewer';
+import { ClipPlayer } from './ClipPlayer';
 import { activeComputer } from '../../lib/gateway';
 import { remember } from '../../lib/remembered';
 
@@ -130,7 +131,7 @@ function VideoTile({ f, wide }: { f: FileAttachment; wide?: boolean }) {
     return (
       <div className={TILE}>
         <span className={cn(wide ? WIDE_BOX : TILE_BOX, 'bg-black')}>
-          <video controls autoPlay src={src} className="absolute inset-0 size-full object-contain" />
+          <ClipPlayer src={src} autoPlay className="absolute inset-0 size-full max-h-none rounded-none" />
         </span>
         <span className={TILE_NAME}>{title}</span>
       </div>
