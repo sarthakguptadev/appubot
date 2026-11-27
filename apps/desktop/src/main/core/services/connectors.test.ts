@@ -168,6 +168,7 @@ describe('connector names and words', () => {
   it('says why a server can’t be used in plain words', () => {
     const local = { transport: 'stdio' as const, command: 'nopex' };
     expect(plainReason(Object.assign(new Error('spawn nopex ENOENT'), { code: 'ENOENT' }), local)).toBe('Couldn\'t start “nopex”: there\'s no such command on this computer.');
+    expect(plainReason(new Error('Connection closed'), local, "'nopex' is not recognized as an internal or external command,\r\noperable program or batch file.\r\n")).toBe('Couldn\'t start “nopex”: there\'s no such command on this computer.');
     expect(plainReason(new Error('Connection closed'), local, 'npm ERR! 404 Not Found: @x/nope\n')).toBe('It stopped before answering: npm ERR! 404 Not Found: @x/nope');
     const web = { transport: 'http' as const, url: 'https://mcp.example.com/mcp' };
     expect(plainReason(Object.assign(new Error('Error POSTing to endpoint: nope'), { code: 404 }), web)).toContain('HTTP 404');

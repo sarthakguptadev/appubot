@@ -127,7 +127,8 @@ export function plainReason(e: unknown, c: Pick<StoredConnector, 'transport' | '
   const where = c.url ? (() => { try { return new URL(c.url).host; } catch { return c.url; } })() : '';
   const lastSaid = stderr.trim().split('\n').map((l) => l.trim()).filter(Boolean).slice(-1)[0];
   if (c.transport === 'stdio') {
-    if (/ENOENT/.test(all)) return `Couldn't start “${c.command}”: there's no such command on this computer.`;
+    // Windows starts a command through cmd.exe, which says so itself instead of failing with ENOENT
+    if (/ENOENT/.test(all) || /is not recognized as an internal or external command/i.test(stderr)) return `Couldn't start “${c.command}”: there's no such command on this computer.`;
     if (/EACCES/.test(all)) return `Couldn't start “${c.command}”: it isn't allowed to run.`;
     if (/timed out|timeout/i.test(all)) return 'It started but didn’t answer within a minute.';
     if (/closed|exited|EPIPE/i.test(all)) return lastSaid ? `It stopped before answering: ${lastSaid.slice(0, 200)}` : 'It stopped before answering.';
