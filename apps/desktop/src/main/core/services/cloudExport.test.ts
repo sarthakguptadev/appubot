@@ -42,6 +42,7 @@ beforeAll(async () => {
   mkdirSync(join(dataDir, 'vault-keys'), { recursive: true });
   writeFileSync(join(dataDir, 'vault-keys', 'bot.env'), 'KEY=secret');
   writeFileSync(join(dataDir, 'apps.json'), '{"auth":{"accessToken":"tok"}}');
+  writeFileSync(join(dataDir, 'connectors.json'), '{"connectors":[{"headers":{"Authorization":{"v":"Bearer sk-connector"}}}]}');
   writeFileSync(join(dataDir, 'channels.json'), JSON.stringify([{ id: 'telegram', enabled: true, token: '123:abc', allowedUsers: [], status: 'stopped' }]));
   writeFileSync(join(dataDir, 'providers.json'), JSON.stringify({ custom: [{ id: 'x', env: { API_KEY: 'k' } }] }));
   mkdirSync(join(dataDir, 'logs'), { recursive: true });
@@ -79,7 +80,7 @@ describe('the cloud export', () => {
       expect(names).toContain('appubot-data/providers.json');
       expect(names).toContain('appubot-data/bots.json');
       expect(names.some((n) => /^appubot-data\/files\/[^/]+\/note\.txt$/.test(n))).toBe(true);
-      for (const secret of ['agent-keys.json', 'vault.json', 'vault-keys/bot.env', 'apps.json', 'devices.json', 'connect.json', 'logs/appubot-2026-11-03.log', 'cloud-state.json']) {
+      for (const secret of ['agent-keys.json', 'vault.json', 'vault-keys/bot.env', 'apps.json', 'connectors.json', 'devices.json', 'connect.json', 'logs/appubot-2026-11-03.log', 'cloud-state.json']) {
         expect(names).not.toContain(`appubot-data/${secret}`);
       }
       expect(names.some((n) => n.includes('appubot-export-'))).toBe(false);
