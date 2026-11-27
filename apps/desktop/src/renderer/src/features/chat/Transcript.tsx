@@ -37,7 +37,7 @@ const EMPTY: string[] = [];
 /** how far back from the chat's end a message still waiting for the bot can be: the reply being written and what was sent after it */
 const WAITING_TAIL = 12;
 
-/** A message you just sent from this Mac; only those animate in (Synara's chat-message-send-enter). */
+/** A message you just sent from this Mac: the scroll glides to it. */
 const isLocalSend = (m: Message | undefined) => m?.role === 'user' && m.via === 'desktop';
 
 /** Where the conversation resumes: a quiet centred date and time, words alone (the hairlines either side went on 2026-11-17). */
@@ -63,8 +63,8 @@ export function NewDivider() {
   );
 }
 
-const Row = memo(function Row({ threadId, id, botName, cwd, animate, separator, isNew = false }: {
-  threadId: string; id: string; botName: string; cwd?: string; animate: boolean; separator: string | null;
+const Row = memo(function Row({ threadId, id, botName, cwd, separator, isNew = false }: {
+  threadId: string; id: string; botName: string; cwd?: string; separator: string | null;
   /** the first reply you hadn't seen when the chat opened: the NEW line goes above it */
   isNew?: boolean;
 }) {
@@ -75,7 +75,6 @@ const Row = memo(function Row({ threadId, id, botName, cwd, animate, separator, 
     const tail = c?.ids.slice(-WAITING_TAIL);
     return !!c && !!tail?.includes(id) && c.byId[id]?.role === 'user' && waitingSends(tail.flatMap((x) => c.byId[x] ?? [])).includes(id);
   });
-  const [enter] = useState(() => animate && isLocalSend(msg));
   if (!msg) return null;
   // a row runs edge to edge of the chat's column, so bubbles line up with the composer under them; a sent message pb-3.5,
   // the same gap a settled reply leaves under itself in the answers view, so the chat changes sides at one even step
@@ -84,7 +83,7 @@ const Row = memo(function Row({ threadId, id, botName, cwd, animate, separator, 
     <>
       {separator ? <Separator label={separator} /> : null}
       {isNew ? <NewDivider /> : null}
-      <div data-message-id={id} className={cn('flex flex-col', msg.role === 'user' && 'pb-3.5', enter && 'chat-message-send-enter')}>
+      <div data-message-id={id} className={cn('flex flex-col', msg.role === 'user' && 'pb-3.5')}>
         {msg.role === 'agent' ? <AgentTurn msg={msg} botName={botName} cwd={cwd} />
           : msg.via === 'routine' ? <RoutinePromptLine msg={msg} botName={botName} /> : <UserMessage msg={msg} botName={botName} waiting={waiting} />}
       </div>
@@ -112,6 +111,8 @@ const AT_END_PX = 1;
 const SHOW_JUMP_DELAY_MS = 150;
 /** Scroll events this soon after our own scrollTo are layout, not the reader. */
 const PROGRAMMATIC_SCROLL_MS = 200;
+/** the glide to a message you just sent (Grok Bot's 150–170 ms, eased out); the message itself is there at once */
+export const SEND_GLIDE_MS = 160;
 
 const distanceFromEnd = (el: HTMLElement) => el.scrollHeight - el.scrollTop - el.clientHeight;
 const nearEnd = (el: HTMLElement, px = AT_END_PX) => distanceFromEnd(el) <= px;
@@ -162,7 +163,7 @@ export function Transcript({ threadId, botName, cwd, footer }: {
   const unreadFrom = useStore((s) => { const u = s.unread[threadId]; return typeof u === 'string' ? u : null; });
   const [newFrom, setNewFrom] = useState(unreadFrom);
   if (unreadFrom && !newFrom) setNewFrom(unreadFrom);
-  /** ids present when the chat first loaded (or paged in) don't animate; later arrivals do */
+  /** ids present when the chat first loaded (or paged in): a later one you sent from here brings the end back into view */
   const known = useRef<Set<string> | null>(null);
   if (!known.current && loaded) known.current = new Set(ids);
 
@@ -185,12 +186,30 @@ export function Transcript({ threadId, botName, cwd, footer }: {
     [foldSig, threadId, visible, separators],
   );
 
+  const glideFrame = useRef<number | null>(null);
   const toBottom = useCallback((smooth = false) => {
     const el = scroller.current;
     if (!el) return;
-    programmaticUntil.current = performance.now() + PROGRAMMATIC_SCROLL_MS;
-    el.scrollTo({ top: el.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
+    const now = performance.now();
+    // a glide under way keeps going to the end as it moves (rows still landing under the sent message)
+    if (glideFrame.current !== null && !smooth) { programmaticUntil.current = Math.max(programmaticUntil.current, now + PROGRAMMATIC_SCROLL_MS); return; }
+    if (glideFrame.current !== null) cancelAnimationFrame(glideFrame.current);
+    glideFrame.current = null;
+    const from = el.scrollTop;
+    if (!smooth || matchMedia('(prefers-reduced-motion: reduce)').matches || el.scrollHeight - el.clientHeight - from <= 1) {
+      programmaticUntil.current = now + PROGRAMMATIC_SCROLL_MS;
+      el.scrollTop = el.scrollHeight;
+      return;
+    }
+    programmaticUntil.current = now + SEND_GLIDE_MS + PROGRAMMATIC_SCROLL_MS;
+    const step = (t: number) => {
+      const p = Math.min(1, Math.max(0, (t - now) / SEND_GLIDE_MS));
+      el.scrollTop = from + (el.scrollHeight - el.clientHeight - from) * (1 - (1 - p) ** 3);
+      glideFrame.current = p < 1 ? requestAnimationFrame(step) : null;
+    };
+    glideFrame.current = requestAnimationFrame(step);
   }, []);
+  useEffect(() => () => { if (glideFrame.current !== null) cancelAnimationFrame(glideFrame.current); }, []);
 
   const hideJump = useCallback(() => {
     clearTimeout(jumpTimer.current);
@@ -494,12 +513,12 @@ export function Transcript({ threadId, botName, cwd, footer }: {
           <div ref={top} aria-hidden className="h-px shrink-0" />
           {paging ? <div className="flex justify-center pb-3 text-muted"><Spinner size={14} /></div> : null}
           {items.map((item) => (item.kind === 'message' ? (
-            <Row key={item.key} threadId={threadId} id={item.id} botName={botName} cwd={cwd} separator={separators[item.index] ?? null} isNew={item.id === newFrom} animate={!!known.current && !known.current.has(item.id) && !known.current.has(rowKeyOf(item.id))} />
+            <Row key={item.key} threadId={threadId} id={item.id} botName={botName} cwd={cwd} separator={separators[item.index] ?? null} isNew={item.id === newFrom} />
           ) : (
             <div key={item.key} data-message-id={item.ids[0]}>
               {separators[item.index] ? <Separator label={separators[item.index]!} /> : null}
               <RoutineFoldLine fold={item}>
-                {() => item.ids.map((id) => <Row key={rowKeyOf(id)} threadId={threadId} id={id} botName={botName} cwd={cwd} separator={null} animate={false} />)}
+                {() => item.ids.map((id) => <Row key={rowKeyOf(id)} threadId={threadId} id={id} botName={botName} cwd={cwd} separator={null} />)}
               </RoutineFoldLine>
             </div>
           )))}
