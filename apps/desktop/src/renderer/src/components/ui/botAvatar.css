@@ -2,9 +2,12 @@
    for the desktop and the phone, copied from Grok Bot's mascot), turned into poses, keyframes and `.ab-bot` rules by
    botAvatarMotion.ts (BOT_MOTION_CSS). Layers, outside in: the span (press squish), the svg, .ab-bot-joy (the happy
    cheer), .ab-bot-body (a mood's loop), .ab-bot-tilt (the pose's lean), .ab-bot-morph (collapsing into the dots),
-   .ab-bot-shape (the bot, fading to a plain dot), .ab-bot-look (where the eyes look), each .ab-bot-eye (its shape and
-   lean: .ab-bot-pill and the happy .ab-bot-arc), and .ab-bot-dots (the three dots: .ab-bot-side growing in, .ab-bot-mid
-   taking over from the shrunk body, each .ab-bot-dot lighting up in turn). Squashes sit on the body's bottom. --ab-seed (0..1) offsets every loop so a row of bots never moves in step.
+   .ab-bot-shape (the bot, fading to a plain dot), .ab-bot-face (its turn: visor, eyes and the visor's dots, clipped to
+   the body), .ab-bot-look (where the eyes look), each .ab-bot-eye (its shape: .ab-bot-pill and the happy .ab-bot-arc),
+   .ab-bot-vdots (thinking in a small place: a dot each lighting up in turn in the visor), and .ab-bot-dots (the three
+   dots: .ab-bot-side growing in, .ab-bot-mid taking over from the shrunk body, each .ab-bot-dot lighting up in turn).
+   The body is drawn with its middle (--ab-cy, chat-core BOT_MIDDLE: its area's centroid) on the box's centre, and joy,
+   body and tilt turn and scale round it, so whatever it does it stays centred where it sits and never moves the layout. --ab-seed (0..1) offsets every loop so a row of bots never moves in step.
    Transform/opacity only. Plain CSS (no Tailwind): index.css imports it, and the agent cursor's overlay page
    (main/electron/agentCursorPage.ts) gets it as a string, with BOT_MOTION_CSS, so the bot on the screen moves exactly
    like the one in the app. */
@@ -18,8 +21,8 @@
   72% { transform: scale(0.98, 1.02); }
   86% { transform: scale(1.01, 0.99); }
 }
-.ab-bot :is(.ab-bot-joy, .ab-bot-body, .ab-bot-tilt, .ab-bot-look, .ab-bot-eye, .ab-bot-arc, .ab-bot-dot, .ab-bot-sweep) { transform-box: fill-box; transform-origin: center; }
-.ab-bot :is(.ab-bot-joy, .ab-bot-body, .ab-bot-tilt) { transform-origin: 50% 100%; }
+.ab-bot :is(.ab-bot-look, .ab-bot-eye, .ab-bot-arc, .ab-bot-dot, .ab-bot-vdot, .ab-bot-sweep) { transform-box: fill-box; transform-origin: center; }
+.ab-bot :is(.ab-bot-joy, .ab-bot-body, .ab-bot-tilt) { transform-box: view-box; transform-origin: 50px calc(var(--ab-cy, 50) * 1px); }
 .ab-bot .ab-bot-svg { transform-origin: 50% 100%; }
 /* pressed (itself, or the row/button it leads): squished down, springing back on release */
 .ab-bot { transform-origin: 50% 100%; transition: scale 0.5s cubic-bezier(0.34, 2.1, 0.55, 1); }
@@ -32,9 +35,9 @@
 .ab-bot[data-still] *, .ab-bot[data-still] { animation: none !important; transition: none !important; }
 .ab-bot[data-still] { scale: none; }
 /* no motion: the dots hold still, the middle one lit */
-.ab-bot[data-still] .ab-bot-dot-1 { opacity: 1; }
+.ab-bot[data-still] :is(.ab-bot-dot-1, .ab-bot-vdot-1) { opacity: 1; }
 @media (prefers-reduced-motion: reduce) {
   .ab-bot *, .ab-bot { animation: none !important; transition: none !important; }
   .ab-bot { scale: none !important; }
-  .ab-bot.ab-bot .ab-bot-dot-1 { opacity: 1; }
+  .ab-bot.ab-bot :is(.ab-bot-dot-1, .ab-bot-vdot-1) { opacity: 1; }
 }

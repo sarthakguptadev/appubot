@@ -54,7 +54,7 @@ export function ChatHeader({ bot, thread }: { bot: Bot; thread: Thread | undefin
           aria-expanded={panelOpen}
           className={cn(CRUMB, CRUMB_LEAD)}
         >
-          <BotAvatar bot={bot} size={24} mood={needsYou ? 'needs-you' : work ?? 'rest'} className="ab-bot-calm" />
+          <BotAvatar bot={bot} size={24} compact mood={needsYou ? 'needs-you' : work ?? 'rest'} className="ab-bot-calm" />
           <span className={cn(CRUMB_TEXT, 'max-w-[16rem]')}>{bot.name}</span>
           {unreadDot}
         </button>

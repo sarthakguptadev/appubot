@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { BotShape, type Part } from '@appubot/protocol';
 import {
-  BOT_BASE, BOT_CHEER, BOT_DOT_LOOP, BOT_DOTS, BOT_EASE_CSS, BOT_LOOPS, BOT_LOOPS_FROM_START, BOT_MORPH, BOT_MOTION, BOT_POSES, BOT_WORK_MOODS, botGaze, botHandoff,
-  botShown, botWorkMood, cheersAt, motionEase, poseEase, sampleTrack, squash, type BotMood, type BotTrack,
+  BOT_BASE, BOT_CHEER, BOT_DOT_LOOP, BOT_DOTS, BOT_EASE_CSS, BOT_LOOPS, BOT_LOOPS_FROM_START, BOT_MIDDLE, BOT_MORPH, BOT_MOTION, BOT_POSES, BOT_TURN, BOT_WORK_MOODS, botGaze, botHandoff,
+  botShown, botTurn, botWorkMood, cheersAt, motionEase, poseEase, sampleTrack, squash, type BotMood, type BotTrack,
 } from './botMotion';
 
 const all: [string, BotTrack][] = [
@@ -60,7 +60,7 @@ describe('bot motion: tracks', () => {
     for (const [mood, ts] of Object.entries(BOT_LOOPS)) {
       const seen = ts!.map((t) => `${t.layer}.${t.prop}`);
       expect(new Set(seen).size, mood).toBe(seen.length);
-      for (const t of ts!) expect(['body', 'tilt', 'look']).toContain(t.layer);
+      for (const t of ts!) expect(['body', 'tilt', 'face', 'look']).toContain(t.layer);
     }
     for (const t of BOT_CHEER) expect(t.layer).toBe('joy');
     for (const t of BOT_DOT_LOOP.tracks) expect(t.layer).toBe('dot');
@@ -88,19 +88,28 @@ describe('bot motion: Grok Bot, measured', () => {
     for (let i = 0; i <= 100; i++) expect(Math.abs(bezier(BOT_EASE_CSS, i / 100) - poseEase((i / 100) * 500, 125))).toBeLessThan(0.01);
   });
 
-  it('rests still: tilted 15° to the left, looking up and to the right, no loop at all and no blinks', () => {
+  it('rests still, upright and facing you with its eyes in the middle: no loop at all and no blinks', () => {
     expect(BOT_LOOPS.rest).toBeUndefined();
-    expect(BOT_POSES.rest.rotate).toBe(-15);
-    expect(BOT_POSES.rest.gaze[0]).toBeGreaterThan(0);
-    expect(BOT_POSES.rest.gaze[1]).toBeLessThan(0);
-    expect(BOT_POSES.rest.eyeRotate).toBe(-12);
+    expect(BOT_POSES.rest).toEqual({ rotate: 0, turn: 0, gaze: [0, 0], eye: [1, 1], face: 'open', form: 'bot' });
+  });
+
+  it('turns its face like Grok Bot: sliding 0.17 of the body sideways and narrowing to cos 35° at a 35° turn', () => {
+    expect(botTurn(0)).toEqual({ x: 0, sx: 1 });
+    expect(botTurn(35).x / 88).toBeCloseTo(0.17, 2);
+    expect(botTurn(35).sx).toBeCloseTo(0.82, 2);
+    expect(botTurn(-39).x).toBeCloseTo(-botTurn(39).x, 5);
+    expect(botTurn(90).x).toBe(BOT_TURN);
+    // the eyes drew to 0.36 of their spacing as it turned away to think, to 0.78 while typing
+    expect(botTurn(BOT_POSES.thinking.turn).sx).toBeCloseTo(0.36, 2);
+    expect(botTurn(BOT_POSES.typing.turn).sx).toBeCloseTo(0.78, 2);
   });
 
   it('gives each mood its pose: big eyes listening, round eyes on a tool, the resting pose with bigger eyes typing, ^ ^ happy', () => {
     expect(BOT_POSES.listening).toMatchObject({ rotate: 0, gaze: [0, 0], eye: [1.63, 1.52], face: 'open', form: 'bot' });
     expect(BOT_POSES.tool.face).toBe('round');
-    expect(BOT_POSES.typing.rotate).toBe(BOT_POSES.rest.rotate);
-    expect(BOT_POSES.typing.eye).toEqual([1.53, 1.53]);
+    expect(BOT_POSES.typing).toMatchObject({ rotate: 0, turn: 39, eye: [1.53, 1.53] });
+    expect(BOT_POSES.typing.gaze[1]).toBeLessThan(0);
+    expect(BOT_POSES.thinking.turn).toBe(69);
     expect(BOT_POSES.happy).toMatchObject({ rotate: 0, face: 'happy' });
     expect(BOT_POSES.thinking.form).toBe('dots');
     expect(BOT_POSES.working).toEqual(BOT_POSES.thinking);
@@ -130,14 +139,27 @@ describe('bot motion: Grok Bot, measured', () => {
     expect(BOT_DOTS.r * 2).toBeCloseTo(88 * BOT_DOTS.scale, 0);
   });
 
-  it('wanders round-eyed while a tool runs: shrinks to 0.67 turned 36°, then leans the other way', () => {
+  it('wanders round-eyed while a tool runs, on the measured timeline: turns right, rolls 37° shrunk to 0.67, turns right again', () => {
     const tool = BOT_LOOPS.tool!;
-    const scale = tool.find((t) => t.prop === 'scale')!;
-    const rotate = tool.find((t) => t.prop === 'rotate')!;
+    const find = (layer: string, prop: string) => tool.find((t) => t.layer === layer && t.prop === prop)!;
+    const scale = find('body', 'scale');
+    const rotate = find('body', 'rotate');
+    const slide = find('face', 'translate');
+    expect(scale.ms).toBe(5700);
     expect(Math.min(...over(scale))).toBeCloseTo(0.67, 2);
-    expect(Math.max(...over(rotate))).toBe(36);
-    expect(Math.min(...over(rotate))).toBe(-21);
-    for (const t of tool) expect(sampleTrack(t, 0, true, 0)).toBe(t.prop === 'scale' ? 1 : t.prop === 'rotate' ? 0 : -5.5);
+    expect(Math.max(...over(rotate))).toBeCloseTo(37, 1);
+    expect(Math.min(...over(rotate))).toBeCloseTo(-22, 1);
+    // the face turns 36° to the right by 1.39 s and holds to 1.6 s, faces you at 1.81 s, then up to 40° at 5.15 s
+    expect(sampleTrack(slide, 1385, true)).toBeCloseTo(botTurn(36).x, 2);
+    expect(sampleTrack(slide, 1595, true)).toBeCloseTo(botTurn(36).x, 2);
+    expect(sampleTrack(slide, 1813, true)).toBe(0);
+    expect(Math.max(...over(slide))).toBeCloseTo(botTurn(40).x, 2);
+    expect(sampleTrack(slide, 5152, true)).toBeCloseTo(botTurn(40).x, 2);
+    // rolled 15° left at 0.77 s, 37° right at 3.08 s, 22° left at 4.56 s
+    expect(sampleTrack(rotate, 765, true)).toBe(-15);
+    expect(sampleTrack(rotate, 3083, true)).toBe(37);
+    expect(sampleTrack(rotate, 4562, true)).toBe(-22);
+    for (const t of tool) expect(sampleTrack(t, 0, true, 0), `${t.layer}.${t.prop}`).toBe(t.prop === 'scale' ? 1 : t.layer === 'look' ? -2 : 0);
     expect(BOT_LOOPS_FROM_START).toEqual(['tool']);
   });
 
@@ -195,18 +217,21 @@ describe('bot motion: the state machine', () => {
     expect(botHandoff('thinking', 'working')).toBe('ease');
   });
 
-  it('looks at a pointer within reach: straightening, eyes following, leaning a little toward it', () => {
+  it('looks at a pointer within reach: turning its face toward it, eyes following, leaning a little', () => {
     expect(botGaze(200, 0, 100)).toBeNull();
     expect(botGaze(0, 0, 0)).toBeNull();
-    expect(botGaze(80, 0, 100)).toEqual({ x: 7, y: 0, rotate: -7.3 });
-    expect(botGaze(-80, 0, 100)!.rotate).toBe(7.3);
-    expect(botGaze(0, -60, 100)).toEqual({ x: 0, y: -4.5, rotate: 0 });
+    expect(botGaze(80, 0, 100)).toEqual({ turn: 35, x: 2, y: 0, rotate: -7.3 });
+    expect(botGaze(-80, 0, 100)).toEqual({ turn: -35, x: -2, y: 0, rotate: 7.3 });
+    expect(botGaze(0, -60, 100)).toEqual({ turn: 0, x: 0, y: -4.5, rotate: 0 });
     expect(botGaze(0, 60, 100)!.y).toBe(3.3);
-    expect(botGaze(10, 0, 90)!.x).toBeCloseTo(7 / 3, 2);
+    expect(botGaze(10, 0, 90)!.turn).toBeCloseTo(35 / 3, 2);
     expect(botGaze(0, 104, 100)).not.toBeNull();
   });
 
-  it('knows where every body stands', () => {
+  it('knows where every body stands and where its middle is', () => {
     for (const s of BotShape.options) expect(BOT_BASE[s]).toBeGreaterThan(70);
+    for (const s of BotShape.options) expect(Math.abs(BOT_MIDDLE[s] - 50), s).toBeLessThan(12);
+    expect(BOT_MIDDLE.circle).toBe(50);
+    expect(BOT_MIDDLE.drop).toBeGreaterThan(55);
   });
 });

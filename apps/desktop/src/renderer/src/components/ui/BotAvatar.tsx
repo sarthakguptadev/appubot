@@ -2,10 +2,11 @@
  * Bot avatar: a body in the bot's colour wearing a dark visor with two eyes. The geometry and colours are chat-core's
  * (botAvatarLook), the motion too (botMotion.ts, shared with the phone: its state machine, poses and tracks, as CSS
  * from botAvatarMotion.ts plus botAvatar.css; the agent cursor's overlay uses them as well), copied from Grok Bot's
- * mascot: resting it sits still, head tilted, looking up and to the right, and when the pointer comes near it
- * straightens and follows it with its eyes; a turn that starts makes its eyes big; thinking, it collapses into three
- * dots that light up in turn; on a tool its eyes go round and it wanders; typing, its eyes grow; done, it grows back
- * with happy eyes, wobbles like jelly and dances, and stays happy a while. Needing you it hops for attention. Pressed it
+ * mascot: resting it sits still, upright and facing you, and when the pointer comes near it turns its face toward it
+ * and follows it with its eyes; a turn that starts makes its eyes big; thinking, it turns away and collapses into three
+ * dots that light up in turn (in small places, `compact`, the dots light up in its visor instead); on a tool its eyes
+ * go round and it wanders; typing, it turns toward the text with big eyes; done, it grows back with happy eyes, wobbles
+ * like jelly and dances, and stays happy a while. Every motion turns round the avatar's middle, so it stays centred. Needing you it hops for attention. Pressed it
  * squishes and springs back. `happy` draws the app icon's face (scripts/make-icon.mjs): both eyes closed in a smile, for
  * AppuBot itself. A bot wearing a custom character (`Bot.characterId`, chat-core characters.ts) is drawn as that
  * character, looked up in the store's library; a gone one draws its shape.
@@ -13,7 +14,7 @@
 import { useEffect, useId, useRef, useState, type CSSProperties, type RefObject } from 'react';
 import type { Bot, BotShape } from '@appubot/protocol';
 import {
-  BOT_DOTS, BOT_MOTION, botAvatarLook, botGaze, botHandoff, botMood, botShown, motionSeed, type BotFigure, type BotMood, type RoundRect,
+  BOT_DOTS, BOT_MIDDLE, BOT_MOTION, botAvatarLook, botGaze, botHandoff, botMood, botShown, botTurn, motionSeed, type BotFigure, type BotMood, type RoundRect,
 } from '@appubot/chat-core';
 import { useStore } from '../../lib/store';
 import { BOT_MOTION_CSS, BOT_MOTION_VARS } from './botAvatarMotion';
@@ -51,6 +52,9 @@ function look(): void {
   els.forEach((el, i) => {
     const g = gazes[i];
     if (!g) { delete el.dataset.look; return; }
+    const t = botTurn(g.turn);
+    el.style.setProperty('--ab-fx', String(t.x));
+    el.style.setProperty('--ab-fs', String(t.sx));
     el.style.setProperty('--ab-gx', String(g.x));
     el.style.setProperty('--ab-gy', String(g.y));
     el.style.setProperty('--ab-lr', String(g.rotate));
@@ -122,7 +126,7 @@ function useShownMood(mood: BotMood, live: boolean, cheerKey?: number): { shown:
 
 export type BotPresence = 'working' | 'needs-you' | null;
 
-export function BotAvatar({ bot, shape: shapeProp, figure: figureProp, color: colorProp, size = 32, presence, mood: moodProp, still, cheer = true, cheerKey, happy, className }: {
+export function BotAvatar({ bot, shape: shapeProp, figure: figureProp, color: colorProp, size = 32, presence, mood: moodProp, still, compact, cheer = true, cheerKey, happy, className }: {
   bot?: Pick<Bot, 'shape' | 'color' | 'characterId'> | null;
   shape?: BotShape;
   /** what to draw, over the bot's own: a shape or a character (the character picker's previews) */
@@ -138,6 +142,8 @@ export function BotAvatar({ bot, shape: shapeProp, figure: figureProp, color: co
   mood?: BotMood;
   /** no motion at all */
   still?: boolean;
+  /** a small place (a sidebar row, the chat header, a pinned tile): thinking, it stays itself with the dots in its visor */
+  compact?: boolean;
   /** the happy face and cheer when work ends (default on) */
   cheer?: boolean;
   /** cheer once now, and again whenever this changes (the character picker's Happy) */
@@ -148,7 +154,9 @@ export function BotAvatar({ bot, shape: shapeProp, figure: figureProp, color: co
   const id = `bot-${uid.replace(/[^\w-]/g, '')}`;
   const ref = useRef<HTMLSpanElement>(null);
   const worn = useStore((s) => (bot?.characterId && !figureProp && !shapeProp ? s.characters.find((c) => c.id === bot.characterId) : undefined));
-  const look = botAvatarLook(figureProp ?? shapeProp ?? worn ?? bot?.shape ?? 'circle', colorProp ?? bot?.color ?? '#8E8E93');
+  const figure = figureProp ?? shapeProp ?? worn ?? bot?.shape ?? 'circle';
+  const look = botAvatarLook(figure, colorProp ?? bot?.color ?? '#8E8E93');
+  const middle = typeof figure === 'string' ? BOT_MIDDLE[figure] ?? 50 : 50;
   const { shown, cheering, growing } = useShownMood(moodProp ?? botMood(presence), cheer && !still, cheerKey);
   const calmed = !!className?.split(/\s+/).includes('ab-bot-calm');
   useLookAt(ref, !still && !calmed && shown === 'rest' && size >= 16);
@@ -157,13 +165,14 @@ export function BotAvatar({ bot, shape: shapeProp, figure: figureProp, color: co
   const cy = v.y + v.h / 2;
   const at = (x: number, y: number): CSSProperties => ({ transformBox: 'view-box', transformOrigin: `${x}px ${y}px` });
   const dot = Math.max(7, Math.round(size * 0.24));
-  const style = { width: size, height: size, ...BOT_MOTION_VARS, '--ab-seed': motionSeed(uid) } as CSSProperties;
+  const style = { width: size, height: size, ...BOT_MOTION_VARS, '--ab-seed': motionSeed(uid), '--ab-cy': middle } as CSSProperties;
   return (
     <span
       ref={ref}
       className={cn('ab-bot relative inline-block shrink-0 select-none', className)}
       data-mood={shown}
       data-still={still || undefined}
+      data-compact={compact || undefined}
       data-cheer={cheering || undefined}
       data-grow={growing || undefined}
       style={style}
@@ -181,8 +190,8 @@ export function BotAvatar({ bot, shape: shapeProp, figure: figureProp, color: co
           </linearGradient>
           <clipPath id={`${id}-clip`}><path d={look.body} /></clipPath>
         </defs>
-        <g className="ab-bot-joy"><g className="ab-bot-body"><g className="ab-bot-tilt">
-          <g className="ab-bot-morph" style={at(50, cy)}>
+        <g transform={`translate(0 ${50 - middle})`}><g className="ab-bot-joy"><g className="ab-bot-body"><g className="ab-bot-tilt">
+          <g className="ab-bot-morph" style={at(50, middle)}>
             <g className="ab-bot-shape">
               {look.outline ? <path d={look.body} fill="none" stroke={look.outline} strokeWidth="3" /> : null}
               <path d={look.body} fill={`url(#${id}-body)`} />
@@ -191,29 +200,40 @@ export function BotAvatar({ bot, shape: shapeProp, figure: figureProp, color: co
                   <ellipse cx={g.cx} cy={g.cy} rx={g.rx} ry={g.ry} transform={`rotate(${g.rotate} ${g.cx} ${g.cy})`} fill="#fff" opacity={g.opacity} />
                 </g>
               ) : null}
-              <rect x={v.x} y={v.y} width={v.w} height={v.h} rx={v.r} fill={`url(#${id}-glass)`} />
-              <g className="ab-bot-look">
-                {look.eyes.map((e, i) => (happy ? <Smile key={i} e={e} ink={look.eye} className="ab-bot-smile" /> : (
-                  <g key={i} className="ab-bot-eye" style={at(e.x + e.w / 2, e.y + e.h / 2)}>
-                    <rect
-                      x={e.x} y={e.y} width={e.w} height={e.h} rx={e.r} fill={look.eye} className="ab-bot-pill"
-                      style={{ '--ab-rx': e.r, '--ab-ry': e.h / 2, ...at(e.x + e.w / 2, e.y + e.h / 2) } as CSSProperties}
-                    />
-                    <Smile e={e} ink={look.eye} className="ab-bot-arc" />
+              <g clipPath={`url(#${id}-clip)`}>
+                <g className="ab-bot-face" style={at(50, cy)}>
+                  <rect x={v.x} y={v.y} width={v.w} height={v.h} rx={v.r} fill={`url(#${id}-glass)`} />
+                  <g className="ab-bot-look">
+                    {look.eyes.map((e, i) => (happy ? <Smile key={i} e={e} ink={look.eye} className="ab-bot-smile" /> : (
+                      <g key={i} className="ab-bot-eye" style={at(e.x + e.w / 2, e.y + e.h / 2)}>
+                        <rect
+                          x={e.x} y={e.y} width={e.w} height={e.h} rx={e.r} fill={look.eye} className="ab-bot-pill"
+                          style={{ '--ab-rx': e.r, '--ab-ry': e.h / 2, ...at(e.x + e.w / 2, e.y + e.h / 2) } as CSSProperties}
+                        />
+                        <Smile e={e} ink={look.eye} className="ab-bot-arc" />
+                      </g>
+                    )))}
                   </g>
-                )))}
+                  {compact ? (
+                    <g className="ab-bot-vdots">
+                      {[-1, 0, 1].map((k) => (
+                        <circle key={k} className={`ab-bot-vdot ab-bot-vdot-${k + 1}`} cx={50 + k * v.w * 0.22} cy={cy} r={v.h * 0.16} fill={look.eye} />
+                      ))}
+                    </g>
+                  ) : null}
+                </g>
               </g>
             </g>
-            <circle className="ab-bot-core" cx={50} cy={cy} r={BOT_DOTS.r / BOT_DOTS.scale} fill={look.fill[1]} />
+            <circle className="ab-bot-core" cx={50} cy={middle} r={BOT_DOTS.r / BOT_DOTS.scale} fill={look.fill[1]} />
           </g>
           <g className="ab-bot-dots">
             {[-1, 0, 1].map((k) => (
-              <g key={k} className={k ? 'ab-bot-side' : 'ab-bot-mid'} style={at(50 + k * BOT_DOTS.gap, cy)}>
-                <circle className={`ab-bot-dot ab-bot-dot-${k + 1}`} cx={50 + k * BOT_DOTS.gap} cy={cy} r={BOT_DOTS.r} fill={look.fill[1]} />
+              <g key={k} className={k ? 'ab-bot-side' : 'ab-bot-mid'} style={at(50 + k * BOT_DOTS.gap, middle)}>
+                <circle className={`ab-bot-dot ab-bot-dot-${k + 1}`} cx={50 + k * BOT_DOTS.gap} cy={middle} r={BOT_DOTS.r} fill={look.fill[1]} />
               </g>
             ))}
           </g>
-        </g></g></g>
+        </g></g></g></g>
       </svg>
       {presence ? (
         <span

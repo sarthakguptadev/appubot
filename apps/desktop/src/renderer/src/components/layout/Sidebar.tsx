@@ -196,7 +196,7 @@ function BotRow({ bot, latest, selected, unread, presence, expanded, onToggle }:
         onClick={() => (selected ? onToggle() : openBot(bot.id))}
         className={ROW_BUTTON}
       >
-        <BotAvatar bot={bot} size={AVATAR} presence={presence} mood={presence === 'working' ? work ?? 'working' : undefined} />
+        <BotAvatar bot={bot} size={AVATAR} presence={presence} compact mood={presence === 'working' ? work ?? 'working' : undefined} />
         <span className="flex min-w-0 flex-1 flex-col gap-px">
           <span className="flex min-w-0 items-center gap-2">
             <span className={ROW_NAME}>{bot.name}</span>
@@ -260,7 +260,7 @@ function BotTile({ bot, selected, unread, presence }: { bot: Bot; selected: bool
         className={TILE_BUTTON}
       >
         <span className="relative">
-          <BotAvatar bot={bot} size={PINNED_AVATAR} presence={presence} mood={presence === 'working' ? work ?? 'working' : undefined} />
+          <BotAvatar bot={bot} size={PINNED_AVATAR} presence={presence} compact mood={presence === 'working' ? work ?? 'working' : undefined} />
           {unread && !presence ? (
             <span role="img" aria-label="Unread" className={TILE_UNREAD} />
           ) : null}

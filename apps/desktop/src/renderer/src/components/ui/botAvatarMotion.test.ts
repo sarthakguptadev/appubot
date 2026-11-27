@@ -1,5 +1,6 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { BOT_DOTS, BOT_EASE_CSS, BOT_MORPH, BOT_MOTION, BOT_POSES, type BotMood } from '@appubot/chat-core';
+import { BOT_DOTS, BOT_EASE_CSS, BOT_MORPH, BOT_MOTION, BOT_POSES, botTurn, type BotMood } from '@appubot/chat-core';
 import { BOT_MOTION_CSS } from './botAvatarMotion';
 
 const rule = (selector: string) => {
@@ -11,17 +12,33 @@ const rule = (selector: string) => {
 describe('bot avatar motion CSS', () => {
   it('eases every mood to its pose with the measured curve', () => {
     for (const [mood, p] of Object.entries(BOT_POSES) as [BotMood, (typeof BOT_POSES)[BotMood]][]) {
+      const t = botTurn(p.turn);
       expect(rule(`.ab-bot[data-mood='${mood}'] .ab-bot-tilt`)).toBe(`rotate:${p.rotate}deg`);
+      expect(rule(`.ab-bot[data-mood='${mood}'] .ab-bot-face`)).toBe(`translate:${t.x}px 0px;scale:${t.sx} 1`);
       expect(rule(`.ab-bot[data-mood='${mood}'] .ab-bot-look`)).toBe(`translate:${p.gaze[0]}px ${p.gaze[1]}px`);
-      expect(rule(`.ab-bot[data-mood='${mood}'] .ab-bot-eye`)).toBe(`scale:${p.eye[0]} ${p.eye[1]};rotate:${p.eyeRotate}deg`);
+      expect(rule(`.ab-bot[data-mood='${mood}'] .ab-bot-eye`)).toBe(`scale:${p.eye[0]} ${p.eye[1]}`);
     }
     expect(rule('.ab-bot .ab-bot-tilt')).toBe(`transition:rotate ${4 * BOT_MOTION.snap}ms ${BOT_EASE_CSS}`);
+    expect(rule('.ab-bot .ab-bot-face')).toBe(`transition:translate ${4 * BOT_MOTION.settle}ms ${BOT_EASE_CSS},scale ${4 * BOT_MOTION.settle}ms ${BOT_EASE_CSS}`);
     expect(rule('.ab-bot .ab-bot-look')).toBe(`transition:translate ${4 * BOT_MOTION.settle}ms ${BOT_EASE_CSS}`);
     expect(rule(".ab-bot[data-mood='tool'] .ab-bot-pill")).toContain('--ab-ry');
   });
 
-  it('collapses into the dots on the measured timeline, and lights them left to right', () => {
-    const dots = ".ab-bot:is([data-mood='thinking'],[data-mood='working'])";
+  it('turns and scales every whole-body motion round the middle of the avatar, so it stays centred where it sits', () => {
+    const css = readFileSync(new URL('./botAvatar.css', import.meta.url), 'utf8');
+    expect(css).toContain('.ab-bot :is(.ab-bot-joy, .ab-bot-body, .ab-bot-tilt) { transform-box: view-box; transform-origin: 50px calc(var(--ab-cy, 50) * 1px); }');
+    expect(css).not.toMatch(/\.ab-bot-(joy|body|tilt)[^{]*\{[^}]*50% 100%/);
+  });
+
+  it('rests upright, facing you, eyes in the middle', () => {
+    expect(rule(".ab-bot[data-mood='rest'] .ab-bot-tilt")).toBe('rotate:0deg');
+    expect(rule(".ab-bot[data-mood='rest'] .ab-bot-face")).toBe('translate:0px 0px;scale:1 1');
+    expect(rule(".ab-bot[data-mood='rest'] .ab-bot-look")).toBe('translate:0px 0px');
+  });
+
+  it('collapses into the dots on the measured timeline, turning away first, and lights them left to right', () => {
+    const dots = ".ab-bot:not([data-compact]):is([data-mood='thinking'],[data-mood='working'])";
+    expect(rule(`${dots} .ab-bot-face`)).toBe(`transition:translate ${4 * BOT_MOTION.snap}ms ${BOT_EASE_CSS},scale ${4 * BOT_MOTION.snap}ms ${BOT_EASE_CSS}`);
     expect(rule(`${dots} .ab-bot-morph`)).toBe(`scale:${BOT_DOTS.scale};transition:scale ${4 * BOT_MOTION.settle}ms ${BOT_EASE_CSS} ${BOT_MORPH.collapse}ms`);
     expect(rule(`${dots} .ab-bot-dots`)).toBe(`opacity:1;transition:opacity 0s ${BOT_MORPH.sides[0]}ms`);
     expect(rule(`${dots} .ab-bot-mid`)).toBe(`opacity:1;transition:opacity 0s ${BOT_MORPH.lit}ms`);
@@ -29,9 +46,26 @@ describe('bot avatar motion CSS', () => {
     expect(delays).toEqual([BOT_MORPH.lit - 920, BOT_MORPH.lit - 460, BOT_MORPH.lit]);
   });
 
-  it('follows the pointer only at rest, starts the tool wander from its beginning, and never blinks', () => {
-    expect(rule(".ab-bot[data-mood='rest'][data-look] .ab-bot-look")).toBe('translate:calc(var(--ab-gx,0) * 1px) calc(var(--ab-gy,0) * 1px)');
+  it('never turns into bare dots in a small place: it stays itself, facing you, the dots lit in its visor', () => {
+    const compact = ".ab-bot[data-compact]:is([data-mood='thinking'],[data-mood='working'])";
+    expect(BOT_MOTION_CSS).not.toContain(`${compact} .ab-bot-morph`);
+    expect(BOT_MOTION_CSS).not.toContain(`${compact} .ab-bot-shape`);
+    expect(BOT_MOTION_CSS).not.toContain(`${compact} .ab-bot-dots`);
+    expect(BOT_MOTION_CSS).not.toMatch(/\.ab-bot\[data-grow\] \.ab-bot-core/);
+    expect(BOT_MOTION_CSS).toContain('.ab-bot:not([data-compact])[data-grow] .ab-bot-core{');
+    expect(rule(`${compact} .ab-bot-face`)).toBe('translate:0px 0px;scale:1 1');
+    expect(rule(`${compact} .ab-bot-look`)).toBe('opacity:0');
+    expect(rule(`${compact} .ab-bot-vdots`)).toBe('opacity:1');
+    const delays = [0, 1, 2].map((d) => Number(/ab-bot-k-dot-0 1380ms linear (-?\d+)ms/.exec(rule(`${compact} .ab-bot-vdot-${d}`))![1]));
+    expect(delays).toEqual([-920, -460, 0]);
+  });
+
+  it('turns toward the pointer only at rest, starts the tool wander from its beginning, and never blinks', () => {
+    const look = ".ab-bot[data-mood='rest'][data-look]";
+    expect(rule(`${look} .ab-bot-face`)).toBe('translate:calc(var(--ab-fx,0) * 1px) 0px;scale:var(--ab-fs,1) 1');
+    expect(rule(`${look} .ab-bot-look`)).toBe('translate:calc(var(--ab-gx,0) * 1px) calc(var(--ab-gy,0) * 1px)');
     expect(rule(".ab-bot[data-mood='tool'] .ab-bot-body")).not.toContain('--ab-seed');
+    expect(BOT_MOTION_CSS).toContain(".ab-bot[data-mood='tool'] .ab-bot-face{animation:ab-bot-k-tool-face-translate");
     expect(rule(".ab-bot[data-mood='needs-you'] .ab-bot-body")).toContain('--ab-seed');
     expect(BOT_MOTION_CSS).not.toContain('blink');
     expect(rule('.ab-bot[data-cheer] .ab-bot-joy')).toContain(`${BOT_MOTION.cheer}ms linear both`);
