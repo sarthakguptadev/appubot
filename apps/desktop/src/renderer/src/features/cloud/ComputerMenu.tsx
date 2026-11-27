@@ -142,7 +142,7 @@ export function ComputerMenu({ inSettings = false }: {
           aria-label={`Computer: ${label}`}
           title={label}
           className={cn(
-            'ab-press ab-pill squircle no-drag relative grid size-[35px] shrink-0 place-items-center rounded-control bg-surface-2 outline-none',
+            'ab-edge ab-press ab-pill squircle no-drag relative grid size-[35px] shrink-0 place-items-center rounded-control bg-surface-2 outline-none',
             'hover:bg-surface-3 focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]', p['aria-expanded'] && 'bg-surface-3',
           )}
         >
