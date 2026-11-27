@@ -173,7 +173,7 @@ function pickBrowserFiles(onFiles: (files: globalThis.File[]) => void): void {
   input.click();
 }
 
-const ADD = 'chat-round ab-press ab-pill squircle flex size-8 shrink-0 items-center justify-center rounded-control bg-surface-2 text-fg/80 hover:bg-surface-3 hover:text-fg focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)] aria-expanded:bg-surface-3 aria-expanded:text-fg';
+const ADD = 'chat-round ab-edge ab-press ab-pill squircle flex size-8 shrink-0 items-center justify-center rounded-control bg-surface-2 text-fg/80 hover:bg-surface-3 hover:text-fg focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)] aria-expanded:bg-surface-3 aria-expanded:text-fg';
 
 /**
  * The pill's +: it attaches files and nothing else, so a press opens the file dialog at once. Voice mode and dictation

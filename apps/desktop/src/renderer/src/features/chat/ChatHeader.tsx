@@ -11,7 +11,7 @@ import { setState, ui, useStore } from '../../lib/store';
  * the capsule's one crumb is the capsule's whole face: the raised fill of the sidebar's own controls, a shade deeper
  * under the pointer edge to edge (no ring of the capsule left around it), 40px tall, a pill in the Round look
  */
-export const CRUMB = 'ab-pill no-drag squircle flex h-10 min-w-0 items-center gap-2 rounded-control-lg bg-surface-2 hover:bg-surface-3 focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]';
+export const CRUMB = 'ab-edge ab-pill no-drag squircle flex h-10 min-w-0 items-center gap-2 rounded-control-lg bg-surface-2 hover:bg-surface-3 focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]';
 /**
  * The header's strip: three columns, so the capsule sits in the chat's middle whatever is at its right. 64px tall (main's `TOP_STRIP`: the capsule keeps 12px above it, as from the sides) and
  * a drag region like the sidebar's strip beside it; at the window's right edge (no side panel) the buttons keep clear

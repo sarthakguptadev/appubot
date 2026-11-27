@@ -382,7 +382,7 @@ function BotThreads({ bot }: { bot: Bot }) {
  * an ink fill with no outline, a light step deeper under the pointer, and a dark one while pressed or while what they
  * open is open.
  */
-const RAISED = 'bg-surface-2 hover:bg-[color-mix(in_srgb,var(--ab-fg)_7.5%,transparent)] active:bg-[color-mix(in_srgb,var(--ab-fg)_12%,transparent)]';
+const RAISED = 'ab-edge bg-surface-2 hover:bg-[color-mix(in_srgb,var(--ab-fg)_7.5%,transparent)] active:bg-[color-mix(in_srgb,var(--ab-fg)_12%,transparent)]';
 const RAISED_ON = 'bg-[color-mix(in_srgb,var(--ab-fg)_12%,transparent)] hover:bg-[color-mix(in_srgb,var(--ab-fg)_12%,transparent)]';
 
 /** Opens the Connect apps popup. */

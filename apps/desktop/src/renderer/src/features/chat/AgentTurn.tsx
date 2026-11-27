@@ -81,8 +81,8 @@ function bubbleRun(list: Chunk[]): Map<number, BubbleSpot> {
 }
 
 /**
- * The bot's bubble: an ink wash under a faint sheen at its top (index.css `.chat-bubble-reply`), no outline or shadow in
- * either scheme, a text message's padding (12 by 7 around 15px text) and width (a group room's bots wear the same:
+ * The bot's bubble: an ink wash under a faint sheen at its top, edged by a hairline a step off its fill (index.css
+ * `.chat-bubble-reply`, Grok Bot's edge), no shadow, a text message's padding (12 by 7 around 15px text) and width (a group room's bots wear the same:
  * features/groups/GroupView.tsx).
  */
 export const REPLY_BUBBLE = 'chat-bubble-reply w-fit max-w-[88%] min-w-9 bg-agent-bubble px-3 py-[7px]';
