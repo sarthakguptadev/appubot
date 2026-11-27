@@ -16,7 +16,7 @@ import { PagePart } from './PagePart';
 import { DISCLOSURE_CLEANUP_MS, DISCLOSURE_MS, DisclosureChevron, DisclosureRegion } from './Disclosure';
 import { LiveElapsed } from './LiveTimer';
 import { ChatMarkdown } from './Markdown';
-import { FileTile, ImageTiles } from './MediaParts';
+import { FileTile, ImageBox, isPictureFile, type Picture } from './MediaParts';
 import { VoiceNote } from '../voice/VoiceNote';
 import { Notice, PlanChecklist } from './Notices';
 import { FailureCard } from './FailureCard';
@@ -33,8 +33,6 @@ import { useStore } from '../../lib/store';
 import { useMessagesTheme, useWorkTrail } from '../../lib/appearance';
 import { WorkTrail } from './WorkTrail';
 import { Bubble, type BubbleSpot } from './Bubble';
-
-type ImagePart = Extract<Part, { type: 'image' }>;
 
 /** How long a turn that just ended keeps its live layout before folding (Synara's ACTIVE_TURN_LAYOUT_SETTLE_DELAY_MS). */
 export const SETTLE_HOLD_MS = 180;
@@ -133,15 +131,25 @@ function Block({ item, ctx }: { item: Indexed; ctx: Ctx }): ReactNode {
   }
 }
 
-/** Parts in order; consecutive images share one tile grid. */
+/** a picture the turn shows as itself: an image, or a file that is one */
+function pictureOf(part: Part): Picture | undefined {
+  if (part.type === 'image') return part.data || part.url ? { part } : undefined;
+  return part.type === 'file' && isPictureFile(part.file) ? { file: part.file } : undefined;
+}
+
+/** Parts in order; consecutive pictures share one box. */
 function blocks(items: Indexed[], ctx: Ctx): ReactNode[] {
   const out: ReactNode[] = [];
   for (let k = 0; k < items.length; k++) {
     const item = items[k]!;
-    if (item.part.type === 'image') {
-      const run: ImagePart[] = [item.part];
-      while (items[k + 1]?.part.type === 'image') run.push(items[++k]!.part as ImagePart);
-      out.push(<ImageTiles key={`img${item.index}`} images={run} />);
+    const first = pictureOf(item.part);
+    if (first) {
+      const run: Picture[] = [first];
+      let next: Picture | undefined;
+      while (k + 1 < items.length && (next = pictureOf(items[k + 1]!.part))) { run.push(next); k++; }
+      out.push(<ImageBox key={`img${item.index}`} pictures={run} />);
+    } else if (item.part.type === 'image') {
+      continue;
     } else {
       out.push(<Block key={item.index} item={item} ctx={ctx} />);
     }

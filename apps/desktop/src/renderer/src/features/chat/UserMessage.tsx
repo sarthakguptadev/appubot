@@ -17,7 +17,7 @@ import { Bubble } from './Bubble';
 import { ChatMarkdown } from './Markdown';
 import { MessageActions } from './MessageActions';
 import { ReactionChip } from './Reactions';
-import { FileTile, PathChip, imageSrc } from './MediaParts';
+import { FileTile, ImageBox, PathChip, imageSrc, isPictureFile } from './MediaParts';
 import { galleryProps, openGalleryAt } from './imageGallery';
 import { useCloudFiles } from '../cloud/cloudClient';
 import { VoiceNote, type VoicePart } from '../voice/VoiceNote';
@@ -118,6 +118,7 @@ export const UserMessage = memo(function UserMessage({ msg, botName, waiting }: 
   const voices = msg.parts.filter((p): p is VoicePart => p.type === 'voice');
   const pending = useOutbox((s) => (isLocalId(msg.id) ? s.sends[msg.id] : undefined));
   const look = useSendLook(pending);
+  const pictures = files.flatMap((f, i) => (isPictureFile(f.file) ? [{ file: f.file, sending: pending ? fileSending(pending, i) : undefined }] : []));
   const themed = useMessagesTheme();
   // the bubble's inside, the same in either theme
   const inside = (
@@ -143,7 +144,9 @@ export const UserMessage = memo(function UserMessage({ msg, botName, waiting }: 
     // `data-image-gallery`: opening one of its images shows them all (imageGallery.ts)
     <div data-image-gallery className="flex w-full justify-end">
       <div className="group/msg flex max-w-[80%] min-w-0 flex-col items-end gap-px">
-        {files.map((f, i) => <div key={f.file.id} className="mb-1"><FileTile file={f.file} sending={pending ? fileSending(pending, i) : undefined} /></div>)}
+        {/* pictures you sent show as themselves, side by side in one box; other files as tiles */}
+        {pictures.length ? <div className="mb-1"><ImageBox pictures={pictures} /></div> : null}
+        {files.map((f, i) => (isPictureFile(f.file) ? null : <div key={f.file.id} className="mb-1"><FileTile file={f.file} sending={pending ? fileSending(pending, i) : undefined} /></div>))}
         {/* a spoken message: its recording over the words that were heard */}
         {voices.map((v) => (
           <VoiceNote key={v.file.id} part={v} color={botColor} className="mb-1" />
