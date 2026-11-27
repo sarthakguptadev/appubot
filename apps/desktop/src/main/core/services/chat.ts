@@ -117,7 +117,7 @@ interface ThreadRun {
    */
   tail?: { msg: Message; idxMap: Map<number, number>; partIndex: number; stream: FollowUpsStream };
   cancelled: boolean;
-  /** what the bot sent on its own lately (`say`): how many more may go out, and its last one this turn */
+  /** what the bot sent on its own this turn (`say`): how many, and its last one */
   notes?: NoteState;
   /** the reply whose first step has started, and the wait before its opening line shows as a note (`armOpeningNote`) */
   openingNote?: { messageId: string; timer?: ReturnType<typeof setTimeout> };
@@ -456,7 +456,7 @@ export class ChatService {
     // not taken because the turn just ended: it runs as the next turn
     if (!taken || i < 0 || !run.inflight) return;
     // its answer goes out whatever the bot sent before (`say`)
-    if (midJob) (run.notes ??= newNoteState(Date.now())).owed = true;
+    if (midJob) (run.notes ??= newNoteState()).owed = true;
     run.queue.splice(i, 1);
     const before = run.agentMsg;
     const threads = this.ctx.s.threads;
@@ -681,8 +681,8 @@ export class ChatService {
     run.job = job;
     run.idxMap = new Map();
     run.earlier = undefined;
-    // a new turn may open as the last one did ("On it"); how often it may write carries over
-    if (run.notes) { run.notes.last = undefined; run.notes.owed = false; }
+    // a new turn starts its notes afresh, and may open as the last one did ("On it")
+    run.notes = undefined;
     const threads = this.ctx.s.threads;
     // strictly after the prompt it answers, so ordering by time never puts a reply above its question
     const now = Math.max(Date.now(), (job.userMsg?.createdAt ?? 0) + 1, (job.after ?? 0) + 1);
@@ -1341,7 +1341,7 @@ export class ChatService {
       if (msg.parts.some((p) => p.type === 'text' && p.said)) return;
       const now = Date.now();
       const text = part.text.trim();
-      if (!takeNote((run.notes ??= newNoteState(now)), text, now).ok) return;
+      if (!takeNote((run.notes ??= newNoteState()), text).ok) return;
       part.said = true;
       msg.updatedAt = now;
       this.ctx.bus.emit('message.part', { threadId: msg.threadId, messageId: msg.id, partIndex: at, part: structuredClone(part) });
@@ -1455,7 +1455,7 @@ export class ChatService {
 
   /**
    * A message the bot sends on its own while it works (`send_message`, `agent.say`): a bubble of its own in the reply
-   * being written (`said`). Short, not too often and never its last one again (`notes.ts`): one that isn't is turned
+   * being written (`said`). Short and never its last one again (`notes.ts`): one that isn't is turned
    * down with the reason as the tool's answer. It notifies nobody: only the turn's end does (`finish`).
    *
    * A note is not the reply: a follow-ups block written into one is taken out of it and offers nothing (only the
@@ -1468,10 +1468,9 @@ export class ChatService {
     this.ctx.s.threads.require(threadId);
     const run = this.run(threadId);
     if (run.inflight && run.job?.via === 'routine') throw new RpcError('invalid_params', ROUTINE_NOTE_REASON);
-    const now = Date.now();
     const note = splitFollowUps(text).text.trim();
     if (!note && text.trim()) throw new RpcError('invalid_params', 'Not sent: follow-ups go at the very end of your reply, never in a message sent while you work.');
-    const verdict = takeNote((run.notes ??= newNoteState(now)), note, now);
+    const verdict = takeNote((run.notes ??= newNoteState()), note);
     if (!verdict.ok) throw new RpcError('invalid_params', verdict.reason);
     return { messageId: this.appendPart(threadId, { type: 'text', text: note, said: true }).messageId, text: note };
   }
