@@ -306,8 +306,9 @@ export function buildHandlers(ctx: CoreCtx): Handlers {
     // the app's own ask re-checks the grants (macOS applies a new one without a restart); a bot gets what is known
     'computer.status': (_p, cx) => (cx.agent ? s.computer.status() : s.computer.refreshPermissions()),
     'computer.screenshot': (p) => s.computer.screenshot(p.maxWidth, p.quality),
-    'computer.act': (p, cx) => s.computer.act(p.action, cx.agent?.threadId ?? p.threadId),
-    'computer.batch': (p, cx) => s.computer.batch(p.steps, p.look, cx.agent?.threadId ?? p.threadId),
+    // a bot's steps go to its own screen where it has one (your AppuBot computer: `botScreens.ts`)
+    'computer.act': async (p, cx) => { const t = cx.agent?.threadId ?? p.threadId; return (await s.screens.forThread(t)).act(p.action, t); },
+    'computer.batch': async (p, cx) => { const t = cx.agent?.threadId ?? p.threadId; return (await s.screens.forThread(t)).batch(p.steps, p.look, t); },
     'computer.pause': () => s.computer.pause(),
     'computer.resume': () => s.computer.resume(),
     'computer.setLiveView': (p) => s.computer.setLiveView(p.enabled),

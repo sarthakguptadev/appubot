@@ -1,6 +1,25 @@
 import { describe, expect, it } from 'vitest';
 import { CONTROL_IDLE_MS } from '@appubot/protocol';
-import { DEFAULT_SCREEN, VIEWER_MARGIN, VIEWER_PILL_H, controlUntil, fitScreen, localControl, mayStream, screenCaption, screenCard, shortcutKeysym } from './screenView';
+import { DEFAULT_SCREEN, VIEWER_MARGIN, VIEWER_PILL_H, botScreenLine, controlUntil, fitScreen, localControl, mayStream, screenCaption, screenCard, screenUrl, shortcutKeysym } from './screenView';
+
+describe('a bot’s own screen', () => {
+  it('asks the screen port for that screen, keeping the signed link’s own query', () => {
+    const link = 'wss://ab12cd34ef-6080.agent37.app/websockify?a37_token=t0k';
+    expect(screenUrl(link, undefined)).toBe(link);
+    expect(screenUrl(link, 'bot_ada')).toBe('wss://ab12cd34ef-6080.agent37.app/websockify?a37_token=t0k&screen=bot_ada');
+  });
+
+  it('says what the screen is doing in a few words', () => {
+    expect(botScreenLine(undefined, 'Ada')).toBe('Starts when Ada first uses its computer');
+    expect(botScreenLine({ botId: 'b', state: 'starting', busy: false }, 'Ada')).toBe('Starting…');
+    expect(botScreenLine({ botId: 'b', state: 'asleep', busy: false }, 'Ada')).toBe('Asleep');
+    expect(botScreenLine({ botId: 'b', state: 'on', busy: true }, 'Ada')).toBe('Working');
+    expect(botScreenLine({ botId: 'b', state: 'on', busy: false, activeThreadId: 't' }, 'Ada')).toBe('Working');
+    expect(botScreenLine({ botId: 'b', state: 'on', busy: false }, 'Ada')).toBe('Idle');
+    const control = { id: 'c', name: 'Sam', via: 'desktop' as const, since: 0, expiresAt: 1, left: 1 };
+    expect(botScreenLine({ botId: 'b', state: 'on', busy: true, control }, 'Ada')).toBe('Sam has control');
+  });
+});
 
 describe('the Computer tab’s card', () => {
   it('is live while the screen is up, with the reconnecting and paused states over the last picture', () => {

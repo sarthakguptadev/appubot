@@ -182,12 +182,13 @@ export class VaultService {
     try { got = fieldValue(item, p.field, (s) => this.open(s)); } catch (e) { throw new RpcError('unavailable', `Couldn't unlock “${item.name}”: ${errMsg(e)}`); }
     if (!got) throw new RpcError('not_found', `“${item.name}” has no ${FIELD_NAME[p.field] ?? p.field} saved.`);
     const what = FIELD_NAME[p.field] ?? p.field;
+    const computer = await this.ctx.s.screens.forThread(a.threadId);
     if (got.secret) {
-      const where = this.ctx.s.computer.windowName(p.pid, p.windowId) ?? 'the window it is working in';
+      const where = computer.windowName(p.pid, p.windowId) ?? 'the window it is working in';
       const site = item.kind === 'login' && item.site ? ` (saved for ${item.site})` : '';
       await this.allowOnce(a, item, `Allow ${bot.name} to type your “${item.name}” ${what}${site} into ${where}? ${bot.name} won't see it.`);
     }
-    const r = await this.ctx.s.computer.typeSecret({ type: 'type', text: got.value, pid: p.pid, windowId: p.windowId, label: p.label, element: p.element }, a.threadId);
+    const r = await computer.typeSecret({ type: 'type', text: got.value, pid: p.pid, windowId: p.windowId, label: p.label, element: p.element }, a.threadId);
     if (!r.ok) return { ok: false, text: `Couldn't type the ${what}: ${r.text ?? 'it failed'}` };
     return { ok: true, text: `Typed the ${what} of “${item.name}”${got.secret ? ' (hidden from you)' : ''}. Look at the window if you need to check where it went.` };
   }

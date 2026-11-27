@@ -5,12 +5,13 @@ import { Eye, Hand, RotateCw, X } from '../../components/ui/icons';
 import { Button, Icon, Spinner, Tooltip } from '../../components/ui';
 import { cn } from '../../components/ui/cn';
 import { useNow } from '../../lib/hooks';
+import { useStore } from '../../lib/store';
 import { useCloud } from './cloudAccount';
 import { cloudClientIfAny } from './cloudClient';
 import {
   giveBack, keepControl, noteInput, placeSurface, refitScreen, releaseScreen, retryScreen, screenCanvas, takeControl, useCloudDesktop, useScreen, wantScreen,
 } from './screenSession';
-import { VIEWER_MARGIN, VIEWER_PILL_H, fitScreen } from './screenView';
+import { VIEWER_MARGIN, VIEWER_PILL_H, botScreenLine, fitScreen } from './screenView';
 
 /*
  * Open desktop (plan §4.4): your AppuBot computer's own screen (or a team's) full screen over the app window, after
@@ -25,19 +26,22 @@ import { VIEWER_MARGIN, VIEWER_PILL_H, fitScreen } from './screenView';
  * says so). Esc closes it, except while you're in control (the key is the computer's then; ✕ still closes).
  * Teach mode (`teach`) takes control as soon as the screen is up, and what the user does is mirrored to the
  * computer's gateway (`teach.input`), which is how the bot learns the steps.
+ * Where bots have screens of their own (the computer's status lists `screens`), the top row switches between the
+ * computer's main screen and each bot's (`ScreenSwitcher`); Take control is that screen's alone.
  */
 
 export { useCloudDesktop } from './screenSession';
 
 /**
- * `team`: a team's shared computer (absent: the person's own); `teach`: mirror the input to its teach session;
+ * `team`: a team's shared computer (absent: the person's own); `screen`: a bot's own screen there (its id; absent: the
+ * main one); `teach`: mirror the input to its teach session;
  * `signIn`: an agent's sign-in runs on its screen (the agent's name): control is taken at once, so its terminal or
  * browser takes your keys straight away; `from`: the preview it grows out of
  */
-export function openCloudDesktop(team?: string, o: { teach?: boolean; signIn?: string; from?: DOMRect } = {}): void {
-  useCloudDesktop.setState({ open: true, team, teach: !!o.teach, signIn: o.signIn, from: o.from });
+export function openCloudDesktop(team?: string, o: { screen?: string; teach?: boolean; signIn?: string; from?: DOMRect } = {}): void {
+  useCloudDesktop.setState({ open: true, team, screen: o.screen, teach: !!o.teach, signIn: o.signIn, from: o.from });
 }
-export function closeCloudDesktop(): void { useCloudDesktop.setState({ open: false, teach: false, signIn: undefined }); }
+export function closeCloudDesktop(): void { useCloudDesktop.setState({ open: false, screen: undefined, teach: false, signIn: undefined }); }
 
 /** what the viewer mirrors to a teach session on the computer: a click, a key, a wheel turn, at 0..1 of the screen */
 export type ViewerInput =
@@ -75,6 +79,7 @@ export function DesktopView() {
   const open = useCloudDesktop((s) => s.open);
   useEffect(() => { if (PREVIEW) openCloudDesktop(undefined, { teach: PREVIEW === 'teach' }); }, []);
   const team = useCloudDesktop((s) => s.team);
+  const screen = useCloudDesktop((s) => s.screen);
   const teach = useCloudDesktop((s) => s.teach);
   const signIn = useCloudDesktop((s) => s.signIn);
   const from = useCloudDesktop((s) => s.from);
@@ -84,9 +89,9 @@ export function DesktopView() {
   // the full viewer wants the screen while it's open (closing it lets the preview, if any, carry on paced)
   useEffect(() => {
     if (!open) return;
-    wantScreen('viewer', { full: true, team, takeControl: teach || !!signIn });
+    wantScreen('viewer', { full: true, team, screen, takeControl: teach || !!signIn });
     return () => releaseScreen('viewer');
-  }, [open, team, teach, signIn]);
+  }, [open, team, screen, teach, signIn]);
 
   // grows out of the preview it was opened from: a clip opening from the preview's place, never a transform (noVNC
   // measures its place with getBoundingClientRect, which a scale would shrink, and keeps the canvas that small)
@@ -216,7 +221,8 @@ function Viewer({ teach, signIn }: { teach: boolean; signIn?: string }) {
   return (
     <>
       {/* the top: the traffic lights' row (left clear; right of Windows' and Linux's window buttons), only ✕ */}
-      <header className="drag flex h-[42px] shrink-0 items-center justify-end pr-[calc(10px+var(--wco-right))]">
+      <header className="drag flex h-[42px] shrink-0 items-center justify-end gap-3 pr-[calc(10px+var(--wco-right))]">
+        {!teach && !signIn ? <ScreenSwitcher /> : null}
         <Tooltip label="Close (Esc)">
           <button
             type="button"
@@ -296,5 +302,49 @@ function Viewer({ teach, signIn }: { teach: boolean; signIn?: string }) {
         </div>
       </div>
     </>
+  );
+}
+
+/**
+ * The bots' own screens and the computer's main one, side by side at the top of the viewer: one chip each (the bot's
+ * colour, a dot while it works), the one on show filled. Only where bots have screens of their own.
+ */
+function ScreenSwitcher() {
+  const screens = useStore((s) => s.computer?.screens);
+  const bots = useStore((s) => s.bots);
+  const current = useCloudDesktop((s) => s.screen);
+  if (!screens?.length) return null;
+  const chips = [
+    { id: undefined as string | undefined, name: 'Computer', color: undefined as string | undefined, line: 'The computer’s main screen', busy: false },
+    ...screens.flatMap((x) => {
+      const bot = bots.find((b) => b.id === x.botId);
+      return bot ? [{ id: bot.id as string | undefined, name: bot.name, color: bot.color as string | undefined, line: botScreenLine(x, bot.name), busy: x.busy || !!x.activeThreadId }] : [];
+    }),
+  ];
+  return (
+    // clear of macOS's traffic lights at the left
+    <nav aria-label="Screens" className="no-drag mr-auto ml-[78px] flex min-w-0 items-center gap-1 overflow-x-auto">
+      {chips.map((c) => {
+        const on = c.id === current;
+        return (
+          <Tooltip key={c.id ?? 'main'} label={c.line}>
+            <button
+              type="button"
+              aria-pressed={on}
+              onClick={() => useCloudDesktop.setState({ screen: c.id })}
+              className={cn(
+                'ab-pill squircle flex h-7 shrink-0 items-center gap-1.5 rounded-control-sm px-2.5 text-note transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40',
+                on ? 'bg-white/[0.16] text-white' : 'text-white/60 hover:bg-white/[0.08] hover:text-white/90',
+              )}
+            >
+              {c.color ? <span aria-hidden className="size-2 shrink-0 rounded-full" style={{ background: c.color }} /> : null}
+              <span className="max-w-[140px] truncate">{c.name}</span>
+              {c.busy ? <span className="sr-only">(working)</span> : null}
+              {c.busy ? <span aria-hidden className="size-1.5 shrink-0 animate-pulse rounded-full bg-[#4ade80]" /> : null}
+            </button>
+          </Tooltip>
+        );
+      })}
+    </nav>
   );
 }

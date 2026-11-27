@@ -353,6 +353,12 @@ export const computerStatus: ComputerStatus = {
   // starts with neither (`&perms=granted`: both)
   permissions: mockPermissions(),
   screen: { width: 1512, height: 982, scale: 2 }, busy: false, paused: false, liveView: true, background: false,
+  // `?botscreens=1`: your AppuBot computer with bots' own screens (Appu working on its own, Ledger's asleep)
+  ...(new URLSearchParams(typeof location === 'undefined' ? '' : location.search).get('botscreens') === '1' ? {
+    onScreenOnly: true,
+    screens: [{ botId: IDS.appu, state: 'on' as const, busy: true, activeThreadId: IDS.main }, { botId: IDS.ledger, state: 'asleep' as const, busy: false }],
+    screensMax: 3,
+  } : {}),
 };
 
 const system: SystemInfo = {

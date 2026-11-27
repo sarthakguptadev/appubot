@@ -753,6 +753,22 @@ export const CONTROL_WARN_MS = 20_000;
 export const ScreenWaitSchema = z.object({ threadId: Id, for: z.enum(['control', 'screen']), since: Timestamp, holder: Id.optional() });
 export type ScreenWait = z.infer<typeof ScreenWaitSchema>;
 
+/**
+ * Your AppuBot computer: a bot's own screen (a display of its own on the computer, beside the main one), so bots use
+ * their computers at the same time without taking turns. `on`: its display is up (`starting` until its computer use
+ * is ready); `asleep`: stopped after a while unused, started again by the bot's next computer step or a viewer.
+ * `busy`/`activeThreadId`/`control`/`waits` are that screen's own, as in ComputerStatus.
+ */
+export const BotScreenSchema = z.object({
+  botId: Id,
+  state: z.enum(['starting', 'on', 'asleep']),
+  busy: z.boolean().default(false),
+  activeThreadId: Id.optional(),
+  control: ScreenControlSchema.optional(),
+  waits: z.array(ScreenWaitSchema).optional(),
+});
+export type BotScreen = z.infer<typeof BotScreenSchema>;
+
 export const ComputerStatusSchema = z.object({
   backend: z.enum(['cua-driver', 'native', 'none']),
   available: z.boolean(),
@@ -782,6 +798,12 @@ export const ComputerStatusSchema = z.object({
   screenThreadId: Id.optional(),
   /** the bots always work on the real screen here (your AppuBot computer: it is theirs); no background mode */
   onScreenOnly: z.boolean().optional(),
+  /**
+   * Your AppuBot computer: the bots' own screens (one per bot that has used its computer), and how many may be awake
+   * at once. A bot past that works on the main screen, taking turns there. Absent where bots share one screen.
+   */
+  screens: z.array(BotScreenSchema).optional(),
+  screensMax: z.number().int().nonnegative().optional(),
 });
 export type ComputerStatus = z.infer<typeof ComputerStatusSchema>;
 

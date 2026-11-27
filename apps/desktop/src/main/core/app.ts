@@ -23,6 +23,7 @@ import { ProvidersService } from './services/providers';
 import { AcpRegistryService } from './services/acpRegistry';
 import { ProviderUpdatesService } from './services/providerUpdates';
 import { ComputerService } from './services/computer';
+import { BotScreens } from './services/botScreens';
 import { LiveViewService } from './services/liveView';
 import { SkillsService } from './services/skills';
 import { TeachService } from './services/teach';
@@ -109,6 +110,7 @@ export function createCore(deps: CoreDeps): Core {
   s.acpRegistry = new AcpRegistryService(ctx);
   s.providerUpdates = new ProviderUpdatesService(ctx);
   s.computer = new ComputerService(ctx);
+  s.screens = new BotScreens(ctx);
   s.liveView = new LiveViewService(ctx);
   s.devices = new DevicesService(ctx);
   s.connect = new ConnectService(ctx);
@@ -179,6 +181,7 @@ export function createCore(deps: CoreDeps): Core {
       // ~70ms of it on this thread): once the window's page is loading (CoreDeps.computerStartAfter), else on the next
       // turn of the event loop. The gateway's hello waits for it, so the first snapshot still says what it can do
       void s.computer.init({ after: deps.computerStartAfter ?? new Promise<void>((r) => setImmediate(r)) }).catch((e) => log.error('computer init failed', errMsg(e))).then(() => traceMark('core:computer'));
+      s.screens.start();
       try { s.voice.start(); } catch (e) { log.error('voice start failed', errMsg(e)); }
       s.system.startLoginItem();
       s.routines.start();
@@ -248,6 +251,7 @@ export function createCore(deps: CoreDeps): Core {
       await step('chat', () => s.chat.shutdown());
       await step('runtime', () => Promise.race([ctx.runtime.shutdown(), new Promise((r) => setTimeout(r, 4000))]));
       s.liveView.shutdown();
+      await step('bot screens', () => s.screens.shutdown());
       await step('computer', () => s.computer.shutdown());
       await step('voice', () => s.voice.shutdown());
       await step('gateway', () => gateway.close());

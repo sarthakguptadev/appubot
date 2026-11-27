@@ -10,6 +10,7 @@
  *               ?bot=bot_ledger (another bot than Appu)   ?approval=0   ?forms=1 (a form and a Vault card)   ?apps=onboarding|none|one|many|accounts (signed out of Composio, nothing connected, one Gmail, fifteen connected, apps with several accounts)
  *               ?threads=1 (the thread switcher open, one of Appu's older threads unread)
  *               ?editor=1 (the bot's side panel open on Details, where it is set up)
+ *               ?botscreens=1 (your AppuBot computer's bots with screens of their own: the viewer's switcher, the bot's card)
  *               ?characters=off|fail|worn (a computer without characters / Generate failing / Ledger wearing one)
  *               ?cloud=signed-out|no-plan|sold-out|provisioning|running|asleep|waking|on-hold|past-due|ending|scheduled|export-only|failed|suspended
  *               (AppuBot Cloud's account, dev/mockCloud.ts; &on=cloud starts on the cloud computer's bots, &catalog=0 hides the plans' prices,

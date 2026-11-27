@@ -3,7 +3,7 @@
  * on top of a pluggable backend - Cua Driver (in-process) or the Swift native helper.
  */
 import { computerUseSupported, machineName, newId, type ComputerAction, type ComputerFrame, type ComputerStatus, type ComputerTarget, type ScreenControl, type ScreenWait } from '@appubot/protocol';
-import type { CoreCtx, ImageCodec } from '../context';
+import type { CoreCtx, CoreDeps, ImageCodec } from '../context';
 import { errMsg, Mutex, RpcError, sleep, truncate } from '../util';
 import type { HelperTransport } from './nativeHelper';
 import { AgentCursorController } from './agentCursor';
@@ -63,6 +63,19 @@ function unavailableMsg(): string {
   return `Computer use is not available on this ${machine} (no backend could start). Open AppuBot → Settings → Computer use.`;
 }
 
+/**
+ * A bot's own screen on your AppuBot computer (`botScreens.ts`): its ComputerService works on that display alone
+ * (Cua loaded for it by `importCua`), with its own Take control, and no turns to take with other bots.
+ */
+export interface OwnScreen {
+  botId: string;
+  importCua?: CoreDeps['importCua'];
+  /** this screen's status changed (the main screen's status lists the bots' screens) */
+  onStatus: () => void;
+  /** the computer's own pause (the main screen's) holds every screen */
+  paused: () => boolean;
+}
+
 export class ComputerService {
   private backend: ComputerBackend | null = null;
   private perms: Perms = { accessibility: false, screenRecording: false };
@@ -107,7 +120,7 @@ export class ComputerService {
   controlWaitMs: number | null = null;
   screenWaitMs: number | null = null;
 
-  constructor(private ctx: CoreCtx) {
+  constructor(private ctx: CoreCtx, readonly own?: OwnScreen) {
     this.cursor = new AgentCursorController(ctx);
     this.control.onChange((c) => {
       // the person's hand on the screen: the bot's pointer steps aside
@@ -117,6 +130,8 @@ export class ComputerService {
   }
 
   private get codec(): ImageCodec | undefined { return this.ctx.deps.imageCodec; }
+  /** how Cua is loaded: for a bot's own screen, its own (bound to that display) */
+  private get importCua(): CoreDeps['importCua'] { return this.own ? this.own.importCua : this.ctx.deps.importCua; }
   private get cfg() { return this.ctx.s.settings.get().computer; }
   /**
    * Your AppuBot computer: its screen is the bots' own, so they always work on it for real (on-screen mode, windows
@@ -169,13 +184,14 @@ export class ComputerService {
     // Only macOS has the native helper, which makes focusing, launching and looking at windows quicker: elsewhere Cua
     // does all of it.
     const mac = process.platform === 'darwin';
-    const candidates = this.ctx.deps.computerBackends?.() ?? (!computerUseSupported(process.platform) ? [] : !mac ? [
+    const importCua = this.importCua;
+    const candidates = this.ctx.deps.computerBackends?.(this.own?.botId) ?? (!computerUseSupported(process.platform) ? [] : !mac ? [
       new CuaBackend({
         log: this.ctx.log,
         defaultDim: () => AGENT_DIM,
         // Wayland: Cua knows only the pointer it moved itself there, so the user's isn't put back after a borrowed step
         restorePointer: process.platform !== 'linux' || !linuxSessionProblem(process.env),
-        ...(this.ctx.deps.importCua ? { load: () => this.ctx.deps.importCua!('') } : {}),
+        ...(importCua ? { load: () => importCua('') } : {}),
       }),
     ] : [
       new CuaBackend({
@@ -208,7 +224,7 @@ export class ComputerService {
           if (!h) throw new Error('no native helper');
           await h.request('activate_app', { pid }, 5000);
         },
-        ...(this.ctx.deps.importCua ? { load: () => this.ctx.deps.importCua!('') } : {}),
+        ...(importCua ? { load: () => importCua('') } : {}),
       }),
       new NativeHelperBackend(() => this.helper(), { defaultMaxWidth: () => AGENT_DIM }),
     ]);
@@ -283,6 +299,7 @@ export class ComputerService {
       ...(this.waits.size ? { waits: [...this.waits.values()] } : {}),
       ...(this.lease ? { screenThreadId: this.lease.threadId } : {}),
       ...(this.onScreenOnly ? { onScreenOnly: true } : {}),
+      ...(!this.own && this.ctx.s.screens?.enabled ? { screens: this.ctx.s.screens.list(), screensMax: this.ctx.s.screens.max() } : {}),
     };
   }
 
@@ -317,7 +334,7 @@ export class ComputerService {
       for (;;) {
         const c = this.control.current();
         const idle = this.screenIdleMs ?? SCREEN_IDLE_MS;
-        const other = this.onScreenOnly && this.lease && this.lease.threadId !== threadId && Date.now() - this.lease.lastAt < idle ? this.lease : null;
+        const other = this.onScreenOnly && !this.own && this.lease && this.lease.threadId !== threadId && Date.now() - this.lease.lastAt < idle ? this.lease : null;
         if (!c && !other) break;
         if (stopped) throw new RpcError('stopped', 'Stopped: the turn ended.');
         const kind: ScreenWait['for'] = c ? 'control' : 'screen';
@@ -340,7 +357,7 @@ export class ComputerService {
       this.gateStops.delete(threadId);
       if (this.waits.delete(threadId)) this.emitStatus();
     }
-    if (this.onScreenOnly) {
+    if (this.onScreenOnly && !this.own) {
       const fresh = this.lease?.threadId !== threadId;
       this.lease = { threadId, lastAt: Date.now() };
       if (fresh) this.emitStatus();
@@ -364,7 +381,10 @@ export class ComputerService {
     return text ? `${line}\n${text}` : line;
   }
 
-  emitStatus(): void { this.ctx.bus.emit('computer.status', this.status()); }
+  emitStatus(): void {
+    if (this.own) { this.own.onStatus(); return; }
+    this.ctx.bus.emit('computer.status', this.status());
+  }
 
   async refreshPermissions(): Promise<ComputerStatus> {
     await this.whenReady();
@@ -398,7 +418,7 @@ export class ComputerService {
 
   pause(): ComputerStatus { this.paused = true; this.cursor.hide(); this.emitStatus(); return this.status(); }
   resume(): ComputerStatus { this.paused = false; this.emitStatus(); return this.status(); }
-  isPaused(): boolean { return this.paused; }
+  isPaused(): boolean { return this.paused || !!this.own?.paused(); }
 
   setLiveView(enabled: boolean): ComputerStatus {
     this.ctx.s.settings.update({ computer: { ...this.cfg, liveView: enabled } });
@@ -470,7 +490,7 @@ export class ComputerService {
     this.emitStatus();
     try {
       while (quiet !== undefined && quiet < QUIET_MS) {
-        if (this.paused) throw new RpcError('paused', 'Computer use is paused by the user');
+        if (this.isPaused()) throw new RpcError('paused', 'Computer use is paused by the user');
         if (stopped) throw new Error('Stopped: the turn ended.');
         if (call.waited + (Date.now() - start) >= (this.pauseWaitMs ?? PAUSE_WAIT_MS)) throw new Error(USER_BUSY);
         await sleep(Math.min(PAUSE_POLL_MS, Math.max(20, QUIET_MS - quiet)));
@@ -607,7 +627,7 @@ export class ComputerService {
 
   private ensureUsable(): ComputerBackend {
     if (!this.cfg.enabled) throw new RpcError('disabled', 'Computer use is turned off in AppuBot settings');
-    if (this.paused) throw new RpcError('paused', 'Computer use is paused by the user');
+    if (this.isPaused()) throw new RpcError('paused', 'Computer use is paused by the user');
     if (!this.backend) throw new RpcError('unavailable', unavailableMsg());
     return this.backend;
   }
@@ -715,7 +735,7 @@ export class ComputerService {
       const call = { waited: 0 };
       try {
         for (const [i, step] of steps.entries()) {
-          if (this.paused) { ok = false; log.push(`${i + 1}. Stopped: the user paused computer use.`); break; }
+          if (this.isPaused()) { ok = false; log.push(`${i + 1}. Stopped: the user paused computer use.`); break; }
           // a person took control mid-batch: their hand is on the screen now, the rest waits for the next call
           const took = threadId ? this.control.current() : null;
           if (took) { ok = false; log.push(`${i + 1}. Stopped: ${took.name} took control of the screen. Your next computer call waits until they give it back.`); break; }
@@ -889,6 +909,17 @@ export class ComputerService {
       this.ctx.bus.emit('computer.action', { threadId, action: masked(ev), ts: Date.now(), ok: false, summary: msg.slice(0, 300) });
       return { ok: false, text: msg, ev };
     }
+  }
+
+  /** A bot's own screen going to sleep (its display stops): its backend ends, and `init` starts it again on the next use. */
+  async sleep(): Promise<void> {
+    await this.whenReady(5000);
+    for (const stop of this.gateStops.values()) stop();
+    this.cursor.hide();
+    await this.backend?.shutdown().catch(() => undefined);
+    this.backend = null;
+    this.windows.clear();
+    this.emitStatus();
   }
 
   async shutdown(): Promise<void> {
