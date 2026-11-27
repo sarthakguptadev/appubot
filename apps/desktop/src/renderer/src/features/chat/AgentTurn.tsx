@@ -251,13 +251,11 @@ const WORKING_STATES = {
   'needs-you': { label: 'Waiting for you', active: false },
 } as const;
 
-/** how long the bot's avatar shows alone before its row says anything (Grok Bot's mascot leads its label by about 1s) */
-const LABEL_AFTER_MS = 1000;
-
 /**
- * The working row of the answers view, on Rare UI's status line: the bot's avatar alone for a moment, then what it is
- * doing in plain words, shimmering ("Reading report.md", "Using Gmail", "Typing…" once the reply comes in;
- * chat-core's `liveStepLabel`), and how long. It names no tool and shows no command (the owner's call, 2026-11-15, on
+ * The working row of the answers view, on Rare UI's status line: the bot's avatar, what it is doing in plain words,
+ * shimmering ("Reading report.md", "Using Gmail", "Typing…" once the reply comes in; chat-core's `liveStepLabel`), and
+ * how long. It says "Working" from the moment you send, before the bot's first step (the owner, 2026-11-27: an avatar
+ * alone with a bare clock read as nothing happening). It names no tool and shows no command (the owner's call, 2026-11-15, on
  * seeing "Running nohup google-chrome --no-…" beside it): a step with no plain words for it says "Working".
  */
 const BotWorkingRow = memo(function BotWorkingRow({ threadId, since, botId, step }: {
@@ -270,15 +268,8 @@ const BotWorkingRow = memo(function BotWorkingRow({ threadId, since, botId, step
   const thread = useStore((s) => s.threads.find((t) => t.id === threadId));
   const bot = useStore((s) => s.bots.find((b) => b.id === (botId ?? thread?.botId)));
   const needsYou = useStore((s) => (botId ? s.threads.some((t) => t.botId === botId && t.source !== 'group' && t.status === 'waiting') : thread?.status === 'waiting'));
-  const [speaking, setSpeaking] = useState(() => Date.now() - since >= LABEL_AFTER_MS);
-  useEffect(() => {
-    if (speaking) return;
-    const id = window.setTimeout(() => setSpeaking(true), since + LABEL_AFTER_MS - Date.now());
-    return () => window.clearTimeout(id);
-  }, [speaking, since]);
   const label = needsYou ? (botId && bot ? `${bot.name} is waiting for you` : WORKING_STATES['needs-you'].label)
-    : !speaking ? ''
-      : botId && bot ? `${bot.name} is working` : (step ?? WORKING_STATES.working.label);
+    : botId && bot ? `${bot.name} is working` : (step ?? WORKING_STATES.working.label);
   return (
     <AiStatus
       ref={syncAnimationsToTimelineOrigin}
@@ -288,7 +279,7 @@ const BotWorkingRow = memo(function BotWorkingRow({ threadId, since, botId, step
       label={label}
       icon={<BotAvatar bot={bot} size={26} mood={needsYou ? 'needs-you' : 'working'} />}
       iconSize={26}
-      time={speaking || needsYou ? <LiveElapsed since={since} /> : undefined}
+      time={<LiveElapsed since={since} />}
     />
   );
 });

@@ -13,9 +13,11 @@ describe('the working row', () => {
     expect(css).toMatch(/\.ai-status-sweep \{[^}]*background-size: 300% 100%;/);
   });
 
-  it('says what the bot is doing in plain words, after its avatar shows alone for a moment', () => {
+  it('says "Working" from the moment you send, then what the bot is doing in plain words, with its own clock', () => {
     const turn = read('features/chat/AgentTurn.tsx');
     expect(turn).toContain('liveStepLabel(msg.parts)');
-    expect(turn).toMatch(/const LABEL_AFTER_MS = 1000;/);
+    expect(turn).toContain("(step ?? WORKING_STATES.working.label)");
+    expect(turn).toContain('time={<LiveElapsed since={since} />}');
+    expect(turn).not.toContain('LABEL_AFTER_MS');
   });
 });
