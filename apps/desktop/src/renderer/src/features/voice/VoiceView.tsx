@@ -69,7 +69,7 @@ export function VoiceView({ bot, approvals }: { bot: Bot; approvals: PermissionR
     <section role="region" aria-label={`Voice conversation with ${bot.name}`} className="relative flex min-h-0 flex-1 flex-col items-center gap-4 px-5 pt-2 pb-6">
       {/* the orb and its captions, one group centred in the space above the controls (the captions keep their room
           while empty, so the orb never moves) */}
-      <div className="relative flex min-h-0 w-full flex-1 items-center justify-center [container-type:size]" style={{ '--orb': 'min(320px, 50cqh, 76cqw)' } as CSSProperties}>
+      <div className="relative flex min-h-0 w-full flex-1 items-center justify-center [container-type:size]" style={{ '--orb': 'max(120px, min(320px, 50cqh, 76cqw))' } as CSSProperties}>
         <div className="flex w-full flex-col items-center gap-6">
           <button
             type="button"

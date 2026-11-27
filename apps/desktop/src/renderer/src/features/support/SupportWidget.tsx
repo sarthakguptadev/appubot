@@ -89,6 +89,8 @@ const ICON = {
 
 export function SupportWidget() {
   const open = useStore((s) => s.supportOpen);
+  // voice mode has the window to itself: its round controls are the only ones at the bottom
+  const voice = useStore((s) => !!s.voiceMode);
   const unread = useStore((s) => s.supportUnread);
   const reduce = useReducedMotion();
   const vp = useViewport();
@@ -137,6 +139,7 @@ export function SupportWidget() {
     return () => window.removeEventListener('keydown', onKey, true);
   }, [open]);
 
+  if (voice && !open) return null;
   return (
     <>
       <AnimatePresence>
