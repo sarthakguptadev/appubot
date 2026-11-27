@@ -4,10 +4,11 @@
  * from botAvatarMotion.ts plus botAvatar.css; the agent cursor's overlay uses them as well), copied from Grok Bot's
  * mascot: resting it sits still, upright and facing you, and when the pointer comes near it turns its face toward it
  * and follows it with its eyes; a turn that starts makes its eyes big; thinking, it turns away and collapses into three
- * dots that light up in turn (in small places, `compact`, the dots light up in its visor instead); on a tool its eyes
- * go round and it wanders; typing, it turns toward the text with big eyes; done, it grows back with happy eyes, wobbles
- * like jelly and dances, and stays happy a while. Every motion turns round the avatar's middle, so it stays centred. Needing you it hops for attention. Pressed it
- * squishes and springs back. `happy` draws the app icon's face (scripts/make-icon.mjs): both eyes closed in a smile, for
+ * dots that light up in turn (in small places, `compact`, the dots light up in its visor instead); on a tool it runs
+ * Grok Bot's working routine (glances, blinks, flips, looks about, rolls, spins and wobbles, each eye its own size);
+ * typing, it turns toward the text with big eyes; done, it grows back with happy eyes, wobbles like jelly and dances,
+ * and stays happy a while. Every motion turns round the avatar's middle, so it stays centred. Needing you it hops for
+ * attention. Pressed it squishes and springs back. `happy` draws the app icon's face (scripts/make-icon.mjs): both eyes closed in a smile, for
  * AppuBot itself. A bot wearing a custom character (`Bot.characterId`, chat-core characters.ts) is drawn as that
  * character, looked up in the store's library; a gone one draws its shape.
  */
@@ -205,7 +206,7 @@ export function BotAvatar({ bot, shape: shapeProp, figure: figureProp, color: co
                   <rect x={v.x} y={v.y} width={v.w} height={v.h} rx={v.r} fill={`url(#${id}-glass)`} />
                   <g className="ab-bot-look">
                     {look.eyes.map((e, i) => (happy ? <Smile key={i} e={e} ink={look.eye} className="ab-bot-smile" /> : (
-                      <g key={i} className="ab-bot-eye" style={at(e.x + e.w / 2, e.y + e.h / 2)}>
+                      <g key={i} className={`ab-bot-eye ab-bot-eye${i ? 'R' : 'L'}`} style={at(e.x + e.w / 2, e.y + e.h / 2)}>
                         <rect
                           x={e.x} y={e.y} width={e.w} height={e.h} rx={e.r} fill={look.eye} className="ab-bot-pill"
                           style={{ '--ab-rx': e.r, '--ab-ry': e.h / 2, ...at(e.x + e.w / 2, e.y + e.h / 2) } as CSSProperties}

@@ -3,7 +3,7 @@
    botAvatarMotion.ts (BOT_MOTION_CSS). Layers, outside in: the span (press squish), the svg, .ab-bot-joy (the happy
    cheer), .ab-bot-body (a mood's loop), .ab-bot-tilt (the pose's lean), .ab-bot-morph (collapsing into the dots),
    .ab-bot-shape (the bot, fading to a plain dot), .ab-bot-face (its turn: visor, eyes and the visor's dots, clipped to
-   the body), .ab-bot-look (where the eyes look), each .ab-bot-eye (its shape: .ab-bot-pill and the happy .ab-bot-arc),
+   the body), .ab-bot-look (where the eyes look), each .ab-bot-eye (its shape: .ab-bot-pill and the happy .ab-bot-arc; .ab-bot-eyeL/R in the tool routine),
    .ab-bot-vdots (thinking in a small place: a dot each lighting up in turn in the visor), and .ab-bot-dots (the three
    dots: .ab-bot-side growing in, .ab-bot-mid taking over from the shrunk body, each .ab-bot-dot lighting up in turn).
    The body is drawn with its middle (--ab-cy, chat-core BOT_MIDDLE: its area's centroid) on the box's centre, and joy,

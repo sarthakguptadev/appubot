@@ -60,7 +60,7 @@ describe('bot motion: tracks', () => {
     for (const [mood, ts] of Object.entries(BOT_LOOPS)) {
       const seen = ts!.map((t) => `${t.layer}.${t.prop}`);
       expect(new Set(seen).size, mood).toBe(seen.length);
-      for (const t of ts!) expect(['body', 'tilt', 'face', 'look']).toContain(t.layer);
+      for (const t of ts!) expect(['body', 'tilt', 'face', 'look', 'eyeL', 'eyeR']).toContain(t.layer);
     }
     for (const t of BOT_CHEER) expect(t.layer).toBe('joy');
     for (const t of BOT_DOT_LOOP.tracks) expect(t.layer).toBe('dot');
@@ -104,9 +104,9 @@ describe('bot motion: Grok Bot, measured', () => {
     expect(botTurn(BOT_POSES.typing.turn).sx).toBeCloseTo(0.78, 2);
   });
 
-  it('gives each mood its pose: big eyes listening, round eyes on a tool, the resting pose with bigger eyes typing, ^ ^ happy', () => {
+  it('gives each mood its pose: big eyes listening, the resting pose on a tool (its routine moves it), bigger eyes typing, ^ ^ happy', () => {
     expect(BOT_POSES.listening).toMatchObject({ rotate: 0, gaze: [0, 0], eye: [1.63, 1.52], face: 'open', form: 'bot' });
-    expect(BOT_POSES.tool.face).toBe('round');
+    expect(BOT_POSES.tool).toEqual(BOT_POSES.rest);
     expect(BOT_POSES.typing).toMatchObject({ rotate: 0, turn: 39, eye: [1.53, 1.53] });
     expect(BOT_POSES.typing.gaze[1]).toBeLessThan(0);
     expect(BOT_POSES.thinking.turn).toBe(69);
@@ -139,28 +139,52 @@ describe('bot motion: Grok Bot, measured', () => {
     expect(BOT_DOTS.r * 2).toBeCloseTo(88 * BOT_DOTS.scale, 0);
   });
 
-  it('wanders round-eyed while a tool runs, on the measured timeline: turns right, rolls 37° shrunk to 0.67, turns right again', () => {
+  it("runs Grok Bot's working routine on a tool, on the measured timeline, from a still start", () => {
     const tool = BOT_LOOPS.tool!;
     const find = (layer: string, prop: string) => tool.find((t) => t.layer === layer && t.prop === prop)!;
-    const scale = find('body', 'scale');
     const rotate = find('body', 'rotate');
+    const move = find('body', 'translate');
+    const size = find('body', 'scale');
     const slide = find('face', 'translate');
-    expect(scale.ms).toBe(5700);
-    expect(Math.min(...over(scale))).toBeCloseTo(0.67, 2);
-    expect(Math.max(...over(rotate))).toBeCloseTo(37, 1);
-    expect(Math.min(...over(rotate))).toBeCloseTo(-22, 1);
-    // the face turns 36° to the right by 1.39 s and holds to 1.6 s, faces you at 1.81 s, then up to 40° at 5.15 s
-    expect(sampleTrack(slide, 1385, true)).toBeCloseTo(botTurn(36).x, 2);
-    expect(sampleTrack(slide, 1595, true)).toBeCloseTo(botTurn(36).x, 2);
-    expect(sampleTrack(slide, 1813, true)).toBe(0);
-    expect(Math.max(...over(slide))).toBeCloseTo(botTurn(40).x, 2);
-    expect(sampleTrack(slide, 5152, true)).toBeCloseTo(botTurn(40).x, 2);
-    // rolled 15° left at 0.77 s, 37° right at 3.08 s, 22° left at 4.56 s
-    expect(sampleTrack(rotate, 765, true)).toBe(-15);
-    expect(sampleTrack(rotate, 3083, true)).toBe(37);
-    expect(sampleTrack(rotate, 4562, true)).toBe(-22);
-    for (const t of tool) expect(sampleTrack(t, 0, true, 0), `${t.layer}.${t.prop}`).toBe(t.prop === 'scale' ? 1 : t.layer === 'look' ? -2 : 0);
+    const [eyeL, eyeR] = [find('eyeL', 'scale'), find('eyeR', 'scale')];
+    const at = (t: BotTrack, ms: number, c: 0 | 1 = 0) => sampleTrack(t, ms, true, c);
+    const area = (t: BotTrack, ms: number) => at(t, ms, 0) * at(t, ms, 1);
+    for (const t of tool) expect(t.ms, `${t.layer}.${t.prop}`).toBe(30500);
     expect(BOT_LOOPS_FROM_START).toEqual(['tool']);
+    // still and facing you for its first 1.5 s (within a viewBox unit, a third of a pixel in a sidebar row), and at the end
+    for (const t of tool) {
+      const rest = t.prop === 'scale' ? 1 : 0;
+      for (let ms = 0; ms <= 1500; ms += 50) for (const c of [0, 1] as const) expect(Math.abs(at(t, ms, c) - rest), `${t.layer}.${t.prop} ${ms}`).toBeLessThan(1);
+      expect(at(t, 30500, 0)).toBe(rest);
+    }
+    // glances left at 2.9 s: the near (left) eye 1.5× the far one, the body sliding 12.6 after its eyes
+    expect(Math.sqrt(area(eyeL, 2900) / area(eyeR, 2900))).toBeGreaterThan(1.35);
+    expect(at(move, 2917)).toBeCloseTo(-12.6, 0);
+    // blinks at 5.5 s with its head tilted 9.6°
+    expect(at(eyeL, 5517, 1)).toBeLessThan(0.3);
+    expect(at(eyeR, 5517, 1)).toBeLessThan(0.3);
+    expect(at(rotate, 5450)).toBe(9.6);
+    // crouches 10.8 by 7.83 s, then flips head over heels: upside down at 8.23–8.25 s, landing by 8.42 s
+    expect(at(move, 7833, 1)).toBeCloseTo(10.77, 2);
+    expect(at(size, 8200, 1)).toBeCloseTo(0.47, 2);
+    expect(at(size, 8233, 1)).toBeCloseTo(-0.91, 2);
+    expect(at(size, 8250, 1)).toBeCloseTo(-0.91, 2);
+    expect(at(size, 8417, 1)).toBe(1);
+    // shrinks to 0.71 rolling 36° to the right, grows back leaning 21–23° to the left
+    expect(at(size, 16483)).toBeCloseTo(0.71, 2);
+    expect(at(rotate, 16417)).toBeCloseTo(36.4, 1);
+    expect(at(rotate, 18533)).toBe(-23);
+    // spins round: turned away to the left at 18.867 s, back from the right, facing you by 19.6 s
+    expect(at(slide, 18867)).toBeCloseTo(botTurn(-90).x, 2);
+    expect(at(slide, 18868)).toBeCloseTo(botTurn(90).x, 2);
+    expect(at(size, 18867)).toBeCloseTo(0.48, 2);
+    expect(at(slide, 19600)).toBe(0);
+    // wobbles: 37° right, then sweeps to 48° left in 1.3 s and snaps back in 0.2–0.35 s
+    const wobble = Array.from({ length: 560 }, (_, i) => at(rotate, 24200 + i * 10));
+    expect(Math.max(...wobble)).toBeCloseTo(37.7, 1);
+    expect(Math.min(...wobble)).toBeCloseTo(-48.1, 1);
+    expect(at(rotate, 27600)).toBe(-48.1);
+    expect(at(rotate, 27917)).toBe(36.7);
   });
 
   it('cheers: a jelly squash at 630 ms, then a three-hop dance from 2.87 s, all within the happy face', () => {

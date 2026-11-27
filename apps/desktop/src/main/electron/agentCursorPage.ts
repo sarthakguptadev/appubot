@@ -52,7 +52,7 @@ function avatarSvg(l: BotAvatarLook): string {
     + `<path d="${attr(l.body)}" fill="url(#cb-body)"/>`
     + `<g clip-path="url(#cb-clip)"><ellipse cx="${g.cx}" cy="${g.cy}" rx="${g.rx}" ry="${g.ry}" transform="rotate(${g.rotate} ${g.cx} ${g.cy})" fill="#fff" opacity="${g.opacity}"/></g>`
     + rect(v, 'url(#cb-glass)')
-    + `<g class="cb-gaze"><g class="ab-bot-look">${l.eyes.map((e) => `<g class="ab-bot-eye">${rect(e, l.eye, 'ab-bot-pill').replace('/>', ` style="--ab-rx:${e.r};--ab-ry:${e.h / 2}"/>`)}</g>`).join('')}</g></g>`
+    + `<g class="cb-gaze"><g class="ab-bot-look">${l.eyes.map((e, i) => `<g class="ab-bot-eye ab-bot-eye${i ? 'R' : 'L'}">${rect(e, l.eye, 'ab-bot-pill').replace('/>', ` style="--ab-rx:${e.r};--ab-ry:${e.h / 2}"/>`)}</g>`).join('')}</g></g>`
     + `<g clip-path="url(#cb-visor)"><rect class="ab-bot-sweep" x="${50 - v.h * 0.25}" y="${v.y - 2}" width="${v.h * 0.5}" height="${v.h + 4}" fill="#fff"/></g>`
     + `</g></g></g></svg>`;
 }

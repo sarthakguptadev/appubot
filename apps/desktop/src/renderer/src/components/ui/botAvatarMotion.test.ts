@@ -21,7 +21,6 @@ describe('bot avatar motion CSS', () => {
     expect(rule('.ab-bot .ab-bot-tilt')).toBe(`transition:rotate ${4 * BOT_MOTION.snap}ms ${BOT_EASE_CSS}`);
     expect(rule('.ab-bot .ab-bot-face')).toBe(`transition:translate ${4 * BOT_MOTION.settle}ms ${BOT_EASE_CSS},scale ${4 * BOT_MOTION.settle}ms ${BOT_EASE_CSS}`);
     expect(rule('.ab-bot .ab-bot-look')).toBe(`transition:translate ${4 * BOT_MOTION.settle}ms ${BOT_EASE_CSS}`);
-    expect(rule(".ab-bot[data-mood='tool'] .ab-bot-pill")).toContain('--ab-ry');
   });
 
   it('turns and scales every whole-body motion round the middle of the avatar, so it stays centred where it sits', () => {
@@ -60,12 +59,15 @@ describe('bot avatar motion CSS', () => {
     expect(delays).toEqual([-920, -460, 0]);
   });
 
-  it('turns toward the pointer only at rest, starts the tool wander from its beginning, and never blinks', () => {
+  it('turns toward the pointer only at rest, starts the tool routine from its beginning, and never blinks at rest', () => {
     const look = ".ab-bot[data-mood='rest'][data-look]";
     expect(rule(`${look} .ab-bot-face`)).toBe('translate:calc(var(--ab-fx,0) * 1px) 0px;scale:var(--ab-fs,1) 1');
     expect(rule(`${look} .ab-bot-look`)).toBe('translate:calc(var(--ab-gx,0) * 1px) calc(var(--ab-gy,0) * 1px)');
     expect(rule(".ab-bot[data-mood='tool'] .ab-bot-body")).not.toContain('--ab-seed');
     expect(BOT_MOTION_CSS).toContain(".ab-bot[data-mood='tool'] .ab-bot-face{animation:ab-bot-k-tool-face-translate");
+    // each eye its own size in the routine (the near one bigger), linear between the measured frames
+    for (const eye of ['eyeL', 'eyeR']) expect(rule(`.ab-bot[data-mood='tool'] .ab-bot-${eye}`)).toBe(`animation:ab-bot-k-tool-${eye}-scale 30500ms linear infinite`);
+    expect(BOT_MOTION_CSS).toMatch(/@keyframes ab-bot-k-tool-body-scale\{[^}]*\}[^@]*scale:1 -0\.91;animation-timing-function:linear/);
     expect(rule(".ab-bot[data-mood='needs-you'] .ab-bot-body")).toContain('--ab-seed');
     expect(BOT_MOTION_CSS).not.toContain('blink');
     expect(rule('.ab-bot[data-cheer] .ab-bot-joy')).toContain(`${BOT_MOTION.cheer}ms linear both`);
