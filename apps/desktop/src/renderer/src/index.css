@@ -354,6 +354,24 @@ html[data-glass="off"] body { background-image: none; }
 /* streaming: no caret; text is revealed smoothly instead (Synara, see lib/streaming.ts) */
 
 /* ---------- question cards (adapted from Akeru's generative-ui.css, MIT) ---------- */
+/* QuestionCard, after Grok Bot's: a #1f1f1f card rounded 20, rows filled #2a2a2a under the pointer in the frame it
+   arrives, a 22px key chip (#414141) that turns the accent on the chosen row; light uses the same steps of grey ink */
+.gen-q { border-radius: 20px; padding: 14px 8px 8px; background: color-mix(in srgb, var(--ab-fg) 5%, var(--ab-content)); }
+.dark .gen-q { background: #1f1f1f; }
+.gen-q-row { min-height: 40px; padding: 8px; border-radius: 12px; }
+button.gen-q-row:enabled:hover, label.gen-q-row:hover { background: color-mix(in srgb, var(--ab-fg) 6%, transparent); }
+.dark button.gen-q-row:enabled:hover, .dark label.gen-q-row:hover { background: #2a2a2a; }
+button.gen-q-row:enabled:active, label.gen-q-row:active { background: color-mix(in srgb, var(--ab-fg) 11%, transparent); }
+.dark button.gen-q-row:enabled:active, .dark label.gen-q-row:active { background: #333; }
+button.gen-q-row:focus-visible { outline: 2px solid var(--ab-ring); outline-offset: -2px; }
+.gen-q-row:disabled { cursor: default; }
+.gen-q [data-unavailable] .gen-q-row { opacity: .55; }
+.gen-q-key {
+  display: inline-grid; place-items: center; flex-shrink: 0; width: 22px; height: 22px; border-radius: 6px;
+  font-size: 12px; line-height: 1; font-weight: 600; color: var(--ab-fg); background: color-mix(in srgb, var(--ab-fg) 12%, transparent);
+}
+.dark .gen-q-key { background: #414141; color: #fff; }
+.gen-q-key[data-chosen], .dark .gen-q-key[data-chosen] { background: var(--ab-accent); color: #fff; }
 /* the chosen one: a ring (never a border, so a choice keeps its size) and a deeper fill */
 /* a setting opened from Settings' search: a ring that fades (SettingsView `settings-found`) */
 @keyframes settings-found { 0%, 40% { outline-color: color-mix(in srgb, var(--ab-primary) 70%, transparent); } to { outline-color: transparent; } }
