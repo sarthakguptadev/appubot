@@ -164,7 +164,7 @@ html[data-theme="messages"] .chat-round:not([data-recording]) {
 }
 html[data-theme="messages"] .chat-round:not([data-recording]):hover { background-image: linear-gradient(var(--ab-surface-2), var(--ab-surface-2)); scale: none; }
 html[data-theme="messages"] .chat-round svg { width: 17px; height: 17px; }
-/* send and stop keep their solid ink: the one filled thing in the row */
+/* send, voice mode and stop are solid in the bot's colour: the one filled thing in the row */
 html[data-theme="messages"] .chat-send { height: 40px; min-width: 40px; }
 html[data-theme="messages"] .chat-send:not([data-recording]) { width: 40px; }
 html[data-theme="messages"] .chat-send svg { width: 17px; height: 17px; }

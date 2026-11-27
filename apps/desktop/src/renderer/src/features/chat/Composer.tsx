@@ -11,7 +11,7 @@ import type { Bot, SlashCommand, Thread } from '@appubot/protocol';
 import { ArrowUp, File, Paperclip, Plus, VoiceWave, X } from '../../components/ui/icons';
 import { Icon, Menu, Tooltip, cn, type MenuItem } from '../../components/ui';
 import { call } from '../../lib/actions';
-import { basename, mentionChoices, mentionQuery } from '@appubot/chat-core';
+import { basename, mentionChoices, mentionQuery, sentBubble } from '@appubot/chat-core';
 import { isSendKey } from '../../lib/appearance';
 import { native } from '../../lib/native';
 import { getState, pushToast, useStore } from '../../lib/store';
@@ -160,7 +160,8 @@ function Tile({ onRemove, label, children }: { onRemove: () => void; label: stri
  * button and + round glass, the field a pill of its own.
  */
 const SEND = cn(
-  // Rare UI's send button: an ink circle that gives under the pointer and springs back, faint while there is nothing to send
+  // Rare UI's send button: a circle (the bot's colour, set by the composer; ink where there is no bot) that gives under
+  // the pointer and springs back, faint while there is nothing to send
   'chat-send ab-press ab-pill squircle flex shrink-0 items-center justify-center rounded-control bg-fg text-[color:var(--ab-inverse)]',
   'focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-bg),0_0_0_4px_var(--ab-ring)] disabled:opacity-20',
 );
@@ -215,7 +216,7 @@ const AddButton = memo(function AddButton({ files = true, extra = [], onFiles, o
     return (
       <Tooltip label={t('composer.attach')} side="top">
         <button type="button" aria-label={t('composer.attach')} onClick={() => void attach()} className={ADD}>
-          <Icon icon={Plus} size={15} />
+          <Icon icon={Plus} size={16} strokeWidth={2} />
         </button>
       </Tooltip>
     );
@@ -226,7 +227,7 @@ const AddButton = memo(function AddButton({ files = true, extra = [], onFiles, o
       className="min-w-[210px]"
       trigger={(p) => (
         <button {...p} type="button" aria-label={t('composer.add')} className={ADD}>
-          <Icon icon={Plus} size={15} />
+          <Icon icon={Plus} size={16} strokeWidth={2} />
         </button>
       )}
       items={[
@@ -335,8 +336,11 @@ export function Composer({ thread, bot, draftKey, placeholder, onSend, autoFocus
   const hasDraft = text.trim().length > 0 || images.length > 0 || paths.length > 0 || files.length > 0 || quotes.length > 0;
   // the bot working doesn't hold a message back: it goes into the turn (Claude Code) or right after it
   const canSend = hasDraft;
-  // the round button: the ink circle (the bot's colour on it read badly, the owner's call 2026-11-17)
+  // the round button (send, voice mode, stop) in the bot's colour, as Grok Bot's is: your bubbles' own fill and white ink
+  // (chat-core `sentBubble`). The owner's call 2026-11-27, reversing his 2026-11-17 one for the ink circle.
   const ROUND = cn(SEND, 'size-7 transition-[filter] duration-100 hover:brightness-90');
+  const tone = bot ? sentBubble(bot.color) : null;
+  const roundStyle = tone ? { backgroundColor: tone.fill, color: tone.ink } : undefined;
   // ChatGPT's composer: with nothing typed, send's slot starts voice mode instead
   const voiceSlot = voice && !!bot && !hasDraft && !sending && !dictating;
 
@@ -549,7 +553,7 @@ export function Composer({ thread, bot, draftKey, placeholder, onSend, autoFocus
           {/* while the bot works and nothing is typed: Stop (typing brings Send back, and that message reaches it mid-task) */}
           {onStop && !hasDraft ? (
             <Tooltip label={t('composer.stop')} side="top">
-              <button type="button" aria-label={t('composer.stop')} onClick={onStop} className={ROUND}>
+              <button type="button" aria-label={t('composer.stop')} onClick={onStop} className={ROUND} style={roundStyle}>
                 <span aria-hidden className="block size-2.5 rounded-[2px] bg-current" />
               </button>
             </Tooltip>
@@ -561,20 +565,21 @@ export function Composer({ thread, bot, draftKey, placeholder, onSend, autoFocus
                 onClick={() => void call('chat.cancel', { threadId: thread.id }, { errorTitle: t('composer.stopFailed') })}
                
                 className={ROUND}
+                style={roundStyle}
               >
                 <span aria-hidden className="block size-2.5 rounded-[2px] bg-current" />
               </button>
             </Tooltip>
           ) : onVoiceText && voice && !hasDraft && !sending ? (
-            <DictateButton round onText={onVoiceText} className={cn(ROUND, 'chat-round')} />
+            <DictateButton round onText={onVoiceText} className={cn(ROUND, 'chat-round')} style={roundStyle} />
           ) : voiceSlot && bot ? (
             <Tooltip label={t('composer.voice')} side="top">
-              <button type="button" aria-label={t('composer.voice')} onClick={() => startVoice(bot.id, thread?.id ?? null)} className={cn(ROUND, 'chat-round')}>
+              <button type="button" aria-label={t('composer.voice')} onClick={() => startVoice(bot.id, thread?.id ?? null)} className={cn(ROUND, 'chat-round')} style={roundStyle}>
                 <Icon icon={VoiceWave} size={16} />
               </button>
             </Tooltip>
           ) : dictating && !hasDraft ? null /* listening: its ✓ Done is the round button for now */ : (
-            <button type="button" aria-label={t('composer.send')} disabled={!canSend} onClick={() => void send()} className={ROUND}>
+            <button type="button" aria-label={t('composer.send')} disabled={!canSend} onClick={() => void send()} className={ROUND} style={roundStyle}>
               <Icon icon={ArrowUp} size={15} />
             </button>
           )}

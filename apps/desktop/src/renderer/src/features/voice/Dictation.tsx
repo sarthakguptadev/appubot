@@ -5,7 +5,7 @@
 // The speech model downloads on first use (the chat's notice shows how far).
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { VOICE_MAX_SECONDS } from '@appubot/protocol';
-import { ArrowUp, Check, Mic, VoiceWave, X } from '../../components/ui/icons';
+import { ArrowUp, Check, MicSolid, VoiceWave, X } from '../../components/ui/icons';
 import { Icon, Spinner, Tooltip, cn } from '../../components/ui';
 import { call } from '../../lib/actions';
 import { errorMessage, gateway, localGateway, rpc } from '../../lib/gateway';
@@ -193,7 +193,7 @@ export function DictateButton({ onText, disabled, round, className, style, onAct
         style={round ? style : undefined}
         className={round ? className : cn(QUIET_ROUND, className)}
       >
-        {state === 'transcribing' || state === 'opening' ? <Spinner size={13} /> : <Icon icon={round ? VoiceWave : Mic} size={16} strokeWidth={round ? undefined : 1.9} />}
+        {state === 'transcribing' || state === 'opening' ? <Spinner size={13} /> : <Icon icon={round ? VoiceWave : MicSolid} size={16} />}
       </button>
     </Tooltip>
   );

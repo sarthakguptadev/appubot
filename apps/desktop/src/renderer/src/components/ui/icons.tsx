@@ -253,12 +253,13 @@ export const Sun = createIcon(Sun03Icon, 'Sun');
 export const Moon = createIcon(Moon02Icon, 'Moon');
 
 /**
- * Voice mode's glyph on the composer's round button (2026-11-17, the owner's call: Hugeicons' AudioLines read uneven at
- * that size, "make one"): five round-capped bars, tallest in the middle, one weight whatever the size. Drawn here
- * rather than from Hugeicons, so it is the one hand-drawn icon in the set.
+ * Voice mode's glyph on the composer's round button, Grok Bot's (the owner's call, 2026-11-27, after his own of
+ * 2026-11-17 for a hand-drawn one): five round-capped bars, the 2nd and 4th tall, the middle one half as tall, the outer
+ * two short, measured off his shot of Grok Bot's composer. Drawn here rather than from Hugeicons, as is the composer's
+ * mic below.
  */
 const VOICE_WAVE_BARS: readonly (readonly [number, number, number])[] = [
-  [4, 10, 14], [8, 7, 17], [12, 4, 20], [16, 7.5, 16.5], [20, 10, 14],
+  [2.3, 9.2, 14.8], [7.1, 3, 21], [12, 8, 16], [16.9, 3, 21], [21.7, 9.2, 14.8],
 ];
 export const VoiceWave: IconComponent = forwardRef<SVGSVGElement, IconProps>(function VoiceWave(
   { size = 24, strokeWidth: _sw, absoluteStrokeWidth: _a, color = 'currentColor', ...rest },
@@ -267,8 +268,21 @@ export const VoiceWave: IconComponent = forwardRef<SVGSVGElement, IconProps>(fun
   return (
     <svg ref={ref} xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" {...rest}>
       {VOICE_WAVE_BARS.map(([x, y1, y2]) => (
-        <line key={x} x1={x} x2={x} y1={y1} y2={y2} stroke={color} strokeWidth={2.4} strokeLinecap="round" />
+        <line key={x} x1={x} x2={x} y1={y1} y2={y2} stroke={color} strokeWidth={2.6} strokeLinecap="round" />
       ))}
+    </svg>
+  );
+}) as IconComponent;
+
+/** The composer's mic, Grok Bot's: a filled capsule in a U-shaped cradle on a short stem, no foot. */
+export const MicSolid: IconComponent = forwardRef<SVGSVGElement, IconProps>(function MicSolid(
+  { size = 24, strokeWidth: _sw, absoluteStrokeWidth: _a, color = 'currentColor', ...rest },
+  ref,
+) {
+  return (
+    <svg ref={ref} xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" {...rest}>
+      <rect x={8.25} y={1} width={7.5} height={14} rx={3.75} fill={color} />
+      <path d="M4 8.5v.5a8 9.6 0 0 0 16 0v-.5M12 18.8V22.6" stroke={color} strokeWidth={1.9} strokeLinecap="round" />
     </svg>
   );
 }) as IconComponent;
