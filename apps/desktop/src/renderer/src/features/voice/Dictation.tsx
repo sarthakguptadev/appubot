@@ -5,7 +5,7 @@
 // The speech model downloads on first use (the chat's notice shows how far).
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { VOICE_MAX_SECONDS } from '@appubot/protocol';
-import { ArrowUp, Check, Mic, VoiceWave, X } from '../../components/ui/icons';
+import { ArrowUp, Check, MicSolid, VoiceWave, X } from '../../components/ui/icons';
 import { Icon, Spinner, Tooltip, cn } from '../../components/ui';
 import { call } from '../../lib/actions';
 import { errorMessage, gateway, localGateway, rpc } from '../../lib/gateway';
@@ -21,7 +21,7 @@ type DictationState = 'idle' | 'opening' | 'recording' | 'transcribing';
 
 /** A quiet round control in the composer: a faint fill and hairline, the glyph a step back from the text (+, the mic, ✕). */
 export const QUIET_ROUND =
-  'ab-press ab-pill squircle flex size-8 shrink-0 items-center justify-center rounded-control bg-fg/[.06] text-fg/60 shadow-[inset_0_0_0_.5px_color-mix(in_srgb,var(--ab-fg)_9%,transparent)] hover:bg-fg/10 hover:text-fg focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)] disabled:opacity-50';
+  'ab-press ab-pill squircle flex size-7 shrink-0 items-center justify-center rounded-control bg-fg/[.06] text-fg/60 shadow-[inset_0_0_0_.5px_color-mix(in_srgb,var(--ab-fg)_9%,transparent)] hover:bg-fg/10 hover:text-fg focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)] disabled:opacity-50';
 
 /** how many bars the listening strip draws: the newest on the right */
 const BARS = 18;
@@ -29,7 +29,7 @@ const BARS = 18;
 /** The mic's level while it listens: the last `BARS` readings as bars, and the time. */
 function ListeningStrip({ levels, elapsed }: { levels: number[]; elapsed: number }) {
   return (
-    <span aria-hidden className="flex h-8 shrink-0 items-center gap-2 pr-1 pl-1.5">
+    <span aria-hidden className="flex h-7 shrink-0 items-center gap-2 pr-1 pl-1.5">
       <span className="flex h-5 items-center gap-[2px]">
         {Array.from({ length: BARS }, (_, i) => {
           const v = levels[levels.length - BARS + i] ?? 0;
@@ -172,7 +172,7 @@ export function DictateButton({ onText, disabled, round, className, style, onAct
             aria-label={round ? 'Send' : t('composer.dictateStop')}
             onClick={() => void finish()}
             style={round ? style : undefined}
-            className={round ? cn(className, 'size-8') : 'ab-press ab-pill squircle flex size-8 shrink-0 items-center justify-center rounded-control bg-fg text-[color:var(--ab-inverse)] transition-[filter] duration-100 hover:brightness-90 focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]'}
+            className={round ? cn(className, 'size-7') : 'ab-press ab-pill squircle flex size-7 shrink-0 items-center justify-center rounded-control bg-fg text-[color:var(--ab-inverse)] transition-[filter] duration-100 hover:brightness-90 focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ab-ring)]'}
           >
             <Icon icon={round ? ArrowUp : Check} size={round ? 15 : 14} strokeWidth={2.4} />
           </button>
@@ -193,7 +193,7 @@ export function DictateButton({ onText, disabled, round, className, style, onAct
         style={round ? style : undefined}
         className={round ? className : cn(QUIET_ROUND, className)}
       >
-        {state === 'transcribing' || state === 'opening' ? <Spinner size={13} /> : <Icon icon={round ? VoiceWave : Mic} size={16} strokeWidth={round ? undefined : 1.9} />}
+        {state === 'transcribing' || state === 'opening' ? <Spinner size={13} /> : <Icon icon={round ? VoiceWave : MicSolid} size={16} />}
       </button>
     </Tooltip>
   );

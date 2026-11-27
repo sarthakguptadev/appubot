@@ -66,6 +66,12 @@ html[data-platform="win32"], html[data-platform="linux"] {
 html:not([data-shape="squircle"]) .ab-pill { border-radius: 9999px; -electron-corner-smoothing: 0%; }
 /* the chat box round its round buttons: their radius plus the room between them and its edge */
 html:not([data-shape="squircle"]) .chat-composer { border-radius: 22px; }
+/* the composer's parts (Composer.tsx): + | the draft | the buttons on one line; once the draft runs to a second line
+   it takes the top, a little in from the edge, and + and the buttons drop to a row under it (Grok Bot's). The
+   Messages theme keeps its floating pieces in one row. */
+.chat-composer { grid-template-areas: "add field actions"; }
+html:not([data-theme="messages"]) .chat-composer[data-tall] { grid-template-areas: "field field field" "add . actions"; }
+html:not([data-theme="messages"]) .chat-composer[data-tall] .chat-composer-field { padding-inline: 8px; }
 
 /* element defaults live in the base layer so utilities (outline-none, cursor-*) can override them */
 @layer base {
