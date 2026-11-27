@@ -1,4 +1,8 @@
-import { AppsAdd, BarChart3, Blocks, CreditCard, Download, FileText, HardDrive, Info, KeyRound, Mic, MousePointerClick, Send, MonitorSmartphone, ShieldCheck, SlidersHorizontal, Sparkles, Sun, Upload, User, Users, type LucideIcon } from '../../components/ui/icons';
+import { AppsAdd, type LucideIcon } from '../../components/ui/icons';
+import {
+  SettingsBlocks, SettingsCard, SettingsChart, SettingsDevices, SettingsDownload, SettingsDrive, SettingsFileText, SettingsGear, SettingsInfo,
+  SettingsMic, SettingsMonitor, SettingsSend, SettingsShield, SettingsSparkles, SettingsSun, SettingsUpload, SettingsUser, SettingsUsers, SettingsVault,
+} from './settingsIcons';
 import type { SettingsSection } from '../../lib/store';
 import { ACP_REGISTRY } from '@appubot/protocol';
 import { COMPUTER_USE, IS_MAC } from '../../lib/platform';
@@ -70,26 +74,26 @@ const page = (id: SettingsSection, icon: LucideIcon): SettingsPage => ({
 });
 
 export const SETTINGS_PAGES: SettingsPage[] = [
-  page('account', User),
-  page('billing', CreditCard),
-  page('team', Users),
-  page('providers', Blocks),
-  page('usage', BarChart3),
-  page('instructions', FileText),
+  page('account', SettingsUser),
+  page('billing', SettingsCard),
+  page('team', SettingsUsers),
+  page('providers', SettingsBlocks),
+  page('usage', SettingsChart),
+  page('instructions', SettingsFileText),
   page('apps', AppsAdd),
-  page('vault', KeyRound),
-  page('voice', Mic),
-  page('channels', Send),
-  page('transfer', Upload),
-  page('import', Download),
-  page('general', SlidersHorizontal),
-  page('appearance', Sun),
-  page('computer', MousePointerClick),
-  page('permissions', ShieldCheck),
-  page('devices', MonitorSmartphone),
-  page('about', Info),
-  page('whats-new', Sparkles),
-  page('storage', HardDrive),
+  page('vault', SettingsVault),
+  page('voice', SettingsMic),
+  page('channels', SettingsSend),
+  page('transfer', SettingsUpload),
+  page('import', SettingsDownload),
+  page('general', SettingsGear),
+  page('appearance', SettingsSun),
+  page('computer', SettingsMonitor),
+  page('permissions', SettingsShield),
+  page('devices', SettingsDevices),
+  page('about', SettingsInfo),
+  page('whats-new', SettingsSparkles),
+  page('storage', SettingsDrive),
 ];
 
 export function settingsPage(id: SettingsSection): SettingsPage {

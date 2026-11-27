@@ -1,6 +1,8 @@
 import { useT } from '../../lib/i18n';
 import { useEffect, useRef, useState, type ComponentType, type KeyboardEvent, type RefObject } from 'react';
-import { Search, X } from '../../components/ui/icons';
+import { X } from '../../components/ui/icons';
+import { SettingsSearch, SettingsX } from './settingsIcons';
+import './settings.css';
 import { Button, Icon, Kbd, MODAL_BACKDROP, MODAL_SURFACE, cn, isDialogOpen } from '../../components/ui';
 import { useHotkey } from '../../lib/hooks';
 import { ui, useStore, type SettingsSection } from '../../lib/store';
@@ -38,9 +40,10 @@ import { useCloudLacks } from '../cloud/useCloudLacks';
 import { useCloud } from '../cloud/cloudAccount';
 
 /*
- * Settings is a centred overlay over the dimmed app, about 898×700 (2026-11-27, after Grok Bot's): Esc, ✕ or a click
- * outside closes it, and it opens and closes in one frame. The section nav runs down its left (search with "/", 36px
- * rows) and the section's page sits beside it: its title and one line, then titled cards, all on one left edge; ✕ at
+ * Settings is a centred overlay over the dimmed app, about 898×700, drawn as Grok Bot's Settings is (the owner's call
+ * 2026-11-27, measured from his screenshot: settings.css holds its colours): Esc, ✕ or a click outside closes it, and
+ * it opens and closes in one frame. A 197px nav down its left (search with "/", 32px rows, 15px labels, Lucide's
+ * icons) and the section's page beside it: a 20px title, then small grey labels over rounded cards of 48px rows; ✕ at
  * the top right.
  */
 
@@ -68,21 +71,14 @@ const PAGES: Record<SettingsSection, ComponentType> = {
 };
 
 /*
- * The nav's rows: 36px, 14px, rounded rectangles whose corners are the Settings sheet's less the nav's 10px of padding
- * (22 − 10 = 12), never pills; a light wash under the pointer, and the chosen or pressed one a darker wash and a
- * semibold label, in place (T3 Code's: nothing slides between rows).
+ * The nav's rows, Grok Bot's: 32px, 2px apart, a 16px icon and a 15px label in the text colour, 10px corners; a light
+ * fill under the pointer, and the chosen or pressed one the darker fill, in place.
  */
 const NAV_ROW =
-  'squircle no-drag relative isolate flex h-9 w-full min-w-0 items-center gap-2.5 rounded-control-lg px-2.5 text-left text-copy select-none outline-none ' +
-  'focus-visible:ring-2 focus-visible:ring-[var(--ab-ring)] focus-visible:ring-inset [&>svg]:text-muted';
-const NAV_ROW_IDLE = 'text-fg-2 hover:bg-[color-mix(in_srgb,var(--ab-fg)_5%,transparent)] hover:text-fg active:bg-[color-mix(in_srgb,var(--ab-fg)_10%,transparent)]';
-const NAV_ROW_ACTIVE = 'font-semibold tracking-ui text-fg [&>svg]:text-fg';
-const NAV_WASH = 'squircle absolute inset-0 -z-10 rounded-control-lg bg-[color-mix(in_srgb,var(--ab-fg)_10%,transparent)]';
-
-/** The chosen row's wash. */
-function NavWash() {
-  return <span aria-hidden className={NAV_WASH} />;
-}
+  'no-drag relative flex h-8 w-full min-w-0 items-center gap-2 rounded-[10px] px-[9px] text-left text-[15px] leading-5 text-fg select-none outline-none ' +
+  'focus-visible:ring-2 focus-visible:ring-[var(--ab-ring)] focus-visible:ring-inset';
+const NAV_ROW_IDLE = 'hover:bg-[var(--st-hover)] active:bg-[var(--st-selected)]';
+const NAV_ROW_ACTIVE = 'bg-[var(--st-selected)]';
 
 /** Which pages show here: Voice on a cloud computer only once it reads aloud, no Account/Billing without the account service, Team only on a team. */
 function useShownPages(): (id: SettingsSection) => boolean {
@@ -124,7 +120,7 @@ function SettingsNav({ query, setQuery, input, onSearchKey }: {
   // one flat list, no headings (the owner's call 2026-11-14, "rm grouping in settings"); the rows keep the order
   // nav.ts lists them in: account, AI, connections, the computer, the app
   const rows = (
-    <ul className="mt-1 flex flex-col gap-0.5">
+    <ul className="flex flex-col gap-0.5">
       {SETTINGS_NAV_ITEMS.map((r) => shownRow(r, shown)).filter((r) => r !== null).map(({ item: r, pages }) => {
         const on = !searching && pages.includes(active);
         return (
@@ -135,7 +131,6 @@ function SettingsNav({ query, setQuery, input, onSearchKey }: {
               className={cn(NAV_ROW, on ? NAV_ROW_ACTIVE : NAV_ROW_IDLE)}
               onClick={() => { setQuery(''); ui.openSettings(r.id); }}
             >
-              {on ? <NavWash /> : null}
               <Icon icon={r.icon} size={16} className="shrink-0" />
               <span className="truncate">{r.label}</span>
               {pages.includes('permissions') && permissionsNeeded ? <span aria-label={t('settings.needsAttention')} className="ml-auto size-1.5 shrink-0 rounded-full bg-attention" /> : null}
@@ -147,11 +142,12 @@ function SettingsNav({ query, setQuery, input, onSearchKey }: {
   );
 
   return (
-    <nav aria-label={t('settings.nav.aria')} className="flex w-[224px] shrink-0 flex-col border-e border-[var(--ab-hairline)] bg-[var(--ab-settings-nav)]">
-      {/* the top: the search field, always there (the owner's call 2026-11-27: "like command K but for it") */}
-      <div className="flex h-14 shrink-0 items-center px-2.5">
-        <label className="ab-pill squircle no-drag flex h-9 w-full items-center gap-2.5 rounded-control-sm bg-surface-2 px-2.5 text-copy font-medium text-muted hover:bg-surface-3 focus-within:bg-surface-3">
-          <Icon icon={Search} size={16} className="shrink-0 text-muted/80" />
+    <nav aria-label={t('settings.nav.aria')} className="flex w-[197px] shrink-0 flex-col border-e border-[var(--st-divider)]">
+      {/* the top: the search field, always there (the owner's call 2026-11-27: "like command K but for it"), a nav
+          row's size and shape with a hairline round it */}
+      <div className="shrink-0 px-3 pt-[17px] pb-2">
+        <label className="no-drag flex h-8 w-full items-center gap-2 rounded-[10px] px-[9px] text-[15px] text-muted shadow-[inset_0_0_0_1px_var(--st-field-edge)] hover:bg-[var(--st-hover)] focus-within:bg-[var(--st-hover)]">
+          <Icon icon={SettingsSearch} size={16} className="shrink-0" />
           <input
             ref={input}
             type="search"
@@ -167,7 +163,7 @@ function SettingsNav({ query, setQuery, input, onSearchKey }: {
             aria-expanded={searching}
             aria-controls={RESULTS_ID}
             aria-autocomplete="list"
-            className="min-w-0 flex-1 bg-transparent text-copy font-normal text-fg outline-none placeholder:font-medium placeholder:text-muted [&::-webkit-search-cancel-button]:hidden"
+            className="min-w-0 flex-1 bg-transparent text-[15px] text-fg outline-none placeholder:text-muted [&::-webkit-search-cancel-button]:hidden"
           />
           {searching ? (
             <button type="button" aria-label={t('settings.search.clear')} onMouseDown={(e) => e.preventDefault()} onClick={() => { setQuery(''); input.current?.focus(); }} className="ab-pill flex size-5 shrink-0 items-center justify-center rounded text-muted hover:text-fg">
@@ -176,7 +172,7 @@ function SettingsNav({ query, setQuery, input, onSearchKey }: {
           ) : <Kbd>{shortcut('F')}</Kbd>}
         </label>
       </div>
-      <div className="no-drag min-h-0 flex-1 overflow-x-hidden overflow-y-auto px-2.5 pb-2.5">
+      <div className="no-drag min-h-0 flex-1 overflow-x-hidden overflow-y-auto px-3 pb-3">
         {/* whose settings these are: this Mac, the person's cloud computer or a team's (nothing where there is only this one) */}
         <div className="pb-2 empty:hidden"><ComputerMenu inSettings /></div>
         {rows}
@@ -269,14 +265,13 @@ function SettingsContent() {
     <div className="relative flex min-h-0 min-w-0 flex-1 flex-col">
       {/* a header row above the scroller, so ✕ never sits on the scrollbar or a card: the page's title and line on the
           content's left edge (the same gutter as the scroller below, so they line up), ✕ level with the title */}
-      <div className="relative mr-1.5 shrink-0 overflow-hidden pt-6 [scrollbar-gutter:stable]">
-        <header className="mx-auto flex w-full max-w-4xl flex-col gap-1 pr-14 pl-6 pb-4">
-          <h1 className="text-heading leading-7 font-semibold tracking-[-0.02em] text-fg">{title}</h1>
-          {/* a cloud computer has no lid, sleep or startup to speak of */}
-          <p className="text-copy leading-normal text-muted">{section === 'general' && onCloud ? t('settings.page.general.desc.cloud') : page.description}</p>
+      <div className="relative mr-1.5 shrink-0 overflow-hidden pt-8 [scrollbar-gutter:stable]">
+        <header className="mx-auto flex w-full max-w-4xl flex-col pr-14 pl-[45px]">
+          {/* the title alone, as Grok Bot's pages have it (each page's line stays its tooltip and the search's) */}
+          <h1 title={section === 'general' && onCloud ? t('settings.page.general.desc.cloud') : page.description} className="text-[20px] leading-6 font-medium text-fg">{title}</h1>
           {/* a row holding several pages: one tab each (Agents | Usage, About | What’s new | Storage) */}
           {tabs.length ? (
-            <div role="tablist" aria-label={nav?.item.label} className="mt-3 flex gap-1 border-b border-[var(--ab-hairline)]">
+            <div role="tablist" aria-label={nav?.item.label} className="mt-4 -ml-2.5 flex gap-1 border-b border-[var(--st-divider)]">
               {tabs.map((id) => {
                 const on = id === section;
                 return (
@@ -287,7 +282,7 @@ function SettingsContent() {
                     aria-selected={on}
                     onClick={() => ui.openSettings(id)}
                     className={cn(
-                      'relative -mb-px flex h-9 items-center gap-1.5 px-2.5 text-copy font-semibold tracking-ui outline-none focus-visible:ring-2 focus-visible:ring-[var(--ab-ring)] focus-visible:ring-inset',
+                      'relative -mb-px flex h-9 items-center gap-1.5 px-2.5 text-[15px] outline-none focus-visible:ring-2 focus-visible:ring-[var(--ab-ring)] focus-visible:ring-inset',
                       on ? 'text-fg' : 'text-muted hover:text-fg',
                     )}
                   >
@@ -304,7 +299,7 @@ function SettingsContent() {
       </div>
       {/* inset from the window's bottom edge and rounded corners: the scrollbar floats inside, like the chat's */}
       <div ref={scroller} tabIndex={-1} className="mr-1.5 mb-3 min-h-0 flex-1 overflow-y-auto outline-none [scrollbar-gutter:stable]">
-        <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-6 pt-4 pb-9">
+        <div className="settings-page mx-auto flex w-full max-w-4xl flex-col gap-7 pt-[27px] pr-4 pb-9 pl-8">
           <Page key={section} />
         </div>
       </div>
@@ -400,11 +395,11 @@ export function SettingsModal() {
         aria-label={t('common.settings')}
         tabIndex={-1}
         onKeyDown={onKey}
-        className={cn(MODAL_SURFACE, 'no-drag relative flex h-[min(700px,calc(100vh-48px))] w-[min(898px,calc(100vw-48px))] min-h-0 min-w-0 overflow-hidden outline-none')}
+        className={cn(MODAL_SURFACE, 'settings-sheet no-drag relative flex h-[min(700px,calc(100vh-48px))] w-[min(898px,calc(100vw-48px))] min-h-0 min-w-0 overflow-hidden rounded-[16px] outline-none')}
       >
         <SettingsNav query={query} setQuery={setQuery} input={input} onSearchKey={onSearchKey} />
         {searching ? <SettingsResults results={results} at={Math.min(at, Math.max(0, results.length - 1))} setAt={setAt} onPick={pick} /> : <SettingsContent />}
-        <Button variant="ghost" size="icon-sm" icon={X} aria-label={t('common.close')} onClick={ui.closeSettings} className="absolute top-4 right-4" />
+        <Button variant="ghost" size="icon-sm" icon={SettingsX} aria-label={t('common.close')} onClick={ui.closeSettings} className="absolute top-2.5 right-2.5" />
       </div>
     </div>
   );

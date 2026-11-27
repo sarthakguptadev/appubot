@@ -18,14 +18,14 @@ export function SettingsGroup({ title, description, action, children, className,
   bare?: boolean;
 }) {
   return (
-    <section id={title ? settingAnchorId(title) : undefined} className={cn('flex scroll-mt-24 flex-col gap-2.5 not-first:mt-8', className)}>
+    <section id={title ? settingAnchorId(title) : undefined} className={cn('flex scroll-mt-24 flex-col gap-[9px] not-first:mt-7', className)}>
       {title ? (
-        <div className="flex min-h-7 items-start justify-between gap-4">
+        <div className="flex min-h-4 items-end justify-between gap-4 px-[13px]">
           <h2 className={SETTINGS_SECTION_TITLE}>{title}</h2>
-          {action ? <div className="flex min-h-7 items-center justify-end">{action}</div> : null}
+          {action ? <div className="-my-1.5 flex items-center justify-end">{action}</div> : null}
         </div>
       ) : null}
-      {description ? <p className="-mt-1 text-note leading-normal text-muted">{description}</p> : null}
+      {description ? <p className="px-[13px] text-[13px] leading-4 text-muted">{description}</p> : null}
       {bare ? children : <SettingsCard>{children}</SettingsCard>}
     </section>
   );

@@ -53,6 +53,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       ref={ref}
       type={type}
       data-slot="button"
+      data-variant={variant}
+      data-size={size}
       disabled={disabled || loading}
       className={cn(
         'group/btn ab-press ab-pill squircle no-drag inline-flex shrink-0 items-center justify-center font-semibold leading-none tracking-ui whitespace-nowrap select-none',
