@@ -5,7 +5,8 @@
  * mascot, drawn flat but moving like a solid (chat-core botHead: its head turns and nods, the face sliding round it, the
  * near eye bigger, the outline narrowing, right round the back on a spin): resting it sits still, upright and facing
  * you, and when the pointer comes near it turns its head toward it and follows it with its eyes; a turn that starts makes its eyes big; thinking, it turns away and collapses into three
- * dots that light up in turn (in small places, `compact`, the dots light up in its visor instead); on a tool it runs
+ * dots that light up in turn (in small places, `compact`, it stays itself, its eyes as at rest, and turns its head to
+ * look up to one side, then the other); on a tool it runs
  * Grok Bot's working routine (glances, blinks, flips, looks about, rolls, spins and wobbles, each eye its own size);
  * typing, it turns toward the text with big eyes; done, it grows back with happy eyes, wobbles like jelly and dances,
  * and stays happy a while. Every motion turns round the avatar's middle, so it stays centred. Needing you it hops for
@@ -147,7 +148,7 @@ export function BotAvatar({ bot, shape: shapeProp, figure: figureProp, color: co
   mood?: BotMood;
   /** no motion at all */
   still?: boolean;
-  /** a small place (a sidebar row, the chat header, a pinned tile): thinking, it stays itself with the dots in its visor */
+  /** a small place (a sidebar row, the chat header, a pinned tile): thinking, it stays itself, eyes as at rest, and ponders */
   compact?: boolean;
   /** the happy face and cheer when work ends (default on) */
   cheer?: boolean;
@@ -223,13 +224,6 @@ export function BotAvatar({ bot, shape: shapeProp, figure: figureProp, color: co
                       </g>
                     ))}
                   </g>
-                  {compact ? (
-                    <g className="ab-bot-vdots">
-                      {[-1, 0, 1].map((k) => (
-                        <circle key={k} className={`ab-bot-vdot ab-bot-vdot-${k + 1}`} cx={50 + k * v.w * 0.22} cy={cy} r={v.h * 0.16} fill={look.eye} />
-                      ))}
-                    </g>
-                  ) : null}
                 </g>
               </g>
             </g></g>

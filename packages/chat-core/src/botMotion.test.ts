@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { BotShape, type Part } from '@appubot/protocol';
 import {
-  BOT_BASE, BOT_CHEER, BOT_DOT_LOOP, BOT_DOTS, BOT_EASE_CSS, BOT_HEAD, BOT_LOOPS, BOT_LOOPS_FROM_START, BOT_MIDDLE, BOT_MORPH, BOT_MOTION, BOT_POSES, BOT_TURN, BOT_WORK_MOODS, botGaze,
+  BOT_BASE, BOT_CHEER, BOT_COMPACT_LOOPS, BOT_DOT_LOOP, BOT_DOTS, BOT_EASE_CSS, BOT_HEAD, BOT_LOOPS, BOT_LOOPS_FROM_START, BOT_MIDDLE, BOT_MORPH, BOT_MOTION, BOT_POSES, BOT_TURN, BOT_WORK_MOODS, botGaze,
   botHandoff, botHead, botShown, botTurn, botWorkMood, cheersAt, motionEase, poseEase, sampleTrack, squash, type BotMood, type BotTrack,
 } from './botMotion';
 
@@ -224,6 +224,20 @@ describe('bot motion: Grok Bot, measured', () => {
     expect(Math.min(...wobble)).toBeCloseTo(-48.1, 1);
     expect(at(rotate, 27600)).toBe(-48.1);
     expect(at(rotate, 27917)).toBe(36.7);
+  });
+
+  it('ponders in a small place: the head turns to look up to the left, then the right, eyes untouched', () => {
+    const ponder = BOT_COMPACT_LOOPS.thinking!;
+    expect(BOT_COMPACT_LOOPS.working).toBe(ponder);
+    const slide = ponder.find((t) => t.layer === 'face' && t.prop === 'translate')!;
+    expect(sampleTrack(slide, 1200, true, 0)).toBeLessThan(-8);
+    expect(sampleTrack(slide, 1200, true, 1)).toBeLessThan(-3);
+    expect(sampleTrack(slide, 2900, true, 0)).toBeGreaterThan(8);
+    for (const t of ponder) {
+      expect(['head', 'face', 'deepL', 'deepR', 'look'], t.layer).toContain(t.layer);
+      expect(t.prop, t.layer).not.toBe('opacity');
+      expect(t.keys[0]![1], t.layer).toEqual(t.keys.at(-1)![1]);
+    }
   });
 
   it('cheers: a jelly squash at 630 ms, then a three-hop dance from 2.87 s, all within the happy face', () => {

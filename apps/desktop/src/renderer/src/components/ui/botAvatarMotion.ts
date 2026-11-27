@@ -1,7 +1,7 @@
 /**
  * The bot avatar's motion as CSS, from chat-core's state machine (botMotion.ts): every mood's pose, eased with the
  * measured first-order curve (BOT_MOTION.snap/settle, BOT_EASE_CSS); the collapse into the three dots and the growing
- * back (BOT_MORPH, BOT_DOTS, BOT_DOT_LOOP), or in small places (`data-compact`) the dots in the visor instead; the moods'
+ * back (BOT_MORPH, BOT_DOTS, BOT_DOT_LOOP), or in small places (`data-compact`) pondering instead (BOT_COMPACT_LOOPS); the moods'
  * loops (BOT_LOOPS); the happy cheer (BOT_CHEER); and looking at the pointer (BotAvatar.tsx sets `data-look` and the
  * turned head's drawing from botHead: --ab-hx/--ab-hy the outline, --ab-fx/--ab-fy/--ab-fs/--ab-fsy the face,
  * --ab-dlx/--ab-dls and --ab-drx/--ab-drs each eye; --ab-gx/--ab-gy/--ab-lr from botGaze). botAvatar.css holds the rest
@@ -10,7 +10,7 @@
  * purpose: tsconfig.node.json includes it.
  */
 import {
-  BOT_CHEER, BOT_DOT_LOOP, BOT_DOTS, BOT_EASE_CSS, BOT_LOOPS, BOT_LOOPS_FROM_START, BOT_MORPH, BOT_MOTION as M, BOT_POSES, botHead, type BotMood, type BotTrack,
+  BOT_CHEER, BOT_COMPACT_LOOPS, BOT_DOT_LOOP, BOT_DOTS, BOT_EASE_CSS, BOT_LOOPS, BOT_LOOPS_FROM_START, BOT_MORPH, BOT_MOTION as M, BOT_POSES, botHead, type BotMood, type BotTrack,
   type MotionEase,
   type MotionValue,
 } from '@appubot/chat-core';
@@ -104,8 +104,8 @@ function poses(): string[] {
 /**
  * Thinking: the face turns away, the body shrinks into the middle dot and gives way to a plain dot, the side dots grow
  * in, then they light up left to right. Growing back (`data-grow`, set for the handoff by BotAvatar.tsx): the side
- * dots go, the dot grows into the body and gives way to it. In small places (`data-compact`) the bot stays, facing you,
- * and the three dots light up in its visor in place of its eyes.
+ * dots go, the dot grows into the body and gives way to it. In small places (`data-compact`) the bot stays itself, its
+ * eyes as they are at rest, and ponders (chat-core BOT_COMPACT_LOOPS): its head turns to look up to one side, then the other.
  */
 function morph(frames: string[]): string[] {
   const at = is(DOTS).replace('.ab-bot:is', '.ab-bot:not([data-compact]):is');
@@ -139,18 +139,17 @@ function morph(frames: string[]): string[] {
     const list = BOT_DOT_LOOP.tracks.map((t, i) => `ab-bot-k-dot-${i} ${t.ms}ms linear ${ms(lit - offset)} infinite`);
     rules.push(`${at} .ab-bot-dot-${d}{animation:${list.join(',')}}`);
   });
-  // small places: facing you, the eyes give way to the visor's dots at once, lighting up from the start
-  rules.push(
-    `.ab-bot .ab-bot-vdots{opacity:0}`,
-    `.ab-bot .ab-bot-vdot{opacity:${BOT_DOTS.dim}}`,
-    `${compact} :is(.ab-bot-head,.ab-bot-face,.ab-bot-deep){translate:0px 0px;scale:1 1}`,
-    `${compact} .ab-bot-look{opacity:0}`,
-    `${compact} .ab-bot-vdots{opacity:1}`,
-  );
-  BOT_DOT_LOOP.offsets.forEach((offset, d) => {
-    const list = BOT_DOT_LOOP.tracks.map((t, i) => `ab-bot-k-dot-${i} ${t.ms}ms linear ${ms(-offset)} infinite`);
-    rules.push(`${compact} .ab-bot-vdot-${d}{animation:${list.join(',')}}`);
-  });
+  // small places: the bot stays itself, its eyes as they are at rest, and ponders (BOT_COMPACT_LOOPS), each avatar
+  // from its own point in the loop
+  rules.push(`${compact} :is(.ab-bot-head,.ab-bot-face,.ab-bot-deep){translate:0px 0px;scale:1 1}`);
+  const tracks = BOT_COMPACT_LOOPS.thinking ?? [];
+  const byLayer = new Map<string, string[]>();
+  for (const t of tracks) {
+    const name = `ab-bot-k-ponder-${t.layer}-${t.prop}`;
+    frames.push(keyframes(name, t));
+    byLayer.set(t.layer, [...(byLayer.get(t.layer) ?? []), run(name, t, true)]);
+  }
+  for (const [layer, list] of byLayer) rules.push(`${compact} .ab-bot-${layer}{animation:${list.join(',')}}`);
   return rules;
 }
 

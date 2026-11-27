@@ -48,7 +48,7 @@ describe('bot avatar motion CSS', () => {
     expect(delays).toEqual([BOT_MORPH.lit - 920, BOT_MORPH.lit - 460, BOT_MORPH.lit]);
   });
 
-  it('never turns into bare dots in a small place: it stays itself, facing you, the dots lit in its visor', () => {
+  it('never turns into dots in a small place: it stays itself, its eyes as at rest, and ponders, turning its head', () => {
     const compact = ".ab-bot[data-compact]:is([data-mood='thinking'],[data-mood='working'])";
     expect(BOT_MOTION_CSS).not.toContain(`${compact} .ab-bot-morph`);
     expect(BOT_MOTION_CSS).not.toContain(`${compact} .ab-bot-shape`);
@@ -56,10 +56,11 @@ describe('bot avatar motion CSS', () => {
     expect(BOT_MOTION_CSS).not.toMatch(/\.ab-bot\[data-grow\] \.ab-bot-core/);
     expect(BOT_MOTION_CSS).toContain('.ab-bot:not([data-compact])[data-grow] .ab-bot-core{');
     expect(rule(`${compact} :is(.ab-bot-head,.ab-bot-face,.ab-bot-deep)`)).toBe('translate:0px 0px;scale:1 1');
-    expect(rule(`${compact} .ab-bot-look`)).toBe('opacity:0');
-    expect(rule(`${compact} .ab-bot-vdots`)).toBe('opacity:1');
-    const delays = [0, 1, 2].map((d) => Number(/ab-bot-k-dot-0 1380ms linear (-?\d+)ms/.exec(rule(`${compact} .ab-bot-vdot-${d}`))![1]));
-    expect(delays).toEqual([-920, -460, 0]);
+    // the eyes stay: nothing hides, dims or recolours them, and no dots stand in for them
+    expect(BOT_MOTION_CSS).not.toContain('vdot');
+    expect(BOT_MOTION_CSS).not.toMatch(new RegExp(`\\[data-compact\\][^{]*\\.ab-bot-(look|eye|pill)\\{[^}]*(opacity|fill|filter)`));
+    // the head turns about, from each avatar's own point in the loop
+    for (const layer of ['head', 'face', 'deepL', 'deepR', 'look']) expect(rule(`${compact} .ab-bot-${layer}`)).toMatch(/^animation:ab-bot-k-ponder-.*--ab-seed/);
   });
 
   it('turns toward the pointer only at rest, starts the tool routine from its beginning, and never blinks at rest', () => {

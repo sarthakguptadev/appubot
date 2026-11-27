@@ -15,8 +15,9 @@
  *   listening  you sent something and the turn has started: facing you, eyes centred and big.
  *   thinking   the face turns away (69° in 70 ms) and the avatar collapses into the middle of three dots, which then
  *              light up left to right (a typing indicator made of the bot). `working` (busy, step unknown) shows the
- *              same. In small places (`compact`: a sidebar row, the chat header, a pinned tile) it never collapses: the
- *              three dots light up inside its visor instead of its eyes.
+ *              same. In small places (`compact`: a sidebar row, the chat header, a pinned tile) it never collapses: it
+ *              stays itself, its eyes just as they are at rest, and ponders, turning its head to look up to one side,
+ *              then the other (BOT_COMPACT_LOOPS).
  *   tool       a tool is running: Grok Bot's working routine, 30.5 s measured frame by frame from a busy bot's sidebar
  *              row (its chat's working row moved in step with it): turns its head to glance about, the near eye bigger;
  *              blinks with its head tilted; crouches and flips head over heels; looks about round-eyed;
@@ -501,6 +502,30 @@ export const BOT_LOOPS: Readonly<Partial<Record<BotMood, readonly BotTrack[]>>> 
     { layer: 'look', prop: 'scale', ms: 1500, keys: [[0, ONE], [170, [1.06, 0.78]], [430, [1.15, 1.15]], [690, [1.04, 0.8]], [900, [1.1, 1.1]], [1200, ONE], [1500, ONE]] },
   ],
 };
+
+/* thinking in a small place: PONDER ms round, from facing you to looking up to the left, then up to the right */
+const PONDER = 4000;
+const PONDER_KEYS: readonly (readonly [number, number, number])[] = [[0, 0, 0], [700, -30, 12], [1700, -30, 12], [2400, 30, 12], [3400, 30, 12], [PONDER, 0, 0]];
+const ponderAt: HeadAt = (t) => {
+  const next = PONDER_KEYS.findIndex(([at]) => at > t);
+  const i = Math.max(1, next < 0 ? PONDER_KEYS.length - 1 : next) - 1;
+  const [t0, y0, p0] = PONDER_KEYS[i]!;
+  const [t1, y1, p1] = PONDER_KEYS[i + 1]!;
+  const e = t1 > t0 ? motionEase('inOut', clamp((t - t0) / (t1 - t0), 0, 1)) : 1;
+  return { yaw: r3(y0 + (y1 - y0) * e), pitch: r3(p0 + (p1 - p0) * e) };
+};
+
+/**
+ * Loops for a small place (`compact`) that replace the mood's own there. Thinking, the avatar stays itself (never the
+ * three dots, never dots in its visor) with its eyes exactly as they are at rest, and the motion alone says it is
+ * busy: its head turns to look up to the left, holds, turns to look up to the right, holds, and comes back, the eyes
+ * glancing the same way within the visor.
+ */
+const PONDER_TRACKS: readonly BotTrack[] = [
+  ...headTracks(PONDER, PONDER_KEYS.map(([t]) => t), ponderAt, true),
+  { layer: 'look', prop: 'translate', ms: PONDER, keys: PONDER_KEYS.map(([t, yaw, pitch]): MotionKey => [t, [r3((yaw / 30) * 1.5), r3(-(pitch / 12) * 1.5)]]) },
+];
+export const BOT_COMPACT_LOOPS: Readonly<Partial<Record<BotMood, readonly BotTrack[]>>> = { thinking: PONDER_TRACKS, working: PONDER_TRACKS };
 
 /** Moods whose loop starts from its beginning (the tool routine starts still, facing you, as Grok Bot's did). */
 export const BOT_LOOPS_FROM_START: readonly BotMood[] = ['tool'];
