@@ -2,8 +2,8 @@ import { useT } from '../../lib/i18n';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { botThreads, type Bot, type Group, type Thread } from '@appubot/protocol';
 import { GROUP_TILE_MAX, GROUP_TILE_TURN_S, buildRoster, groupTileLayout, rosterPreview, threadTitle } from '@appubot/chat-core';
-import { AppsAdd, ChevronRight, FolderOpen, Pencil, Pin, Plus, Search, Settings, SquarePen, Trash2, User, Users } from '../ui/icons';
-import { BotAvatar, Button, Icon, Menu, Spinner, Tooltip, cn, type BotPresence } from '../ui';
+import { AppsAdd, ChevronRight, CircleArrowUp, FolderOpen, Gauge, Headset, LogOut, Mail, MessageCircle, Pencil, Pin, Plus, Search, Settings, Smartphone, SquarePen, Trash2, UserPlus, Users } from '../ui/icons';
+import { BotAvatar, Button, Icon, Menu, Spinner, Tooltip, cn, type BotPresence, type MenuItem } from '../ui';
 import { call, deleteBot, deleteThread, openBot, openBotDetails, openThread, renameThread, setPinned, startThread } from '../../lib/actions';
 import { rpc } from '../../lib/gateway';
 import { shortcut } from '../../lib/platform';
@@ -13,8 +13,12 @@ import { WhatsNewCard } from '../../features/whatsNew/WhatsNew';
 import { CloudPromoCard } from '../../features/cloud/CloudPromoCard';
 import { UpdateRow } from '../../features/update/UpdateRow';
 import { ComputerMenu } from '../../features/cloud/ComputerMenu';
-import { useCloudLink } from '../../features/cloud/cloudClient';
-import { useCloud } from '../../features/cloud/cloudAccount';
+import { forgetCloud, useCloudLink } from '../../features/cloud/cloudClient';
+import { paywallStart, signOutOfCloud, useCloud } from '../../features/cloud/cloudAccount';
+import { refreshLimits } from '../../features/providers/useLimits';
+import { emailSupport, openSupport } from '../../features/support/support';
+import { BILLING_PLANS_TITLE, settingAnchorId, teamInviteTarget } from '../../features/settings/nav';
+import { accountPlan } from './accountMenu';
 import { PersonAvatar } from '../../features/cloud/CloudTeams';
 import { ResizeHandle } from './ResizeHandle';
 import { deleteGroup, updateGroup } from '../../features/groups/groups';
@@ -400,30 +404,52 @@ function ConnectApps() {
 
 /**
  * Who is using AppuBot, at the foot's left: their picture (or initials) and name, signed in; else the Settings gear and
- * its word. It opens a menu with Settings and Account. Only a lost connection puts a dot on it.
+ * its word. Only a lost connection puts a dot on it. It opens the account menu, in three groups: the plan (its name and
+ * how much of the agents' plan limits is used, opening Settings › Usage; Upgrade plan, not on the top plan; Invite
+ * teammates, on a Work plan you run), then AppuBot on your phone, Support (a chat with us or an email) and Settings,
+ * then Log out. The pill is a light step deeper under the pointer and dark while its menu is open.
  */
 function AccountButton({ down }: { down: boolean }) {
   const t = useT();
   const view = useCloud((s) => s.view);
   const supported = useCloud((s) => s.supported !== false);
+  const limits = useStore((s) => s.limits);
   const email = view?.signedIn ? view.account?.email : undefined;
   const name = view?.signedIn ? (view.account?.name ?? email) : undefined;
+  const plan = accountPlan(view, limits);
+  const upgrade = () => {
+    paywallStart.kind = plan.upgrade ?? 'personal';
+    ui.openSettings('billing', plan.name === 'Free' ? settingAnchorId(BILLING_PLANS_TITLE) : undefined);
+  };
+  const items: (MenuItem | 'separator')[] = [
+    ...(supported ? [
+      { label: plan.name, icon: Gauge, hint: plan.used === null ? undefined : <span className="text-note text-muted tabular-nums">{plan.used}% used</span>, onSelect: () => ui.openSettings('usage') },
+      ...(plan.upgrade ? [{ label: 'Upgrade plan', icon: CircleArrowUp, onSelect: upgrade }] : []),
+      ...(plan.inviteTeam ? [{ label: 'Invite teammates', icon: UserPlus, onSelect: () => ui.openSettings('team', teamInviteTarget(plan.inviteTeam!)) }] : []),
+      'separator' as const,
+    ] : []),
+    { label: 'Get AppuBot for mobile', icon: Smartphone, onSelect: () => ui.openModal({ kind: 'pair' }) },
+    { label: 'Support', icon: Headset, onSelect: () => {}, items: [
+      { label: 'Chat with us', icon: MessageCircle, onSelect: openSupport },
+      { label: 'Email us', icon: Mail, onSelect: emailSupport },
+    ] },
+    { label: t('common.settings'), icon: Settings, hint: <span className="text-note text-muted">{shortcut(',')}</span>, onSelect: () => ui.openSettings() },
+    ...(view?.signedIn ? ['separator' as const, { label: 'Log out', icon: LogOut, onSelect: () => { forgetCloud(); void signOutOfCloud(); } }] : []),
+  ];
   return (
     <Menu
       align="start"
       anchorClassName="min-w-0 flex-1"
-      className="mb-1"
-      items={[
-        { label: t('common.settings'), icon: Settings, hint: <span className="text-note text-muted">{shortcut(',')}</span>, onSelect: () => ui.openSettings() },
-        ...(supported ? [{ label: t('settings.page.account'), icon: User, onSelect: () => ui.openSettings('account') }] : []),
-      ]}
+      className="mb-1 min-w-[248px]"
+      items={items}
       trigger={(p) => (
         <Tooltip label={down ? t('common.reconnecting') : null} side="top">
           <button
             {...p}
+            onClick={() => { p.onClick(); void refreshLimits('stale'); }}
             type="button"
             aria-label={name ? `${name}, ${t('common.settings')}` : t('common.settings')}
-            className="ab-press ab-pill squircle no-drag flex h-[43px] w-full min-w-0 items-center gap-2.5 rounded-row px-1 text-left outline-none hover:bg-[color-mix(in_srgb,var(--ab-fg)_4%,transparent)] focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)] aria-expanded:bg-[color-mix(in_srgb,var(--ab-fg)_4%,transparent)]"
+            className="ab-press ab-pill squircle no-drag flex h-[43px] w-full min-w-0 items-center gap-2.5 rounded-row px-1 text-left outline-none hover:bg-[color-mix(in_srgb,var(--ab-fg)_5%,transparent)] active:bg-[color-mix(in_srgb,var(--ab-fg)_10%,transparent)] focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)] aria-expanded:bg-[color-mix(in_srgb,var(--ab-fg)_10%,transparent)] aria-expanded:hover:bg-[color-mix(in_srgb,var(--ab-fg)_10%,transparent)]"
           >
             <span className="relative grid size-[35px] shrink-0 place-items-center">
               {email ? <PersonAvatar email={email} name={view?.account?.name} size={35} photoUrl={view?.account?.photoUrl} />
