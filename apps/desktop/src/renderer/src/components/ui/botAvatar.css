@@ -42,3 +42,17 @@
   .ab-bot { scale: none !important; }
   .ab-bot.ab-bot .ab-bot-dot-1 { opacity: 1; }
 }
+
+/* The solid face (BotAvatar.tsx solidFace): the drawing on a 100×100 stage (one viewBox unit a px) scaled to the
+   avatar's size; the visor's slices and the eyes on planes round a ball in CSS 3D. --ab-yaw and --ab-pitch (the head's
+   turn and nod, degrees) are animatable numbers, so poses ease them and loops key them like any other property. */
+@property --ab-yaw { syntax: '<number>'; inherits: true; initial-value: 0; }
+@property --ab-pitch { syntax: '<number>'; inherits: true; initial-value: 0; }
+.ab-bot-stage { position: absolute; left: 0; top: 0; width: 100px; height: 100px; }
+.ab-bot-stage :is(.ab-bot-fill, .ab-bot-joy, .ab-bot-body, .ab-bot-tilt, .ab-bot-morph, .ab-bot-turn, .ab-bot-head, .ab-bot-shape, .ab-bot-clip, .ab-bot-solid, .ab-bot-ball, .ab-bot-layer) { position: absolute; inset: 0; display: block; width: 100px; height: 100px; }
+.ab-bot-stage .ab-bot-layer { overflow: visible; }
+.ab-bot-ball { transform-style: preserve-3d; }
+.ab-bot-plane { position: absolute; display: block; overflow: hidden; backface-visibility: hidden; }
+.ab-bot-plane:has(svg) { overflow: visible; }
+.ab-bot-visor { position: absolute; top: 0; display: block; }
+

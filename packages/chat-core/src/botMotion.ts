@@ -62,18 +62,19 @@ export type BotMood = 'rest' | 'happy' | 'listening' | 'thinking' | 'tool' | 'ty
 export const BOT_WORK_MOODS: readonly BotMood[] = ['listening', 'thinking', 'tool', 'typing', 'working'];
 
 export type MotionEase = 'inOut' | 'in' | 'out' | 'linear';
-export type BotLayer = 'joy' | 'body' | 'tilt' | 'head' | 'face' | 'deepL' | 'deepR' | 'look' | 'eye' | 'eyeL' | 'eyeR' | 'dot';
+export type BotLayer = 'joy' | 'body' | 'tilt' | 'head' | 'turn' | 'face' | 'deepL' | 'deepR' | 'look' | 'eye' | 'eyeL' | 'eyeR' | 'dot';
 export type MotionValue = number | readonly [number, number];
 /** [ms into the track, value, easing of the segment that starts here (default: the track's, else inOut)] */
 export type MotionKey = readonly [number, MotionValue, MotionEase?];
 
 /**
  * One property of one layer over `ms`. Values: `translate` [x, y] in viewBox units, `scale` [sx, sy], `rotate`
- * degrees, `opacity`.
+ * degrees, `opacity`; `yaw` and `pitch` the head's turn and nod in degrees (botHead's), for drawing it as a real
+ * solid that turns.
  */
 export interface BotTrack {
   layer: BotLayer;
-  prop: 'translate' | 'scale' | 'rotate' | 'opacity';
+  prop: 'translate' | 'scale' | 'rotate' | 'opacity' | 'yaw' | 'pitch';
   ms: number;
   ease?: MotionEase;
   keys: readonly MotionKey[];
@@ -260,27 +261,35 @@ const trim = (keys: MotionKey[]): MotionKey[] =>
   keys.filter((k, i) => i === 0 || i === keys.length - 1 || !(same(keys[i - 1]![1], k[1]) && same(k[1], keys[i + 1]![1])));
 
 /**
- * A head turning over `ms` (`at`, read at `times`) as the tracks that draw it (botHead): the outline's narrowing, the
- * face's place and size, each eye's. Between two times it may turn up to HEAD_STEP degrees per key; an `eased` `at`
+ * A head turning over `ms` (`at`, read at `times`) as the tracks that draw it: flat (botHead), the outline's
+ * narrowing, the face's place and size, each eye's; as a solid (`turn`), its yaw and pitch, from `solid` where a
+ * solid head moves otherwise than the flat drawing shows (a flip is a nod right round). Between two times it may turn up to HEAD_STEP degrees per key; an `eased` `at`
  * (not straight between its times) gets a key every 60 ms while it moves.
  */
-function headTracks(ms: number, times: readonly number[], at: HeadAt, eased = false): BotTrack[] {
+function headTracks(ms: number, times: readonly number[], at: HeadAt, eased = false, solid: HeadAt = at): BotTrack[] {
   const ts = [...new Set([0, ms, ...times.filter((t) => t > 0 && t < ms)])].sort((a, b) => a - b);
   const dense: number[] = [];
   ts.forEach((t0, i) => {
     dense.push(t0);
     const t1 = ts[i + 1];
     if (t1 === undefined) return;
-    const a = at(t0);
-    const b = at(t1);
-    const turn = Math.max(Math.abs(b.yaw - a.yaw), Math.abs(b.pitch - a.pitch));
+    const turned = (h: HeadAt) => {
+      const a = h(t0);
+      const b = h(t1);
+      return Math.max(Math.abs(b.yaw - a.yaw), Math.abs(b.pitch - a.pitch));
+    };
+    const turn = Math.max(turned(at), turned(solid));
     const n = Math.ceil(Math.max(1, turn / HEAD_STEP, eased && turn > 0 ? (t1 - t0) / 60 : 1));
     for (let k = 1; k < n; k++) dense.push(Math.round(t0 + ((t1 - t0) * k) / n));
   });
-  const views = [...new Set(dense)].map((t) => {
+  const keyed = [...new Set(dense)];
+  const views = keyed.map((t) => {
     const p = at(t);
     return [t, botHead(p.yaw, p.pitch, p.bodyPitch ?? p.pitch)] as const;
   });
+  const angle = (prop: 'yaw' | 'pitch'): BotTrack => (
+    { layer: 'turn', prop, ms, ease: 'linear', keys: trim(keyed.map((t): MotionKey => [t, solid(t)[prop]])) }
+  );
   const track = (layer: BotLayer, prop: 'translate' | 'scale', value: (h: BotHeadView) => MotionValue): BotTrack => (
     { layer, prop, ms, ease: 'linear', keys: trim(views.map(([t, h]): MotionKey => [t, value(h)])) }
   );
@@ -292,6 +301,8 @@ function headTracks(ms: number, times: readonly number[], at: HeadAt, eased = fa
     track('deepL', 'scale', (h) => [h.eyes[0].s, 1]),
     track('deepR', 'translate', (h) => [h.eyes[1].x, 0]),
     track('deepR', 'scale', (h) => [h.eyes[1].s, 1]),
+    angle('yaw'),
+    angle('pitch'),
   ];
 }
 
@@ -464,7 +475,32 @@ function ownEye(run: readonly number[], i: 0 | 1): number[] {
     return [t, r3(clamp(sx / Math.max(0.35, botHead(h.yaw, h.pitch).eyes[i].w), 0.55, 1.45)), sy];
   });
 }
-const WORK_TIMES = [...lookKeys.map(([t]) => t), ...spinAt.keys.map(([t]) => t)];
+const sizeAt = work('body', 'scale', WORK.size, 2);
+/*
+ * Drawn flat, the flip is the body's height going through nothing to upside down and back, and the spin its width
+ * narrowing (WORK.size). A solid does both as turns, its outline staying its own shape: the flip is the head nodding
+ * forward right round (the height's fall and return read as the turn's cosine, −360° once over), and the body's
+ * scale keeps only the squash that isn't a turn.
+ */
+const flipAt = (t: number): number => {
+  if (t <= FLIP[0]) return 0;
+  if (t >= FLIP[1]) return -360;
+  const y = clamp(sampleTrack(sizeAt, t, false, 1), -1, 1);
+  const a = (Math.acos(y) * 180) / Math.PI;
+  return -(t < 8242 ? a : 360 - a);
+};
+const solidHead: HeadAt = (t) => {
+  const h = workHead(t);
+  return { ...h, pitch: r3(h.pitch + flipAt(t)) };
+};
+const solidSize: BotTrack = {
+  ...sizeAt,
+  keys: sizeAt.keys.map(([t, v]): MotionKey => {
+    const [x, y] = v as readonly [number, number];
+    return [t, inside(t, SPIN) ? [y, y] : inside(t, FLIP) ? [x, x] : [x, y]];
+  }),
+};
+const WORK_TIMES = [...lookKeys.map(([t]) => t), ...spinAt.keys.map(([t]) => t), ...sizeAt.keys.map(([t]) => t).filter((t) => inside(t, FLIP))];
 
 /** Every mood's loops. Two tracks never share a layer and property within one mood (CSS runs one animation per
  *  property). Moods without any hold their pose. They start at a per-avatar point (`motionSeed` × ms), except those in
@@ -481,11 +517,11 @@ export const BOT_LOOPS: Readonly<Partial<Record<BotMood, readonly BotTrack[]>>> 
   tool: [
     work('body', 'rotate', WORK.rotate, 1),
     work('body', 'translate', WORK.move, 2),
-    work('body', 'scale', WORK.size, 2),
+    sizeAt,
     { ...lookAt, keys: lookKeys.map(([t, v]): MotionKey => [t, [r3((v as readonly number[])[0]! * WORK_GAZE[0]), r3((v as readonly number[])[1]! * WORK_GAZE[1])]]) },
     work('eyeL', 'scale', ownEye(WORK.eyeL, 0), 2),
     work('eyeR', 'scale', ownEye(WORK.eyeR, 1), 2),
-    ...headTracks(TOOL, WORK_TIMES, workHead),
+    ...headTracks(TOOL, WORK_TIMES, workHead, false, solidHead),
   ],
   'needs-you': [
     // hop for attention: crouch, stretch up, squashy landing, a small second bounce, a pause
@@ -525,6 +561,12 @@ const PONDER_TRACKS: readonly BotTrack[] = [
   ...headTracks(PONDER, PONDER_KEYS.map(([t]) => t), ponderAt, true),
   { layer: 'look', prop: 'translate', ms: PONDER, keys: PONDER_KEYS.map(([t, yaw, pitch]): MotionKey => [t, [r3((yaw / 30) * 1.5), r3(-(pitch / 12) * 1.5)]]) },
 ];
+/**
+ * Tracks a solid drawing (the desktop's 3D avatar, `turn` tracks) runs in place of a mood's own of the same layer and
+ * property: the routine's body scale without the flip and the spin, which its head turns instead.
+ */
+export const BOT_SOLID_LOOPS: Readonly<Partial<Record<BotMood, readonly BotTrack[]>>> = { tool: [solidSize] };
+
 export const BOT_COMPACT_LOOPS: Readonly<Partial<Record<BotMood, readonly BotTrack[]>>> = { thinking: PONDER_TRACKS, working: PONDER_TRACKS };
 
 /** Moods whose loop starts from its beginning (the tool routine starts still, facing you, as Grok Bot's did). */

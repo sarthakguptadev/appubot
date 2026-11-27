@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { BotShape, type Part } from '@appubot/protocol';
 import {
-  BOT_BASE, BOT_CHEER, BOT_COMPACT_LOOPS, BOT_DOT_LOOP, BOT_DOTS, BOT_EASE_CSS, BOT_HEAD, BOT_LOOPS, BOT_LOOPS_FROM_START, BOT_MIDDLE, BOT_MORPH, BOT_MOTION, BOT_POSES, BOT_TURN, BOT_WORK_MOODS, botGaze,
-  botHandoff, botHead, botShown, botTurn, botWorkMood, cheersAt, motionEase, poseEase, sampleTrack, squash, type BotMood, type BotTrack,
+  BOT_BASE, BOT_CHEER, BOT_COMPACT_LOOPS, BOT_DOT_LOOP, BOT_DOTS, BOT_EASE_CSS, BOT_HEAD, BOT_LOOPS, BOT_LOOPS_FROM_START, BOT_MIDDLE, BOT_MORPH, BOT_MOTION, BOT_POSES, BOT_SOLID_LOOPS, BOT_TURN, BOT_WORK_MOODS, botGaze,
+  botHandoff, botHead, botShown, botTurn, botWorkMood, cheersAt, motionEase, poseEase, sampleTrack, squash, type BotMood, type BotTrack, type MotionValue,
 } from './botMotion';
 
 const all: [string, BotTrack][] = [
@@ -48,7 +48,9 @@ describe('bot motion: tracks', () => {
   });
 
   it('loops seamlessly and ends the cheer at rest', () => {
-    for (const [name, t] of all) expect(t.keys[0]![1], name).toEqual(t.keys.at(-1)![1]);
+    // a head turned or nodded a whole 360° (the spin, the flip) faces you again, so a turn's loop is seamless to a whole turn
+    const whole = (v: MotionValue, prop: BotTrack['prop']) => ((prop === 'yaw' || prop === 'pitch') && typeof v === 'number' ? ((v % 360) + 360) % 360 : v);
+    for (const [name, t] of all) expect(whole(t.keys[0]![1], t.prop), name).toEqual(whole(t.keys.at(-1)![1], t.prop));
     for (const t of BOT_CHEER) {
       const rest = t.prop === 'scale' ? 1 : 0;
       expect(sampleTrack(t, t.ms, false, 0)).toBe(rest);
@@ -60,7 +62,7 @@ describe('bot motion: tracks', () => {
     for (const [mood, ts] of Object.entries(BOT_LOOPS)) {
       const seen = ts!.map((t) => `${t.layer}.${t.prop}`);
       expect(new Set(seen).size, mood).toBe(seen.length);
-      for (const t of ts!) expect(['body', 'tilt', 'head', 'face', 'deepL', 'deepR', 'look', 'eyeL', 'eyeR']).toContain(t.layer);
+      for (const t of ts!) expect(['body', 'tilt', 'head', 'turn', 'face', 'deepL', 'deepR', 'look', 'eyeL', 'eyeR']).toContain(t.layer);
     }
     for (const t of BOT_CHEER) expect(t.layer).toBe('joy');
     for (const t of BOT_DOT_LOOP.tracks) expect(t.layer).toBe('dot');
@@ -180,15 +182,20 @@ describe('bot motion: Grok Bot, measured', () => {
     const area = (t: BotTrack, ms: number) => at(t, ms, 0) * at(t, ms, 1);
     for (const t of tool) expect(t.ms, `${t.layer}.${t.prop}`).toBe(30500);
     expect(BOT_LOOPS_FROM_START).toEqual(['tool']);
-    // still and facing you for its first 1.3 s (within a viewBox unit, a third of a pixel in a sidebar row), and at the end
+    // still and facing you for its first 1.3 s (within a viewBox unit, a third of a pixel in a sidebar row; for the
+    // solid head's turn, the 2.5° that moves its face that far), and at the end
     for (const t of tool) {
       const rest = t.prop === 'scale' ? 1 : 0;
-      for (let ms = 0; ms <= 1300; ms += 50) for (const c of [0, 1] as const) expect(Math.abs(at(t, ms, c) - rest), `${t.layer}.${t.prop} ${ms}`).toBeLessThan(1);
-      expect(at(t, 30500, 0)).toBe(rest);
+      const near = t.layer === 'turn' ? 2.5 : 1;
+      for (let ms = 0; ms <= 1300; ms += 50) for (const c of [0, 1] as const) expect(Math.abs(at(t, ms, c) - rest), `${t.layer}.${t.prop} ${ms}`).toBeLessThan(near);
+      // a spin leaves the head turned a whole 360°, which is facing you again
+      const end = at(t, 30500, 0);
+      expect(t.layer === 'turn' ? ((end % 360) + 360) % 360 : end).toBe(rest);
     }
     // glances left at 2.9 s, its head turning: the face slides left and the outline narrows, the left eye bigger than
     // the right as Grok Bot's was, the body sliding 12.6 after it
     expect(at(slide, 2900)).toBeLessThan(-5);
+    expect(at(find('turn', 'yaw'), 2900)).toBeLessThan(-10);
     expect(at(outline, 2900)).toBeLessThan(0.99);
     expect(Math.sqrt((area(eyeL, 2900) * at(deepL, 2900)) / (area(eyeR, 2900) * at(deepR, 2900)))).toBeGreaterThan(1.1);
     expect(at(move, 2917)).toBeCloseTo(-12.6, 0);
@@ -212,6 +219,20 @@ describe('bot motion: Grok Bot, measured', () => {
     expect(at(narrow, 18867)).toBeLessThan(0.05);
     expect(at(outline, 18867)).toBeCloseTo(BOT_HEAD.depth, 1);
     expect(at(slide, 18868)).toBeGreaterThan(25);
+    // as a solid, the same spin is one turn of the head right round: a quarter by 18.867 s, the whole way by 19.6 s
+    expect(at(find('turn', 'yaw'), 18867)).toBeLessThan(-85);
+    expect(at(find('turn', 'yaw'), 18868)).toBeLessThan(-250);
+    expect(at(find('turn', 'yaw'), 19650)).toBeCloseTo(-360, -1);
+    // a solid flips by nodding right round (upside down at 8.24 s) and keeps its outline round through the spin and
+    // the flip: its body's scale is only the squash, never the turn's narrowing
+    const nod = find('turn', 'pitch');
+    expect(at(nod, 8100)).toBeCloseTo(0, -1);
+    expect(Math.abs(at(nod, 8242) + 180)).toBeLessThan(30);
+    expect(at(nod, 8500)).toBeCloseTo(-360, -1);
+    const solid = BOT_SOLID_LOOPS.tool!.find((t) => t.layer === 'body' && t.prop === 'scale')!;
+    for (const ms of [8217, 8233, 18850, 18867]) expect(at(solid, ms, 0), String(ms)).toBe(at(solid, ms, 1));
+    expect(at(solid, 8233, 1)).toBe(1);
+    expect(at(solid, 16483)).toBeCloseTo(0.71, 2);
     expect(at(narrow, 18868)).toBeLessThan(0.2);
     expect(at(size, 18867)).toBeCloseTo(0.48, 2);
     expect(Math.abs(at(slide, 19650))).toBeLessThan(1);
@@ -234,7 +255,7 @@ describe('bot motion: Grok Bot, measured', () => {
     expect(sampleTrack(slide, 1200, true, 1)).toBeLessThan(-3);
     expect(sampleTrack(slide, 2900, true, 0)).toBeGreaterThan(8);
     for (const t of ponder) {
-      expect(['head', 'face', 'deepL', 'deepR', 'look'], t.layer).toContain(t.layer);
+      expect(['head', 'turn', 'face', 'deepL', 'deepR', 'look'], t.layer).toContain(t.layer);
       expect(t.prop, t.layer).not.toBe('opacity');
       expect(t.keys[0]![1], t.layer).toEqual(t.keys.at(-1)![1]);
     }

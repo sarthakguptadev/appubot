@@ -20,7 +20,10 @@ describe('bot avatar motion CSS', () => {
       expect(rule(`.ab-bot[data-mood='${mood}'] .ab-bot-deepR`)).toBe(`translate:${h.eyes[1].x}px 0px;scale:${h.eyes[1].s} 1`);
       expect(rule(`.ab-bot[data-mood='${mood}'] .ab-bot-look`)).toBe(`translate:${p.gaze[0]}px ${p.gaze[1]}px`);
       expect(rule(`.ab-bot[data-mood='${mood}'] .ab-bot-eye`)).toBe(`scale:${p.eye[0]} ${p.eye[1]}`);
+      // the solid head turns and nods to the pose
+      expect(rule(`.ab-bot[data-mood='${mood}'] .ab-bot-turn`)).toBe(`--ab-yaw:${p.turn};--ab-pitch:${p.pitch}`);
     }
+    expect(rule('.ab-bot .ab-bot-turn')).toBe(`transition:--ab-yaw ${4 * BOT_MOTION.settle}ms ${BOT_EASE_CSS},--ab-pitch ${4 * BOT_MOTION.settle}ms ${BOT_EASE_CSS}`);
     expect(rule('.ab-bot .ab-bot-tilt')).toBe(`transition:rotate ${4 * BOT_MOTION.snap}ms ${BOT_EASE_CSS}`);
     expect(rule('.ab-bot :is(.ab-bot-head,.ab-bot-face,.ab-bot-deep)')).toBe(`transition:translate ${4 * BOT_MOTION.settle}ms ${BOT_EASE_CSS},scale ${4 * BOT_MOTION.settle}ms ${BOT_EASE_CSS}`);
     expect(rule('.ab-bot .ab-bot-look')).toBe(`transition:translate ${4 * BOT_MOTION.settle}ms ${BOT_EASE_CSS}`);
@@ -77,5 +80,18 @@ describe('bot avatar motion CSS', () => {
     expect(rule(".ab-bot[data-mood='needs-you'] .ab-bot-body")).toContain('--ab-seed');
     expect(BOT_MOTION_CSS).not.toContain('blink');
     expect(rule('.ab-bot[data-cheer] .ab-bot-joy')).toContain(`${BOT_MOTION.cheer}ms linear both`);
+  });
+
+  it('turns the solid head with animatable angles, and runs the routine without the flat flip and spin narrowing', () => {
+    const css = readFileSync(new URL('./botAvatar.css', import.meta.url), 'utf8');
+    expect(css).toContain("@property --ab-yaw { syntax: '<number>'; inherits: true; initial-value: 0; }");
+    expect(css).toContain("@property --ab-pitch { syntax: '<number>'; inherits: true; initial-value: 0; }");
+    expect(rule(".ab-bot[data-mood='rest'][data-look] .ab-bot-turn")).toBe('--ab-yaw:var(--ab-lyaw,0);--ab-pitch:var(--ab-lpitch,0)');
+    expect(BOT_MOTION_CSS).toContain(".ab-bot[data-mood='tool'] .ab-bot-turn{animation:ab-bot-k-tool-turn-yaw 30500ms linear infinite,ab-bot-k-tool-turn-pitch 30500ms linear infinite}");
+    expect(BOT_MOTION_CSS).toMatch(/@keyframes ab-bot-k-tool-turn-yaw\{0%\{--ab-yaw:0;/);
+    const solid = rule(".ab-bot[data-solid][data-mood='tool'] .ab-bot-body");
+    expect(solid).toContain('ab-bot-k-tool-body-scale-solid');
+    expect(solid).toContain('ab-bot-k-tool-body-rotate ');
+    expect(rule(".ab-bot[data-mood='tool'] .ab-bot-body")).not.toContain('-solid');
   });
 });

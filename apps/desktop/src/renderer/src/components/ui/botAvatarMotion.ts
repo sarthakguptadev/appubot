@@ -10,7 +10,7 @@
  * purpose: tsconfig.node.json includes it.
  */
 import {
-  BOT_CHEER, BOT_COMPACT_LOOPS, BOT_DOT_LOOP, BOT_DOTS, BOT_EASE_CSS, BOT_LOOPS, BOT_LOOPS_FROM_START, BOT_MORPH, BOT_MOTION as M, BOT_POSES, botHead, type BotMood, type BotTrack,
+  BOT_CHEER, BOT_COMPACT_LOOPS, BOT_DOT_LOOP, BOT_DOTS, BOT_EASE_CSS, BOT_LOOPS, BOT_LOOPS_FROM_START, BOT_MORPH, BOT_MOTION as M, BOT_POSES, BOT_SOLID_LOOPS, botHead, type BotMood, type BotTrack,
   type MotionEase,
   type MotionValue,
 } from '@appubot/chat-core';
@@ -36,6 +36,8 @@ function decl(t: BotTrack, v: MotionValue): string {
     case 'scale': { const [x, y] = pair(v); return `scale:${n(x)} ${n(y)}`; }
     case 'rotate': return `rotate:${n(one(v))}deg`;
     case 'opacity': return `opacity:${n(one(v))}`;
+    case 'yaw': return `--ab-yaw:${n(one(v))}`;
+    case 'pitch': return `--ab-pitch:${n(one(v))}`;
   }
 }
 
@@ -70,6 +72,7 @@ function poses(): string[] {
     `.ab-bot .ab-bot-tilt{transition:rotate ${SNAP}}`,
     `.ab-bot :is(.ab-bot-head,.ab-bot-face,.ab-bot-deep){transition:translate ${SETTLE},scale ${SETTLE}}`,
     `.ab-bot .ab-bot-look{transition:translate ${SETTLE}}`,
+    `.ab-bot .ab-bot-turn{transition:--ab-yaw ${SETTLE},--ab-pitch ${SETTLE}}`,
     `.ab-bot .ab-bot-eye{transition:scale ${SNAP}}`,
     `.ab-bot .ab-bot-pill{ry:calc(var(--ab-rx,0) * 1px)}`,
   ];
@@ -77,6 +80,7 @@ function poses(): string[] {
     const at = `.ab-bot[data-mood='${mood}']`;
     rules.push(`${at} .ab-bot-tilt{rotate:${n(p.rotate)}deg}`);
     rules.push(...head(at, botHead(p.turn, p.pitch)));
+    rules.push(`${at} .ab-bot-turn{--ab-yaw:${n(p.turn)};--ab-pitch:${n(p.pitch)}}`);
     rules.push(`${at} .ab-bot-look{translate:${n(p.gaze[0])}px ${n(p.gaze[1])}px}`);
     rules.push(`${at} .ab-bot-eye{scale:${n(p.eye[0])} ${n(p.eye[1])}}`);
     if (p.face === 'round') rules.push(`${at} .ab-bot-pill{ry:calc(var(--ab-ry,0) * 1px)}`);
@@ -86,6 +90,7 @@ function poses(): string[] {
   const px = (v: string) => `calc(var(--ab-${v},0) * 1px)`;
   rules.push(`${look} .ab-bot-tilt{rotate:calc(var(--ab-lr,0) * 1deg)}`);
   rules.push(`${look} .ab-bot-head{scale:var(--ab-hx,1) var(--ab-hy,1)}`);
+  rules.push(`${look} .ab-bot-turn{--ab-yaw:var(--ab-lyaw,0);--ab-pitch:var(--ab-lpitch,0)}`);
   rules.push(`${look} .ab-bot-face{translate:${px('fx')} ${px('fy')};scale:var(--ab-fs,1) var(--ab-fsy,1)}`);
   rules.push(`${look} .ab-bot-deepL{translate:${px('dlx')} 0px;scale:var(--ab-dls,1) 1}`);
   rules.push(`${look} .ab-bot-deepR{translate:${px('drx')} 0px;scale:var(--ab-drs,1) 1}`);
@@ -125,6 +130,7 @@ function morph(frames: string[]): string[] {
     `.ab-bot .ab-bot-dot{opacity:${BOT_DOTS.dim}}`,
     // the face turns away quickly before it goes (Grok Bot: 33px in 70 ms)
     `${at} :is(.ab-bot-head,.ab-bot-face,.ab-bot-deep){transition:translate ${SNAP},scale ${SNAP}}`,
+    `${at} .ab-bot-turn{transition:--ab-yaw ${SNAP},--ab-pitch ${SNAP}}`,
     `${at} .ab-bot-morph{scale:${BOT_DOTS.scale};transition:scale ${SETTLE} ${ms(BOT_MORPH.collapse)}}`,
     `${at} .ab-bot-shape{opacity:0;transition:opacity ${ms(BOT_MORPH.fade)} linear ${ms(BOT_MORPH.collapse)}}`,
     `${at} .ab-bot-core{animation:ab-bot-core-in ${ms(lit)} linear both}`,
@@ -142,6 +148,7 @@ function morph(frames: string[]): string[] {
   // small places: the bot stays itself, its eyes as they are at rest, and ponders (BOT_COMPACT_LOOPS), each avatar
   // from its own point in the loop
   rules.push(`${compact} :is(.ab-bot-head,.ab-bot-face,.ab-bot-deep){translate:0px 0px;scale:1 1}`);
+  rules.push(`${compact} .ab-bot-turn{--ab-yaw:0;--ab-pitch:0}`);
   const tracks = BOT_COMPACT_LOOPS.thinking ?? [];
   const byLayer = new Map<string, string[]>();
   for (const t of tracks) {
@@ -157,13 +164,23 @@ function build(): string {
   const frames: string[] = [];
   const rules: string[] = [...poses(), ...morph(frames)];
   for (const [mood, tracks] of Object.entries(BOT_LOOPS) as [BotMood, readonly BotTrack[]][]) {
-    const byLayer = new Map<string, string[]>();
-    for (const t of tracks) {
-      const name = `ab-bot-k-${mood}-${t.layer}-${t.prop}`;
-      frames.push(keyframes(name, t));
-      byLayer.set(t.layer, [...(byLayer.get(t.layer) ?? []), run(name, t, true, BOT_LOOPS_FROM_START.includes(mood))]);
+    // a solid avatar (data-solid) runs BOT_SOLID_LOOPS' tracks in place of the same layer and property's
+    const solid = BOT_SOLID_LOOPS[mood] ?? [];
+    const lists = (flat: boolean) => {
+      const byLayer = new Map<string, string[]>();
+      for (const t of tracks) {
+        const own = flat ? undefined : solid.find((x) => x.layer === t.layer && x.prop === t.prop);
+        const name = `ab-bot-k-${mood}-${t.layer}-${t.prop}${own ? '-solid' : ''}`;
+        if (flat || own) frames.push(keyframes(name, own ?? t));
+        byLayer.set(t.layer, [...(byLayer.get(t.layer) ?? []), run(name, own ?? t, true, BOT_LOOPS_FROM_START.includes(mood))]);
+      }
+      return byLayer;
+    };
+    for (const [layer, list] of lists(true)) rules.push(`.ab-bot[data-mood='${mood}'] .ab-bot-${layer}{animation:${list.join(',')}}`);
+    if (!solid.length) continue;
+    for (const [layer, list] of lists(false)) {
+      if (solid.some((x) => x.layer === layer)) rules.push(`.ab-bot[data-solid][data-mood='${mood}'] .ab-bot-${layer}{animation:${list.join(',')}}`);
     }
-    for (const [layer, list] of byLayer) rules.push(`.ab-bot[data-mood='${mood}'] .ab-bot-${layer}{animation:${list.join(',')}}`);
   }
   const cheer = new Map<string, string[]>();
   for (const t of BOT_CHEER) {

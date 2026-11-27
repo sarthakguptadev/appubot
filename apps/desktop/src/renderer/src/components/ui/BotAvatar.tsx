@@ -2,9 +2,9 @@
  * Bot avatar: a body in the bot's colour wearing a dark visor with two eyes. The geometry and colours are chat-core's
  * (botAvatarLook), the motion too (botMotion.ts, shared with the phone: its state machine, poses and tracks, as CSS
  * from botAvatarMotion.ts plus botAvatar.css; the agent cursor's overlay uses them as well), copied from Grok Bot's
- * mascot, drawn flat but moving like a solid (chat-core botHead: its head turns and nods, the face sliding round it, the
- * near eye bigger, the outline narrowing, right round the back on a spin): resting it sits still, upright and facing
- * you, and when the pointer comes near it turns its head toward it and follows it with its eyes; a turn that starts makes its eyes big; thinking, it turns away and collapses into three
+ * mascot, drawn as a solid (solidFace below: the round bot a shaded ball, other shapes a shaded volume, the visor and eyes
+ * on its surface in CSS 3D, turned and nodded by the motion's yaw and pitch, going right round the back on a spin and
+ * over the top on a flip): resting it sits still, upright and facing you, and when the pointer comes near it turns its head toward it and follows it with its eyes; a turn that starts makes its eyes big; thinking, it turns away and collapses into three
  * dots that light up in turn (in small places, `compact`, it stays itself, its eyes as at rest, and turns its head to
  * look up to one side, then the other); on a tool it runs
  * Grok Bot's working routine (glances, blinks, flips, looks about, rolls, spins and wobbles, each eye its own size);
@@ -57,6 +57,7 @@ function look(): void {
     if (!g) { delete el.dataset.look; return; }
     const h = botHead(g.turn, g.pitch);
     const vars: Record<string, number> = {
+      '--ab-lyaw': g.turn, '--ab-lpitch': g.pitch,
       '--ab-hx': h.body[0], '--ab-hy': h.body[1], '--ab-fx': h.face.x, '--ab-fy': h.face.y, '--ab-fs': h.face.sx, '--ab-fsy': h.face.sy,
       '--ab-dlx': h.eyes[0].x, '--ab-dls': h.eyes[0].s, '--ab-drx': h.eyes[1].x, '--ab-drs': h.eyes[1].s,
     };
@@ -130,6 +131,40 @@ function useShownMood(mood: BotMood, live: boolean, cheerKey?: number): { shown:
   return { shown: state.shown, cheering: cheering && state.shown === 'happy', growing };
 }
 
+/* The face as a solid: the visor and eyes on the surface of a ball as big as the round bot (SOLID.r, its middle the
+   body's), drawn with CSS 3D (one composited plane per piece, no canvas or WebGL, so any number of avatars cost the
+   same as their pictures and nothing while still). The visor is SOLID.strips slices of itself, each on its own plane
+   tangent to the ball where it sits, so it wraps round; the eyes ride just above it. Turned (--ab-yaw, --ab-pitch: the
+   motion's `turn` tracks and poses), a slice facing away is hidden, so the face goes round the back. Seen through a
+   lens SOLID.lens away, scaled so the face facing you is exactly its flat drawing. */
+const SOLID = { r: 44, lens: 600, strips: 10, overlap: 1.2 } as const;
+/** the head turned and nodded, the face facing you as big as drawn flat (the lens magnifies the ball's front) */
+const LENS = +((SOLID.lens - SOLID.r) / SOLID.lens).toFixed(4);
+const TURN = `scale3d(${LENS}, ${LENS}, 1) rotateX(calc(var(--ab-pitch) * 1deg)) rotateY(calc(var(--ab-yaw) * 1deg))`;
+/** the box an eye is drawn in, on its plane (room for the look and the round eyes) */
+const EYE_BOX = 28;
+/** the light over the body (and face): stops of [offset, ink, opacity] */
+const SHADE: readonly (readonly [number, string, number])[] = [[0, '#fff', 0.3], [0.4, '#fff', 0.07], [0.62, '#fff', 0], [0.86, '#000', 0.07], [1, '#000', 0.22]];
+
+function solidFace(look: ReturnType<typeof botAvatarLook>, middle: number): { cx: number; strips: { w: number; from: number; at: string }[]; eyes: string[] } {
+  const { r, strips: n, overlap } = SOLID;
+  const v = look.visor;
+  const cx = v.x + v.w / 2;
+  const deg = (rad: number) => +((rad * 180) / Math.PI).toFixed(3);
+  const lat = Math.asin(Math.max(-0.9, Math.min(0.9, (middle - (v.y + v.h / 2)) / r)));
+  const ring = r * Math.cos(lat);
+  const on = (x: number, z: number) => `rotateY(${deg(x / ring)}deg) rotateX(${deg(lat)}deg) translateZ(${z}px)`;
+  const step = v.w / n;
+  return {
+    cx,
+    strips: Array.from({ length: n }, (_, i) => {
+      const from = -v.w / 2 + i * step;
+      return { w: step + overlap, from: -(from + v.w / 2) + overlap / 2, at: on(from + step / 2, r) };
+    }),
+    eyes: look.eyes.map((e) => on(e.x + e.w / 2 - cx, r + 0.5)),
+  };
+}
+
 export type BotPresence = 'working' | 'needs-you' | null;
 
 export function BotAvatar({ bot, shape: shapeProp, figure: figureProp, color: colorProp, size = 32, presence, mood: moodProp, still, compact, cheer = true, cheerKey, happy, className }: {
@@ -168,10 +203,68 @@ export function BotAvatar({ bot, shape: shapeProp, figure: figureProp, color: co
   useLookAt(ref, !still && !calmed && shown === 'rest' && size >= 16);
   const g = look.gloss;
   const v = look.visor;
-  const cy = v.y + v.h / 2;
+  const sphere = figure === 'circle';
+  const ball = solidFace(look, middle);
   const at = (x: number, y: number): CSSProperties => ({ transformBox: 'view-box', transformOrigin: `${x}px ${y}px` });
   const dot = Math.max(7, Math.round(size * 0.24));
   const style = { width: size, height: size, ...BOT_MOTION_VARS, '--ab-seed': motionSeed(uid), '--ab-cy': middle } as CSSProperties;
+  const eyeBox = (e: RoundRect) => `${e.x + e.w / 2 - EYE_BOX / 2} ${e.y + e.h / 2 - EYE_BOX / 2} ${EYE_BOX} ${EYE_BOX}`;
+  const surface = (
+    <span className="ab-bot-shape">
+      <svg viewBox="0 0 100 100" overflow="visible" className="ab-bot-layer" aria-hidden>
+        <defs><clipPath id={`${id}-clip`}><path d={look.body} /></clipPath></defs>
+        {look.outline ? <path d={look.body} fill="none" stroke={look.outline} strokeWidth="3" /> : null}
+        <path d={look.body} fill={look.fill[1]} />
+        {g.opacity > 0 ? (
+          <g clipPath={`url(#${id}-clip)`}>
+            <ellipse cx={g.cx} cy={g.cy} rx={g.rx} ry={g.ry} transform={`rotate(${g.rotate} ${g.cx} ${g.cy})`} fill="#fff" opacity={g.opacity} />
+          </g>
+        ) : null}
+      </svg>
+      <span className="ab-bot-clip" style={{ clipPath: `path('${look.body}')` }}>
+        <span className="ab-bot-solid" style={{ perspective: SOLID.lens, perspectiveOrigin: `${ball.cx}px ${middle}px` }}>
+          <span className="ab-bot-ball" style={{ transformOrigin: `${ball.cx}px ${middle}px`, transform: TURN }}>
+            {ball.strips.map((s, i) => (
+              <span key={i} className="ab-bot-plane" style={{ left: ball.cx - s.w / 2, top: middle - v.h / 2, width: s.w, height: v.h, transform: s.at }}>
+                <span className="ab-bot-visor" style={{ left: s.from, width: v.w, height: v.h, borderRadius: v.r, background: `linear-gradient(${look.glass[0]}, ${look.glass[1]})` }} />
+              </span>
+            ))}
+            {look.eyes.map((e, i) => (
+              <span key={i} className="ab-bot-plane" style={{ left: ball.cx - EYE_BOX / 2, top: middle - EYE_BOX / 2, width: EYE_BOX, height: EYE_BOX, transform: ball.eyes[i] }}>
+                <svg viewBox={eyeBox(e)} width={EYE_BOX} height={EYE_BOX} overflow="visible" className="block" aria-hidden>
+                  <g className="ab-bot-look">
+                    {happy ? <Smile e={e} ink={look.eye} className="ab-bot-smile" /> : (
+                      <g className={`ab-bot-eye ab-bot-eye${i ? 'R' : 'L'}`}>
+                        <rect
+                          x={e.x} y={e.y} width={e.w} height={e.h} rx={e.r} fill={look.eye} className="ab-bot-pill"
+                          style={{ '--ab-rx': e.r, '--ab-ry': e.h / 2 } as CSSProperties}
+                        />
+                        <Smile e={e} ink={look.eye} className="ab-bot-arc" />
+                      </g>
+                    )}
+                  </g>
+                </svg>
+              </span>
+            ))}
+          </span>
+        </span>
+      </span>
+      {/* the light: brighter up to the left, a little darker round the edge, a soft rim low on the right */}
+      <svg viewBox="0 0 100 100" overflow="visible" className="ab-bot-layer" aria-hidden>
+        <defs>
+          <radialGradient id={`${id}-light`} cx="0.5" cy="0.5" r="0.5" fx="0.36" fy="0.3">
+            {SHADE.map(([at, ink, a]) => <stop key={at} offset={at} stopColor={ink} stopOpacity={a} />)}
+          </radialGradient>
+          <linearGradient id={`${id}-rim`} x1="0.2" y1="0.1" x2="0.85" y2="0.95">
+            <stop offset="0.6" stopColor="#fff" stopOpacity="0" />
+            <stop offset="1" stopColor="#fff" stopOpacity="0.32" />
+          </linearGradient>
+        </defs>
+        <path d={look.body} fill={`url(#${id}-light)`} />
+        <path d={look.body} fill="none" stroke={`url(#${id}-rim)`} strokeWidth="3" clipPath={`url(#${id}-clip)`} />
+      </svg>
+    </span>
+  );
   return (
     <span
       ref={ref}
@@ -181,63 +274,28 @@ export function BotAvatar({ bot, shape: shapeProp, figure: figureProp, color: co
       data-compact={compact || undefined}
       data-cheer={cheering || undefined}
       data-grow={growing || undefined}
+      data-solid
       style={style}
     >
-      <svg viewBox="0 0 100 100" overflow="visible" className="ab-bot-svg block size-full" aria-hidden>
-        <defs>
-          <linearGradient id={`${id}-body`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor={look.fill[0]} />
-            <stop offset="0.55" stopColor={look.fill[1]} />
-            <stop offset="1" stopColor={look.fill[2]} />
-          </linearGradient>
-          <linearGradient id={`${id}-glass`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor={look.glass[0]} />
-            <stop offset="1" stopColor={look.glass[1]} />
-          </linearGradient>
-          <clipPath id={`${id}-clip`}><path d={look.body} /></clipPath>
-        </defs>
-        <g transform={`translate(0 ${50 - middle})`}><g className="ab-bot-joy"><g className="ab-bot-body"><g className="ab-bot-tilt">
-          <g className="ab-bot-morph" style={at(50, middle)}>
-            <g className="ab-bot-head"><g className="ab-bot-shape">
-              {look.outline ? <path d={look.body} fill="none" stroke={look.outline} strokeWidth="3" /> : null}
-              <path d={look.body} fill={`url(#${id}-body)`} />
-              {g.opacity > 0 ? (
-                <g clipPath={`url(#${id}-clip)`}>
-                  <ellipse cx={g.cx} cy={g.cy} rx={g.rx} ry={g.ry} transform={`rotate(${g.rotate} ${g.cx} ${g.cy})`} fill="#fff" opacity={g.opacity} />
+      <span className="ab-bot-stage" style={{ zoom: size / 100 }} aria-hidden>
+        <span className="ab-bot-fill" style={{ translate: `0 ${50 - middle}px` }}><span className="ab-bot-joy"><span className="ab-bot-body"><span className="ab-bot-tilt">
+          <span className="ab-bot-morph" style={{ transformOrigin: `50px ${middle}px` }}>
+            <span className="ab-bot-turn">{sphere ? surface : <span className="ab-bot-head">{surface}</span>}</span>
+            <svg viewBox="0 0 100 100" overflow="visible" className="ab-bot-layer">
+              <circle className="ab-bot-core" cx={50} cy={middle} r={BOT_DOTS.r / BOT_DOTS.scale} fill={look.fill[1]} />
+            </svg>
+          </span>
+          <svg viewBox="0 0 100 100" overflow="visible" className="ab-bot-layer">
+            <g className="ab-bot-dots">
+              {[-1, 0, 1].map((k) => (
+                <g key={k} className={k ? 'ab-bot-side' : 'ab-bot-mid'} style={at(50 + k * BOT_DOTS.gap, middle)}>
+                  <circle className={`ab-bot-dot ab-bot-dot-${k + 1}`} cx={50 + k * BOT_DOTS.gap} cy={middle} r={BOT_DOTS.r} fill={look.fill[1]} />
                 </g>
-              ) : null}
-              <g clipPath={`url(#${id}-clip)`}>
-                <g className="ab-bot-face" style={at(50, cy)}>
-                  <rect x={v.x} y={v.y} width={v.w} height={v.h} rx={v.r} fill={`url(#${id}-glass)`} />
-                  <g className="ab-bot-look">
-                    {look.eyes.map((e, i) => (
-                      <g key={i} className={`ab-bot-deep ab-bot-deep${i ? 'R' : 'L'}`}>
-                        {happy ? <Smile e={e} ink={look.eye} className="ab-bot-smile" /> : (
-                          <g className={`ab-bot-eye ab-bot-eye${i ? 'R' : 'L'}`} style={at(e.x + e.w / 2, e.y + e.h / 2)}>
-                            <rect
-                              x={e.x} y={e.y} width={e.w} height={e.h} rx={e.r} fill={look.eye} className="ab-bot-pill"
-                              style={{ '--ab-rx': e.r, '--ab-ry': e.h / 2, ...at(e.x + e.w / 2, e.y + e.h / 2) } as CSSProperties}
-                            />
-                            <Smile e={e} ink={look.eye} className="ab-bot-arc" />
-                          </g>
-                        )}
-                      </g>
-                    ))}
-                  </g>
-                </g>
-              </g>
-            </g></g>
-            <circle className="ab-bot-core" cx={50} cy={middle} r={BOT_DOTS.r / BOT_DOTS.scale} fill={look.fill[1]} />
-          </g>
-          <g className="ab-bot-dots">
-            {[-1, 0, 1].map((k) => (
-              <g key={k} className={k ? 'ab-bot-side' : 'ab-bot-mid'} style={at(50 + k * BOT_DOTS.gap, middle)}>
-                <circle className={`ab-bot-dot ab-bot-dot-${k + 1}`} cx={50 + k * BOT_DOTS.gap} cy={middle} r={BOT_DOTS.r} fill={look.fill[1]} />
-              </g>
-            ))}
-          </g>
-        </g></g></g></g>
-      </svg>
+              ))}
+            </g>
+          </svg>
+        </span></span></span></span>
+      </span>
       {presence ? (
         <span
           className={cn('absolute -right-px -bottom-px rounded-full ring-2 ring-[var(--ab-coat-solid,var(--ab-bg))]', presence === 'working' ? 'bg-accent' : 'bg-attention')}
