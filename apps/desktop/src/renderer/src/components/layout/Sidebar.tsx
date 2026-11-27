@@ -409,6 +409,7 @@ function ConnectApps() {
  * teammates, on a Work plan you run), then AppuBot on your phone, Support (a chat with us or an email) and Settings,
  * then Log out. The row has no fill of its own, under the pointer, pressed or open (the owner's call, 2026-11-27: "rm
  * this hover bro on name"). The name is grey at rest and turns white under the pointer and while the menu is open.
+ * The picture is the round buttons' size with their edge, centred on their line, so the foot reads as one row of circles.
  */
 function AccountButton({ down }: { down: boolean }) {
   const t = useT();
@@ -455,6 +456,7 @@ function AccountButton({ down }: { down: boolean }) {
             <span className="relative grid size-[35px] shrink-0 place-items-center">
               {email ? <PersonAvatar email={email} name={view?.account?.name} size={35} photoUrl={view?.account?.photoUrl} />
                 : <span className="grid size-[35px] place-items-center rounded-full bg-surface-2 text-fg-2"><Icon icon={Settings} size={16} /></span>}
+              <span aria-hidden className="ab-edge pointer-events-none absolute inset-0 rounded-full" />
               {down ? <span className="absolute right-0 bottom-0 size-2.5 rounded-full bg-attention ring-2 ring-[var(--ab-coat-solid,var(--ab-bg))]" /> : null}
             </span>
             <span className="min-w-0 truncate text-copy font-medium">{name ?? t('common.settings')}</span>

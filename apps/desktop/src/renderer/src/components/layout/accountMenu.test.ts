@@ -69,4 +69,13 @@ describe('the account row', () => {
     expect(row()).toMatch(/text-muted [^"]*hover:text-fg aria-expanded:text-fg/);
     expect(row()).not.toMatch(/font-medium text-fg/);
   });
+
+  it('draws the picture at the round buttons\' size, with their edge', () => {
+    const src = readFileSync(join(__dirname, 'Sidebar.tsx'), 'utf8');
+    const strip = /const STRIP_BUTTON = '[^']*size-\[(\d+)px\]/.exec(src)?.[1];
+    expect(strip).toBeTruthy();
+    expect(row()).toContain(`relative grid size-[${strip}px] shrink-0`);
+    expect(row()).toContain(`size={${strip}}`);
+    expect(row()).toContain('ab-edge pointer-events-none absolute inset-0 rounded-full');
+  });
 });
