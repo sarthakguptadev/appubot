@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { CRUMB } from '../../features/chat/ChatHeader';
 
 const SRC = join(__dirname, '../..');
-const read = (p: string): string => readFileSync(join(SRC, p), 'utf8');
+const read = (p: string): string => readFileSync(join(SRC, p), 'utf8').replace(/\r\n/g, '\n');
 
 describe('the hairline edge (Grok Bot\'s)', () => {
   it('is a 1px inset a step off the fill, in the components layer so a focus ring still wins', () => {
