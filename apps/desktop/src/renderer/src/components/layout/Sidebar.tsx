@@ -9,6 +9,7 @@ import { rpc } from '../../lib/gateway';
 import { shortcut } from '../../lib/platform';
 import { useHeldFor } from '../../lib/connectionQuiet';
 import { SIDEBAR_WIDTH, setState, ui, upsertThreads, useStore } from '../../lib/store';
+import { useWorkMood } from '../../lib/workMood';
 import { WhatsNewCard } from '../../features/whatsNew/WhatsNew';
 import { CloudPromoCard } from '../../features/cloud/CloudPromoCard';
 import { UpdateRow } from '../../features/update/UpdateRow';
@@ -177,6 +178,7 @@ function BotRow({ bot, latest, selected, unread, presence, expanded, onToggle }:
   /** its threads are listed under it; clicking the bot that is already open shows or hides them */
   expanded: boolean; onToggle: () => void;
 }) {
+  const work = useWorkMood(presence === 'working' ? bot.id : undefined);
   return (
     <div
       // right-click opens the bot's actions (the menu button only shows for keyboard focus)
@@ -194,7 +196,7 @@ function BotRow({ bot, latest, selected, unread, presence, expanded, onToggle }:
         onClick={() => (selected ? onToggle() : openBot(bot.id))}
         className={ROW_BUTTON}
       >
-        <BotAvatar bot={bot} size={AVATAR} presence={presence} />
+        <BotAvatar bot={bot} size={AVATAR} presence={presence} mood={presence === 'working' ? work ?? 'working' : undefined} />
         <span className="flex min-w-0 flex-1 flex-col gap-px">
           <span className="flex min-w-0 items-center gap-2">
             <span className={ROW_NAME}>{bot.name}</span>
@@ -245,6 +247,7 @@ function BotRowMenu({ bot, className }: { bot: Bot; className?: string }) {
  * bottom-right (Grok Bot's tiles), while the bot isn't working or waiting on you. Right-click for its actions (Unpin…).
  */
 function BotTile({ bot, selected, unread, presence }: { bot: Bot; selected: boolean; unread: boolean; presence: BotPresence }) {
+  const work = useWorkMood(presence === 'working' ? bot.id : undefined);
   return (
     <div
       onContextMenu={(e) => { e.preventDefault(); e.currentTarget.querySelector<HTMLButtonElement>('[data-bot-actions]')?.click(); }}
@@ -257,7 +260,7 @@ function BotTile({ bot, selected, unread, presence }: { bot: Bot; selected: bool
         className={TILE_BUTTON}
       >
         <span className="relative">
-          <BotAvatar bot={bot} size={PINNED_AVATAR} presence={presence} />
+          <BotAvatar bot={bot} size={PINNED_AVATAR} presence={presence} mood={presence === 'working' ? work ?? 'working' : undefined} />
           {unread && !presence ? (
             <span role="img" aria-label="Unread" className={TILE_UNREAD} />
           ) : null}

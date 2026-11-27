@@ -6,6 +6,7 @@
 import type { Bot, Thread } from '@appubot/protocol';
 import { BotAvatar, Tooltip, cn } from '../../components/ui';
 import { setState, ui, useStore } from '../../lib/store';
+import { useWorkMood } from '../../lib/workMood';
 
 /**
  * the capsule's one crumb is the capsule's whole face: the raised fill of the sidebar's own controls, a shade deeper
@@ -28,6 +29,7 @@ export function ChatHeader({ bot, thread }: { bot: Bot; thread: Thread | undefin
   const panelOpen = useStore((s) => s.rightOpen);
   // the thread on screen's state
   const needsYou = useStore((s) => !!thread && (thread.status === 'waiting' || s.pendingPermissions.some((p) => p.threadId === thread.id)));
+  const work = useWorkMood(bot.id, thread?.id);
   const othersUnread = useStore((s) => s.threads.some((t) => t.botId === bot.id && t.id !== thread?.id && !!s.unread[t.id]));
   /** a reply waits in one of the bot's other threads */
   const unreadDot = othersUnread ? <span role="img" aria-label="Unread in another thread" className="size-1.5 shrink-0 rounded-full bg-unread" /> : null;
@@ -52,7 +54,7 @@ export function ChatHeader({ bot, thread }: { bot: Bot; thread: Thread | undefin
           aria-expanded={panelOpen}
           className={cn(CRUMB, CRUMB_LEAD)}
         >
-          <BotAvatar bot={bot} size={24} mood={needsYou ? 'needs-you' : thread?.status === 'running' ? 'working' : 'rest'} className="ab-bot-calm" />
+          <BotAvatar bot={bot} size={24} mood={needsYou ? 'needs-you' : work ?? 'rest'} className="ab-bot-calm" />
           <span className={cn(CRUMB_TEXT, 'max-w-[16rem]')}>{bot.name}</span>
           {unreadDot}
         </button>

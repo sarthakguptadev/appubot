@@ -15,7 +15,7 @@
  *       #squash       click squash (ab-bot-boing); grab lean-back; nod                       animation, rotate, scale, translate
  *        .ab-bot[data-mood] > svg > .ab-bot-joy > .ab-bot-body > .ab-bot-tilt > …            botAvatar.css + BOT_MOTION_CSS (mood loops)
  *         .cb-gaze    where the eyes look; squint, blink, widen                              translate, scale
- *          .ab-bot-look > .ab-bot-eye                                                        BOT_MOTION_CSS (glance, scan, think, blink)
+ *          .ab-bot-look > .ab-bot-eye > .ab-bot-pill                                         BOT_MOTION_CSS (the pose's gaze and eyes)
  *   #cur              the pointer's position (tip at 0,0), gliding on a curve; ripples       transform
  *    #tip             appear / hide around the tip; press and hold                            transform, opacity; scale
  * Reduce motion: no loops, wobble, squash or tilt; the glide (it carries information), the ripples and fades stay.
@@ -52,7 +52,7 @@ function avatarSvg(l: BotAvatarLook): string {
     + `<path d="${attr(l.body)}" fill="url(#cb-body)"/>`
     + `<g clip-path="url(#cb-clip)"><ellipse cx="${g.cx}" cy="${g.cy}" rx="${g.rx}" ry="${g.ry}" transform="rotate(${g.rotate} ${g.cx} ${g.cy})" fill="#fff" opacity="${g.opacity}"/></g>`
     + rect(v, 'url(#cb-glass)')
-    + `<g class="cb-gaze"><g class="ab-bot-look">${l.eyes.map((e) => rect(e, l.eye, 'ab-bot-eye')).join('')}</g></g>`
+    + `<g class="cb-gaze"><g class="ab-bot-look">${l.eyes.map((e) => `<g class="ab-bot-eye">${rect(e, l.eye, 'ab-bot-pill').replace('/>', ` style="--ab-rx:${e.r};--ab-ry:${e.h / 2}"/>`)}</g>`).join('')}</g></g>`
     + `<g clip-path="url(#cb-visor)"><rect class="ab-bot-sweep" x="${50 - v.h * 0.25}" y="${v.y - 2}" width="${v.h * 0.5}" height="${v.h + 4}" fill="#fff"/></g>`
     + `</g></g></g></svg>`;
 }
@@ -90,7 +90,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent
 #squash.boing{animation:ab-bot-boing var(--ab-boing) cubic-bezier(.3,.7,.4,1)}
 .cb-gaze{transform-box:fill-box;transform-origin:center}
 #bot .ab-bot-sweep{opacity:0}
-#bot[data-mood='working'] .ab-bot-sweep{opacity:.16}
+#bot[data-mood='tool'] .ab-bot-sweep{opacity:.16}
 #bot[data-look] .ab-bot-sweep{opacity:.16;animation:ab-bot-sweep var(--ab-sweep) ease-in-out both}
 .r{position:absolute;left:-14px;top:-14px;width:28px;height:28px;border-radius:50%;border:2px solid var(--col);pointer-events:none}
 </style></head><body><div id="w">

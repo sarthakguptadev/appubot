@@ -27,7 +27,7 @@ import { MessageActions } from './MessageActions';
 import { ThinkingRow, ThoughtRow, ToolGroupRow, ToolRow } from './ToolRow';
 import {
   capOpenTools, chunkWork, answerOnly, formatTurnHeaderLabel, layoutTurn, liveAnswerParts, segmentFlow, turnFileChanges, turnHeader, type Chunk, type Indexed,
-  linkMentions, liveStepLabel, reactionBy,
+  botWorkMood, linkMentions, liveStepLabel, reactionBy, type BotMood,
 } from '@appubot/chat-core';
 import { useStore } from '../../lib/store';
 import { useMessagesTheme, useWorkTrail } from '../../lib/appearance';
@@ -258,8 +258,10 @@ const WORKING_STATES = {
  * alone with a bare clock read as nothing happening). It names no tool and shows no command (the owner's call, 2026-11-15, on
  * seeing "Running nohup google-chrome --no-…" beside it): a step with no plain words for it says "Working".
  */
-const BotWorkingRow = memo(function BotWorkingRow({ threadId, since, botId, step }: {
+const BotWorkingRow = memo(function BotWorkingRow({ threadId, since, botId, step, mood }: {
   threadId: string; since: number;
+  /** what its avatar shows the bot doing (chat-core botWorkMood); unknown: `working` */
+  mood?: BotMood;
   /** another bot working on a task handed to it from this chat (`Message.from`): it waits for you in its own chat */
   botId?: string;
   /** what the bot is doing now, in plain words */
@@ -277,7 +279,7 @@ const BotWorkingRow = memo(function BotWorkingRow({ threadId, since, botId, step
       state={needsYou ? 'needs-you' : 'working'}
       states={WORKING_STATES}
       label={label}
-      icon={<BotAvatar bot={bot} size={26} mood={needsYou ? 'needs-you' : 'working'} />}
+      icon={<BotAvatar bot={bot} size={26} mood={needsYou ? 'needs-you' : mood ?? 'working'} />}
       iconSize={26}
       time={<LiveElapsed since={since} />}
     />
@@ -290,12 +292,13 @@ function LiveTurn({ msg, ctx, ended, answers, trail }: { msg: Message; ctx: Ctx;
   const themed = useMessagesTheme();
   const run = useMemo(() => (themed && answers ? bubbleRun(list) : undefined), [themed, answers, list]);
   const step = useMemo(() => (answers && !msg.from ? liveStepLabel(msg.parts) : undefined), [answers, msg.from, msg.parts]);
+  const mood = useMemo(() => (msg.from ? undefined : botWorkMood(msg.parts)), [msg.from, msg.parts]);
   return (
     <div className="flex flex-col">
       {ended || answers ? null : <WorkingHeader since={msg.createdAt} />}
       {list.length ? <div className="pb-1"><Flow list={list} ctx={run ? { ...ctx, bubbleRun: run } : ctx} /></div> : null}
       {/* with the work trail on, its status line above says the bot is working */}
-      {ended || (answers && trail && !msg.from) ? null : answers ? <BotWorkingRow threadId={msg.threadId} since={msg.createdAt} botId={msg.from?.botId} step={step} /> : <ThinkingRow />}
+      {ended || (answers && trail && !msg.from) ? null : answers ? <BotWorkingRow threadId={msg.threadId} since={msg.createdAt} botId={msg.from?.botId} step={step} mood={mood} /> : <ThinkingRow />}
     </div>
   );
 }
