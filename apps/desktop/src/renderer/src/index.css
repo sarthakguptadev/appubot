@@ -300,12 +300,13 @@ html[data-glass="off"] body { background-image: none; }
 :is(.chat-bubble-reply, .chat-bubble-sent) .chat-markdown li + li { margin-top: 2px; }
 :is(.chat-bubble-reply, .chat-bubble-sent) .chat-markdown :is(h1, h2, h3, h4, h5, h6) { margin: 18px 0 0; font-size: 15px; line-height: 22px; letter-spacing: .01em; }
 /* Grok Bot's hairline: a filled control (the raised buttons, the chat's name chip, secondary buttons, the composer's +)
-   and the bot's bubbles carry a 1px edge a step lighter than their fill in the dark, a step darker in the light (read
-   off the owner's Grok shot: fill #242424 edged #303030), drawn inside the box so nothing moves. Your own bubbles stay
-   solid. In the components layer, so a focus ring utility still replaces it while focused. */
+   carries a 1px edge a step lighter than its fill in the dark, a step darker in the light (read off the owner's Grok
+   shot: fill #242424 edged #303030), drawn inside the box so nothing moves. Chat bubbles, the bot's and yours, have
+   none (the owner's call, 2026-11-27). In the components layer, so a focus ring utility still replaces it while
+   focused. */
 :root { --ab-edge: color-mix(in srgb, var(--ab-fg) 7%, transparent); }
 @layer components {
-  .ab-edge, .chat-bubble-reply, .chat-page { box-shadow: inset 0 0 0 1px var(--ab-edge); }
+  .ab-edge { box-shadow: inset 0 0 0 1px var(--ab-edge); }
   .chat-composer-surface { border-color: color-mix(in srgb, var(--ab-fg) 11%, transparent); }
 }
 /* the sheen: a faint light at the bubble's top that fades down it, stronger on the light scheme's wash than in the dark,

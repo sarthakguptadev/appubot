@@ -11,14 +11,14 @@ describe('the hairline edge (Grok Bot\'s)', () => {
     const css = read('index.css');
     expect(css).toMatch(/:root \{ --ab-edge: color-mix\(in srgb, var\(--ab-fg\) 7%, transparent\); \}/);
     const layer = css.slice(css.indexOf('@layer components {\n  .ab-edge'));
-    expect(layer).toMatch(/^@layer components \{\n {2}\.ab-edge, \.chat-bubble-reply, \.chat-page \{ box-shadow: inset 0 0 0 1px var\(--ab-edge\); \}/);
+    expect(layer).toMatch(/^@layer components \{\n {2}\.ab-edge \{ box-shadow: inset 0 0 0 1px var\(--ab-edge\); \}/);
   });
 
-  it('edges the raised buttons, the name chip, secondary buttons and the composer\'s +, not your own bubble', () => {
+  it('edges the raised buttons, the name chip, secondary buttons and the composer\'s +, and no chat bubble', () => {
     expect(CRUMB.split(' ')).toContain('ab-edge');
     expect(read('components/layout/Sidebar.tsx')).toMatch(/const RAISED = 'ab-edge /);
     expect(read('components/ui/Button.tsx')).toMatch(/secondary: 'ab-edge /);
     expect(read('features/chat/Composer.tsx')).toMatch(/const ADD = 'chat-round ab-edge /);
-    expect(read('index.css')).not.toMatch(/\.chat-bubble-sent[^{]*\{[^}]*--ab-edge/);
+    expect(read('index.css')).not.toMatch(/\.chat-(?:bubble|page)[^{]*\{[^}]*--ab-edge/);
   });
 });
