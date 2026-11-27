@@ -12,7 +12,7 @@ import { markOnce } from './perfMarks';
 /** `computer`: your AppuBot computer's screen (only while the app is on a remote computer) */
 export type RightTab = 'threads' | 'bot' | 'skills' | 'memory' | 'routines' | 'files' | 'computer';
 /** The sidebar's width as it opens, and what a double-click on its edge returns it to (the owner's own, 2026-11-14; 288 before). */
-export const SIDEBAR_WIDTH = 303;
+export const SIDEBAR_WIDTH = 308;
 /** The Connect apps popup's two views. */
 export type AppsView = 'browse' | 'connected';
 export type SettingsSection = 'general' | 'vault' | 'appearance' | 'providers' | 'instructions' | 'apps' | 'devices' | 'computer' | 'channels' | 'voice' | 'usage' | 'storage' | 'about' | 'whats-new' | 'permissions' | 'account' | 'billing' | 'team' | 'transfer' | 'import';
