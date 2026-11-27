@@ -125,12 +125,6 @@
   },
   {
     "kind": "service",
-    "name": "Composio",
-    "url": "https://composio.dev",
-    "used": "Connect apps: the sign-ins and tools for your apps."
-  },
-  {
-    "kind": "service",
     "name": "Cua",
     "by": "trycua",
     "url": "https://github.com/trycua/cua",
