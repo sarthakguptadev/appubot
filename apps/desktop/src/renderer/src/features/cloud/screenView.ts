@@ -94,8 +94,24 @@ export const VIEWER_MARGIN = 12;
 export const VIEWER_PILL_H = 40;
 /** the panel's top row (the computer's name and ✕) */
 export const VIEWER_HEADER_H = 44;
-/** the panel's place in the window: below the traffic lights' row, and this much of the dimmed app on the other sides */
+/** the panel's place in the window at full size: below the traffic lights' row, and this much of the dimmed app on the other sides */
 export const VIEWER_INSET = { top: 42, side: 24 } as const;
+/** the popup it opens as: at most this share of the window's width, and at least this much of the dimmed app on every side */
+export const VIEWER_POPUP = { widthShare: 0.7, edge: 48 } as const;
+
+/**
+ * The popup's size in a window of `win`: the screen in its own shape (`fb`, else 1440×900) as large as fits in
+ * `VIEWER_POPUP`'s share of the window, plus the popup's own top row, pill and margins around it. Whole pixels.
+ */
+export function popupSize(win: { w: number; h: number }, fb: { w: number; h: number } | undefined): { w: number; h: number } {
+  const s = fb && fb.w > 0 && fb.h > 0 ? fb : DEFAULT_SCREEN;
+  const chromeW = 2 * VIEWER_MARGIN;
+  const chromeH = VIEWER_HEADER_H + VIEWER_PILL_H + 2 * VIEWER_MARGIN;
+  const maxW = Math.min(win.w * VIEWER_POPUP.widthShare, win.w - 2 * VIEWER_POPUP.edge);
+  const maxH = win.h - 2 * VIEWER_POPUP.edge;
+  const screenW = Math.max(0, Math.min(maxW - chromeW, ((maxH - chromeH) * s.w) / s.h));
+  return { w: Math.floor(screenW + chromeW), h: Math.floor((screenW * s.h) / s.w + chromeH) };
+}
 /** the shape a screen is drawn in before its size is known (the cloud computer's own 1440×900) */
 export const DEFAULT_SCREEN = { w: 1440, h: 900 } as const;
 

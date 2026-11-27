@@ -1,8 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { WATCHING_KEEPS_AWAKE, controlNote, controlPill, computerDisplayName } from '@appubot/chat-core';
-import { Eye, Hand, RotateCw, X } from '../../components/ui/icons';
-import { Button, Icon, MODAL_BACKDROP, Spinner, Tooltip } from '../../components/ui';
+import { Eye, Hand, Maximize2, Minimize2, RotateCw, X } from '../../components/ui/icons';
+import { Button, Icon, Spinner, Tooltip } from '../../components/ui';
 import { cn } from '../../components/ui/cn';
 import { useNow } from '../../lib/hooks';
 import { useStore } from '../../lib/store';
@@ -11,7 +11,7 @@ import { cloudClientIfAny } from './cloudClient';
 import {
   giveBack, keepControl, noteInput, placeSurface, refitScreen, releaseScreen, retryScreen, screenCanvas, takeControl, useCloudDesktop, useScreen, wantScreen,
 } from './screenSession';
-import { VIEWER_HEADER_H, VIEWER_INSET, VIEWER_MARGIN, VIEWER_PILL_H, botScreenLine, fitScreen } from './screenView';
+import { VIEWER_HEADER_H, VIEWER_INSET, VIEWER_MARGIN, VIEWER_PILL_H, botScreenLine, fitScreen, popupSize } from './screenView';
 
 /*
  * Open desktop (plan §4.4): your AppuBot computer's own screen (or a team's) in a dark panel centred in the app window,
@@ -96,6 +96,18 @@ export function DesktopView() {
     return () => releaseScreen('viewer');
   }, [open, team, screen, teach, signIn, takeOver]);
 
+  // a popup centred over the dimmed app, or the whole window at full size (the title row's button; it opens small)
+  const [full, setFull] = useState(false);
+  useEffect(() => { if (!open) setFull(false); }, [open]);
+  const fb = useScreen((s) => s.fb);
+  const [win, setWin] = useState(() => ({ w: window.innerWidth, h: window.innerHeight }));
+  useEffect(() => {
+    const on = () => setWin({ w: window.innerWidth, h: window.innerHeight });
+    window.addEventListener('resize', on);
+    return () => window.removeEventListener('resize', on);
+  }, []);
+  const popup = popupSize(win, fb);
+
   // grows out of the preview it was opened from: a clip opening from the preview's place, never a transform (noVNC
   // measures its place with getBoundingClientRect, which a scale would shrink, and keeps the canvas that small)
   const reveal = !reduce && from
@@ -114,14 +126,18 @@ export function DesktopView() {
           animate={reveal ? { opacity: 1, clipPath: 'inset(0px 0px 0px 0px round 0px)' } : { opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: reduce ? 0.12 : 0.28, ease: [0.25, 1, 0.5, 1] }}
-          className="fixed inset-0 z-[70] flex"
-          style={{ padding: `${VIEWER_INSET.top}px ${VIEWER_INSET.side}px ${VIEWER_INSET.side}px` }}
+          className="fixed inset-0 z-[70] flex items-center justify-center"
+          style={full ? { padding: `${VIEWER_INSET.top}px ${VIEWER_INSET.side}px ${VIEWER_INSET.side}px` } : undefined}
         >
-          {/* the dimmed app around the panel: a press there closes it (not while you're in control); its top row drags the window */}
-          <div className={cn('absolute inset-0', MODAL_BACKDROP)} onMouseDown={() => { if (!useScreen.getState().mine) closeCloudDesktop(); }} />
+          {/* the app around the popup, dimmed almost away so none of its controls read beside the popup's own: a press
+              there closes it (not while you're in control); its top row still drags the window */}
+          <div className="absolute inset-0 bg-[color-mix(in_srgb,var(--ab-content)_88%,transparent)]" onMouseDown={() => { if (!useScreen.getState().mine) closeCloudDesktop(); }} />
           <div className="drag absolute inset-x-0 top-0" style={{ height: VIEWER_INSET.top }} />
-          <div className="no-drag squircle relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-sheet bg-[#0a0a0a] text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_25px_50px_-12px_rgba(0,0,0,.6)]">
-            <Viewer teach={teach} signIn={signIn} title={title} />
+          <div
+            className={cn('no-drag squircle relative flex min-h-0 min-w-0 flex-col overflow-hidden rounded-sheet bg-[#0a0a0a] text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_25px_50px_-12px_rgba(0,0,0,.6)]', full ? 'size-full' : 'shrink-0')}
+            style={full ? undefined : { width: popup.w, height: popup.h }}
+          >
+            <Viewer teach={teach} signIn={signIn} title={title} full={full} onFull={() => setFull((f) => !f)} />
           </div>
         </motion.div>
       ) : null}
@@ -129,7 +145,7 @@ export function DesktopView() {
   );
 }
 
-function Viewer({ teach, signIn, title }: { teach: boolean; signIn?: string; title: string }) {
+function Viewer({ teach, signIn, title, full, onFull }: { teach: boolean; signIn?: string; title: string; full: boolean; onFull: () => void }) {
   // false while it fades out after closing: the picture goes back to the preview at once
   const open = useCloudDesktop((s) => s.open);
   const phase = useScreen((s) => s.phase);
@@ -232,12 +248,23 @@ function Viewer({ teach, signIn, title }: { teach: boolean; signIn?: string; tit
 
   return (
     <>
-      {/* the panel's top: the computer's name, the screens where bots have their own, and ✕ */}
-      <header className="flex shrink-0 items-center gap-3 pr-2 pl-4" style={{ height: VIEWER_HEADER_H }}>
+      {/* the panel's top: the computer's name, the screens where bots have their own, full size and ✕ */}
+      <header className="flex shrink-0 items-center gap-1.5 pr-2 pl-4" style={{ height: VIEWER_HEADER_H }}>
         <div className="flex min-w-0 flex-1 items-center gap-3">
-          <span className="min-w-0 shrink truncate text-copy text-white/60">{title}</span>
+          <span className="min-w-0 shrink truncate text-note text-white/60">{title}</span>
           {!teach && !signIn ? <ScreenSwitcher /> : null}
         </div>
+        <Tooltip label={full ? 'Smaller' : 'Full size'}>
+          <button
+            type="button"
+            aria-label={full ? 'Smaller' : 'Full size'}
+            aria-pressed={full}
+            onClick={onFull}
+            className="flex size-7 shrink-0 items-center justify-center rounded-full text-white/70 hover:bg-white/[0.08] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+          >
+            <Icon icon={full ? Minimize2 : Maximize2} size={14} />
+          </button>
+        </Tooltip>
         <Tooltip label="Close (Esc)">
           <button
             type="button"
