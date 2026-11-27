@@ -21,7 +21,8 @@ export const isHeadless = (): boolean => !app.isPackaged && !!process.env.APPUBO
 export function mainWindow(): BrowserWindow | null { return win && !win.isDestroyed() ? win : null; }
 export const themeBackground = (): string => (nativeTheme.shouldUseDarkColors ? dark.bg : light.bg);
 /**
- * The window's top strip (the sidebar's and the chat header's, px at 100%): the window buttons are centred in it. 64,
+ * The window's top strip (the sidebar's and the chat header's, px at 100%): Windows' and Linux's window buttons are
+ * centred in it (macOS's traffic lights sit higher, in the corner). 64,
  * so the chat header's 40px capsule keeps 12px above it, as much as it keeps from the window's sides (at 56 it sat
  * 8px under the top edge). The renderer's strips are `h-16`: change them together.
  */
@@ -104,8 +105,9 @@ export function createMainWindow(opts: { hidden?: boolean } = {}): BrowserWindow
     ...(process.platform === 'darwin'
       ? {
         titleBarStyle: 'hiddenInset' as const,
-        // centred in the sidebar's top strip and the chat's header (both TOP_STRIP tall, at the window's 100%)
-        trafficLightPosition: { x: 18, y: TOP_STRIP / 2 - 6 },
+        // tight in the window's corner, where Grok Bot keeps them (16pt in, 15pt down to the close button's edge): above
+        // the middle of the sidebar's search and + circles, and centred in the computer viewer's 44px full size row
+        trafficLightPosition: { x: 16, y: 15 },
         // macOS glass: the renderer paints a translucent coat over the window's vibrancy (see index.css)
         vibrancy: 'under-window' as const, visualEffectState: 'followWindow' as const, backgroundColor: '#00000000',
       }
