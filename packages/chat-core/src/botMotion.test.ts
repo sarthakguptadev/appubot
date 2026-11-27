@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { BotShape, type Part } from '@appubot/protocol';
 import {
-  BOT_BASE, BOT_CHEER, BOT_DOT_LOOP, BOT_DOTS, BOT_EASE_CSS, BOT_LOOPS, BOT_LOOPS_FROM_START, BOT_MIDDLE, BOT_MORPH, BOT_MOTION, BOT_POSES, BOT_TURN, BOT_WORK_MOODS, botGaze, botHandoff,
-  botShown, botTurn, botWorkMood, cheersAt, motionEase, poseEase, sampleTrack, squash, type BotMood, type BotTrack,
+  BOT_BASE, BOT_CHEER, BOT_DOT_LOOP, BOT_DOTS, BOT_EASE_CSS, BOT_HEAD, BOT_LOOPS, BOT_LOOPS_FROM_START, BOT_MIDDLE, BOT_MORPH, BOT_MOTION, BOT_POSES, BOT_TURN, BOT_WORK_MOODS, botGaze,
+  botHandoff, botHead, botShown, botTurn, botWorkMood, cheersAt, motionEase, poseEase, sampleTrack, squash, type BotMood, type BotTrack,
 } from './botMotion';
 
 const all: [string, BotTrack][] = [
@@ -60,7 +60,7 @@ describe('bot motion: tracks', () => {
     for (const [mood, ts] of Object.entries(BOT_LOOPS)) {
       const seen = ts!.map((t) => `${t.layer}.${t.prop}`);
       expect(new Set(seen).size, mood).toBe(seen.length);
-      for (const t of ts!) expect(['body', 'tilt', 'face', 'look', 'eyeL', 'eyeR']).toContain(t.layer);
+      for (const t of ts!) expect(['body', 'tilt', 'head', 'face', 'deepL', 'deepR', 'look', 'eyeL', 'eyeR']).toContain(t.layer);
     }
     for (const t of BOT_CHEER) expect(t.layer).toBe('joy');
     for (const t of BOT_DOT_LOOP.tracks) expect(t.layer).toBe('dot');
@@ -90,7 +90,33 @@ describe('bot motion: Grok Bot, measured', () => {
 
   it('rests still, upright and facing you with its eyes in the middle: no loop at all and no blinks', () => {
     expect(BOT_LOOPS.rest).toBeUndefined();
-    expect(BOT_POSES.rest).toEqual({ rotate: 0, turn: 0, gaze: [0, 0], eye: [1, 1], face: 'open', form: 'bot' });
+    expect(BOT_POSES.rest).toEqual({ rotate: 0, turn: 0, pitch: 0, gaze: [0, 0], eye: [1, 1], face: 'open', form: 'bot' });
+  });
+
+  it('turns like a solid: the face slides round the head, the far eye narrowing, the outline narrowing, round the back', () => {
+    const front = botHead(0);
+    expect(front).toEqual({ body: [1, 1], face: { x: 0, y: 0, sx: 1, sy: 1 }, eyes: [{ x: 0, s: 1, w: 1 }, { x: 0, s: 1, w: 1 }] });
+    // a 35° turn slides the face as far as Grok Bot's did (on screen: within the outline's narrowing)
+    const t35 = botHead(35);
+    expect(Math.abs(t35.face.x * t35.body[0] - botTurn(35).x)).toBeLessThan(1.5);
+    expect(t35.face.sx * t35.body[0]).toBeLessThan(0.82);
+    // the eye on the far side narrows much more than the near one
+    expect(t35.eyes[0].w / t35.eyes[1].w).toBeGreaterThan(1.8);
+    expect(botHead(-35).eyes[1].w).toBe(t35.eyes[0].w);
+    expect(botHead(-35).face.x).toBe(-t35.face.x);
+    // the outline narrows to the body's depth side on, and is whole again from behind
+    expect(t35.body[0]).toBeLessThan(1);
+    expect(botHead(90).body[0]).toBe(BOT_HEAD.depth);
+    expect(botHead(180).body[0]).toBe(1);
+    // past a quarter turn the face is round the back, and a whole turn is the front again
+    for (const yaw of [91, 120, 180, 270]) expect(botHead(yaw).face.sx, String(yaw)).toBe(0);
+    // the near eye goes last, a quarter turn past where it sits on the ball
+    expect(botHead(90 + BOT_HEAD.eye - 1).eyes[0].w).toBeGreaterThan(0);
+    for (const yaw of [90 + BOT_HEAD.eye, 180, 270 - BOT_HEAD.eye]) expect(botHead(yaw).eyes.map((e) => e.w), String(yaw)).toEqual([0, 0]);
+    expect(botHead(-360)).toEqual(front);
+    // nodding up slides the face up
+    expect(botHead(0, 16).face.y).toBeLessThan(-6);
+    expect(botHead(0, -16).face.y).toBeGreaterThan(6);
   });
 
   it('turns its face like Grok Bot: sliding 0.17 of the body sideways and narrowing to cos 35° at a 35° turn', () => {
@@ -146,19 +172,25 @@ describe('bot motion: Grok Bot, measured', () => {
     const move = find('body', 'translate');
     const size = find('body', 'scale');
     const slide = find('face', 'translate');
+    const narrow = find('face', 'scale');
+    const outline = find('head', 'scale');
     const [eyeL, eyeR] = [find('eyeL', 'scale'), find('eyeR', 'scale')];
+    const [deepL, deepR] = [find('deepL', 'scale'), find('deepR', 'scale')];
     const at = (t: BotTrack, ms: number, c: 0 | 1 = 0) => sampleTrack(t, ms, true, c);
     const area = (t: BotTrack, ms: number) => at(t, ms, 0) * at(t, ms, 1);
     for (const t of tool) expect(t.ms, `${t.layer}.${t.prop}`).toBe(30500);
     expect(BOT_LOOPS_FROM_START).toEqual(['tool']);
-    // still and facing you for its first 1.5 s (within a viewBox unit, a third of a pixel in a sidebar row), and at the end
+    // still and facing you for its first 1.3 s (within a viewBox unit, a third of a pixel in a sidebar row), and at the end
     for (const t of tool) {
       const rest = t.prop === 'scale' ? 1 : 0;
-      for (let ms = 0; ms <= 1500; ms += 50) for (const c of [0, 1] as const) expect(Math.abs(at(t, ms, c) - rest), `${t.layer}.${t.prop} ${ms}`).toBeLessThan(1);
+      for (let ms = 0; ms <= 1300; ms += 50) for (const c of [0, 1] as const) expect(Math.abs(at(t, ms, c) - rest), `${t.layer}.${t.prop} ${ms}`).toBeLessThan(1);
       expect(at(t, 30500, 0)).toBe(rest);
     }
-    // glances left at 2.9 s: the near (left) eye 1.5× the far one, the body sliding 12.6 after its eyes
-    expect(Math.sqrt(area(eyeL, 2900) / area(eyeR, 2900))).toBeGreaterThan(1.35);
+    // glances left at 2.9 s, its head turning: the face slides left and the outline narrows, the left eye bigger than
+    // the right as Grok Bot's was, the body sliding 12.6 after it
+    expect(at(slide, 2900)).toBeLessThan(-5);
+    expect(at(outline, 2900)).toBeLessThan(0.99);
+    expect(Math.sqrt((area(eyeL, 2900) * at(deepL, 2900)) / (area(eyeR, 2900) * at(deepR, 2900)))).toBeGreaterThan(1.1);
     expect(at(move, 2917)).toBeCloseTo(-12.6, 0);
     // blinks at 5.5 s with its head tilted 9.6°
     expect(at(eyeL, 5517, 1)).toBeLessThan(0.3);
@@ -174,11 +206,18 @@ describe('bot motion: Grok Bot, measured', () => {
     expect(at(size, 16483)).toBeCloseTo(0.71, 2);
     expect(at(rotate, 16417)).toBeCloseTo(36.4, 1);
     expect(at(rotate, 18533)).toBe(-23);
-    // spins round: turned away to the left at 18.867 s, back from the right, facing you by 19.6 s
-    expect(at(slide, 18867)).toBeCloseTo(botTurn(-90).x, 2);
-    expect(at(slide, 18868)).toBeCloseTo(botTurn(90).x, 2);
+    // spins right round: turned away to the left at 18.867 s (the face gone at the left edge, the outline side on),
+    // round the back, the face back from the right, facing you by 19.6 s; no key turns it more than 6°
+    expect(at(slide, 18867)).toBeLessThan(-25);
+    expect(at(narrow, 18867)).toBeLessThan(0.05);
+    expect(at(outline, 18867)).toBeCloseTo(BOT_HEAD.depth, 1);
+    expect(at(slide, 18868)).toBeGreaterThan(25);
+    expect(at(narrow, 18868)).toBeLessThan(0.2);
     expect(at(size, 18867)).toBeCloseTo(0.48, 2);
-    expect(at(slide, 19600)).toBe(0);
+    expect(Math.abs(at(slide, 19650))).toBeLessThan(1);
+    expect(at(narrow, 19650)).toBeGreaterThan(0.95);
+    const spin = slide.keys.filter(([t]) => t >= 18800 && t <= 18867);
+    expect(spin.length).toBeGreaterThan(10);
     // wobbles: 37° right, then sweeps to 48° left in 1.3 s and snaps back in 0.2–0.35 s
     const wobble = Array.from({ length: 560 }, (_, i) => at(rotate, 24200 + i * 10));
     expect(Math.max(...wobble)).toBeCloseTo(37.7, 1);
@@ -244,9 +283,10 @@ describe('bot motion: the state machine', () => {
   it('looks at a pointer within reach: turning its face toward it, eyes following, leaning a little', () => {
     expect(botGaze(200, 0, 100)).toBeNull();
     expect(botGaze(0, 0, 0)).toBeNull();
-    expect(botGaze(80, 0, 100)).toEqual({ turn: 35, x: 2, y: 0, rotate: -7.3 });
-    expect(botGaze(-80, 0, 100)).toEqual({ turn: -35, x: -2, y: 0, rotate: 7.3 });
-    expect(botGaze(0, -60, 100)).toEqual({ turn: 0, x: 0, y: -4.5, rotate: 0 });
+    expect(botGaze(80, 0, 100)).toEqual({ turn: 35, pitch: 0, x: 2, y: 0, rotate: -7.3 });
+    expect(botGaze(-80, 0, 100)).toEqual({ turn: -35, pitch: 0, x: -2, y: 0, rotate: 7.3 });
+    // above it: the head nods up 16° and the eyes look up
+    expect(botGaze(0, -60, 100)).toEqual({ turn: 0, pitch: 16, x: 0, y: -4.5, rotate: 0 });
     expect(botGaze(0, 60, 100)!.y).toBe(3.3);
     expect(botGaze(10, 0, 90)!.turn).toBeCloseTo(35 / 3, 2);
     expect(botGaze(0, 104, 100)).not.toBeNull();

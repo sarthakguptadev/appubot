@@ -4,20 +4,22 @@
  * cursor's overlay); the phone samples them on the UI thread. Change the motion here, never in one app.
  *
  * Copied from a frame-by-frame measurement of Grok Bot's mascot (2026-11-27, 2085 frames): how it moves, drawn as our
- * own character. It turns its face (a yaw: the face slides to one side and narrows, botTurn) toward what it looks at.
+ * own character. It is drawn flat but moves like a solid (botHead): its head turns (yaw), nods (pitch) and rolls, and as
+ * it turns the face slides across the body, the eyes narrow and crowd toward the turning edge, the near eye bigger than
+ * the far one, and the outline narrows; turned past a quarter the face goes round the back, so it can spin right round.
  * What it does:
  *   rest       still, upright and facing you. No breathing, no blinks, no hops (Grok Bot's sat still for 41 seconds).
  *              Grok Bot's own rest is turned 39° to the right and looking up; ours faces you, centred in its place.
- *   look       the pointer near a resting avatar: the face turns toward it (35° at the side), the eyes follow it and
- *              the body leans a little (botGaze).
+ *   look       the pointer near a resting avatar: the head turns toward it (35° at the side, nodding up or down 16°),
+ *              the eyes follow it and the body leans a little (botGaze).
  *   listening  you sent something and the turn has started: facing you, eyes centred and big.
  *   thinking   the face turns away (69° in 70 ms) and the avatar collapses into the middle of three dots, which then
  *              light up left to right (a typing indicator made of the bot). `working` (busy, step unknown) shows the
  *              same. In small places (`compact`: a sidebar row, the chat header, a pinned tile) it never collapses: the
  *              three dots light up inside its visor instead of its eyes.
  *   tool       a tool is running: Grok Bot's working routine, 30.5 s measured frame by frame from a busy bot's sidebar
- *              row (its chat's working row moved in step with it): glances about with its eyes shrinking to dots, the
- *              near one bigger; blinks with its head tilted; crouches and flips head over heels; looks about round-eyed;
+ *              row (its chat's working row moved in step with it): turns its head to glance about, the near eye bigger;
+ *              blinks with its head tilted; crouches and flips head over heels; looks about round-eyed;
  *              shrinks rolling away and grows back leaning the other way; spins round; tilts and holds; wobbles from
  *              one side to the other. Then it starts again (BOT_LOOPS.tool).
  *   typing     the reply is coming in: turned 39° toward the text, looking up, eyes half as big again (the dots stay
@@ -34,12 +36,16 @@
  *   body   a mood's loop (the attention hop, the tool wander)                       translate, scale, rotate
  *   tilt   the pose's lean (eases); the attention wobble                             rotate
  *   morph  collapsing into the middle dot and growing back (eases)                  scale
- *   face   the face's turn (visor and eyes; eases), clipped to the body             translate, scale
- *   look   where both eyes look (eases); the tool routine's glances                 translate, scale
+ *   head   the outline narrowing as the head turns (botHead)                        scale
+ *   face   where the face is on the turned head (visor and eyes; botHead), clipped  translate, scale
+ *          to the body
+ *   deepL/deepR  each eye on the turned head: crowding toward the turning edge and   translate, scale
+ *          its own width, the near one wider (botHead)
+ *   look   where both eyes look within the visor (eases)                            translate, scale
  *   eye    each eye's shape (eases); eyeL/eyeR the same eye in the tool routine      scale
  *          (the left and right eye as you look at it, each its own size: the near one bigger)
  *   dot    each of the three dots, while thinking (beside the body, or in the visor) translate, scale, opacity
- * Joy, body and tilt turn and scale round the avatar's middle, so it stays centred in its place whatever it does; the
+ * Joy, body, tilt and head turn and scale round the avatar's middle, so it stays centred in its place whatever it does; the
  * others round their own centre.
  * Squash and stretch keep the volume: `squash(k)` is (1/(1-k), 1-k).
  */
@@ -55,7 +61,7 @@ export type BotMood = 'rest' | 'happy' | 'listening' | 'thinking' | 'tool' | 'ty
 export const BOT_WORK_MOODS: readonly BotMood[] = ['listening', 'thinking', 'tool', 'typing', 'working'];
 
 export type MotionEase = 'inOut' | 'in' | 'out' | 'linear';
-export type BotLayer = 'joy' | 'body' | 'tilt' | 'face' | 'look' | 'eye' | 'eyeL' | 'eyeR' | 'dot';
+export type BotLayer = 'joy' | 'body' | 'tilt' | 'head' | 'face' | 'deepL' | 'deepR' | 'look' | 'eye' | 'eyeL' | 'eyeR' | 'dot';
 export type MotionValue = number | readonly [number, number];
 /** [ms into the track, value, easing of the segment that starts here (default: the track's, else inOut)] */
 export type MotionKey = readonly [number, MotionValue, MotionEase?];
@@ -100,12 +106,77 @@ export function botTurn(deg: number): { x: number; sx: number } {
   return { x: r3(Math.sin(a) * BOT_TURN) || 0, sx: r3(Math.cos(a)) };
 }
 
+/**
+ * The head as a solid, for drawing a flat avatar that turns like Grok Bot's: the face sits on the front of a ball
+ * BOT_TURN units round (so a quarter turn slides it BOT_TURN), each eye `eye` degrees round from the face's middle,
+ * seen through a lens `lens` units in front (the near side a little bigger), on a body `depth` as deep as it is wide.
+ */
+export const BOT_HEAD = { eye: 25, depth: 0.75, lens: 180 } as const;
+
+/** What a head turned `yaw` and nodded `pitch` degrees looks like, flat (botHead). */
+export interface BotHeadView {
+  /** the outline's width and height: narrower turned sideways (the body is less deep than wide) */
+  body: readonly [number, number];
+  /**
+   * the face (visor and eyes) on the narrowed body: where its middle moves and how it narrows (to nothing once it goes
+   * round the back), in the body's own units, so the outline's narrowing isn't counted twice
+   */
+  face: { x: number; y: number; sx: number; sy: number };
+  /**
+   * each eye (left, right as you look) within the face: how far it moves from where the face's narrowing puts it
+   * (toward the turning edge) and how much wider it is than the face's scale makes it (the near one wider); `w` its
+   * width on screen, 1 facing you
+   */
+  eyes: readonly [{ x: number; s: number; w: number }, { x: number; s: number; w: number }];
+}
+
+const rad = (deg: number) => (deg * Math.PI) / 180;
+const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+
+/**
+ * The head turned `yaw` degrees (positive: to the right as you look at it) and nodded `pitch` (positive: up), its
+ * outline narrowed by `bodyPitch` (the pitch unless a measured squash already draws it).
+ */
+export function botHead(yaw: number, pitch = 0, bodyPitch = pitch): BotHeadView {
+  const { eye, depth, lens } = BOT_HEAD;
+  const r = BOT_TURN;
+  const cp = Math.cos(rad(pitch));
+  const at = (a: number) => {
+    const z = r * cp * Math.cos(rad(yaw + a));
+    const k = lens / (lens + r - z);
+    return { x: r * cp * Math.sin(rad(yaw + a)) * k, k, w: Math.max(0, Math.cos(rad(yaw + a))) * k };
+  };
+  const c = at(0);
+  const bx = Math.hypot(Math.cos(rad(yaw)), depth * Math.sin(rad(yaw)));
+  const by = Math.hypot(Math.cos(rad(bodyPitch)), depth * Math.sin(rad(bodyPitch)));
+  const sx = c.w;
+  const div = Math.max(sx, 0.05);
+  // facing you an eye is already a little round the ball: its place and width there are where it starts from
+  const front = (a: number) => {
+    const z = r * Math.cos(rad(a));
+    const k = lens / (lens + r - z);
+    return { x: r * Math.sin(rad(a)) * k, w: Math.cos(rad(a)) * k };
+  };
+  const eyes = [-eye, eye].map((a) => {
+    const e = at(a);
+    const f = front(a);
+    return { x: r3(clamp((e.x - c.x) / div - f.x, -BOT_TURN, BOT_TURN)) || 0, s: r3(Math.min(3, e.w / f.w / div)), w: r3((e.w / f.w) * Math.max(0, cp)) };
+  });
+  return {
+    body: [r3(bx), r3(by)],
+    face: { x: r3(c.x / bx) || 0, y: r3((-r * Math.sin(rad(pitch)) * c.k) / by) || 0, sx: r3(sx / bx), sy: r3((Math.max(0, cp) * c.k) / by) },
+    eyes: eyes as unknown as BotHeadView['eyes'],
+  };
+}
+
 /** A pose: what the avatar eases to in a mood. */
 export interface BotPose {
   /** the head's lean, degrees (negative: to the left, counter-clockwise) */
   rotate: number;
-  /** the face's turn, degrees (positive: to the right as you look at it; botTurn) */
+  /** the head's turn, degrees (positive: to the right as you look at it; botHead) */
   turn: number;
+  /** the head's nod, degrees (positive: up; botHead) */
+  pitch: number;
   /** where the eyes look, viewBox units from the visor's middle */
   gaze: readonly [number, number];
   /** each eye's scale */
@@ -116,7 +187,7 @@ export interface BotPose {
   form: 'bot' | 'dots';
 }
 
-const pose = (p: Partial<BotPose>): BotPose => ({ rotate: 0, turn: 0, gaze: O, eye: ONE, face: 'open', form: 'bot', ...p });
+const pose = (p: Partial<BotPose>): BotPose => ({ rotate: 0, turn: 0, pitch: 0, gaze: O, eye: ONE, face: 'open', form: 'bot', ...p });
 
 /** Every mood's pose (botAvatarMotion.ts turns them into the CSS each mood eases to). */
 export const BOT_POSES: Readonly<Record<BotMood, BotPose>> = {
@@ -176,12 +247,50 @@ const DOT: BotTrack[] = [
 /** The dots' tracks, and how far into them each dot starts (left lit first, then the middle, then the right). */
 export const BOT_DOT_LOOP = { tracks: DOT, offsets: [LIT * 2, LIT, 0] as const };
 
-/** A turn over `ms` (a run of [ms, degrees], botTurn) as the face layer's two tracks: where it slides and how it narrows. */
-function turnTracks(ms: number, run: readonly number[]): BotTrack[] {
-  const keys = runKeys(run, 1).map(([at, deg]) => [at, deg as number] as const);
+/** The most the head turns between two keys of its tracks: between keys the drawing moves in a straight line. */
+const HEAD_STEP = 6;
+
+/** Where the head points `ms` into a loop (botHead's yaw, pitch and the pitch its outline narrows by). */
+type HeadAt = (ms: number) => { yaw: number; pitch: number; bodyPitch?: number };
+
+const same = (a: MotionValue, b: MotionValue) => (typeof a === 'number' ? a === b : typeof b !== 'number' && a[0] === b[0] && a[1] === b[1]);
+/** Keys without those inside a run of one value (they draw nothing new). */
+const trim = (keys: MotionKey[]): MotionKey[] =>
+  keys.filter((k, i) => i === 0 || i === keys.length - 1 || !(same(keys[i - 1]![1], k[1]) && same(k[1], keys[i + 1]![1])));
+
+/**
+ * A head turning over `ms` (`at`, read at `times`) as the tracks that draw it (botHead): the outline's narrowing, the
+ * face's place and size, each eye's. Between two times it may turn up to HEAD_STEP degrees per key; an `eased` `at`
+ * (not straight between its times) gets a key every 60 ms while it moves.
+ */
+function headTracks(ms: number, times: readonly number[], at: HeadAt, eased = false): BotTrack[] {
+  const ts = [...new Set([0, ms, ...times.filter((t) => t > 0 && t < ms)])].sort((a, b) => a - b);
+  const dense: number[] = [];
+  ts.forEach((t0, i) => {
+    dense.push(t0);
+    const t1 = ts[i + 1];
+    if (t1 === undefined) return;
+    const a = at(t0);
+    const b = at(t1);
+    const turn = Math.max(Math.abs(b.yaw - a.yaw), Math.abs(b.pitch - a.pitch));
+    const n = Math.ceil(Math.max(1, turn / HEAD_STEP, eased && turn > 0 ? (t1 - t0) / 60 : 1));
+    for (let k = 1; k < n; k++) dense.push(Math.round(t0 + ((t1 - t0) * k) / n));
+  });
+  const views = [...new Set(dense)].map((t) => {
+    const p = at(t);
+    return [t, botHead(p.yaw, p.pitch, p.bodyPitch ?? p.pitch)] as const;
+  });
+  const track = (layer: BotLayer, prop: 'translate' | 'scale', value: (h: BotHeadView) => MotionValue): BotTrack => (
+    { layer, prop, ms, ease: 'linear', keys: trim(views.map(([t, h]): MotionKey => [t, value(h)])) }
+  );
   return [
-    { layer: 'face', prop: 'translate', ms, ease: 'linear', keys: keys.map(([at, deg]): MotionKey => [at, [botTurn(deg).x, 0]]) },
-    { layer: 'face', prop: 'scale', ms, ease: 'linear', keys: keys.map(([at, deg]): MotionKey => [at, [botTurn(deg).sx, 1]]) },
+    track('head', 'scale', (h) => h.body),
+    track('face', 'translate', (h) => [h.face.x, h.face.y]),
+    track('face', 'scale', (h) => [h.face.sx, h.face.sy]),
+    track('deepL', 'translate', (h) => [h.eyes[0].x, 0]),
+    track('deepL', 'scale', (h) => [h.eyes[0].s, 1]),
+    track('deepR', 'translate', (h) => [h.eyes[1].x, 0]),
+    track('deepR', 'scale', (h) => [h.eyes[1].s, 1]),
   ];
 }
 
@@ -321,26 +430,61 @@ function runKeys(run: readonly number[], n: 1 | 2): MotionKey[] {
 }
 const work = (layer: BotLayer, prop: BotTrack['prop'], run: readonly number[], n: 1 | 2): BotTrack => ({ layer, prop, ms: TOOL, ease: 'linear', keys: runKeys(run, n) });
 
+/*
+ * The routine on a solid head. Grok Bot's glances are its head turning: where its eyes went (WORK.look, BOT_GAZE's reach)
+ * is now where the head points, up to WORK_TURN degrees round and WORK_NOD up or down at the eyes' full reach, and the
+ * eyes keep a part of it within the visor (WORK_GAZE). The spin (WORK.turn) goes right round, 360°, its back half
+ * unseen as Grok Bot's was. While it spins and flips, the head follows those alone (their eyes' frames are mid-turn).
+ * The measured eye widths had the turn's narrowing in them; the head now draws that, so each eye keeps its own shape.
+ */
+const WORK_TURN = 45;
+const WORK_NOD = 18;
+const WORK_GAZE = [2 / 7, 0.5] as const;
+const SPIN = [18700, 19650] as const;
+const FLIP = [8100, 8450] as const;
+const inside = (t: number, [a, b]: readonly [number, number]) => t > a && t < b;
+const lookKeys = runKeys(WORK.look, 2).filter(([t]) => !inside(t, SPIN) && !inside(t, FLIP));
+const lookAt: BotTrack = { layer: 'look', prop: 'translate', ms: TOOL, ease: 'linear', keys: lookKeys };
+/* the spin unwound: turned away to the left to −90°, round the back, back from the right to −360° */
+const spinAt: BotTrack = { layer: 'face', prop: 'rotate', ms: TOOL, ease: 'linear', keys: runKeys(WORK.turn, 1).map(([t, v]): MotionKey => [t, t > 18867 ? (v as number) - 360 : v]) };
+const workHead: HeadAt = (t) => {
+  const x = sampleTrack(lookAt, t, false, 0);
+  const y = sampleTrack(lookAt, t, false, 1);
+  return {
+    yaw: r3(clamp(x / BOT_GAZE.x, -1, 1) * WORK_TURN + sampleTrack(spinAt, t, false)),
+    pitch: r3(-clamp(y / (y < 0 ? BOT_GAZE.up : BOT_GAZE.down), -1, 1) * WORK_NOD),
+  };
+};
+/** An eye's measured run without the narrowing the turned head now draws (botHead's `w`), kept within 0.55–1.45 wide. */
+function ownEye(run: readonly number[], i: 0 | 1): number[] {
+  return runKeys(run, 2).flatMap(([t, v]) => {
+    const [sx, sy] = v as readonly [number, number];
+    const h = workHead(t);
+    return [t, r3(clamp(sx / Math.max(0.35, botHead(h.yaw, h.pitch).eyes[i].w), 0.55, 1.45)), sy];
+  });
+}
+const WORK_TIMES = [...lookKeys.map(([t]) => t), ...spinAt.keys.map(([t]) => t)];
+
 /** Every mood's loops. Two tracks never share a layer and property within one mood (CSS runs one animation per
  *  property). Moods without any hold their pose. They start at a per-avatar point (`motionSeed` × ms), except those in
  *  BOT_LOOPS_FROM_START, which start from their beginning when the mood does. */
 export const BOT_LOOPS: Readonly<Partial<Record<BotMood, readonly BotTrack[]>>> = {
-  // Grok Bot's working routine (WORK), ms from its start: still for 1.6 s; glances about (1.6–4 s: eyes to short pills,
-  // then dots looking right, then left with the near eye 1.5× the far one, the body sliding 13 units after its eyes);
+  // Grok Bot's working routine (WORK), ms from its start: still for 1.6 s; glances about (1.6–4 s: its head turns right,
+  // then left, the near eye bigger than the far one, the body sliding 13 units after it);
   // tilts 10° and blinks (5–6.3 s, the blink 5.45–5.6 s); crouches 11 units and flips head over heels (7.5–8.42 s,
-  // upside down at 8.22–8.27 s); looks about round-eyed, rolling up to 15° either way (9.3–15.6 s); shrinks to 0.71
-  // rolling 36° to the right (15.6–16.8 s) and grows back leaning 21–23° to the left (16.9–18.7 s); spins round
-  // (18.8–18.87 s turning away to the left, back from the right by 19.6 s); tilts 16° left and holds (19.9–21.2 s), then
+  // upside down at 8.22–8.27 s); looks about round-eyed, turning its head and rolling up to 15° either way (9.3–15.6 s); shrinks to 0.71
+  // rolling 36° to the right (15.6–16.8 s) and grows back leaning 21–23° to the left (16.9–18.7 s); spins right round
+  // (18.8–18.87 s turning away to the left, round the back, back from the right by 19.6 s); tilts 16° left and holds (19.9–21.2 s), then
   // 26° (21.9–22.6 s); wobbles (24.2–29.8 s): swings 37° to the right, then three times sweeps to 45–48° on the left in
   // 1.3 s and snaps back in 0.2–0.35 s
   tool: [
     work('body', 'rotate', WORK.rotate, 1),
     work('body', 'translate', WORK.move, 2),
     work('body', 'scale', WORK.size, 2),
-    work('look', 'translate', WORK.look, 2),
-    work('eyeL', 'scale', WORK.eyeL, 2),
-    work('eyeR', 'scale', WORK.eyeR, 2),
-    ...turnTracks(TOOL, WORK.turn),
+    { ...lookAt, keys: lookKeys.map(([t, v]): MotionKey => [t, [r3((v as readonly number[])[0]! * WORK_GAZE[0]), r3((v as readonly number[])[1]! * WORK_GAZE[1])]]) },
+    work('eyeL', 'scale', ownEye(WORK.eyeL, 0), 2),
+    work('eyeR', 'scale', ownEye(WORK.eyeR, 1), 2),
+    ...headTracks(TOOL, WORK_TIMES, workHead),
   ],
   'needs-you': [
     // hop for attention: crouch, stretch up, squashy landing, a small second bounce, a pause
@@ -416,6 +560,8 @@ export const BOT_MOTION = {
   lookLean: -7.3,
   /** the face's turn toward the pointer, degrees per unit of looking sideways (Grok Bot's eyes drew to 0.82 apart) */
   lookTurn: 35,
+  /** the head's nod toward the pointer, degrees per unit of looking up or down */
+  lookPitch: 16,
   /** how far the eyes look sideways within the visor on top of the turn (Grok Bot's reach, less what the turn covers) */
   lookX: 2,
   /** one blink (the agent cursor's own blinks) */
@@ -499,9 +645,9 @@ export function botHandoff(from: BotMood, to: BotMood): 'collapse' | 'grow' | 'e
  * Where a resting avatar looks with the pointer `dx`, `dy` px from its middle (`size` px across): null beyond
  * BOT_MOTION.lookRadius sizes, else the face's turn toward it (degrees, botTurn), the eyes' place within the visor
  * (viewBox units: BOT_GAZE's reach up and down, BOT_MOTION.lookX sideways, all of it from a third of a size out) and
- * the body's lean.
+ * the body's lean. The head nods toward it too (`pitch`, botHead).
  */
-export function botGaze(dx: number, dy: number, size: number): { turn: number; x: number; y: number; rotate: number } | null {
+export function botGaze(dx: number, dy: number, size: number): { turn: number; pitch: number; x: number; y: number; rotate: number } | null {
   const dist = Math.hypot(dx, dy);
   if (!(size > 0) || dist > BOT_MOTION.lookRadius * size) return null;
   const k = 1 / Math.max(dist, size / 3);
@@ -509,6 +655,7 @@ export function botGaze(dx: number, dy: number, size: number): { turn: number; x
   const uy = dy * k;
   return {
     turn: r3(ux * BOT_MOTION.lookTurn) || 0,
+    pitch: r3(-uy * BOT_MOTION.lookPitch) || 0,
     x: r3(ux * BOT_MOTION.lookX) || 0,
     y: r3(uy * (uy < 0 ? BOT_GAZE.up : BOT_GAZE.down)) || 0,
     rotate: r3(ux * BOT_MOTION.lookLean) || 0,

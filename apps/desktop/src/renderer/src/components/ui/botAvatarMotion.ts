@@ -2,14 +2,15 @@
  * The bot avatar's motion as CSS, from chat-core's state machine (botMotion.ts): every mood's pose, eased with the
  * measured first-order curve (BOT_MOTION.snap/settle, BOT_EASE_CSS); the collapse into the three dots and the growing
  * back (BOT_MORPH, BOT_DOTS, BOT_DOT_LOOP), or in small places (`data-compact`) the dots in the visor instead; the moods'
- * loops (BOT_LOOPS); the happy cheer (BOT_CHEER); and looking at the pointer (BotAvatar.tsx sets `data-look` and
- * --ab-fx/--ab-fs (the turn, botTurn), --ab-gx/--ab-gy/--ab-lr from botGaze). botAvatar.css holds the rest
+ * loops (BOT_LOOPS); the happy cheer (BOT_CHEER); and looking at the pointer (BotAvatar.tsx sets `data-look` and the
+ * turned head's drawing from botHead: --ab-hx/--ab-hy the outline, --ab-fx/--ab-fy/--ab-fs/--ab-fsy the face,
+ * --ab-dlx/--ab-dls and --ab-drx/--ab-drs each eye; --ab-gx/--ab-gy/--ab-lr from botGaze). botAvatar.css holds the rest
  * (layers' origins, the press, still and reduced motion). Used by the app's BotAvatar.tsx (injected once into the
  * document) and by the agent cursor's overlay page in the main process (as text), so both bots move alike. Pure TS on
  * purpose: tsconfig.node.json includes it.
  */
 import {
-  BOT_CHEER, BOT_DOT_LOOP, BOT_DOTS, BOT_EASE_CSS, BOT_LOOPS, BOT_LOOPS_FROM_START, BOT_MORPH, BOT_MOTION as M, BOT_POSES, botTurn, type BotMood, type BotTrack,
+  BOT_CHEER, BOT_DOT_LOOP, BOT_DOTS, BOT_EASE_CSS, BOT_LOOPS, BOT_LOOPS_FROM_START, BOT_MORPH, BOT_MOTION as M, BOT_POSES, botHead, type BotMood, type BotTrack,
   type MotionEase,
   type MotionValue,
 } from '@appubot/chat-core';
@@ -54,28 +55,40 @@ const SETTLE = `${ms(4 * M.settle)} ${BOT_EASE_CSS}`;
 const is = (moods: readonly BotMood[]) => `.ab-bot:is(${moods.map((m) => `[data-mood='${m}']`).join(',')})`;
 const DOTS = (Object.keys(BOT_POSES) as BotMood[]).filter((m) => BOT_POSES[m].form === 'dots');
 
-/** Each mood's pose, eased to: the head's lean, the face's turn, where the eyes look, each eye's shape, round eyes. */
+/** The turned head's drawing (botHead) on its layers: the outline, the face, each eye. */
+function head(at: string, h: ReturnType<typeof botHead>): string[] {
+  return [
+    `${at} .ab-bot-head{scale:${n(h.body[0])} ${n(h.body[1])}}`,
+    `${at} .ab-bot-face{translate:${n(h.face.x)}px ${n(h.face.y)}px;scale:${n(h.face.sx)} ${n(h.face.sy)}}`,
+    ...h.eyes.map((e, i) => `${at} .ab-bot-deep${i ? 'R' : 'L'}{translate:${n(e.x)}px 0px;scale:${n(e.s)} 1}`),
+  ];
+}
+
+/** Each mood's pose, eased to: the head's lean, its turn and nod, where the eyes look, each eye's shape, round eyes. */
 function poses(): string[] {
   const rules = [
     `.ab-bot .ab-bot-tilt{transition:rotate ${SNAP}}`,
-    `.ab-bot .ab-bot-face{transition:translate ${SETTLE},scale ${SETTLE}}`,
+    `.ab-bot :is(.ab-bot-head,.ab-bot-face,.ab-bot-deep){transition:translate ${SETTLE},scale ${SETTLE}}`,
     `.ab-bot .ab-bot-look{transition:translate ${SETTLE}}`,
     `.ab-bot .ab-bot-eye{transition:scale ${SNAP}}`,
     `.ab-bot .ab-bot-pill{ry:calc(var(--ab-rx,0) * 1px)}`,
   ];
   for (const [mood, p] of Object.entries(BOT_POSES)) {
     const at = `.ab-bot[data-mood='${mood}']`;
-    const t = botTurn(p.turn);
     rules.push(`${at} .ab-bot-tilt{rotate:${n(p.rotate)}deg}`);
-    rules.push(`${at} .ab-bot-face{translate:${n(t.x)}px 0px;scale:${n(t.sx)} 1}`);
+    rules.push(...head(at, botHead(p.turn, p.pitch)));
     rules.push(`${at} .ab-bot-look{translate:${n(p.gaze[0])}px ${n(p.gaze[1])}px}`);
     rules.push(`${at} .ab-bot-eye{scale:${n(p.eye[0])} ${n(p.eye[1])}}`);
     if (p.face === 'round') rules.push(`${at} .ab-bot-pill{ry:calc(var(--ab-ry,0) * 1px)}`);
   }
-  // the pointer near a resting avatar: the face turns toward it, the eyes follow it, the body leans a little
+  // the pointer near a resting avatar: the head turns and nods toward it, the eyes follow it, the body leans a little
   const look = ".ab-bot[data-mood='rest'][data-look]";
+  const px = (v: string) => `calc(var(--ab-${v},0) * 1px)`;
   rules.push(`${look} .ab-bot-tilt{rotate:calc(var(--ab-lr,0) * 1deg)}`);
-  rules.push(`${look} .ab-bot-face{translate:calc(var(--ab-fx,0) * 1px) 0px;scale:var(--ab-fs,1) 1}`);
+  rules.push(`${look} .ab-bot-head{scale:var(--ab-hx,1) var(--ab-hy,1)}`);
+  rules.push(`${look} .ab-bot-face{translate:${px('fx')} ${px('fy')};scale:var(--ab-fs,1) var(--ab-fsy,1)}`);
+  rules.push(`${look} .ab-bot-deepL{translate:${px('dlx')} 0px;scale:var(--ab-dls,1) 1}`);
+  rules.push(`${look} .ab-bot-deepR{translate:${px('drx')} 0px;scale:var(--ab-drs,1) 1}`);
   rules.push(`${look} .ab-bot-look{translate:calc(var(--ab-gx,0) * 1px) calc(var(--ab-gy,0) * 1px)}`);
   // happy eyes: the pill flattens away and the ^ unfolds in its place, and back (each half 2τ: Grok Bot's swap took 190 ms)
   const happy = `.ab-bot[data-mood='happy']`;
@@ -111,7 +124,7 @@ function morph(frames: string[]): string[] {
     `.ab-bot .ab-bot-side{scale:0;transition:scale ${ms(BOT_MORPH.sidesBack)} ${BOT_EASE_CSS}}`,
     `.ab-bot .ab-bot-dot{opacity:${BOT_DOTS.dim}}`,
     // the face turns away quickly before it goes (Grok Bot: 33px in 70 ms)
-    `${at} .ab-bot-face{transition:translate ${SNAP},scale ${SNAP}}`,
+    `${at} :is(.ab-bot-head,.ab-bot-face,.ab-bot-deep){transition:translate ${SNAP},scale ${SNAP}}`,
     `${at} .ab-bot-morph{scale:${BOT_DOTS.scale};transition:scale ${SETTLE} ${ms(BOT_MORPH.collapse)}}`,
     `${at} .ab-bot-shape{opacity:0;transition:opacity ${ms(BOT_MORPH.fade)} linear ${ms(BOT_MORPH.collapse)}}`,
     `${at} .ab-bot-core{animation:ab-bot-core-in ${ms(lit)} linear both}`,
@@ -130,7 +143,7 @@ function morph(frames: string[]): string[] {
   rules.push(
     `.ab-bot .ab-bot-vdots{opacity:0}`,
     `.ab-bot .ab-bot-vdot{opacity:${BOT_DOTS.dim}}`,
-    `${compact} .ab-bot-face{translate:0px 0px;scale:1 1}`,
+    `${compact} :is(.ab-bot-head,.ab-bot-face,.ab-bot-deep){translate:0px 0px;scale:1 1}`,
     `${compact} .ab-bot-look{opacity:0}`,
     `${compact} .ab-bot-vdots{opacity:1}`,
   );

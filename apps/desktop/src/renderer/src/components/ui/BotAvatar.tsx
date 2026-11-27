@@ -2,8 +2,9 @@
  * Bot avatar: a body in the bot's colour wearing a dark visor with two eyes. The geometry and colours are chat-core's
  * (botAvatarLook), the motion too (botMotion.ts, shared with the phone: its state machine, poses and tracks, as CSS
  * from botAvatarMotion.ts plus botAvatar.css; the agent cursor's overlay uses them as well), copied from Grok Bot's
- * mascot: resting it sits still, upright and facing you, and when the pointer comes near it turns its face toward it
- * and follows it with its eyes; a turn that starts makes its eyes big; thinking, it turns away and collapses into three
+ * mascot, drawn flat but moving like a solid (chat-core botHead: its head turns and nods, the face sliding round it, the
+ * near eye bigger, the outline narrowing, right round the back on a spin): resting it sits still, upright and facing
+ * you, and when the pointer comes near it turns its head toward it and follows it with its eyes; a turn that starts makes its eyes big; thinking, it turns away and collapses into three
  * dots that light up in turn (in small places, `compact`, the dots light up in its visor instead); on a tool it runs
  * Grok Bot's working routine (glances, blinks, flips, looks about, rolls, spins and wobbles, each eye its own size);
  * typing, it turns toward the text with big eyes; done, it grows back with happy eyes, wobbles like jelly and dances,
@@ -15,7 +16,7 @@
 import { useEffect, useId, useRef, useState, type CSSProperties, type RefObject } from 'react';
 import type { Bot, BotShape } from '@appubot/protocol';
 import {
-  BOT_DOTS, BOT_MIDDLE, BOT_MOTION, botAvatarLook, botGaze, botHandoff, botMood, botShown, botTurn, motionSeed, type BotFigure, type BotMood, type RoundRect,
+  BOT_DOTS, BOT_MIDDLE, BOT_MOTION, botAvatarLook, botGaze, botHandoff, botHead, botMood, botShown, motionSeed, type BotFigure, type BotMood, type RoundRect,
 } from '@appubot/chat-core';
 import { useStore } from '../../lib/store';
 import { BOT_MOTION_CSS, BOT_MOTION_VARS } from './botAvatarMotion';
@@ -53,9 +54,12 @@ function look(): void {
   els.forEach((el, i) => {
     const g = gazes[i];
     if (!g) { delete el.dataset.look; return; }
-    const t = botTurn(g.turn);
-    el.style.setProperty('--ab-fx', String(t.x));
-    el.style.setProperty('--ab-fs', String(t.sx));
+    const h = botHead(g.turn, g.pitch);
+    const vars: Record<string, number> = {
+      '--ab-hx': h.body[0], '--ab-hy': h.body[1], '--ab-fx': h.face.x, '--ab-fy': h.face.y, '--ab-fs': h.face.sx, '--ab-fsy': h.face.sy,
+      '--ab-dlx': h.eyes[0].x, '--ab-dls': h.eyes[0].s, '--ab-drx': h.eyes[1].x, '--ab-drs': h.eyes[1].s,
+    };
+    for (const [k, v] of Object.entries(vars)) el.style.setProperty(k, String(v));
     el.style.setProperty('--ab-gx', String(g.x));
     el.style.setProperty('--ab-gy', String(g.y));
     el.style.setProperty('--ab-lr', String(g.rotate));
@@ -193,7 +197,7 @@ export function BotAvatar({ bot, shape: shapeProp, figure: figureProp, color: co
         </defs>
         <g transform={`translate(0 ${50 - middle})`}><g className="ab-bot-joy"><g className="ab-bot-body"><g className="ab-bot-tilt">
           <g className="ab-bot-morph" style={at(50, middle)}>
-            <g className="ab-bot-shape">
+            <g className="ab-bot-head"><g className="ab-bot-shape">
               {look.outline ? <path d={look.body} fill="none" stroke={look.outline} strokeWidth="3" /> : null}
               <path d={look.body} fill={`url(#${id}-body)`} />
               {g.opacity > 0 ? (
@@ -205,15 +209,19 @@ export function BotAvatar({ bot, shape: shapeProp, figure: figureProp, color: co
                 <g className="ab-bot-face" style={at(50, cy)}>
                   <rect x={v.x} y={v.y} width={v.w} height={v.h} rx={v.r} fill={`url(#${id}-glass)`} />
                   <g className="ab-bot-look">
-                    {look.eyes.map((e, i) => (happy ? <Smile key={i} e={e} ink={look.eye} className="ab-bot-smile" /> : (
-                      <g key={i} className={`ab-bot-eye ab-bot-eye${i ? 'R' : 'L'}`} style={at(e.x + e.w / 2, e.y + e.h / 2)}>
-                        <rect
-                          x={e.x} y={e.y} width={e.w} height={e.h} rx={e.r} fill={look.eye} className="ab-bot-pill"
-                          style={{ '--ab-rx': e.r, '--ab-ry': e.h / 2, ...at(e.x + e.w / 2, e.y + e.h / 2) } as CSSProperties}
-                        />
-                        <Smile e={e} ink={look.eye} className="ab-bot-arc" />
+                    {look.eyes.map((e, i) => (
+                      <g key={i} className={`ab-bot-deep ab-bot-deep${i ? 'R' : 'L'}`}>
+                        {happy ? <Smile e={e} ink={look.eye} className="ab-bot-smile" /> : (
+                          <g className={`ab-bot-eye ab-bot-eye${i ? 'R' : 'L'}`} style={at(e.x + e.w / 2, e.y + e.h / 2)}>
+                            <rect
+                              x={e.x} y={e.y} width={e.w} height={e.h} rx={e.r} fill={look.eye} className="ab-bot-pill"
+                              style={{ '--ab-rx': e.r, '--ab-ry': e.h / 2, ...at(e.x + e.w / 2, e.y + e.h / 2) } as CSSProperties}
+                            />
+                            <Smile e={e} ink={look.eye} className="ab-bot-arc" />
+                          </g>
+                        )}
                       </g>
-                    )))}
+                    ))}
                   </g>
                   {compact ? (
                     <g className="ab-bot-vdots">
@@ -224,7 +232,7 @@ export function BotAvatar({ bot, shape: shapeProp, figure: figureProp, color: co
                   ) : null}
                 </g>
               </g>
-            </g>
+            </g></g>
             <circle className="ab-bot-core" cx={50} cy={middle} r={BOT_DOTS.r / BOT_DOTS.scale} fill={look.fill[1]} />
           </g>
           <g className="ab-bot-dots">

@@ -2,8 +2,9 @@
    for the desktop and the phone, copied from Grok Bot's mascot), turned into poses, keyframes and `.ab-bot` rules by
    botAvatarMotion.ts (BOT_MOTION_CSS). Layers, outside in: the span (press squish), the svg, .ab-bot-joy (the happy
    cheer), .ab-bot-body (a mood's loop), .ab-bot-tilt (the pose's lean), .ab-bot-morph (collapsing into the dots),
-   .ab-bot-shape (the bot, fading to a plain dot), .ab-bot-face (its turn: visor, eyes and the visor's dots, clipped to
-   the body), .ab-bot-look (where the eyes look), each .ab-bot-eye (its shape: .ab-bot-pill and the happy .ab-bot-arc; .ab-bot-eyeL/R in the tool routine),
+   .ab-bot-head (the outline narrowing as the head turns), .ab-bot-shape (the bot, fading to a plain dot), .ab-bot-face
+   (where the face is on the turned head: visor, eyes and the visor's dots, clipped to the body), .ab-bot-look (where
+   the eyes look), each .ab-bot-deep (an eye on the turned head, chat-core botHead), each .ab-bot-eye (its shape: .ab-bot-pill and the happy .ab-bot-arc; .ab-bot-eyeL/R in the tool routine),
    .ab-bot-vdots (thinking in a small place: a dot each lighting up in turn in the visor), and .ab-bot-dots (the three
    dots: .ab-bot-side growing in, .ab-bot-mid taking over from the shrunk body, each .ab-bot-dot lighting up in turn).
    The body is drawn with its middle (--ab-cy, chat-core BOT_MIDDLE: its area's centroid) on the box's centre, and joy,
@@ -21,8 +22,8 @@
   72% { transform: scale(0.98, 1.02); }
   86% { transform: scale(1.01, 0.99); }
 }
-.ab-bot :is(.ab-bot-look, .ab-bot-eye, .ab-bot-arc, .ab-bot-dot, .ab-bot-vdot, .ab-bot-sweep) { transform-box: fill-box; transform-origin: center; }
-.ab-bot :is(.ab-bot-joy, .ab-bot-body, .ab-bot-tilt) { transform-box: view-box; transform-origin: 50px calc(var(--ab-cy, 50) * 1px); }
+.ab-bot :is(.ab-bot-look, .ab-bot-deep, .ab-bot-eye, .ab-bot-arc, .ab-bot-dot, .ab-bot-vdot, .ab-bot-sweep) { transform-box: fill-box; transform-origin: center; }
+.ab-bot :is(.ab-bot-joy, .ab-bot-body, .ab-bot-tilt, .ab-bot-head) { transform-box: view-box; transform-origin: 50px calc(var(--ab-cy, 50) * 1px); }
 .ab-bot .ab-bot-svg { transform-origin: 50% 100%; }
 /* pressed (itself, or the row/button it leads): squished down, springing back on release */
 .ab-bot { transform-origin: 50% 100%; transition: scale 0.5s cubic-bezier(0.34, 2.1, 0.55, 1); }
