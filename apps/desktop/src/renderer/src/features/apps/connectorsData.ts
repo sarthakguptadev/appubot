@@ -1,21 +1,42 @@
 import { useEffect } from 'react';
 import { create } from 'zustand';
 import type { Connector, ConnectorBots, ConnectorSave } from '@appubot/protocol';
-import { call } from '../../lib/actions';
-import { gateway } from '../../lib/gateway';
+import { call, toastCallError } from '../../lib/actions';
+import { GatewayError, activeComputer, gateway, onActiveComputer, rpc, type ComputerId } from '../../lib/gateway';
 
 /*
  * Custom connectors (Settings › Apps): read when the page first shows them, kept current by `connectors.updated` while
- * it is open, and changed through `connectors.*`, which the computer's own window alone may call.
+ * it is open, and changed through `connectors.*`, which the computer's own window alone may call. They are the
+ * on-screen computer's: its bots use them and its file keeps them. A computer whose AppuBot predates them, or that
+ * keeps them from this window (a team member's), says so in place of the list.
  */
 
-interface ConnectorsState { list: Connector[]; encrypted: boolean; loaded: boolean }
+/** why the computer on screen shows no connectors: `older` predates them, `notAllowed` keeps them from this window */
+export type ConnectorsUnavailable = 'older' | 'notAllowed';
 
-const useConnectorStore = create<ConnectorsState>(() => ({ list: [], encrypted: true, loaded: false }));
+interface ConnectorsState { list: Connector[]; encrypted: boolean; loaded: boolean; unavailable: ConnectorsUnavailable | null; on: ComputerId }
+
+const empty = (on: ComputerId): ConnectorsState => ({ list: [], encrypted: true, loaded: false, unavailable: null, on });
+export const useConnectorStore = create<ConnectorsState>(() => empty('local'));
+
+function unavailableFrom(e: unknown): ConnectorsUnavailable | null {
+  if (!(e instanceof GatewayError)) return null;
+  if (e.code === 'unknown_method') return 'older';
+  if (e.code === 'forbidden') return 'notAllowed';
+  return null;
+}
 
 export async function reloadConnectors(): Promise<void> {
-  const r = await call('connectors.list', {}, { errorTitle: 'Could not read your connectors' });
-  if (r) useConnectorStore.setState({ list: r.connectors, encrypted: r.encrypted, loaded: true });
+  const on = activeComputer();
+  if (useConnectorStore.getState().on !== on) useConnectorStore.setState(empty(on));
+  try {
+    const r = await rpc('connectors.list', {});
+    if (activeComputer() === on) useConnectorStore.setState({ list: r.connectors, encrypted: r.encrypted, loaded: true, unavailable: null, on });
+  } catch (e) {
+    const unavailable = unavailableFrom(e);
+    if (!unavailable) return toastCallError(e, 'Could not read your connectors', on);
+    if (activeComputer() === on) useConnectorStore.setState({ ...empty(on), loaded: true, unavailable });
+  }
 }
 
 const put = (c: Connector | undefined): Connector | undefined => {
@@ -27,15 +48,24 @@ const put = (c: Connector | undefined): Connector | undefined => {
 export function useConnectors(): ConnectorsState {
   const state = useConnectorStore();
   useEffect(() => {
-    let g: ReturnType<typeof gateway>;
-    try { g = gateway(); } catch { return undefined; }
-    // read now, or once the computer answers (Settings may open before it does)
-    if (g.state === 'connected') void reloadConnectors();
-    const offState = g.onState((s) => { if (s === 'connected') void reloadConnectors(); });
-    const offAny = g.onAny((event, payload) => {
-      if (event === 'connectors.updated') useConnectorStore.setState({ list: (payload as { connectors: Connector[] }).connectors, loaded: true });
-    });
-    return () => { offState(); offAny(); };
+    let off = (): void => undefined;
+    const watch = () => {
+      off();
+      const on = activeComputer();
+      if (useConnectorStore.getState().on !== on) useConnectorStore.setState(empty(on));
+      let g: ReturnType<typeof gateway>;
+      try { g = gateway(); } catch { off = () => undefined; return; }
+      // read now, or once the computer answers (Settings may open before it does)
+      if (g.state === 'connected') void reloadConnectors();
+      const offState = g.onState((s) => { if (s === 'connected') void reloadConnectors(); });
+      const offAny = g.onAny((event, payload) => {
+        if (event === 'connectors.updated') useConnectorStore.setState({ list: (payload as { connectors: Connector[] }).connectors, loaded: true, unavailable: null });
+      });
+      off = () => { offState(); offAny(); };
+    };
+    watch();
+    const offComputer = onActiveComputer(watch);
+    return () => { offComputer(); off(); };
   }, []);
   return state;
 }
