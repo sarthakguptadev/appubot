@@ -125,7 +125,7 @@ function Block({ item, ctx }: { item: Indexed; ctx: Ctx }): ReactNode {
     // a bubble as wide as its player, like the user's own voice messages (not stretched across the turn)
     case 'voice': return <VoiceNote part={part} color={ctx.botColor} className="self-start" />;
     case 'plan': return <PlanChecklist part={part} live={!ctx.settled} />;
-    case 'question': return part.form ? <FormCard part={part} botName={ctx.botName} botId={ctx.botId} botColor={ctx.botColor} expired={ctx.settled} /> : <QuestionCard part={part} botName={ctx.botName} botColor={ctx.botColor} expired={ctx.settled} />;
+    case 'question': return part.form ? <FormCard part={part} botName={ctx.botName} botId={ctx.botId} botColor={ctx.botColor} expired={ctx.settled} /> : <QuestionCard part={part} botName={ctx.botName} expired={ctx.settled} />;
     case 'system': return <Notice part={part} />;
     default: return null;
   }

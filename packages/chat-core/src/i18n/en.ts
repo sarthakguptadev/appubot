@@ -226,6 +226,7 @@ export const en = {
   // the composer
   'composer.message': 'Message {name}',
   'composer.tellMore': 'Tell {name} more',
+  'composer.answer': 'Type your answer, or ask something else',
   'composer.stop': 'Stop',
   'composer.stopFailed': 'Could not stop',
   'composer.voice': 'Voice mode',

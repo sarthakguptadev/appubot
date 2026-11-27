@@ -11,7 +11,7 @@ import type { Bot, SlashCommand, Thread } from '@appubot/protocol';
 import { ArrowUp, File, Paperclip, Plus, VoiceWave, X } from '../../components/ui/icons';
 import { Icon, Menu, Tooltip, cn, type MenuItem } from '../../components/ui';
 import { call } from '../../lib/actions';
-import { basename, mentionChoices, mentionQuery, sentBubble } from '@appubot/chat-core';
+import { basename, mentionChoices, mentionQuery, openQuestion, sentBubble } from '@appubot/chat-core';
 import { isSendKey } from '../../lib/appearance';
 import { native } from '../../lib/native';
 import { getState, pushToast, useStore } from '../../lib/store';
@@ -254,6 +254,11 @@ export function Composer({ thread, bot, draftKey, placeholder, onSend, autoFocus
   /** T3 Code's prompt recall: which sent prompt is in the box (index into `sentPrompts`), while it is unedited */
   const recall = useRef<{ i: number; text: string } | null>(null);
   const running = thread?.status === 'running' || thread?.status === 'waiting';
+  // a question waiting on an answer in this chat: what's typed answers it (lib/actions.ts `sendMessage`), so the box says so
+  const asking = useStore((s) => {
+    const c = thread ? s.convo[thread.id] : undefined;
+    return !!c && !!openQuestion(c.ids.slice(-3).flatMap((id) => (c.byId[id] ? [c.byId[id]!] : [])));
+  });
   // speech runs on this computer where its models can (a server that predates voice offers none); with an AppuBot
   // computer on screen (no speech models there, plan §4.2) this Mac's own model hears instead (voice/voiceRoute.ts)
   const voice = useVoiceRoute().hear !== null;
@@ -543,7 +548,7 @@ export function Composer({ thread, bot, draftKey, placeholder, onSend, autoFocus
               onPaste={onPaste}
               rows={1}
               aria-label={placeholder ?? t('composer.message', { name: bot?.name ?? 'Appu' })}
-              placeholder={placeholder ?? t(running ? 'composer.tellMore' : 'composer.message', { name: bot?.name ?? 'Appu' })}
+              placeholder={placeholder ?? (asking ? t('composer.answer') : t(running ? 'composer.tellMore' : 'composer.message', { name: bot?.name ?? 'Appu' }))}
               className="block max-h-56 min-h-[1lh] w-full resize-none bg-transparent text-copy leading-[1.5] text-fg outline-none [field-sizing:content] placeholder:text-muted/50 placeholder:opacity-100"
             />
           </div>
