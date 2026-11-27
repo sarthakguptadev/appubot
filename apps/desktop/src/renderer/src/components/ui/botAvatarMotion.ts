@@ -95,7 +95,7 @@ function poses(): string[] {
   rules.push(`${look} .ab-bot-deepL{translate:${px('dlx')} 0px;scale:var(--ab-dls,1) 1}`);
   rules.push(`${look} .ab-bot-deepR{translate:${px('drx')} 0px;scale:var(--ab-drs,1) 1}`);
   rules.push(`${look} .ab-bot-look{translate:calc(var(--ab-gx,0) * 1px) calc(var(--ab-gy,0) * 1px)}`);
-  // happy eyes: the pill flattens away and the ^ unfolds in its place, and back (each half 2τ: Grok Bot's swap took 190 ms)
+  // happy eyes: the pill flattens away and the ^ unfolds in its place, and back (each half 2τ: the reference's swap took 190 ms)
   const happy = `.ab-bot[data-mood='happy']`;
   const half = ms(2 * M.snap);
   const HALF = `${half} ${BOT_EASE_CSS}`;
@@ -128,7 +128,7 @@ function morph(frames: string[]): string[] {
     `.ab-bot .ab-bot-dots,.ab-bot .ab-bot-mid{opacity:0;transition:opacity 0s}`,
     `.ab-bot .ab-bot-side{scale:0;transition:scale ${ms(BOT_MORPH.sidesBack)} ${BOT_EASE_CSS}}`,
     `.ab-bot .ab-bot-dot{opacity:${BOT_DOTS.dim}}`,
-    // the face turns away quickly before it goes (Grok Bot: 33px in 70 ms)
+    // the face turns away quickly before it goes (the reference: 33px in 70 ms)
     `${at} :is(.ab-bot-head,.ab-bot-face,.ab-bot-deep){transition:translate ${SNAP},scale ${SNAP}}`,
     `${at} .ab-bot-turn{transition:--ab-yaw ${SNAP},--ab-pitch ${SNAP}}`,
     `${at} .ab-bot-morph{scale:${BOT_DOTS.scale};transition:scale ${SETTLE} ${ms(BOT_MORPH.collapse)}}`,

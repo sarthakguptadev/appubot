@@ -4,7 +4,7 @@ import { useT } from '../../lib/i18n';
 // mic (dictation: what you say is added to the draft) and the round button: send, voice mode while the draft is empty
 // and, while the bot works, Stop until something is typed (a message sent then still reaches it mid-task). The row of
 // pickers under it is off (COMPOSER_PICKERS). 43px tall on one line with 28px buttons; from a second line (or with
-// attachments) the draft takes the top and the buttons drop to a row under it, as Grok Bot's, in the frame it wraps. Enter sends, Shift+Enter breaks the line (or ⌘Enter sends: Settings › Appearance);
+// attachments) the draft takes the top and the buttons drop to a row under it, in the frame it wraps. Enter sends, Shift+Enter breaks the line (or ⌘Enter sends: Settings › Appearance);
 // slash commands, per-chat drafts, pasted/dropped images and files, and attached files carry over.
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ClipboardEvent, type DragEvent, type KeyboardEvent, type ReactNode, type RefObject } from 'react';
 import type { Bot, SlashCommand, Thread } from '@appubot/protocol';
@@ -341,7 +341,7 @@ export function Composer({ thread, bot, draftKey, placeholder, onSend, autoFocus
   const hasDraft = text.trim().length > 0 || images.length > 0 || paths.length > 0 || files.length > 0 || quotes.length > 0;
   // the bot working doesn't hold a message back: it goes into the turn (Claude Code) or right after it
   const canSend = hasDraft;
-  // the round button (send, voice mode, stop) in the bot's colour, as Grok Bot's is: your bubbles' own fill and white ink
+  // the round button (send, voice mode, stop) in the bot's colour: your bubbles' own fill and white ink
   // (chat-core `sentBubble`). The owner's call 2026-11-27, reversing his 2026-11-17 one for the ink circle.
   const ROUND = cn(SEND, 'size-7 transition-[filter] duration-100 hover:brightness-90');
   const tone = bot ? sentBubble(bot.color) : null;

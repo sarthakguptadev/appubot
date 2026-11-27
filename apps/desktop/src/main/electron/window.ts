@@ -105,7 +105,7 @@ export function createMainWindow(opts: { hidden?: boolean } = {}): BrowserWindow
     ...(process.platform === 'darwin'
       ? {
         titleBarStyle: 'hiddenInset' as const,
-        // tight in the window's corner, where Grok Bot keeps them (16pt in, 15pt down to the close button's edge): above
+        // tight in the window's corner, where the reference keeps them (16pt in, 15pt down to the close button's edge): above
         // the middle of the sidebar's search and + circles, and centred in the computer viewer's 44px full size row
         trafficLightPosition: { x: 16, y: 15 },
         // macOS glass: the renderer paints a translucent coat over the window's vibrancy (see index.css)

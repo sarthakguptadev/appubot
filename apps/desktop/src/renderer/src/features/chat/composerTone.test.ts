@@ -8,7 +8,7 @@ import { MicSolid, VoiceWave } from '../../components/ui/icons';
 
 const composer = readFileSync(join(__dirname, 'Composer.tsx'), 'utf8');
 
-describe('the composer\'s round button, Grok Bot\'s', () => {
+describe('the composer\'s round button', () => {
   it('takes the bot\'s colour on send, voice mode and stop, with white ink', () => {
     expect(composer).toMatch(/const tone = bot \? sentBubble\(bot\.color\) : null;/);
     expect(composer).toMatch(/const roundStyle = tone \? \{ backgroundColor: tone\.fill, color: tone\.ink \} : undefined;/);

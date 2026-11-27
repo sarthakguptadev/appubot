@@ -253,9 +253,9 @@ export const Sun = createIcon(Sun03Icon, 'Sun');
 export const Moon = createIcon(Moon02Icon, 'Moon');
 
 /**
- * Voice mode's glyph on the composer's round button, Grok Bot's (the owner's call, 2026-11-27, after his own of
+ * Voice mode's glyph on the composer's round button, the reference's (the owner's call, 2026-11-27, after his own of
  * 2026-11-17 for a hand-drawn one): five round-capped bars, the 2nd and 4th tall, the middle one half as tall, the outer
- * two short, measured off his shot of Grok Bot's composer. Drawn here rather than from Hugeicons, as is the composer's
+ * two short, measured off his shot of the reference's composer. Drawn here rather than from Hugeicons, as is the composer's
  * mic below.
  */
 const VOICE_WAVE_BARS: readonly (readonly [number, number, number])[] = [
@@ -274,7 +274,7 @@ export const VoiceWave: IconComponent = forwardRef<SVGSVGElement, IconProps>(fun
   );
 }) as IconComponent;
 
-/** The composer's mic, Grok Bot's: a filled capsule in a U-shaped cradle on a short stem, no foot. */
+/** The composer's mic, the reference's: a filled capsule in a U-shaped cradle on a short stem, no foot. */
 export const MicSolid: IconComponent = forwardRef<SVGSVGElement, IconProps>(function MicSolid(
   { size = 24, strokeWidth: _sw, absoluteStrokeWidth: _a, color = 'currentColor', ...rest },
   ref,

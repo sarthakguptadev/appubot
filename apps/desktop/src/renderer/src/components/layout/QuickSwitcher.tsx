@@ -145,7 +145,7 @@ function actions(botId: string | null, sub: Record<PageId, Page | null>): Row[] 
     ...(s.selectedThreadId ? [a('find', Search, 'Find in chat', openFind, shortcut('F'), 'search')] : []),
     ...page('model', 'Switch model…', 'agent llm'),
     ...page('effort', 'Reasoning effort…', 'thinking think'),
-    a('apps', AppsAdd, 'Connect apps', () => ui.openApps(), undefined, 'integrations gmail slack composio'),
+    a('apps', AppsAdd, 'Connect apps', () => ui.openApps(), undefined, 'integrations gmail slack'),
     a('pair', QrCode, 'Pair a phone', () => ui.openModal({ kind: 'pair' }), undefined, 'phone iphone android mobile qr devices'),
     // teach mode records the user's clicks and keys: where computer use runs
     ...(TEACH && !lacks.teach ? [a('teach', GraduationCap, 'Teach a task', () => ui.openModal({ kind: 'teach' }), undefined, 'record skill')] : []),
@@ -489,7 +489,7 @@ export function QuickSwitcher({ open, onClose }: { open: boolean; onClose: () =>
             })}
           </Fragment>
         ))}
-        {/* a search that takes a moment: grey rows in place of an earlier query's results (Grok Bot's) */}
+        {/* a search that takes a moment: grey rows in place of an earlier query's results */}
         {slow ? <PaletteSkeleton /> : null}
         {!rows.length && !slow ? <div role="presentation" className="px-3 py-10 text-center text-copy text-muted">{empty}</div> : null}
       </div>

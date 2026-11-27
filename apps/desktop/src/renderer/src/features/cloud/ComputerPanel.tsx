@@ -14,13 +14,13 @@ import { botScreenLine, mayStream, screenCaption, screenCard, type ScreenCard, t
 
 /*
  * The side panel's Computer tab (only while the app is on your AppuBot computer or a team's: watching this Mac from
- * itself makes no sense), after Grok Bot's: a small live picture of the computer's screen (16:10, one picture a second
+ * itself makes no sense): a small live picture of the computer's screen (16:10, one picture a second
  * at the cheapest quality: `screenSession.ts` paces it) with a line under it (which bot is using it now, else whose
  * computer it is), and its states: waking up, asleep (Wake), connecting, live, can't reach (the Fix your computer
  * choices). View only; a click opens the full-screen viewer (`DesktopView`), where Take control is. It streams only
  * while this tab shows in an open panel and the window is visible, and never wakes a sleeping computer by itself.
  * Where bots have screens of their own (the computer's status lists `screens`), a bot's Computer tab is that bot's
- * own screen (after Grok Bot's "Bot's computer"): opening the tab starts it if it sleeps, the line under it says what
+ * own screen (after the reference's "Bot's computer"): opening the tab starts it if it sleeps, the line under it says what
  * the bot is doing there, and Take control and Full size open the viewer on it. The viewer's switcher still shows
  * the computer's main screen and the other bots'.
  */

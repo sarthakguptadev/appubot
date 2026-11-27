@@ -1,4 +1,4 @@
-// When a spoken turn starts and ends (OpenBot's voice loop, our own code). Fed the microphone's level every tick, and
+// When a spoken turn starts and ends. Fed the microphone's level every tick, and
 // what the voice activity detector heard since the last one (`vad.ts`: speech, not loudness, so a fan, a TV or typing
 // is never a turn; without it, loudness alone decides), it says when speech began, when the turn is over (a pause after speech), when an idle recording should start over
 // (so it never grows while nobody talks), and, while the bot thinks or speaks (`guard`), when the user may be cutting

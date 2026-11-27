@@ -40,7 +40,7 @@ import { useCloudLacks } from '../cloud/useCloudLacks';
 import { useCloud } from '../cloud/cloudAccount';
 
 /*
- * Settings is a centred overlay over the dimmed app, about 898×700, drawn as Grok Bot's Settings is (the owner's call
+ * Settings is a centred overlay over the dimmed app, about 898×700, drawn as the reference's Settings is (the owner's call
  * 2026-11-27, measured from his screenshot: settings.css holds its colours): Esc, ✕ or a click outside closes it, and
  * it opens and closes in one frame. A 197px nav down its left (search with "/", 32px rows, 15px labels, Lucide's
  * icons) and the section's page beside it: a 20px title, then small grey labels over rounded cards of 48px rows; ✕ at
@@ -71,7 +71,7 @@ const PAGES: Record<SettingsSection, ComponentType> = {
 };
 
 /*
- * The nav's rows, Grok Bot's: 32px, 2px apart, a 16px icon and a 15px label in the text colour, 10px corners; a light
+ * The nav's rows, the reference's: 32px, 2px apart, a 16px icon and a 15px label in the text colour, 10px corners; a light
  * fill under the pointer, and the chosen or pressed one the darker fill, in place.
  */
 const NAV_ROW =
@@ -267,7 +267,7 @@ function SettingsContent() {
           content's left edge (the same gutter as the scroller below, so they line up), ✕ level with the title */}
       <div className="relative mr-1.5 shrink-0 overflow-hidden pt-8 [scrollbar-gutter:stable]">
         <header className="mx-auto flex w-full max-w-4xl flex-col pr-14 pl-[45px]">
-          {/* the title alone, as Grok Bot's pages have it (each page's line stays its tooltip and the search's) */}
+          {/* the title alone, as the reference's pages have it (each page's line stays its tooltip and the search's) */}
           <h1 title={section === 'general' && onCloud ? t('settings.page.general.desc.cloud') : page.description} className="text-[20px] leading-6 font-medium text-fg">{title}</h1>
           {/* a row holding several pages: one tab each (Agents | Usage, About | What’s new | Storage) */}
           {tabs.length ? (
@@ -310,7 +310,7 @@ function SettingsContent() {
 const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 /**
- * Settings over the dimmed app (the owner's call 2026-11-27, after Grok Bot's; from 2026-11-14 it filled the window):
+ * Settings over the dimmed app (the owner's call 2026-11-27, after the reference's; from 2026-11-14 it filled the window):
  * an ≈898×700 panel, smaller windows keep a 24px margin. It opens and closes in one frame. Escape (once a field has
  * let go), ✕ or a click on the dimmed app closes it, and Tab stays inside it.
  */

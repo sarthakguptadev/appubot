@@ -3,13 +3,13 @@
  * the avatar's 100×100 box. The desktop turns them into CSS (components/ui/botAvatarMotion.ts, also used by the agent
  * cursor's overlay); the phone samples them on the UI thread. Change the motion here, never in one app.
  *
- * Copied from a frame-by-frame measurement of Grok Bot's mascot (2026-11-27, 2085 frames): how it moves, drawn as our
+ * Measured frame by frame from a reference recording of a mascot (2026-11-27, 2085 frames): how it moves, drawn as our
  * own character. It is drawn flat but moves like a solid (botHead): its head turns (yaw), nods (pitch) and rolls, and as
  * it turns the face slides across the body, the eyes narrow and crowd toward the turning edge, the near eye bigger than
  * the far one, and the outline narrows; turned past a quarter the face goes round the back, so it can spin right round.
  * What it does:
- *   rest       still, upright and facing you. No breathing, no blinks, no hops (Grok Bot's sat still for 41 seconds).
- *              Grok Bot's own rest is turned 39° to the right and looking up; ours faces you, centred in its place.
+ *   rest       still, upright and facing you. No breathing, no blinks, no hops.
+ *              The reference's own rest is turned 39° to the right and looking up; ours faces you, centred in its place.
  *   look       the pointer near a resting avatar: the head turns toward it (35° at the side, nodding up or down 16°),
  *              the eyes follow it and the body leans a little (botGaze).
  *   listening  you sent something and the turn has started: facing you, eyes centred and big.
@@ -18,7 +18,7 @@
  *              same. In small places (`compact`: a sidebar row, the chat header, a pinned tile) it never collapses: it
  *              stays itself, its eyes just as they are at rest, and ponders, turning its head to look up to one side,
  *              then the other (BOT_COMPACT_LOOPS).
- *   tool       a tool is running: Grok Bot's working routine, 30.5 s measured frame by frame from a busy bot's sidebar
+ *   tool       a tool is running: the reference's working routine, 30.5 s measured frame by frame from a busy bot's sidebar
  *              row (its chat's working row moved in step with it): turns its head to glance about, the near eye bigger;
  *              blinks with its head tilted; crouches and flips head over heels; looks about round-eyed;
  *              shrinks rolling away and grows back leaning the other way; spins round; tilts and holds; wobbles from
@@ -28,7 +28,7 @@
  *   happy      the reply is done: the dots grow back into the bot with happy eyes (^ ^), a jelly squash at 630 ms, a
  *              three-hop dance at 2.9 s; the happy face stays for BOT_MOTION.happy ms, then it rests.
  *   needs-you  hops for attention and looks up at you (not in the recording: ours from before).
- * Every change of pose is the same first-order ease Grok Bot uses everywhere: the eyes' shape and the head's lean
+ * Every change of pose is the same first-order ease the reference uses everywhere: the eyes' shape and the head's lean
  * settle with a 50 ms time constant, where the eyes look, the face's turn and how big the body is with 125 ms
  * (BOT_MOTION.snap/settle).
  *
@@ -91,13 +91,13 @@ const O = [0, 0] as const;
 const up = (y: number) => [0, -y] as const;
 
 /**
- * How far the eyes can look from the visor's middle, in viewBox units: Grok Bot's reach (18% of its body's width
+ * How far the eyes can look from the visor's middle, in viewBox units: the reference's reach (18% of its body's width
  * sideways, 17.5% up, 12.6% down) mapped onto the room our eyes have inside the visor.
  */
 export const BOT_GAZE = { x: 7, up: 4.5, down: 3.3 } as const;
 
 /**
- * How far the face slides at a quarter turn, viewBox units: Grok Bot's face moved 0.17 of its body's width sideways
+ * How far the face slides at a quarter turn, viewBox units: the reference's face moved 0.17 of its body's width sideways
  * at a 35° turn (and its eyes drew together to cos 35°), 15 of our units.
  */
 export const BOT_TURN = 26;
@@ -109,7 +109,7 @@ export function botTurn(deg: number): { x: number; sx: number } {
 }
 
 /**
- * The head as a solid, for drawing a flat avatar that turns like Grok Bot's: the face sits on the front of a ball
+ * The head as a solid, for drawing a flat avatar that turns like the reference's: the face sits on the front of a ball
  * BOT_TURN units round (so a quarter turn slides it BOT_TURN), each eye `eye` degrees round from the face's middle,
  * seen through a lens `lens` units in front (the near side a little bigger), on a body `depth` as deep as it is wide.
  */
@@ -211,17 +211,17 @@ export const BOT_POSES: Readonly<Record<BotMood, BotPose>> = {
 /* thinking: the dots light up left to right, each for a third of DOTS ms */
 const DOTS = 1380;
 const LIT = DOTS / 3;
-/* tool: the working routine (Grok Bot's ran 30.5 s, then again) */
+/* tool: the working routine */
 const TOOL = 30500;
 
 /**
  * The three dots (thinking), in viewBox units: each `r` round, `gap` apart, on the visor's line; the middle one is
- * the body itself shrunk to `scale` (Grok Bot's 28px dots beside its 126px body). A dot not lit is `dim` opaque.
+ * the body itself shrunk to `scale`. A dot not lit is `dim` opaque.
  */
 export const BOT_DOTS = { r: 9.8, gap: 31.4, scale: 0.223, dim: 0.55, ms: DOTS } as const;
 
 /**
- * The collapse into the dots and the growing back, ms from the change of mood (Grok Bot, frames 9235–9855 and
+ * The collapse into the dots and the growing back, ms from the change of mood (the reference, frames 9235–9855 and
  * 14362–14800). Collapsing: the eyes turn and thin (the thinking pose), the body shrinks into the middle dot from
  * `collapse` ms (eased with BOT_MOTION.settle) and gives way to a plain dot over `fade` ms, the side dots grow in
  * (`sides`: from, for), the dots start lighting up at `lit`. Growing back: the side dots go (`sidesBack` ms), the
@@ -307,7 +307,7 @@ function headTracks(ms: number, times: readonly number[], at: HeadAt, eased = fa
 }
 
 /**
- * Grok Bot's working routine as it moved, frame by frame (a busy bot's sidebar row, 1751 frames over 30.5 s), kept
+ * The reference's working routine as it moved, frame by frame (a busy bot's sidebar row, 1751 frames over 30.5 s), kept
  * wherever the motion strays from a straight line by more than 1.5°, 0.025 of its size, 0.75 of a viewBox unit of its
  * place, 0.7 of where its eyes look or 0.1 of an eye's size. Runs of [ms, value…]: `rotate` its roll (degrees), `move`
  * where its middle is and `look` where its eyes look (viewBox units, BOT_GAZE's reach), `size` its scale (negative:
@@ -443,10 +443,10 @@ function runKeys(run: readonly number[], n: 1 | 2): MotionKey[] {
 const work = (layer: BotLayer, prop: BotTrack['prop'], run: readonly number[], n: 1 | 2): BotTrack => ({ layer, prop, ms: TOOL, ease: 'linear', keys: runKeys(run, n) });
 
 /*
- * The routine on a solid head. Grok Bot's glances are its head turning: where its eyes went (WORK.look, BOT_GAZE's reach)
+ * The routine on a solid head. The reference's glances are its head turning: where its eyes went (WORK.look, BOT_GAZE's reach)
  * is now where the head points, up to WORK_TURN degrees round and WORK_NOD up or down at the eyes' full reach, and the
  * eyes keep a part of it within the visor (WORK_GAZE). The spin (WORK.turn) goes right round, 360°, its back half
- * unseen as Grok Bot's was. While it spins and flips, the head follows those alone (their eyes' frames are mid-turn).
+ * unseen as the reference's was. While it spins and flips, the head follows those alone (their eyes' frames are mid-turn).
  * The measured eye widths had the turn's narrowing in them; the head now draws that, so each eye keeps its own shape.
  */
 const WORK_TURN = 45;
@@ -506,7 +506,7 @@ const WORK_TIMES = [...lookKeys.map(([t]) => t), ...spinAt.keys.map(([t]) => t),
  *  property). Moods without any hold their pose. They start at a per-avatar point (`motionSeed` × ms), except those in
  *  BOT_LOOPS_FROM_START, which start from their beginning when the mood does. */
 export const BOT_LOOPS: Readonly<Partial<Record<BotMood, readonly BotTrack[]>>> = {
-  // Grok Bot's working routine (WORK), ms from its start: still for 1.6 s; glances about (1.6–4 s: its head turns right,
+  // The reference's working routine (WORK), ms from its start: still for 1.6 s; glances about (1.6–4 s: its head turns right,
   // then left, the near eye bigger than the far one, the body sliding 13 units after it);
   // tilts 10° and blinks (5–6.3 s, the blink 5.45–5.6 s); crouches 11 units and flips head over heels (7.5–8.42 s,
   // upside down at 8.22–8.27 s); looks about round-eyed, turning its head and rolling up to 15° either way (9.3–15.6 s); shrinks to 0.71
@@ -569,14 +569,14 @@ export const BOT_SOLID_LOOPS: Readonly<Partial<Record<BotMood, readonly BotTrack
 
 export const BOT_COMPACT_LOOPS: Readonly<Partial<Record<BotMood, readonly BotTrack[]>>> = { thinking: PONDER_TRACKS, working: PONDER_TRACKS };
 
-/** Moods whose loop starts from its beginning (the tool routine starts still, facing you, as Grok Bot's did). */
+/** Moods whose loop starts from its beginning (the tool routine starts still, facing you, as the reference's did). */
 export const BOT_LOOPS_FROM_START: readonly BotMood[] = ['tool'];
 
-/* the happy cheer: the jelly at JELLY, the dance at DANCE (Grok Bot: 630 ms and 2870 ms after its reply was done) */
+/* the happy cheer: the jelly at JELLY, the dance at DANCE (the reference: 630 ms and 2870 ms after its reply was done) */
 const JELLY = 630;
 const DANCE = 2870;
 const CHEER = 4800;
-/** a Grok Bot pixel in our viewBox (its body is 126px wide, ours 88) */
+/** a reference pixel in our viewBox (its body is 126px wide, ours 88) */
 const PX = 88 / 126;
 const j = (ms: number) => JELLY + ms;
 const d = (ms: number) => DANCE + ms;
@@ -613,23 +613,23 @@ export const BOT_CHEER: readonly BotTrack[] = [
 export const BOT_MOTION = {
   /**
    * The ease every pose change uses: `x(t) = 1 − e^(−t/τ)`. `snap` is τ for the eyes' shape and the head's lean,
-   * `settle` for where the eyes look and the body's size (Grok Bot: 40–90 ms and 120–130 ms, fitted over 13 changes).
+   * `settle` for where the eyes look and the body's size (the reference: 40–90 ms and 120–130 ms, fitted over 13 changes).
    */
   snap: 50,
   settle: 125,
   /** the cheer's length */
   cheer: CHEER,
-  /** how long the happy face stays after work ends before it rests (Grok Bot: at least 5.2 s; the rest not seen) */
+  /** how long the happy face stays after work ends before it rests (the reference: at least 5.2 s; the rest not seen) */
   happy: 10000,
   /** how near the pointer makes a resting avatar look at it, from its middle, in avatar sizes */
   lookRadius: 1.05,
   /** the head's lean when looking at the pointer, degrees per unit of looking sideways */
   lookLean: -7.3,
-  /** the face's turn toward the pointer, degrees per unit of looking sideways (Grok Bot's eyes drew to 0.82 apart) */
+  /** the face's turn toward the pointer, degrees per unit of looking sideways */
   lookTurn: 35,
   /** the head's nod toward the pointer, degrees per unit of looking up or down */
   lookPitch: 16,
-  /** how far the eyes look sideways within the visor on top of the turn (Grok Bot's reach, less what the turn covers) */
+  /** how far the eyes look sideways within the visor on top of the turn */
   lookX: 2,
   /** one blink (the agent cursor's own blinks) */
   blink: 160,
@@ -688,7 +688,7 @@ export function cheersAt(from: BotMood | undefined, to: BotMood): boolean {
 /**
  * The mood an avatar shows next, from the one it shows (`shown`) and the one it is asked for: work ending in rest
  * shows `happy` (rest again after BOT_MOTION.happy ms: the app's timer), `typing` straight after the dots keeps the
- * dots (Grok Bot's run on through "Typing…"), `working` shows as `thinking`.
+ * dots, `working` shows as `thinking`.
  */
 export function botShown(shown: BotMood | undefined, asked: BotMood): BotMood {
   if (asked === 'working') return 'thinking';

@@ -1,5 +1,5 @@
 /**
- * The sidebar's foot (2026-11-27, after Grok Bot's): who is signed in at the left, their picture and name, with Settings
+ * The sidebar's foot (2026-11-27): who is signed in at the left, their picture and name, with Settings
  * and Account in its menu; the computer picker and a round Connect apps button at the right. The top strip keeps only
  * search and +.
  */

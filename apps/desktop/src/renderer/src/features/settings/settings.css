@@ -1,5 +1,5 @@
 /*
- * Settings, drawn as Grok Bot's Settings is (the owner's call 2026-11-27): colours and sizes measured from his 2x
+ * Settings, drawn as the reference's Settings is (the owner's call 2026-11-27): colours and sizes measured from his 2x
  * screenshot of it. The sheet sets its own text and surface colours, and restyles the shared Settings parts it holds
  * (cards, rows, switches, selects, buttons: components/ui/SettingsCard.tsx marks them) without touching them in the
  * dialogs that use them too. Hovers change in the frame they arrive (#55's instant surfaces).
@@ -32,7 +32,7 @@
 /* the small grey label over a card */
 .settings-sheet .settings-section-title { min-height: 16px; font-size: 13px; line-height: 16px; font-weight: 400; letter-spacing: normal; color: var(--st-label); }
 
-/* switches: 32×20, Grok Bot's blue when on, grey when off, a white 16px knob */
+/* switches: 32×20, the reference's blue when on, grey when off, a white 16px knob */
 .settings-sheet [data-slot="switch"] { width: 32px; height: 20px; background: var(--st-off); transition: none; }
 .settings-sheet [data-slot="switch"][aria-checked="false"]:hover { background: color-mix(in srgb, var(--st-off), var(--ab-fg) 7%); }
 .settings-sheet [data-slot="switch"][aria-checked="true"] { background: var(--st-on); }
