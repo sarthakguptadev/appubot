@@ -46,16 +46,6 @@
 @keyframes pop-in { from { opacity: 0; transform: scale(.98); } to { opacity: 1; transform: none; } }
 @keyframes message-enter { from { opacity: 0; transform: translateY(3px) scale(.992); } to { opacity: 1; transform: none; } }
 
-/* A message you just sent eases in (Synara's chat-message-send-enter); transform/opacity only. */
-@keyframes chat-message-send-enter {
-  from { opacity: 0; transform: translateY(3px) scale(0.992); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-.chat-message-send-enter { animation: chat-message-send-enter 180ms ease-out both; will-change: opacity, transform; }
-@media (prefers-reduced-motion: reduce) {
-  .chat-message-send-enter { animation: none; }
-}
-
 /* Windows and Linux: the system's window buttons sit over the window's top-right corner (titleBarOverlay in
    electron/window.ts); --wco-right is their width, which the header under them keeps clear. 0 on macOS, whose
    traffic lights are at the top left. Outside Electron (browser preview) the fallback is Windows' 3 × 46px. */
