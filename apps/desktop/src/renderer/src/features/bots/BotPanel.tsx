@@ -5,7 +5,7 @@
  * permission mode, computer use (and the way to allow it on a Mac that hasn't), chief, whose logins it uses on a team's
  * computer, its apps, its instructions (a row with a right arrow: it opens their editor in the tab, which saves by
  * itself) and how full the chat's context is. A model or mode picked here is the chat's at once and becomes the bot's
- * own, so its next threads start on it. On your AppuBot computer, the bot's own screen follows (`BotScreenCard`).
+ * own, so its next threads start on it.
  */
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { offersFastMode, type Bot } from '@appubot/protocol';
@@ -18,7 +18,6 @@ import { COMPUTER_USE } from '../../lib/platform';
 import { selectSelectedBot, selectSelectedThread, ui, useStore } from '../../lib/store';
 import { ModePicker, ThreadModelPicker } from '../chat/ComposerBar';
 import { ContextRing } from '../chat/ContextRing';
-import { BotScreenCard } from '../cloud/BotScreenCard';
 import { useCloud } from '../cloud/cloudAccount';
 import { useCloudLink } from '../cloud/cloudClient';
 import { useComputerAccessMissing } from '../computer/PermissionRows';
@@ -241,8 +240,6 @@ export function BotPanel() {
           </Row>
         ) : null}
       </SettingsCard>
-      {/* your AppuBot computer: the bot's own screen, live */}
-      <BotScreenCard bot={bot} />
     </div>
   );
 }

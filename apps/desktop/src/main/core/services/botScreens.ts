@@ -6,9 +6,9 @@
  *
  * - A bot's first computer step starts its screen (or a viewer opening it does), and that bot's steps go to its own
  *   ComputerService from then on: its own Take control, no turns with other bots.
- * - At most `host.max()` screens are awake at once. Past that an idle one is put to sleep to make room; when none is
- *   idle, the bot works on the main screen and takes turns there, as every bot did before. A turn that started on the
- *   main screen stays there until it ends, so its windows don't move away from it mid-task.
+ * - There is no cap: every bot gets its screen. One that can't start (the host says why in the log, say the memory ran
+ *   out) leaves the bot on the main screen for that turn, taking turns there as every bot did before. A turn that
+ *   started on the main screen stays there until it ends, so its windows don't move away from it mid-task.
  * - A screen nobody used for SCREEN_SLEEP_MS (no step, no turn on it, nobody in control or watching) sleeps: its
  *   display stops (the apps on it close; what they keep on disk, like the browser's logins, stays). The next use
  *   starts it again.
@@ -22,8 +22,6 @@ import { errMsg } from '../util';
 import { ComputerService } from './computer';
 
 export interface BotScreenHost {
-  /** how many bots' screens may be awake at once (from the computer's memory) */
-  max(): number;
   /** starts the bot's display (again) and says how its computer use loads Cua there */
   open(botId: string): Promise<{ importCua: NonNullable<CoreDeps['importCua']> }>;
   /** stops it; `forget`: the bot is gone, so its screen's own files (its browser profile) go too */
@@ -58,7 +56,6 @@ export class BotScreens {
   private get host(): BotScreenHost | undefined { return this.ctx.deps.botScreens; }
   /** bots have screens of their own here */
   get enabled(): boolean { return !!this.host; }
-  max(): number { return this.host ? Math.max(0, this.host.max()) : 0; }
 
   start(): void {
     if (!this.host || this.timer) return;
@@ -108,18 +105,13 @@ export class BotScreens {
     return main;
   }
 
-  /** A bot's own screen, started when it sleeps; null when there is no room for it (or it couldn't start). */
+  /** A bot's own screen, started when it sleeps; null when it couldn't start. */
   async open(botId: string): Promise<ComputerService | null> {
     const host = this.host;
     if (!host || !this.ctx.s.bots.get(botId)) return null;
-    let e = this.screens.get(botId);
+    const e = this.screens.get(botId);
     if (e?.opening) return e.opening;
     if (e?.state === 'on' && e.computer) { e.lastAt = Date.now(); return e.computer; }
-    if (this.awakeCount() >= this.max() && !(await this.makeRoom())) return null;
-    // another call may have started it while room was made
-    e = this.screens.get(botId);
-    if (e?.opening) return e.opening;
-    if (e?.state === 'on' && e.computer) return e.computer;
     const entry: Entry = e ?? { botId, state: 'starting', lastAt: Date.now() };
     entry.state = 'starting';
     this.screens.set(botId, entry);
@@ -150,21 +142,11 @@ export class BotScreens {
     return entry.opening;
   }
 
-  private awakeCount(): number { return [...this.screens.values()].filter((e) => e.state !== 'asleep').length; }
-
   /** nothing on it now: no step, no turn, nobody in control or watching, not starting */
   private idle(e: Entry): boolean {
     if (e.state !== 'on' || e.opening || !e.computer) return false;
     const st = e.computer.status();
     return !st.busy && !st.activeThreadId && !st.control && !st.waits?.length && !this.host?.watched?.(e.botId);
-  }
-
-  /** puts the idle screen unused longest to sleep; false when none is idle */
-  private async makeRoom(): Promise<boolean> {
-    const idle = [...this.screens.values()].filter((e) => this.idle(e)).sort((a, b) => a.lastAt - b.lastAt)[0];
-    if (!idle) return false;
-    await this.sleep(idle.botId, 'room for another bot');
-    return true;
   }
 
   /** A bot's screen stops (its display and the apps on it); its next use starts it again. */

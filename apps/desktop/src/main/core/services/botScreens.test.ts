@@ -1,8 +1,8 @@
 /**
  * Every bot's own screen on your AppuBot computer (`botScreens.ts`): bots with a screen each act at the same time
- * without waiting for each other, Take control holds one screen only, past the cap a bot works on the main screen for
- * the rest of its turn, an unused screen sleeps (to make room, or after a while) and wakes with the next step, and a
- * deleted bot's screen goes for good. A host-less computer (a Mac) keeps the one screen.
+ * without waiting for each other, there is no cap on how many, Take control holds one screen only, a screen that
+ * can't start leaves its bot on the main screen for the rest of that turn, an unused screen sleeps after a while (not
+ * while watched) and wakes with the next step, and a deleted bot's screen goes for good. A host-less computer (a Mac) keeps the one screen.
  */
 import { afterEach, describe, expect, it } from 'vitest';
 import { mkdtempSync, rmSync } from 'node:fs';
@@ -44,14 +44,18 @@ function backend(world: World, screen: string): ComputerBackend {
   };
 }
 
-function fakeHost(max: number): BotScreenHost & { opened: string[]; closed: { botId: string; forget: boolean }[]; watching: Set<string>; cap: number } {
+function fakeHost(): BotScreenHost & { opened: string[]; closed: { botId: string; forget: boolean }[]; watching: Set<string>; failing: Set<string> } {
   const h = {
-    cap: max,
     opened: [] as string[],
     closed: [] as { botId: string; forget: boolean }[],
     watching: new Set<string>(),
-    max: () => h.cap,
-    open: async (botId: string) => { h.opened.push(botId); return { importCua: async () => ({}) }; },
+    /** bots whose screen fails to start (say the memory ran out) */
+    failing: new Set<string>(),
+    open: async (botId: string) => {
+      if (h.failing.has(botId)) throw new Error('Xvnc exited (1)');
+      h.opened.push(botId);
+      return { importCua: async () => ({}) };
+    },
     close: async (botId: string, o: { forget: boolean }) => { h.closed.push({ botId, ...o }); },
     watched: (botId: string) => h.watching.has(botId),
   };
@@ -99,7 +103,7 @@ const act = async (c: Core, threadId: string, key: string) => (await c.services.
 describe('bots’ own screens', () => {
   it('gives two bots a screen each, and they act at the same time without waiting for each other', async () => {
     const world: World = { acts: [], inFlight: 0, most: 0, hold: 150 };
-    const host = fakeHost(3);
+    const host = fakeHost();
     const c = await start(world, host);
     const ada = botWithThread(c, 'Ada');
     const bo = botWithThread(c, 'Bo');
@@ -111,7 +115,6 @@ describe('bots’ own screens', () => {
     expect(world.acts.map((x) => x.screen).sort()).toEqual([ada.botId, bo.botId].sort());
     expect(host.opened.sort()).toEqual([ada.botId, bo.botId].sort());
     const st = c.services.computer.status();
-    expect(st.screensMax).toBe(3);
     expect(st.screens?.map((x) => [x.botId, x.state]).sort()).toEqual([[ada.botId, 'on'], [bo.botId, 'on']].sort());
     // the main screen saw none of it, and nobody holds it
     expect(st.screenThreadId).toBeUndefined();
@@ -119,7 +122,7 @@ describe('bots’ own screens', () => {
 
   it('holds only the screen someone took control of', async () => {
     const world: World = { acts: [], inFlight: 0, most: 0, hold: 0 };
-    const c = await start(world, fakeHost(3));
+    const c = await start(world, fakeHost());
     const ada = botWithThread(c, 'Ada');
     const bo = botWithThread(c, 'Bo');
     await act(c, ada.threadId, 'a');
@@ -135,32 +138,41 @@ describe('bots’ own screens', () => {
     expect((await held).text).toMatch(/Waited \d+ s while Sam had control/);
   });
 
-  it('past the cap a bot works on the main screen for the rest of its turn, then gets one of its own', async () => {
+  it('gives every bot a screen of its own, however many there are', async () => {
+    const world: World = { acts: [], inFlight: 0, most: 0, hold: 100 };
+    const host = fakeHost();
+    const c = await start(world, host);
+    const bots = Array.from({ length: 12 }, (_, i) => botWithThread(c, 'Bot ' + i));
+    await Promise.all(bots.map((b, i) => act(c, b.threadId, String(i))));
+    expect(world.most).toBe(12);
+    expect(world.acts.map((x) => x.screen).sort()).toEqual(bots.map((b) => b.botId).sort());
+    expect(host.closed).toEqual([]);
+    expect(c.services.computer.status().screens?.filter((x) => x.state === 'on')).toHaveLength(12);
+  });
+
+  it('a screen that can’t start leaves its bot on the main screen for that turn, then tries again', async () => {
     const world: World = { acts: [], inFlight: 0, most: 0, hold: 0 };
-    const host = fakeHost(1);
+    const host = fakeHost();
     const c = await start(world, host);
     const ada = botWithThread(c, 'Ada');
-    const bo = botWithThread(c, 'Bo');
-    await act(c, ada.threadId, 'a');
-    // Ada's turn is still on: her screen isn't idle, so Bo shares the main one
-    await act(c, bo.threadId, 'b');
-    expect(world.acts.map((x) => x.screen)).toEqual([ada.botId, 'main']);
-    expect(c.services.computer.status().screenThreadId).toBe(bo.threadId);
-    // Ada is done: room for Bo, but his turn stays where its windows are
-    endTurn(c, ada.threadId);
-    await act(c, bo.threadId, 'c');
+    host.failing.add(ada.botId);
+    const r = await act(c, ada.threadId, 'a');
+    expect(r.ok).toBe(true);
+    expect(world.acts.map((x) => x.screen)).toEqual(['main']);
+    expect(c.services.computer.status().screenThreadId).toBe(ada.threadId);
+    // the rest of the turn stays where its windows are, even once a screen could start
+    host.failing.clear();
+    await act(c, ada.threadId, 'b');
     expect(world.acts.at(-1)!.screen).toBe('main');
-    // his next turn gets a screen of his own (Ada's, idle, sleeps for it)
-    endTurn(c, bo.threadId);
-    await act(c, bo.threadId, 'd');
-    expect(world.acts.at(-1)!.screen).toBe(bo.botId);
-    expect(host.closed).toEqual([{ botId: ada.botId, forget: false }]);
-    expect(c.services.computer.status().screens?.map((x) => [x.botId, x.state]).sort()).toEqual([[ada.botId, 'asleep'], [bo.botId, 'on']].sort());
+    endTurn(c, ada.threadId);
+    await act(c, ada.threadId, 'c');
+    expect(world.acts.at(-1)!.screen).toBe(ada.botId);
+    expect(c.services.computer.status().screens).toEqual([expect.objectContaining({ botId: ada.botId, state: 'on' })]);
   });
 
   it('sleeps a screen unused for a while (not while watched), and wakes it with the next step', async () => {
     const world: World = { acts: [], inFlight: 0, most: 0, hold: 0 };
-    const host = fakeHost(2);
+    const host = fakeHost();
     const c = await start(world, host);
     const ada = botWithThread(c, 'Ada');
     await act(c, ada.threadId, 'a');
@@ -181,7 +193,7 @@ describe('bots’ own screens', () => {
 
   it('removes a deleted bot’s screen for good', async () => {
     const world: World = { acts: [], inFlight: 0, most: 0, hold: 0 };
-    const host = fakeHost(2);
+    const host = fakeHost();
     const c = await start(world, host);
     const ada = botWithThread(c, 'Ada');
     await act(c, ada.threadId, 'a');

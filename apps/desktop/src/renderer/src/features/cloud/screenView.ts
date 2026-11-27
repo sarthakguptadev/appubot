@@ -59,11 +59,11 @@ export function screenUrl(websocketUrl: string, screen: string | undefined): str
 }
 
 /**
- * What a bot's own screen is doing, in a few words (the bot's "computer" card, the viewer's switcher): who has
- * control, else working, else its state. No screen yet: it gets one with its first computer step.
+ * What a bot's own screen is doing, in a few words (the bot's Computer tab, the viewer's switcher): who has control,
+ * else working, else its state. Never started yet reads as asleep: it starts with its first step, or when opened.
  */
-export function botScreenLine(s: BotScreen | undefined, botName: string): string {
-  if (!s) return `Starts when ${botName} first uses its computer`;
+export function botScreenLine(s: BotScreen | undefined): string {
+  if (!s) return 'Asleep';
   if (s.control) return `${s.control.name} has control`;
   if (s.state === 'starting') return 'Starting…';
   if (s.state === 'asleep') return 'Asleep';

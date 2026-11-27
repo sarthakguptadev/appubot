@@ -357,7 +357,6 @@ export const computerStatus: ComputerStatus = {
   ...(new URLSearchParams(typeof location === 'undefined' ? '' : location.search).get('botscreens') === '1' ? {
     onScreenOnly: true,
     screens: [{ botId: IDS.appu, state: 'on' as const, busy: true, activeThreadId: IDS.main }, { botId: IDS.ledger, state: 'asleep' as const, busy: false }],
-    screensMax: 3,
   } : {}),
 };
 

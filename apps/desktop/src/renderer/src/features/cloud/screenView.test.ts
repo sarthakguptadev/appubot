@@ -10,14 +10,14 @@ describe('a bot’s own screen', () => {
   });
 
   it('says what the screen is doing in a few words', () => {
-    expect(botScreenLine(undefined, 'Ada')).toBe('Starts when Ada first uses its computer');
-    expect(botScreenLine({ botId: 'b', state: 'starting', busy: false }, 'Ada')).toBe('Starting…');
-    expect(botScreenLine({ botId: 'b', state: 'asleep', busy: false }, 'Ada')).toBe('Asleep');
-    expect(botScreenLine({ botId: 'b', state: 'on', busy: true }, 'Ada')).toBe('Working');
-    expect(botScreenLine({ botId: 'b', state: 'on', busy: false, activeThreadId: 't' }, 'Ada')).toBe('Working');
-    expect(botScreenLine({ botId: 'b', state: 'on', busy: false }, 'Ada')).toBe('Idle');
+    expect(botScreenLine(undefined)).toBe('Asleep');
+    expect(botScreenLine({ botId: 'b', state: 'starting', busy: false })).toBe('Starting…');
+    expect(botScreenLine({ botId: 'b', state: 'asleep', busy: false })).toBe('Asleep');
+    expect(botScreenLine({ botId: 'b', state: 'on', busy: true })).toBe('Working');
+    expect(botScreenLine({ botId: 'b', state: 'on', busy: false, activeThreadId: 't' })).toBe('Working');
+    expect(botScreenLine({ botId: 'b', state: 'on', busy: false })).toBe('Idle');
     const control = { id: 'c', name: 'Sam', via: 'desktop' as const, since: 0, expiresAt: 1, left: 1 };
-    expect(botScreenLine({ botId: 'b', state: 'on', busy: true, control }, 'Ada')).toBe('Sam has control');
+    expect(botScreenLine({ botId: 'b', state: 'on', busy: true, control })).toBe('Sam has control');
   });
 });
 

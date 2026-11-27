@@ -299,7 +299,7 @@ export class ComputerService {
       ...(this.waits.size ? { waits: [...this.waits.values()] } : {}),
       ...(this.lease ? { screenThreadId: this.lease.threadId } : {}),
       ...(this.onScreenOnly ? { onScreenOnly: true } : {}),
-      ...(!this.own && this.ctx.s.screens?.enabled ? { screens: this.ctx.s.screens.list(), screensMax: this.ctx.s.screens.max() } : {}),
+      ...(!this.own && this.ctx.s.screens?.enabled ? { screens: this.ctx.s.screens.list() } : {}),
     };
   }
 

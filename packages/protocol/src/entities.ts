@@ -799,11 +799,10 @@ export const ComputerStatusSchema = z.object({
   /** the bots always work on the real screen here (your AppuBot computer: it is theirs); no background mode */
   onScreenOnly: z.boolean().optional(),
   /**
-   * Your AppuBot computer: the bots' own screens (one per bot that has used its computer), and how many may be awake
-   * at once. A bot past that works on the main screen, taking turns there. Absent where bots share one screen.
+   * Your AppuBot computer: every bot has a screen of its own there (listed once it has been started; the others are
+   * asleep). Absent where bots share one screen.
    */
   screens: z.array(BotScreenSchema).optional(),
-  screensMax: z.number().int().nonnegative().optional(),
 });
 export type ComputerStatus = z.infer<typeof ComputerStatusSchema>;
 

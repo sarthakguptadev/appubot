@@ -71,7 +71,7 @@ export const useScreen = create<ScreenState>()(() => ({ phase: 'idle', why: '', 
  * is taken as the screen opens, since its terminal or browser waits for you there). `control`: the id of the screen control this window
  * holds now (the chats say "Paused while you’re in control").
  */
-export const useCloudDesktop = create<{ open: boolean; team?: string; screen?: string; teach: boolean; signIn?: string; control?: string; from?: DOMRect }>()(() => ({ open: false, teach: false }));
+export const useCloudDesktop = create<{ open: boolean; team?: string; screen?: string; takeOver?: boolean; teach: boolean; signIn?: string; control?: string; from?: DOMRect }>()(() => ({ open: false, teach: false }));
 
 /** no mouse or keyboard in this window for this long: pause */
 const IDLE_PAUSE_MS = 15 * 60_000;
