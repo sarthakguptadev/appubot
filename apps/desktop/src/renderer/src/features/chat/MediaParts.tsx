@@ -1,7 +1,9 @@
 // Images and files in the transcript (adapted from Akeru's BotMessageAttachments, MIT). A picture, sent as an image or
 // as a file, shows as itself in a rounded box, the way ChatGPT shows one (the owner, 2026-11-27): its own shape up to
 // 360 by 400, no name under it, the full view on click, Open and Download on hover; several side by side are one tight
-// grid in one box. Other files are a tile with Open / Reveal.
+// grid in one box. A song or recording is one card with our voice note player (features/voice/VoiceNote.tsx's Rare UI
+// pill: play, a waveform to scrub, its real length) over its name and Open / Download; a clip is the same card with the
+// clip and our controls over it. The browser's own media controls never show. Other files are a tile with Open / Reveal.
 // On a remote computer (your AppuBot computer, a team's) the files are brought to this Mac (features/cloud/remoteFiles.ts):
 // pictures and clips show from its cache, Open opens the copy, and Reveal is Download (into Downloads, shown in Finder).
 // Shown at once on the way back: tiles are fixed shapes, pictures already shown this run paint in the first frame
@@ -11,12 +13,15 @@
 import type { FileAttachment, Part } from '@appubot/protocol';
 import { Download, ExternalLink, File, FileText, FolderOpen, Music, Video } from '../../components/ui/icons';
 import { Button, Icon, RevealImg, Spinner, cn } from '../../components/ui';
-import { aspectOf, mediaShapes } from '../../lib/imageCache';
+import { mediaShapes } from '../../lib/imageCache';
 import { basename, bytes } from '@appubot/chat-core';
 import { fileUrl } from '../../lib/gateway';
 import { native } from '../../lib/native';
 import { openInApp } from '../files/FileViewer';
+import { ClipPlayer } from '../files/ClipPlayer';
 import { useEffect, useState } from 'react';
+import { VoiceNote as RareVoiceNote } from '../../components/rare/VoiceNote';
+import { seedOf } from '../voice/VoiceNote';
 import { useCloudFiles } from '../cloud/cloudClient';
 import { downloadRemoteFile, progressLabel, useFileProgress, useFileSrc, useRemoteComputer } from '../cloud/remoteFiles';
 import { galleryProps, openGalleryAt } from './imageGallery';
@@ -110,7 +115,7 @@ function typeLabel(f: FileAttachment): string {
   return ext ? ext.toUpperCase() : 'File';
 }
 
-/** Audio and video Chromium plays: they get a player under their tile. */
+/** Audio and video Chromium plays: a song plays in its card, a clip in its own box. */
 const playable = (f: FileAttachment): 'audio' | 'video' | null =>
   /^audio\/(mpeg|mp3|mp4|aac|wav|x-wav|ogg|opus|flac|webm)$/.test(f.mimeType) ? 'audio'
     : /^video\/(mp4|webm|ogg)$/.test(f.mimeType) ? 'video' : null;
@@ -129,6 +134,39 @@ function FileCard({ file, sending }: { file: FileAttachment; sending?: string })
   const progress = progressLabel(useFileProgress(sending !== undefined ? {} : file));
   const busy = sending !== undefined ? sending : progress;
   const media = playable(file);
+  const actions = (
+    <>
+      <Button size="xs" variant="ghost" icon={ExternalLink} onClick={() => openInApp(file)}>Open</Button>
+      {remote ? (
+        <Button size="xs" variant="ghost" icon={Download} title="Save to this Mac’s Downloads folder" onClick={() => void downloadRemoteFile(file)}>Download</Button>
+      ) : file.path ? <Button size="xs" variant="ghost" icon={FolderOpen} onClick={() => void native().showInFolder(file.path!)}>Reveal</Button> : null}
+    </>
+  );
+  // a song, a recording or a clip: one card, the player over its name and Open / Download
+  if (media && url && sending === undefined && !busy) {
+    return (
+      <div className={cn('flex max-w-full flex-col gap-1 rounded-card border border-border-subtle bg-[color-mix(in_srgb,var(--ab-surface)_40%,transparent)] p-1.5', media === 'audio' ? 'w-[340px]' : 'w-[420px]')}>
+        {media === 'audio' ? (
+          <RareVoiceNote
+            src={url}
+            duration={1}
+            preload="metadata"
+            seed={seedOf(file.id)}
+            bars={40}
+            size="sm"
+            aria-label={`Play ${file.name}`}
+            className="w-full"
+          />
+        ) : <ClipPlayer src={url} shapeKey={`${remote ?? 'local'}:${file.id}`} />}
+        <div className="flex min-w-0 items-center gap-1 pl-2">
+          <span className="min-w-0 flex-1 truncate text-note text-muted" title={file.name}>
+            <span className="font-medium text-fg-2">{file.name}</span>{' · '}{bytes(file.size)}
+          </span>
+          {actions}
+        </div>
+      </div>
+    );
+  }
   const tile = (
     <div className="flex max-w-[420px] items-center gap-3 rounded-card border border-border-subtle bg-[color-mix(in_srgb,var(--ab-surface)_40%,transparent)] py-2 pr-2 pl-2.5">
       {/* a rounded square, like every row's thumbnail (two-line rows), not a circle */}
@@ -143,44 +181,11 @@ function FileCard({ file, sending }: { file: FileAttachment; sending?: string })
         sending ? <span role="status" className="flex h-7 shrink-0 items-center gap-1.5 px-2 text-ui text-muted tabular-nums">{sending}</span> : null
       ) : busy ? (
         <span role="status" className="flex h-7 shrink-0 items-center gap-1.5 px-2 text-ui text-muted tabular-nums"><Spinner size={12} />{busy}</span>
-      ) : (
-        <>
-          <Button size="xs" variant="ghost" icon={ExternalLink} onClick={() => openInApp(file)}>Open</Button>
-          {remote ? (
-            <Button size="xs" variant="ghost" icon={Download} title="Save to this Mac’s Downloads folder" onClick={() => void downloadRemoteFile(file)}>Download</Button>
-          ) : file.path ? <Button size="xs" variant="ghost" icon={FolderOpen} onClick={() => void native().showInFolder(file.path!)}>Reveal</Button> : null}
-        </>
-      )}
+      ) : actions}
     </div>
   );
-  // a remote computer's song or clip plays once it's here (a big one only after Open)
-  if (!media || !url) return tile;
-  return (
-    <div className="flex max-w-[420px] flex-col gap-1.5">
-      {tile}
-      {media === 'audio'
-        ? <audio controls preload="metadata" src={url} className="h-9 w-full" />
-        : <ClipPlayer src={url} shapeKey={`${remote ?? 'local'}:${file.id}`} />}
-    </div>
-  );
-}
-
-/** A clip's player, its box the clip's own shape from the first frame (remembered from the last time it loaded). */
-function ClipPlayer({ src, shapeKey }: { src: string; shapeKey: string }) {
-  const shape = mediaShapes.get(shapeKey);
-  return (
-    <video
-      controls
-      preload="metadata"
-      src={src}
-      onLoadedMetadata={(e) => {
-        const v = e.currentTarget;
-        if (v.videoWidth && v.videoHeight) mediaShapes.set(shapeKey, [v.videoWidth, v.videoHeight]);
-      }}
-      style={{ aspectRatio: aspectOf(shape, '16 / 9') }}
-      className="max-h-[280px] w-full rounded-card border border-border-subtle bg-black object-contain"
-    />
-  );
+  // a remote computer's song or clip is a tile until it's here (a big one only after Open)
+  return tile;
 }
 
 /** An attached path in a user message ("Files: /path" lines the composer adds). */

@@ -16,7 +16,7 @@ import {
   FolderOpenIcon, FolderSearchIcon, Globe02Icon, HammerIcon, Image01Icon, InformationCircleIcon, InternetIcon, CleanIcon,
   Key01Icon, LaptopIcon, LinkSquare02Icon, Login03Icon, Logout03Icon, MagicWand01Icon, Mic02Icon, Moon02Icon,
   MoreHorizontalIcon, Mortarboard02Icon, MouseLeftClick01Icon, PencilEdit01Icon, PencilEdit02Icon,
-  Pin02Icon, PlayIcon, Plug01Icon, PlusSignIcon, PuzzleIcon, QrCodeIcon, ReloadIcon, RepeatIcon,
+  Pin02Icon, PauseIcon, PlayIcon, Plug01Icon, PlusSignIcon, PuzzleIcon, QrCodeIcon, ReloadIcon, RepeatIcon,
   Refresh01Icon, Search01Icon, SecurityCheckIcon, SecurityIcon, SecurityWarningIcon, SentIcon,
   Settings02Icon, SmileIcon, SmartPhone01Icon, SparklesIcon, SquareIcon, StarIcon, StopIcon, Sun03Icon,
   TelegramIcon, Tick02Icon, UndoIcon, TimeScheduleIcon, TouchInteraction01Icon, UnfoldMoreIcon, Wifi01Icon, WifiOff01Icon, FilterHorizontalIcon,
@@ -142,6 +142,7 @@ export const MicOff = createIcon(MicOff02Icon, 'MicOff');
 export const PhoneOff = createIcon(CallEnd01Icon, 'PhoneOff');
 export const AudioLines = createIcon(AudioLinesIcon, 'AudioLines');
 export const Play = createIcon(PlayIcon, 'Play');
+export const Pause = createIcon(PauseIcon, 'Pause');
 export const Square = createIcon(SquareIcon, 'Square');
 export const Stop = createIcon(StopIcon, 'Stop');
 export const Pin = createIcon(Pin02Icon, 'Pin');

@@ -17,6 +17,7 @@ import { ChatMarkdown } from '../chat/Markdown';
 import { VoiceNote as RareVoiceNote } from '../../components/rare/VoiceNote';
 import { seedOf } from '../voice/VoiceNote';
 import { PageViewerBody } from '../chat/PagePart';
+import { ClipPlayer } from './ClipPlayer';
 import { downloadRemoteFile, useFileSrc, useRemoteComputer } from '../cloud/remoteFiles';
 
 export const useFileViewer = create<{ file: FileAttachment | null }>(() => ({ file: null }));
@@ -79,7 +80,7 @@ function Body({ f, kind }: { f: FileAttachment; kind: ViewKind }) {
   }
   if (failed) return <p className="px-5 py-10 text-center text-ui text-muted">This file couldn’t be read here. Open it in its app instead.</p>;
   if (kind === 'image') return <div className="flex max-h-[calc(100vh-11rem)] items-center justify-center overflow-auto bg-[color-mix(in_srgb,var(--ab-fg)_4%,transparent)] p-4"><img src={src} alt={f.name} className="max-h-[calc(100vh-14rem)] max-w-full rounded-control object-contain" /></div>;
-  if (kind === 'video') return <video controls autoPlay src={src} className="max-h-[calc(100vh-11rem)] w-full bg-black object-contain" />;
+  if (kind === 'video') return <ClipPlayer src={src} shapeKey={f.id} autoPlay className="max-h-[calc(100vh-11rem)] rounded-none" />;
   if (kind === 'audio') return <div className="px-5 py-8"><RareVoiceNote src={src} duration={1} seed={seedOf(f.id)} bars={48} aria-label={`Play ${f.name}`} className="w-full" /></div>;
   if (kind === 'markdown') return <div className="max-h-[calc(100vh-11rem)] overflow-y-auto px-6 py-5"><ChatMarkdown text={text ?? ''} /></div>;
   if (kind === 'table') return <div className="max-h-[calc(100vh-11rem)] overflow-auto"><Table text={text ?? ''} tab={/\.tsv$/i.test(f.name)} /></div>;
