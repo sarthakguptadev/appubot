@@ -18,7 +18,9 @@ import type { BotShape } from '@appubot/protocol';
  * What an avatar is doing: `rest` breathes (stretching up a little), tilts its head now and then, blinks (sometimes
  * twice), glances about and every so often hops (crouch, stretch, land with a squash and a jiggle, eyes squeezing and
  * widening with it); `working` bobs fast with a squash at each landing, scans the visor with its eyes and leans with
- * them, now and then stops to think (eyes up, head tilted), pulses its eyes' glow and sweeps light over the glass;
+ * them, now and then stops to think (eyes up, head tilted), pulses its eyes' glow and sweeps light over the glass, and
+ * every 2.5s gives a 300ms beat (squash to 0.92 tall, stretch to 1.08 with a small lift and a roll, eyes squeezing and
+ * widening with it: Grok Bot's mascot at work, 2026-11-27);
  * `needs-you` hops for attention (anticipation, stretch, a squashy landing, a small second bounce), wobbles and swells
  * its eyes, looking up at you.
  */
@@ -58,6 +60,9 @@ const H = 11000;
 /* working: four scans, then a think */
 const WORK = 6400;
 const R = 5.5;
+/* working: a 300ms beat near the end of every BEAT ms */
+const BEAT = 2500;
+const B = BEAT - 400;
 
 /** Every mood's loops. Two tracks never share a layer and property within one mood (CSS runs one animation per
  *  property). */
@@ -85,9 +90,17 @@ export const BOT_LOOPS: Readonly<Record<BotMood, readonly BotTrack[]>> = {
     },
   ],
   working: [
-    // a quick bob: squashed at each landing, stretched on the way up
-    { layer: 'body', prop: 'translate', ms: 600, keys: [[0, O, 'out'], [300, up(2.6), 'in'], [600, O]] },
-    { layer: 'body', prop: 'scale', ms: 600, keys: [[0, sq(0.05), 'out'], [160, sq(-0.045)], [300, sq(-0.01), 'in'], [500, sq(-0.02), 'in'], [600, sq(0.05)]] },
+    // the beat: squashed to 0.92 tall, popping up stretched to 1.08 and rolling, landing with a little squash, still
+    // between beats
+    { layer: 'body', prop: 'translate', ms: BEAT, keys: [[0, O], [B + 80, O, 'out'], [B + 170, up(3), 'in'], [B + 250, O], [BEAT, O]] },
+    {
+      layer: 'body', prop: 'scale', ms: BEAT, keys: [
+        [0, ONE], [B, ONE], [B + 80, sq(0.08), 'out'], [B + 170, sq(-0.08), 'in'], [B + 250, sq(0.05), 'out'], [B + 300, ONE], [BEAT, ONE],
+      ],
+    },
+    { layer: 'body', prop: 'rotate', ms: BEAT, keys: [[0, 0], [B + 80, 0], [B + 170, -8], [B + 250, 5], [B + 300, 0], [BEAT, 0]] },
+    // the eyes squeeze with the crouch and go wide at the top of the beat
+    { layer: 'look', prop: 'scale', ms: BEAT, keys: [[0, ONE], [B, ONE], [B + 80, [1.06, 0.75]], [B + 170, [1, 1.12]], [B + 300, ONE], [BEAT, ONE]] },
     // eyes scan the visor four times, then look up to think (up-right, then up-left), then back to scanning
     {
       layer: 'look', prop: 'translate', ms: WORK, keys: [
