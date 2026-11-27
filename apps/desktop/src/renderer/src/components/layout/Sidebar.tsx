@@ -39,6 +39,8 @@ const TILE_IDLE = 'bg-surface-2 hover:bg-surface-3';
 const TILE_ON = 'bg-surface-3 shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--ab-fg)_6%,transparent)]';
 const TILE_BUTTON = 'ab-press squircle no-drag relative flex h-[92px] w-full min-w-0 flex-col items-center justify-center gap-1.5 rounded-[12px] px-1 outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)]';
 const TILE_NAME = 'min-w-0 truncate text-[13px] leading-[17px] font-medium text-fg';
+/** a tile's unread dot: the size and place of its avatar's presence dot (BotAvatar), in the unread blue */
+const TILE_UNREAD = 'absolute -right-px -bottom-px size-[13px] rounded-full bg-unread ring-2 ring-[var(--ab-coat-solid,var(--ab-bg))]';
 const ROW_ON = 'bg-[color-mix(in_srgb,var(--ab-fg)_7.5%,transparent)] shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--ab-fg)_4%,transparent)]';
 const ROW_HOVER = 'hover:bg-[color-mix(in_srgb,var(--ab-fg)_4%,transparent)]';
 const ROW_BUTTON = 'ab-press squircle no-drag relative flex min-w-0 flex-1 items-center gap-2.5 rounded-row px-2 py-[11px] text-left outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)]';
@@ -238,8 +240,9 @@ function BotRowMenu({ bot, className }: { bot: Bot; className?: string }) {
 }
 
 /**
- * A pinned bot at the top of the roster: its avatar large with its presence, its name under it, an unread dot; the
- * open one filled like a selected row. Right-click for its actions (Unpin…).
+ * A pinned bot at the top of the roster: its avatar large with its presence, its name under it; the open one filled
+ * like a selected row. A reply you haven't seen puts a blue dot where the presence dot sits, at the avatar's
+ * bottom-right (Grok Bot's tiles), while the bot isn't working or waiting on you. Right-click for its actions (Unpin…).
  */
 function BotTile({ bot, selected, unread, presence }: { bot: Bot; selected: boolean; unread: boolean; presence: BotPresence }) {
   return (
@@ -253,10 +256,14 @@ function BotTile({ bot, selected, unread, presence }: { bot: Bot; selected: bool
         onClick={() => openBot(bot.id)}
         className={TILE_BUTTON}
       >
-        <BotAvatar bot={bot} size={PINNED_AVATAR} presence={presence} />
-        <span className="flex max-w-full min-w-0 items-center gap-1">
+        <span className="relative">
+          <BotAvatar bot={bot} size={PINNED_AVATAR} presence={presence} />
+          {unread && !presence ? (
+            <span role="img" aria-label="Unread" className={TILE_UNREAD} />
+          ) : null}
+        </span>
+        <span className="flex max-w-full min-w-0 items-center">
           <span className={TILE_NAME}>{bot.name}</span>
-          {unread ? <span role="img" aria-label="Unread" className="size-1.5 shrink-0 rounded-full bg-unread" /> : null}
         </span>
       </button>
       <BotRowMenu bot={bot} className="top-1.5 right-1.5" />

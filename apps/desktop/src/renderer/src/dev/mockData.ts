@@ -49,6 +49,8 @@ export interface MockOptions {
   settings?: SettingsSection;
   /** `?threads=1` opens the side panel on its Threads tab, with one thread unread */
   threads: boolean;
+  /** `?unread=1`: Ledger pinned, with a reply you haven't seen (its tile's blue dot; its chat's NEW line) */
+  unread: boolean;
   /** `?editor=1` opens the side panel on Details (a bot's settings) for the bot on screen */
   editor: boolean;
   /** `?editor=new`: the New bot dialog open */
@@ -122,6 +124,7 @@ export function readOptions(): MockOptions {
     appsSeed: (['none', 'one', 'many', 'accounts'] as const).find((x) => x === q.get('apps')),
     settings: SECTIONS.find((x) => x === q.get('settings')) ?? (q.get('settings') === 'cloud' ? 'billing' : undefined),
     threads: q.get('threads') === '1',
+    unread: q.get('unread') === '1',
     editor: q.get('editor') === '1',
     newBot: q.get('editor') === 'new',
     updateRequired: q.get('update') === 'required',
@@ -497,6 +500,7 @@ export function buildSeed(opts: MockOptions): Seed {
     snapshot: stressSnapshot({
       bots: [...bots, ...(opts.groupsFilm ? FILM_BOTS.map((f, i) => ({ ...bots[1]!, ...f, slug: f.name.toLowerCase(), chief: false, pinned: false, workspace: `/Users/sarthak/AppuBot/${f.name.toLowerCase()}`, createdAt: ago((10 - i) * DAY), updatedAt: ago(i * HOUR) })) : []), ...(many?.bots ?? [])].map((b) => (mockCharactersWorn() && b.id === IDS.ledger && characters?.[1] ? { ...b, characterId: characters[1].id }
         : opts.longName && b.id === IDS.appu ? { ...b, name: 'Appu the Extraordinarily Thorough Bookkeeping Assistant' }
+        : opts.unread && b.id === IDS.ledger ? { ...b, pinned: true }
         : prof && b.id === IDS.appu ? { ...b, providerId: prof.provider.id, modelId: 'claude-sonnet-5' } : { ...b })),
       threads,
       providers: [...providers.map((p) => (opts.agents ? freshAgent(p, opts.agents) : { ...p })), ...(prof ? [prof.provider] : [])],

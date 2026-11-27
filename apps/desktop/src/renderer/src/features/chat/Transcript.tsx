@@ -49,8 +49,24 @@ export function Separator({ label }: { label: string }) {
   );
 }
 
-const Row = memo(function Row({ threadId, id, botName, cwd, animate, separator }: {
+/**
+ * Where the replies you haven't seen begin (Grok Bot's "NEW"): a hairline across the column with NEW in the accent,
+ * centred. It stays while the chat is open and is gone the next time it opens (lib/store.ts `unread`).
+ */
+export function NewDivider() {
+  return (
+    <div role="separator" aria-label="New" className="chat-new mt-3 mb-3 flex items-center gap-3 px-1">
+      <span aria-hidden className="h-px flex-1 bg-accent/45" />
+      <span className="shrink-0 text-[11px] leading-4 font-semibold tracking-[.08em] text-accent">NEW</span>
+      <span aria-hidden className="h-px flex-1 bg-accent/45" />
+    </div>
+  );
+}
+
+const Row = memo(function Row({ threadId, id, botName, cwd, animate, separator, isNew = false }: {
   threadId: string; id: string; botName: string; cwd?: string; animate: boolean; separator: string | null;
+  /** the first reply you hadn't seen when the chat opened: the NEW line goes above it */
+  isNew?: boolean;
 }) {
   const msg = useStore((s) => s.convo[threadId]?.byId[id]);
   // a message of yours the bot hasn't read yet because it is still on the job before it (only the chat's last few can be)
@@ -67,6 +83,7 @@ const Row = memo(function Row({ threadId, id, botName, cwd, animate, separator }
   return (
     <>
       {separator ? <Separator label={separator} /> : null}
+      {isNew ? <NewDivider /> : null}
       <div data-message-id={id} className={cn('flex flex-col', msg.role === 'user' && 'pb-3.5', enter && 'chat-message-send-enter')}>
         {msg.role === 'agent' ? <AgentTurn msg={msg} botName={botName} cwd={cwd} />
           : msg.via === 'routine' ? <RoutinePromptLine msg={msg} botName={botName} /> : <UserMessage msg={msg} botName={botName} waiting={waiting} />}
@@ -138,6 +155,13 @@ export function Transcript({ threadId, botName, cwd, footer }: {
     const row = content.current?.querySelector(`[data-message-id="${CSS.escape(id)}"]`);
     return row && content.current ? row.getBoundingClientRect().top - content.current.getBoundingClientRect().top : null;
   };
+  /**
+   * The first reply not seen yet when this chat opened (it is marked read as it shows), or one that turns up unseen
+   * while it is open behind another window: the NEW line stays above it until the chat opens again.
+   */
+  const unreadFrom = useStore((s) => { const u = s.unread[threadId]; return typeof u === 'string' ? u : null; });
+  const [newFrom, setNewFrom] = useState(unreadFrom);
+  if (unreadFrom && !newFrom) setNewFrom(unreadFrom);
   /** ids present when the chat first loaded (or paged in) don't animate; later arrivals do */
   const known = useRef<Set<string> | null>(null);
   if (!known.current && loaded) known.current = new Set(ids);
@@ -470,7 +494,7 @@ export function Transcript({ threadId, botName, cwd, footer }: {
           <div ref={top} aria-hidden className="h-px shrink-0" />
           {paging ? <div className="flex justify-center pb-3 text-muted"><Spinner size={14} /></div> : null}
           {items.map((item) => (item.kind === 'message' ? (
-            <Row key={item.key} threadId={threadId} id={item.id} botName={botName} cwd={cwd} separator={separators[item.index] ?? null} animate={!!known.current && !known.current.has(item.id) && !known.current.has(rowKeyOf(item.id))} />
+            <Row key={item.key} threadId={threadId} id={item.id} botName={botName} cwd={cwd} separator={separators[item.index] ?? null} isNew={item.id === newFrom} animate={!!known.current && !known.current.has(item.id) && !known.current.has(rowKeyOf(item.id))} />
           ) : (
             <div key={item.key} data-message-id={item.ids[0]}>
               {separators[item.index] ? <Separator label={separators[item.index]!} /> : null}
