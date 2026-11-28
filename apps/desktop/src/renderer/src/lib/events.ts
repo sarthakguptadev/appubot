@@ -73,6 +73,7 @@ function applyServerEvent(event: EventName | 'hello', payload: unknown): void {
         const threadPick = { ...s.threadPick };
         delete threadPick[id];
         return {
+          ...(lostSelection ? { rightOpen: false } : {}),
           bots, threadPick,
           skills: s.skills.filter((k) => k.botId !== id),
           routines: s.routines.filter((r) => r.botId !== id),
