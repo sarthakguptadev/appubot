@@ -9,7 +9,7 @@ import { CONTROL_WARN_MS, type ComputerStatus, type ScreenControl, type ScreenWa
 
 /**
  * The screen a thread's bot uses the computer on: its own (your AppuBot computer, `ComputerStatus.screens`) while it
- * works or waits there, else the computer's main one. A chat's "working", its wait line and who has control are that
+ * works or waits there, else the computer's own. A chat's "working", its wait line and who has control are that
  * screen's.
  */
 export function threadScreen(st: ComputerStatus | null | undefined, threadId: string | undefined): Pick<ComputerStatus, 'activeThreadId' | 'waits' | 'control'> | undefined {

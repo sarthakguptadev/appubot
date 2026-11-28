@@ -56,7 +56,7 @@ export interface ScreenState {
   /** the full viewer is up (else only the preview) */
   full: boolean;
   team?: string;
-  /** a bot's own screen on the computer (its id; absent: the computer's main screen) */
+  /** a bot's own screen on the computer (its id; absent: the computer's own screen) */
   screen?: string;
   /** the last picture (a data URL) shown while reconnecting or paused */
   lastFrame?: string;

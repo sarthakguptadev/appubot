@@ -43,22 +43,22 @@ describe('a chat’s wait line', () => {
 });
 
 describe('the screen a chat’s bot works on', () => {
-  it('is the bot’s own while it works or waits there, else the computer’s main one', () => {
-    const main = { backend: 'cua-driver' as const, available: true, permissions: { accessibility: true, screenRecording: true }, busy: false, paused: false, liveView: true, background: false, activeThreadId: 'thr_main', control: ctl({ name: 'Ada’s Mac' }) };
-    const st = { ...main, screens: [
+  it('is the bot’s own while it works or waits there, else the computer’s own', () => {
+    const shared = { backend: 'cua-driver' as const, available: true, permissions: { accessibility: true, screenRecording: true }, busy: false, paused: false, liveView: true, background: false, activeThreadId: 'thr_shared', control: ctl({ name: 'Ada’s Mac' }) };
+    const st = { ...shared, screens: [
       { botId: 'bot_a', state: 'on' as const, busy: true, activeThreadId: 'thr_a' },
       { botId: 'bot_b', state: 'on' as const, busy: false, waits: [{ threadId: 'thr_b', for: 'control' as const, since: 0 }], control: ctl() },
     ] };
     expect(threadScreen(st, 'thr_a')).toMatchObject({ activeThreadId: 'thr_a' });
     expect(threadScreen(st, 'thr_b')?.control?.name).toBe('Sam’s iPhone');
-    expect(threadScreen(st, 'thr_main')).toBe(st);
-    expect(threadScreen(main, 'thr_a')).toBe(main);
+    expect(threadScreen(st, 'thr_shared')).toBe(st);
+    expect(threadScreen(shared, 'thr_a')).toBe(shared);
     expect(threadScreen(null, 'thr_a')).toBeUndefined();
     // a chat's Watch opens the screen its bot works or waits on
     expect(threadScreenBot(st, 'thr_a')).toBe(st.screens![0]!.botId);
     expect(threadScreenBot(st, 'thr_b')).toBe(st.screens![1]!.botId);
-    expect(threadScreenBot(st, 'thr_main')).toBeUndefined();
-    expect(threadScreenBot(main, 'thr_a')).toBeUndefined();
+    expect(threadScreenBot(st, 'thr_shared')).toBeUndefined();
+    expect(threadScreenBot(shared, 'thr_a')).toBeUndefined();
     expect(threadScreenBot(null, 'thr_a')).toBeUndefined();
   });
 });

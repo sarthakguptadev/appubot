@@ -49,7 +49,7 @@ export function screenCard(o: { cloud: CloudPhase; conn: LinkConn; linkError?: s
 
 /**
  * The screen port's socket for one screen: a bot's own (`screen`: its id, the gateway's `?screen=`), else the
- * computer's main screen (the link as it came).
+ * computer's own screen (the link as it came).
  */
 export function screenUrl(websocketUrl: string, screen: string | undefined): string {
   if (!screen) return websocketUrl;

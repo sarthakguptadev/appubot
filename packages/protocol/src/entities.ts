@@ -754,8 +754,8 @@ export const ScreenWaitSchema = z.object({ threadId: Id, for: z.enum(['control',
 export type ScreenWait = z.infer<typeof ScreenWaitSchema>;
 
 /**
- * Your AppuBot computer: a bot's own screen (a display of its own on the computer, beside the main one), so bots use
- * their computers at the same time without taking turns. `on`: its display is up (`starting` until its computer use
+ * Your AppuBot computer: a bot's own screen (a display of its own on the computer, beside the computer's own), so bots
+ * use their computers at the same time without taking turns. `on`: its display is up (`starting` until its computer use
  * is ready); `asleep`: stopped after a while unused, started again by the bot's next computer step or a viewer.
  * `busy`/`activeThreadId`/`control`/`waits` are that screen's own, as in ComputerStatus.
  */
