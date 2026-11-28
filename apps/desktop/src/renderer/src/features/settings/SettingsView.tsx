@@ -6,7 +6,7 @@ import './settings.css';
 import { Button, Icon, Kbd, MODAL_BACKDROP, MODAL_SURFACE, cn, isDialogOpen } from '../../components/ui';
 import { useHotkey } from '../../lib/hooks';
 import { ui, useStore, type SettingsSection } from '../../lib/store';
-import { SETTINGS_NAV_ITEMS, transferTitle, settingsNavItem, settingsPage, type SettingsNavItem } from './nav';
+import { SETTINGS_NAV_ITEMS, transferTitle, settingsPage } from './nav';
 import { searchSettings, settingRows, type SettingRow } from './settingsSearch';
 import { Marked, PALETTE_ROW, PALETTE_ROW_ON, PaletteFooter } from '../../components/layout/PaletteRow';
 import { shortcut } from '../../lib/platform';
@@ -95,15 +95,6 @@ function useShownPages(): (id: SettingsSection) => boolean {
     && !((id === 'account' || id === 'billing') && accountOff) && !(id === 'team' && !onTeam) && !(id === 'transfer' && !onCloud);
 }
 
-/** A row as it shows: its visible pages, named after the first of them when its own page is hidden (Permissions alone on a cloud computer → nothing). */
-function shownRow(item: SettingsNavItem, shown: (id: SettingsSection) => boolean): { item: SettingsNavItem; pages: SettingsSection[] } | null {
-  const pages = item.pages.filter(shown);
-  if (!pages.length) return null;
-  if (pages[0] === item.pages[0]) return { item, pages };
-  const first = settingsPage(pages[0]!);
-  return { item: { ...item, id: first.id, label: first.label, icon: first.icon, description: first.description }, pages };
-}
-
 /** The left column: the search field on top, the computer switcher, then the pages. */
 function SettingsNav({ query, setQuery, input, onSearchKey }: {
   query: string; setQuery: (q: string) => void;
@@ -117,14 +108,15 @@ function SettingsNav({ query, setQuery, input, onSearchKey }: {
   const shown = useShownPages();
   const searching = query.trim().length > 0;
 
-  // one flat list, no headings (the owner's call 2026-11-14, "rm grouping in settings"); the rows keep the order
-  // nav.ts lists them in: account, AI, connections, the computer, the app
+  // one list, no headings (the owner's call 2026-11-14, "rm grouping in settings"): the rows keep the order nav.ts
+  // lists them in (account, AI, connections, the computer, the app), a little space between one group and the next
+  const items = SETTINGS_NAV_ITEMS.filter((r) => shown(r.id));
   const rows = (
     <ul className="flex flex-col gap-0.5">
-      {SETTINGS_NAV_ITEMS.map((r) => shownRow(r, shown)).filter((r) => r !== null).map(({ item: r, pages }) => {
-        const on = !searching && pages.includes(active);
+      {items.map((r, i) => {
+        const on = !searching && r.id === active;
         return (
-          <li key={r.id}>
+          <li key={r.id} className={cn(i > 0 && items[i - 1]!.group !== r.group && 'mt-2.5')}>
             <button
               type="button"
               aria-current={on ? 'page' : undefined}
@@ -133,7 +125,7 @@ function SettingsNav({ query, setQuery, input, onSearchKey }: {
             >
               <Icon icon={r.icon} size={16} className="shrink-0" />
               <span className="truncate">{r.label}</span>
-              {pages.includes('permissions') && permissionsNeeded ? <span aria-label={t('settings.needsAttention')} className="ml-auto size-1.5 shrink-0 rounded-full bg-attention" /> : null}
+              {r.id === 'permissions' && permissionsNeeded ? <span aria-label={t('settings.needsAttention')} className="ml-auto size-1.5 shrink-0 rounded-full bg-attention" /> : null}
             </button>
           </li>
         );
@@ -231,18 +223,12 @@ function SettingsContent() {
   const t = useT();
   const section = useStore((s) => s.settingsSection) ?? 'general';
   const target = useStore((s) => s.settingsTarget);
-  const shown = useShownPages();
   const onCloud = useCloudLink((c) => c.computer === 'cloud');
-  const permissionsNeeded = usePermissionsNeeded();
-  const nav = shownRow(settingsNavItem(section), shown);
   const page = settingsPage(section);
-  const tabs = nav && nav.pages.length > 1 ? nav.pages : [];
   const Page = PAGES[section];
   const scroller = useRef<HTMLDivElement>(null);
   const macName = useMacName();
-  // a row of several pages shows the open tab's own title over its line (Usage over "How much of your plans is left",
-  // not Agents), so the title and the line always speak of the same page
-  const title = section === 'transfer' ? transferTitle(macName) : tabs.length ? page.label : (nav?.item.label ?? page.label);
+  const title = section === 'transfer' ? transferTitle(macName) : page.label;
 
   // each section starts at the top
   useEffect(() => { if (scroller.current) scroller.current.scrollTop = 0; }, [section]);
@@ -269,32 +255,6 @@ function SettingsContent() {
         <header className="mx-auto flex w-full max-w-4xl flex-col pr-14 pl-[45px]">
           {/* the title alone, as the reference's pages have it (each page's line stays its tooltip and the search's) */}
           <h1 title={section === 'general' && onCloud ? t('settings.page.general.desc.cloud') : page.description} className="text-[20px] leading-6 font-medium text-fg">{title}</h1>
-          {/* a row holding several pages: one tab each (Agents | Usage, About | What’s new | Storage) */}
-          {tabs.length ? (
-            <div role="tablist" aria-label={nav?.item.label} className="mt-4 -ml-2.5 flex gap-1 border-b border-[var(--st-divider)]">
-              {tabs.map((id) => {
-                const on = id === section;
-                return (
-                  <button
-                    key={id}
-                    type="button"
-                    role="tab"
-                    aria-selected={on}
-                    onClick={() => ui.openSettings(id)}
-                    className={cn(
-                      'relative -mb-px flex h-9 items-center gap-1.5 px-2.5 text-[15px] outline-none focus-visible:ring-2 focus-visible:ring-[var(--ab-ring)] focus-visible:ring-inset',
-                      on ? 'text-fg' : 'text-muted hover:text-fg',
-                    )}
-                  >
-                    {/* the open tab's line */}
-                    {on ? <span aria-hidden className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-fg" /> : null}
-                    {settingsPage(id).label}
-                    {id === 'permissions' && permissionsNeeded ? <span aria-label={t('settings.needsAttention')} className="size-1.5 rounded-full bg-attention" /> : null}
-                  </button>
-                );
-              })}
-            </div>
-          ) : null}
         </header>
       </div>
       {/* inset from the window's bottom edge and rounded corners: the scrollbar floats inside, like the chat's */}

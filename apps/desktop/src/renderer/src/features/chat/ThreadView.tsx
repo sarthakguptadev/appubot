@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { currentChat, type PermissionRequest } from '@appubot/protocol';
-import { screenWaitText, threadScreen, threadScreenBot, threadTitle } from '@appubot/chat-core';
-import { Bell, Clock, ComputerUse, Eye, MonitorSmartphone, Plus, ShieldQuestion } from '../../components/ui/icons';
-import { Button, EmptyState, Icon, cn } from '../../components/ui';
+import { threadTitle } from '@appubot/chat-core';
+import { Bell, MonitorSmartphone, Plus, ShieldQuestion } from '../../components/ui/icons';
+import { Button, EmptyState, Icon } from '../../components/ui';
 import { openThread, sendMessage } from '../../lib/actions';
 import { rpc } from '../../lib/gateway';
 import { MACHINE, THIS_MACHINE } from '../../lib/platform';
@@ -14,7 +14,6 @@ import { ChatHeader } from './ChatHeader';
 import { NOTICE_LINE } from './NoticeCard';
 import { Composer } from './Composer';
 import { useComputerAccessMissing, useRecheckOnFocus } from '../computer/PermissionRows';
-import { updateSettings } from '../settings/sections/shared';
 import { turnOnNotifications, useNotificationsBlocked } from '../notifications/access';
 import { PERMISSIONS_TITLE, settingAnchorId } from '../settings/nav';
 import { EmptyThread } from './EmptyThread';
@@ -28,8 +27,6 @@ import { CloudStateNotice, useCloudNoticeKind } from '../cloud/CloudStateNotice'
 import { CreditNotice, useCreditExhausted } from '../cloud/CreditNotice';
 import { ClaudeSetupNotice, useClaudeSetup } from '../cloud/ClaudeSetupNotice';
 import { useCloudLacks } from '../cloud/useCloudLacks';
-import { openCloudDesktop, useCloudDesktop, useScreenTitle } from '../cloud/DesktopView';
-import { useCloudLink } from '../cloud/cloudClient';
 
 const NONE: PermissionRequest[] = [];
 
@@ -70,78 +67,6 @@ function ComputerAccessPill({ botName, onDismiss, chip }: { botName: string; onD
       icon={MonitorSmartphone} label={`Let ${botName} use your ${MACHINE}`}
       onAction={() => ui.openSettings('permissions', settingAnchorId(PERMISSIONS_TITLE))} onDismiss={onDismiss}
     />
-  );
-}
-
-/**
- * The bot is using the computer in this thread's turn: where it works, and the switch between watching it (its window
- * comes forward) and working meanwhile (background mode: its window stays behind yours). While a step that needs the
- * window in front waits for the user to pause, it says so.
- */
-function ComputerNotice({ botName, threadId }: { botName: string; threadId: string }) {
-  const computer = useStore((s) => s.settings?.computer);
-  const waiting = useStore((s) => (s.computer?.waiting?.threadId === threadId ? s.computer.waiting : undefined));
-  const app = useStore((s) => (s.lastAction?.threadId === threadId ? s.lastAction.action.app : undefined));
-  // live view's Take control: its step waits for the person in control, or (your AppuBot computer) for its turn on the screen
-  const wait = useStore((s) => threadScreen(s.computer, threadId)?.waits?.find((w) => w.threadId === threadId));
-  const control = useStore((s) => threadScreen(s.computer, threadId)?.control);
-  const holderBot = useStore((s) => {
-    const t = wait?.holder ? s.threads.find((x) => x.id === wait.holder) : undefined;
-    return t ? s.bots.find((b) => b.id === t.botId)?.name : undefined;
-  });
-  const mineId = useCloudDesktop((s) => s.control);
-  // the bot's own screen while it works there: Watch opens that one
-  const ownScreen = useStore((s) => threadScreenBot(s.computer, threadId));
-  // the app on your AppuBot computer (or a team's) is known at once; the computer's own status (`onScreenOnly`)
-  // arrives a moment later, and until then this must not read "your Mac"
-  const remote = useCloudLink((s) => s.computer === 'cloud');
-  const remoteTeam = useCloudLink((s) => s.team);
-  const remoteName = useScreenTitle(remoteTeam);
-  const onScreenOnly = useStore((s) => !!s.computer?.onScreenOnly) || remote;
-  if (!computer) return null;
-  const background = computer.background && !onScreenOnly;
-  // the computer's name as it is: "Sarthak’s Cloud Computer", a team's "Acme Cloud Computer"
-  const machine = remote ? remoteName : THIS_MACHINE;
-  const where = waiting?.app ?? app;
-  const text = wait
-    ? `${botName}: ${screenWaitText({ wait, control, mine: !!control && control.id === mineId, holderBot })}`
-    : waiting
-      ? `${botName} needs ${where ?? 'its window'} in front for a moment, once you pause`
-      : background ? `${botName} is using ${where ?? 'an app'} behind your windows` : `${botName} is using ${where ?? machine}`;
-  if (onScreenOnly) {
-    // the bots' own screen: watch it (and take control) in the screen view; no background mode there
-    return (
-      <motion.div
-        role="status"
-        initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }}
-        transition={{ duration: 0.16, ease: 'easeOut' }}
-        className={NOTICE_LINE}
-      >
-        <Icon icon={wait ? Clock : ComputerUse} size={14} className={cn('shrink-0', wait ? 'text-warning' : 'text-muted')} />
-        <p className="min-w-0 flex-1 truncate text-fg-2" title={text}>{text}</p>
-        <Button size="xs" variant="secondary" icon={Eye} title="Watch the screen; take control from there" onClick={() => openCloudDesktop(useCloudLink.getState().team, { screen: ownScreen })}>
-          Watch
-        </Button>
-      </motion.div>
-    );
-  }
-  return (
-    <motion.div
-      role="status"
-      initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }}
-      transition={{ duration: 0.16, ease: 'easeOut' }}
-      className={NOTICE_LINE}
-    >
-      <Icon icon={waiting ? Clock : ComputerUse} size={14} className={cn('shrink-0', waiting ? 'text-warning' : 'text-muted')} />
-      <p className="min-w-0 flex-1 truncate text-fg-2" title={text}>{text}</p>
-      <Button
-        size="xs" variant="secondary" icon={background ? Eye : undefined}
-        title={background ? 'Bring the window forward so you can watch' : 'Keep using your computer while bots work'}
-        onClick={() => void updateSettings({ computer: { ...computer, background: !background } })}
-      >
-        {background ? 'Watch' : 'Work in background'}
-      </Button>
-    </motion.div>
   );
 }
 
@@ -189,11 +114,6 @@ export function ThreadView() {
   const showAccess = !!bot?.computerUse && computerOn && accessMissing && !lacks.permissions && !dismissed.has('computer');
   // this Mac's own notifications, also with an AppuBot computer on screen (its bots' notices show here)
   const showNotifications = notificationsBlocked && !dismissed.has('notifications');
-  // the bot uses the computer in this thread's turn (it stays this thread's until the turn ends)
-  const usingComputer = useStore((s) => {
-    const on = thread ? threadScreen(s.computer, thread.id) : undefined;
-    return !!thread && computerOn && (on?.activeThreadId === thread.id || !!on?.waits?.some((w) => w.threadId === thread.id));
-  });
   const isEmpty = useStore((s) => {
     if (!thread) return true;
     const c = s.convo[thread.id];
@@ -269,7 +189,7 @@ export function ThreadView() {
   // what the system still has to allow, as pills under the latest message: only under a reply that has finished
   // (never under the working row, a reply still streaming or your own message waiting for one), and only while
   // nothing else is being said
-  const quiet = lastSettled && thread?.status !== 'running' && !docked.length && !elsewhere.length && !cloudNotice && !creditOut && !claudeSetup && !usingComputer && voiceDownload === null;
+  const quiet = lastSettled && thread?.status !== 'running' && !docked.length && !elsewhere.length && !cloudNotice && !creditOut && !claudeSetup && voiceDownload === null;
   // an empty chat has no message to sit under: there they are chips of the landing's own row, after its suggestions
   const landingSetup = quiet && (showAccess || showNotifications) ? (
     <>
@@ -331,13 +251,12 @@ export function ThreadView() {
               <div className="chat-column">
                 <AnimatePresence initial={false}>
                   {elsewhere.length && !docked.length ? <ElsewhereNotice key="elsewhere" requests={elsewhere} /> : null}
-                  {/* one at a time, below what's waiting for the user: approvals, then the bot at work on the computer
+                  {/* one at a time, below what's waiting for the user: approvals first
                       (what the system still has to allow is a row of pills under the latest message: `setupLine`) */}
                   {!docked.length && !elsewhere.length ? (
                     cloudNotice ? <CloudStateNotice key={`cloud-${cloudNotice}`} />
                       : creditOut ? <CreditNotice key="credit" providerId={thread?.providerId} />
                       : claudeSetup ? <ClaudeSetupNotice key="claude-setup" providerId={thread?.providerId ?? bot?.providerId} />
-                      : usingComputer && thread ? <ComputerNotice key="computer" botName={bot.name} threadId={thread.id} />
                       : voiceDownload !== null ? <VoiceDownloadNotice key="voice-download" progress={voiceDownload} />
                         : null
                   ) : null}

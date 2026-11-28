@@ -20,7 +20,7 @@
  *    #tip             appear / hide around the tip; press and hold                            transform, opacity; scale
  * Reduce motion: no loops, wobble, squash or tilt; the glide (it carries information), the ripples and fades stay.
  */
-import { BOT_MOTION, botAvatarLook, botPointerInk, characterKey, type BotAvatarLook, type BotFigure, type RoundRect } from '@appubot/chat-core';
+import { BOT_MOTION, botAvatarLook, botCrownSvg, botPointerInk, characterKey, type BotAvatarLook, type BotFigure, type RoundRect } from '@appubot/chat-core';
 import { BOT_MOTION_CSS, BOT_MOTION_VARS } from '../../renderer/src/components/ui/botAvatarMotion';
 
 /** The avatar's size (px) and how far beside the tip it rides. */
@@ -39,8 +39,9 @@ const rect = (r: RoundRect, fill: string, cls = '') =>
   `<rect${cls ? ` class="${cls}"` : ''} x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" rx="${r.r}" fill="${attr(fill)}"/>`;
 const stops = (c: readonly string[], at: readonly number[]) => c.map((s, i) => `<stop offset="${at[i]}" stop-color="${attr(s)}"/>`).join('');
 
-/** The avatar as SVG markup, the same drawing and layers as the app's BotAvatar.tsx (plus .cb-gaze round the eyes). */
-function avatarSvg(l: BotAvatarLook): string {
+/** The avatar as SVG markup, the same drawing and layers as the app's BotAvatar.tsx (plus .cb-gaze round the eyes); a chief
+ *  wears its crown, seen from the front (chat-core botCrownSvg). */
+function avatarSvg(l: BotAvatarLook, crown: { back: string; front: string } | null): string {
   const g = l.gloss;
   const v = l.visor;
   return `<svg viewBox="0 0 100 100" overflow="visible" class="ab-bot-svg" aria-hidden="true"><defs>`
@@ -48,21 +49,26 @@ function avatarSvg(l: BotAvatarLook): string {
     + `<linearGradient id="cb-glass" x1="0" y1="0" x2="0" y2="1">${stops(l.glass, [0, 1])}</linearGradient>`
     + `<clipPath id="cb-clip"><path d="${attr(l.body)}"/></clipPath><clipPath id="cb-visor">${rect(v, '#000')}</clipPath></defs>`
     + `<g class="ab-bot-joy"><g class="ab-bot-body"><g class="ab-bot-tilt">`
+    + (crown?.back ?? '')
     + (l.outline ? `<path d="${attr(l.body)}" fill="none" stroke="${attr(l.outline)}" stroke-width="3"/>` : '')
     + `<path d="${attr(l.body)}" fill="url(#cb-body)"/>`
     + `<g clip-path="url(#cb-clip)"><ellipse cx="${g.cx}" cy="${g.cy}" rx="${g.rx}" ry="${g.ry}" transform="rotate(${g.rotate} ${g.cx} ${g.cy})" fill="#fff" opacity="${g.opacity}"/></g>`
     + rect(v, 'url(#cb-glass)')
     + `<g class="cb-gaze"><g class="ab-bot-look">${l.eyes.map((e, i) => `<g class="ab-bot-eye ab-bot-eye${i ? 'R' : 'L'}">${rect(e, l.eye, 'ab-bot-pill').replace('/>', ` style="--ab-rx:${e.r};--ab-ry:${e.h / 2}"/>`)}</g>`).join('')}</g></g>`
     + `<g clip-path="url(#cb-visor)"><rect class="ab-bot-sweep" x="${50 - v.h * 0.25}" y="${v.y - 2}" width="${v.h * 0.5}" height="${v.h + 4}" fill="#fff"/></g>`
+    + (crown?.front ?? '')
     + `</g></g></g></svg>`;
 }
 
 /** What the page needs to draw a bot: its avatar's markup, the pointer's gradient (the body's), edge and ripple. */
 export interface CursorLook { key: string; fill: readonly [string, string, string]; edge: string; ripple: string; svg: string; seed: number }
 
-export function cursorLook(o: { figure: BotFigure; color: string; seed: number }): CursorLook {
+export function cursorLook(o: { figure: BotFigure; color: string; seed: number; chief?: boolean }): CursorLook {
   const l = botAvatarLook(o.figure, o.color);
-  return { key: `${typeof o.figure === 'object' ? characterKey(o.figure) : o.figure} ${o.color} ${o.seed}`, fill: l.fill, ...botPointerInk(o.color), svg: avatarSvg(l), seed: o.seed };
+  return {
+    key: `${typeof o.figure === 'object' ? characterKey(o.figure) : o.figure} ${o.color} ${o.seed}${o.chief ? ' chief' : ''}`, fill: l.fill, ...botPointerInk(o.color),
+    svg: avatarSvg(l, o.chief ? botCrownSvg(o.figure) : null), seed: o.seed,
+  };
 }
 
 /* The pointer: an arrow with its tip at (3, 2.3) of its box, so the box sits at (-3, -2) to put the tip on the point. */

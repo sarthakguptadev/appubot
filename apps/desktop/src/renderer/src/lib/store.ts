@@ -25,6 +25,8 @@ export type Modal =
   | { kind: 'new-bot' }
   | { kind: 'teach' }
   | { kind: 'pair' }
+  /** where to get the phone app: a code to scan and the stores' badges (the account menu's Get AppuBot for mobile) */
+  | { kind: 'phone-app' }
   /** the first time an AppuBot computer is on screen here (CloudWelcome: the full-window first visit) */
   | { kind: 'cloud-welcome'; teamName?: string }
   /** a cloud computer refused this one as a device too many: its devices, to remove one (CloudDevicesDialog) */
@@ -354,7 +356,9 @@ export function hydrate(snap: Snapshot): void {
     const selectedBotId = s.selectedBotId && botIds.has(s.selectedBotId) ? s.selectedBotId : (snap.bots[0]?.id ?? null);
     const threads = [...fullThreads(snap.threads, s.threads), ...s.threads.filter((t) => isLocalCopy(t.id))];
     const selectedThreadId = threadFor({ threads, threadPick: s.threadPick }, selectedBotId);
+    const selectedGroupId = s.selectedGroupId && (snap.groups ?? []).some((g) => g.id === s.selectedGroupId) ? s.selectedGroupId : null;
     return {
+      ...panelFor(s, selectedBotId, selectedGroupId),
       hydrated: true,
       bots, threads, providers: snap.providers, devices: snap.devices, settings: snap.settings,
       computer: snap.computer, skills: snap.skills, routines: snap.routines, channels: snap.channels, system: snap.system,
@@ -362,7 +366,7 @@ export function hydrate(snap: Snapshot): void {
       // a (re)connect reads every room again: what was posted while away (the computer restarted, a goal went on)
       groupLoaded: {},
       // a group on screen that this computer doesn't have (another computer's) goes
-      ...(s.selectedGroupId && !(snap.groups ?? []).some((g) => g.id === s.selectedGroupId) ? { selectedGroupId: null } : {}),
+      selectedGroupId,
       pendingPermissions: snap.pendingPermissions.filter((p) => !p.resolvedAt),
       voice: snap.voice ?? null,
       characters: snap.characters ?? [], charactersSupported: snap.characters !== undefined,
@@ -623,14 +627,22 @@ export function updateToast(id: string, patch: Partial<Omit<Toast, 'id' | 'ts'>>
 }
 
 /* ---------- ui actions ---------- */
+/**
+ * The side panel belongs to the chat on screen: showing another bot, or a group's room, closes it, and coming back
+ * finds it closed too. It only opens when asked, for the chat on screen.
+ */
+function panelFor(s: Pick<AppState, 'selectedBotId' | 'selectedGroupId'>, botId: string | null, groupId: string | null): Partial<AppState> {
+  return botId === s.selectedBotId && groupId === s.selectedGroupId ? {} : { rightOpen: false };
+}
+
 export const ui = {
   selectBot(botId: string | null): void {
     // picking a bot is navigation: it leaves settings and the Connect apps popup (and a group's room); it shows the thread you had open there
-    setState((s) => ({ selectedBotId: botId, selectedGroupId: null, selectedThreadId: threadFor(s, botId), settingsSection: null, settingsTarget: null, appsOpen: false }));
+    setState((s) => ({ ...panelFor(s, botId, null), selectedBotId: botId, selectedGroupId: null, selectedThreadId: threadFor(s, botId), settingsSection: null, settingsTarget: null, appsOpen: false }));
   },
   /** Show a group's room in place of the chat (null: back to the bot's chat). */
   selectGroup(groupId: string | null): void {
-    setState({ selectedGroupId: groupId, settingsSection: null, settingsTarget: null, appsOpen: false });
+    setState((s) => ({ ...panelFor(s, s.selectedBotId, groupId), selectedGroupId: groupId, settingsSection: null, settingsTarget: null, appsOpen: false }));
   },
   /** Show one thread of a bot (a Telegram chat too): selects its bot and remembers it as the bot's pick. */
   openThread(threadId: string): void {
@@ -638,6 +650,7 @@ export const ui = {
       const t = s.threads.find((x) => x.id === threadId);
       if (!t) return {};
       return {
+        ...panelFor(s, t.botId, null),
         selectedBotId: t.botId, selectedGroupId: null, selectedThreadId: t.id, threadPick: { ...s.threadPick, [t.botId]: t.id },
         settingsSection: null, settingsTarget: null, appsOpen: false,
       };

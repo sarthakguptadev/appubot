@@ -3,7 +3,7 @@
 import type { LucideIcon } from '../../components/ui/icons';
 import { foldQuery, matchFields, rankGroups, type SearchField, type SearchRange } from '../../components/layout/paletteSearch';
 import type { SettingsSection } from '../../lib/store';
-import { SETTINGS_PAGES, SETTINGS_SEARCH_ENTRIES, settingAnchorId, settingsNavItem, settingsTrail } from './nav';
+import { SETTINGS_PAGES, SETTINGS_SEARCH_ENTRIES, settingAnchorId, settingsPage } from './nav';
 
 export interface SettingRow {
   /** `tab:<page>` or `setting:<page>:<title>` */
@@ -11,7 +11,7 @@ export interface SettingRow {
   icon: LucideIcon;
   label: string;
   section: SettingsSection;
-  /** where it is: its row and tab (`Agents › Usage`); '' for a page that is its own row */
+  /** where it is: the page a setting is on (`Usage`); '' for a page itself */
   trail: string;
   /** the setting's place on its page, scrolled to when picked */
   anchor?: string;
@@ -26,14 +26,16 @@ export function settingRows(): SettingRow[] {
   // a setting named as its own page (Permissions) is that page's row, found by its words too
   const pageEntry = (e: (typeof SETTINGS_SEARCH_ENTRIES)[number]) => SETTINGS_PAGES.some((p) => p.id === e.section && p.label === e.title);
   const tabs: SettingRow[] = SETTINGS_PAGES.map((p) => {
-    const nav = settingsNavItem(p.id).label;
     const own = SETTINGS_SEARCH_ENTRIES.filter((e) => pageEntry(e) && e.section === p.id && e.keywords).map((e) => keywords(e.keywords!));
-    return { key: `tab:${p.id}`, icon: p.icon, label: p.label, section: p.id, trail: nav === p.label ? '' : nav, find: [keywords(p.description, 0.4), ...own] };
+    return { key: `tab:${p.id}`, icon: p.icon, label: p.label, section: p.id, trail: '', find: [keywords(p.description, 0.4), ...own] };
   });
-  const rows: SettingRow[] = SETTINGS_SEARCH_ENTRIES.filter((e) => !pageEntry(e)).map((e) => ({
-    key: `setting:${e.section}:${e.title}`, icon: settingsNavItem(e.section).icon, label: e.title, section: e.section, trail: settingsTrail(e.section),
-    anchor: settingAnchorId(e.title), find: [...(e.keywords ? [keywords(e.keywords)] : []), keywords(settingsTrail(e.section), 0.25)],
-  }));
+  const rows: SettingRow[] = SETTINGS_SEARCH_ENTRIES.filter((e) => !pageEntry(e)).map((e) => {
+    const page = settingsPage(e.section);
+    return {
+      key: `setting:${e.section}:${e.title}`, icon: page.icon, label: e.title, section: e.section, trail: page.label,
+      anchor: settingAnchorId(e.title), find: [...(e.keywords ? [keywords(e.keywords)] : []), keywords(page.label, 0.25)],
+    };
+  });
   return [...tabs, ...rows];
 }
 

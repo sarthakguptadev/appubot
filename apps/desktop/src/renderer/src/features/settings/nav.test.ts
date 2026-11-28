@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { SETTINGS_NAV_GROUPS, SETTINGS_NAV_ITEMS, SETTINGS_PAGES, SETTINGS_SEARCH_ENTRIES, settingAnchorId, settingsNavItem, settingsTrail } from './nav';
+import { SETTINGS_NAV_GROUPS, SETTINGS_NAV_ITEMS, SETTINGS_PAGES, SETTINGS_SEARCH_ENTRIES, VAULT_TITLE, settingAnchorId, settingsNavItem } from './nav';
 import { searchSettings, settingRows } from './settingsSearch';
+import { getState, ui } from '../../lib/store';
 
 /** Settings' search as the overlay and the palette run it: pages and settings, the palette's ranking */
 const rankSettingsSearch = (query: string, limit: number) => searchSettings(settingRows(), query).slice(0, limit).map((r) => ({ section: r.section, title: r.label }));
@@ -12,23 +13,38 @@ describe('settings nav', () => {
     expect(new Set(SETTINGS_NAV_ITEMS.map((s) => s.id)).size).toBe(SETTINGS_NAV_ITEMS.length);
   });
 
-  it('is short: fifteen rows at most, every page in exactly one of them', () => {
-    expect(SETTINGS_NAV_ITEMS.length).toBeLessThanOrEqual(15);
-    const held = SETTINGS_NAV_ITEMS.flatMap((s) => s.pages);
-    expect(new Set(held).size).toBe(held.length);
-    for (const p of SETTINGS_PAGES) if (p.id !== 'computer' || held.includes('computer')) expect(held, p.id).toContain(p.id);
+  it('gives every page a row of its own, in the order of the groups', () => {
+    const rows = SETTINGS_NAV_ITEMS.map((s) => s.id);
+    for (const p of SETTINGS_PAGES) if (p.id !== 'computer' || rows.includes('computer')) expect(rows, p.id).toContain(p.id);
+    expect(rows.length).toBe(SETTINGS_PAGES.length - (rows.includes('computer') ? 0 : 1));
+    const order = SETTINGS_NAV_GROUPS.map((g) => g.id);
+    const groups = SETTINGS_NAV_ITEMS.map((s) => order.indexOf(s.group));
+    expect(groups).toEqual([...groups].sort((a, b) => a - b));
+    // every search entry lands on a page with its own row
+    for (const e of SETTINGS_SEARCH_ENTRIES) if (e.section !== 'computer' || rows.includes('computer')) expect(rows, e.title).toContain(e.section);
   });
 
-  it('keeps every old page id working as a tab of its row', () => {
-    expect(settingsNavItem('usage').id).toBe('providers');
-    expect(settingsNavItem('vault').id).toBe('apps');
-    expect(settingsNavItem('appearance').id).toBe('appearance');
-    expect(settingsNavItem('storage').id).toBe('storage');
-    expect(settingsNavItem('whats-new').id).toBe('about');
-    expect(settingsTrail('usage')).toBe('Agents › Usage');
-    expect(settingsTrail('billing')).toBe('Billing');
-    // every search entry lands on a page some row holds
-    for (const e of SETTINGS_SEARCH_ENTRIES) expect(settingsNavItem(e.section).pages, e.title).toContain(e.section);
+  it('puts the pages that were tabs on rows of their own', () => {
+    const row = (id: string) => SETTINGS_NAV_ITEMS.find((s) => s.id === id);
+    expect(['vault', 'usage', 'instructions', 'permissions', 'whats-new'].map((id) => [row(id)?.id, row(id)?.label])).toEqual([
+      ['vault', 'Vault'], ['usage', 'Usage'], ['instructions', 'Instructions'], ['permissions', 'Permissions'], ['whats-new', 'What’s new'],
+    ]);
+    expect(row('vault')?.icon).toBe(SETTINGS_PAGES.find((p) => p.id === 'vault')?.icon);
+    // Apps › Vault is the Vault row now, About › What’s new the What’s new row
+    expect(settingsNavItem('vault').id).toBe('vault');
+    expect(settingsNavItem('whats-new').id).toBe('whats-new');
+    expect(settingsNavItem('usage').id).toBe('usage');
+  });
+
+  it('opens the old routes on their pages', () => {
+    ui.openSettings('vault', settingAnchorId(VAULT_TITLE));
+    expect([getState().settingsSection, getState().settingsTarget]).toEqual(['vault', 'setting-saved-items']);
+    ui.openSettings('whats-new');
+    expect(getState().settingsSection).toBe('whats-new');
+    // the old Cloud page is Billing
+    ui.openSettings('cloud');
+    expect(getState().settingsSection).toBe('billing');
+    ui.closeSettings();
   });
 
   it('slugs titles into stable anchors', () => {

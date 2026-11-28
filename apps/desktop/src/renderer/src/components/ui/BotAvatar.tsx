@@ -12,22 +12,48 @@
  * and stays happy a while. Every motion turns round the avatar's middle, so it stays centred. Needing you it hops for
  * attention. Pressed it squishes and springs back. `happy` draws the app icon's face (scripts/make-icon.mjs): both eyes closed in a smile, for
  * AppuBot itself. A bot wearing a custom character (`Bot.characterId`, chat-core characters.ts) is drawn as that
- * character, looked up in the store's library; a gone one draws its shape.
+ * character, looked up in the store's library; a gone one draws its shape. A chief (`Bot.chief`) wears a gold crown
+ * (chat-core botCrown.ts), a solid on its head that turns, nods and spins with it (Crown below).
  */
 import { useEffect, useId, useRef, useState, type CSSProperties, type RefObject } from 'react';
 import type { Bot, BotShape } from '@appubot/protocol';
 import {
-  BOT_DOTS, BOT_MIDDLE, BOT_MOTION, botAvatarLook, botGaze, botHandoff, botHead, botMood, botShown, motionSeed, type BotFigure, type BotMood, type RoundRect,
+  BOT_CROWN, BOT_DOTS, BOT_MIDDLE, BOT_MOTION, botAvatarLook, botCrown, botGaze, botHandoff, botHead, botMood, botShown, motionSeed, type BotCrown, type BotFigure, type BotMood, type RoundRect,
 } from '@appubot/chat-core';
 import { useStore } from '../../lib/store';
 import { BOT_MOTION_CSS, BOT_MOTION_VARS } from './botAvatarMotion';
 import { cn } from './cn';
 
-// the motion's keyframes, once per document
+/* The crown's faces as the head turns (Crown below): each face's middle and the way it faces at rest (--ab-cp*, --ab-cn*),
+   turned by the head's --ab-yaw and --ab-pitch as its rotateX(pitch) rotateY(yaw) does (CSS sin() and cos(), so nothing
+   runs in script). A face whose middle is in front
+   of the head's middle draws over the head (.ab-crown-front), one behind it under the head (.ab-crown-back), so the head
+   hides what is round its back; its shade follows how much it faces the light (chat-core crownLight, crownShade). */
+export const CROWN_CSS = (() => {
+  const { light: [lx, ly, lz], shade: { max, lit } } = BOT_CROWN;
+  const Y = 'calc(var(--ab-yaw,0) * 1deg)';
+  const P = 'calc(var(--ab-pitch,0) * 1deg)';
+  return [
+    '.ab-crown{position:absolute;inset:0;display:block;width:100px;height:100px;pointer-events:none}',
+    '.ab-crown-ball{position:absolute;inset:0;display:block;width:100px;height:100px;transform-style:preserve-3d}',
+    '.ab-crown-plane{position:absolute;display:block;backface-visibility:hidden;'
+      + `--ab-czh:calc(var(--ab-cnz) * cos(${Y}) - var(--ab-cnx) * sin(${Y}));`
+      + `--ab-cpz:calc(var(--ab-cpy0) * sin(${P}) + (var(--ab-cpz0) * cos(${Y}) - var(--ab-cpx0) * sin(${Y})) * cos(${P}));`
+      + `--ab-cnzv:calc(var(--ab-cny) * sin(${P}) + var(--ab-czh) * cos(${P}));`
+      + `--ab-clit:calc(${lx} * (var(--ab-cnx) * cos(${Y}) + var(--ab-cnz) * sin(${Y})) + ${ly} * (var(--ab-cny) * cos(${P}) - var(--ab-czh) * sin(${P})) + ${lz} * (var(--ab-cny) * sin(${P}) + var(--ab-czh) * cos(${P})))}`,
+    '.ab-crown-plane>svg{display:block;overflow:visible}',
+    // a face turning edge on fades out rather than leave a sliver
+    '.ab-crown-front .ab-crown-plane{opacity:min(clamp(0,calc(var(--ab-cpz) * 2),1),clamp(0,calc(var(--ab-cnzv) * 5),1))}',
+    '.ab-crown-back .ab-crown-plane{opacity:min(clamp(0,calc(var(--ab-cpz) * -2),1),clamp(0,calc(var(--ab-cnzv) * 5),1))}',
+    `.ab-crown-shade{opacity:clamp(0,calc(${max} * (${lit} - var(--ab-clit))),${max})}`,
+  ].join('\n');
+})();
+
+// the motion's keyframes and the crown's rules, once per document
 if (typeof document !== 'undefined' && !document.getElementById('ab-bot-motion')) {
   const el = document.createElement('style');
   el.id = 'ab-bot-motion';
-  el.textContent = BOT_MOTION_CSS;
+  el.textContent = `${BOT_MOTION_CSS}\n${CROWN_CSS}`;
   document.head.append(el);
 }
 
@@ -165,10 +191,53 @@ function solidFace(look: ReturnType<typeof botAvatarLook>, middle: number): { cx
   };
 }
 
+/** the crown's turn: the head's, without the face's lens (the crown stands out from the ball, seen as it is) */
+const CROWN_TURN = 'rotateX(calc(var(--ab-pitch) * 1deg)) rotateY(calc(var(--ab-yaw) * 1deg))';
+
+/**
+ * The chief's crown as a solid: chat-core's panels on planes round a ring on top of the head, in CSS 3D like the face
+ * (no canvas, nothing running while it is still). Drawn twice, the faces behind the head's middle under the body
+ * (`back`) and the ones in front of it over the face (`front`), each face showing in one of the two (CROWN_CSS).
+ */
+function Crown({ crown: c, layer }: { crown: BotCrown; layer: 'back' | 'front' }) {
+  const C = BOT_CROWN;
+  return (
+    <span className={`ab-crown ab-crown-${layer}`} style={{ perspective: SOLID.lens, perspectiveOrigin: `${c.cx}px ${c.middle}px` }}>
+      <span className="ab-crown-ball" style={{ transformOrigin: `${c.cx}px ${c.middle}px`, transform: CROWN_TURN }}>
+        {c.faces.map((face, i) => {
+          const vars = {
+            '--ab-cpx0': face.p[0], '--ab-cpy0': face.p[1], '--ab-cpz0': face.p[2], '--ab-cnx': face.n[0], '--ab-cny': face.n[1], '--ab-cnz': face.n[2],
+          } as CSSProperties;
+          const parts = (gold: string, band: string) => (
+            <>
+              <path d={c.point} fill={gold} />
+              <rect x={c.band.x} y={c.band.y} width={c.band.w} height={c.band.h} fill={band} />
+              {face.inner ? null : (
+                <>
+                  <circle cx={c.jewel.cx} cy={c.jewel.cy} r={c.jewel.r} fill={C.jewel} />
+                  <circle cx={c.gem.cx} cy={c.gem.cy} r={c.gem.r} fill={C.jewel} />
+                </>
+              )}
+            </>
+          );
+          return (
+            <span key={i} className="ab-crown-plane" style={{ left: c.cx - c.w / 2, top: c.y - c.h, width: c.w, height: c.h, transform: face.at, ...vars }}>
+              <svg viewBox={`0 0 ${c.w} ${c.h}`} width={c.w} height={c.h} aria-hidden>
+                {face.inner ? parts(C.inner, C.inner) : parts(C.gold, C.band)}
+                <g className="ab-crown-shade">{parts('#000', '#000')}</g>
+              </svg>
+            </span>
+          );
+        })}
+      </span>
+    </span>
+  );
+}
+
 export type BotPresence = 'working' | 'needs-you' | null;
 
-export function BotAvatar({ bot, shape: shapeProp, figure: figureProp, color: colorProp, size = 32, presence, mood: moodProp, still, compact, cheer = true, cheerKey, happy, className }: {
-  bot?: Pick<Bot, 'shape' | 'color' | 'characterId'> | null;
+export function BotAvatar({ bot, shape: shapeProp, figure: figureProp, color: colorProp, size = 32, presence, mood: moodProp, still, compact, cheer = true, cheerKey, happy, chief: chiefProp, className }: {
+  bot?: (Pick<Bot, 'shape' | 'color' | 'characterId'> & { chief?: boolean }) | null;
   shape?: BotShape;
   /** what to draw, over the bot's own: a shape or a character (the character picker's previews) */
   figure?: BotFigure;
@@ -189,6 +258,8 @@ export function BotAvatar({ bot, shape: shapeProp, figure: figureProp, color: co
   cheer?: boolean;
   /** cheer once now, and again whenever this changes (the character picker's Happy) */
   cheerKey?: number;
+  /** wear the chief's crown (default: the bot's own `chief`) */
+  chief?: boolean;
   className?: string;
 }) {
   const uid = useId();
@@ -205,12 +276,14 @@ export function BotAvatar({ bot, shape: shapeProp, figure: figureProp, color: co
   const v = look.visor;
   const sphere = figure === 'circle';
   const ball = solidFace(look, middle);
+  const crown = (chiefProp ?? !!bot?.chief) ? botCrown(figure) : null;
   const at = (x: number, y: number): CSSProperties => ({ transformBox: 'view-box', transformOrigin: `${x}px ${y}px` });
   const dot = Math.max(7, Math.round(size * 0.24));
   const style = { width: size, height: size, ...BOT_MOTION_VARS, '--ab-seed': motionSeed(uid), '--ab-cy': middle } as CSSProperties;
   const eyeBox = (e: RoundRect) => `${e.x + e.w / 2 - EYE_BOX / 2} ${e.y + e.h / 2 - EYE_BOX / 2} ${EYE_BOX} ${EYE_BOX}`;
   const surface = (
     <span className="ab-bot-shape">
+      {crown ? <Crown crown={crown} layer="back" /> : null}
       <svg viewBox="0 0 100 100" overflow="visible" className="ab-bot-layer" aria-hidden>
         <defs><clipPath id={`${id}-clip`}><path d={look.body} /></clipPath></defs>
         {look.outline ? <path d={look.body} fill="none" stroke={look.outline} strokeWidth="3" /> : null}
@@ -263,6 +336,7 @@ export function BotAvatar({ bot, shape: shapeProp, figure: figureProp, color: co
         <path d={look.body} fill={`url(#${id}-light)`} />
         <path d={look.body} fill="none" stroke={`url(#${id}-rim)`} strokeWidth="3" clipPath={`url(#${id}-clip)`} />
       </svg>
+      {crown ? <Crown crown={crown} layer="front" /> : null}
     </span>
   );
   return (

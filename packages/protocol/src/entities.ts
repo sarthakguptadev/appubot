@@ -1109,7 +1109,7 @@ export const SettingsSchema = z.object({
    */
   chatView: ChatView.default('answers'),
   /**
-   * Instructions for every bot on this computer (Settings › Agents › Instructions): rendered into each bot's generated
+   * Instructions for every bot on this computer (Settings › Instructions): rendered into each bot's generated
    * CLAUDE.md/AGENTS.md before its own, so a bot's own instructions can refine them. Changing them regenerates every
    * bot's file and restarts its agents (with resume) at their next turn, like editing a bot.
    */

@@ -20,12 +20,13 @@ const SkillDialog = lazyComponent(() => import('../../features/skills/SkillDialo
 const RoutineDialog = lazyComponent(() => import('../../features/routines/RoutineDialog').then((m) => m.RoutineDialog));
 const GroupEditorDialog = lazyComponent(() => import('../../features/groups/GroupEditorDialog').then((m) => m.GroupEditorDialog));
 const PairDialog = lazyComponent(() => import('../../features/settings/PairDialog').then((m) => m.PairDialog));
+const PhoneAppDialog = lazyComponent(() => import('../../features/settings/PhoneApps').then((m) => m.PhoneAppDialog));
 const CloudWelcome = lazyComponent(() => import('../../features/cloud/CloudWelcome').then((m) => m.CloudWelcome));
 const CloudDevicesDialog = lazyComponent(() => import('../../features/cloud/CloudDevicesDialog').then((m) => m.CloudDevicesDialog));
 const AppsDialog = lazyComponent(() => import('../../features/apps/AppsView').then((m) => m.AppsDialog));
 
 export function preloadDialogs(): void {
-  for (const c of [NewBotDialog, TeachDialog, SkillDialog, RoutineDialog, GroupEditorDialog, PairDialog, CloudWelcome, CloudDevicesDialog, AppsDialog]) void c.preload();
+  for (const c of [NewBotDialog, TeachDialog, SkillDialog, RoutineDialog, GroupEditorDialog, PairDialog, PhoneAppDialog, CloudWelcome, CloudDevicesDialog, AppsDialog]) void c.preload();
 }
 
 /** Mounted from the first time `open` is true (its chunk loading meanwhile), and kept so it can close with its motion. */
@@ -104,6 +105,7 @@ export function ModalHost() {
       <OnceOpened open={modal?.kind === 'routine'}><RoutineDialog open={modal?.kind === 'routine'} onClose={close} routineId={modal?.kind === 'routine' ? modal.routineId : undefined} /></OnceOpened>
       <OnceOpened open={modal?.kind === 'group'}><GroupEditorDialog open={modal?.kind === 'group'} onClose={close} groupId={modal?.kind === 'group' ? modal.groupId : undefined} withBotId={modal?.kind === 'group' ? modal.withBotId : undefined} /></OnceOpened>
       <OnceOpened open={modal?.kind === 'pair'}><PairDialog open={modal?.kind === 'pair'} onClose={close} /></OnceOpened>
+      <OnceOpened open={modal?.kind === 'phone-app'}><PhoneAppDialog open={modal?.kind === 'phone-app'} onClose={close} /></OnceOpened>
       <OnceOpened open={appsOpen}><AppsDialog open={appsOpen} onClose={ui.closeApps} /></OnceOpened>
       <QuickSwitcher open={modal?.kind === 'quick'} onClose={close} />
       <ConfirmDialog modal={modal?.kind === 'confirm' ? modal : null} />

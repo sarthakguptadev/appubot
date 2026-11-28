@@ -232,10 +232,11 @@ export class MockGateway implements GatewayLike {
     if (this.opts.thread === 'failed') void openThread(IDS.appuFailed);
     if (this.opts.thread === 'note' || this.opts.thread === 'question' || this.opts.thread === 'waits') void openThread(IDS.appuMidJob);
     if (this.opts.thread === 'handoff') void openThread(IDS.appuHandoff);
+    // the room first: showing it closes the side panel, which the switches below open
+    if (this.opts.groups && !this.opts.bot) ui.selectGroup(GROUP_ID);
     const panel = this.opts.panel;
     if (panel) setState({ rightOpen: true, rightTab: panel });
     if (this.opts.page) ui.openApps(this.opts.page === 'connected' ? 'connected' : 'browse');
-    if (this.opts.groups && !this.opts.bot) ui.selectGroup(GROUP_ID);
     if (this.opts.settings) ui.openSettings(this.opts.settings);
     if (this.opts.threads) {
       ui.markUnread(IDS.appuScreens);

@@ -1,4 +1,4 @@
-// Settings › Agents › Instructions: instructions for every bot on this computer (`settings.globalInstructions`). They
+// Settings › Instructions: instructions for every bot on this computer (`settings.globalInstructions`). They
 // go into each bot's generated CLAUDE.md/AGENTS.md before the bot's own, so a bot's own can refine them; saving
 // regenerates every bot's file and its agents pick the change up at their next turn (the core's BotsService).
 // Drawn in the code view's card like every Markdown field (components/ui MarkdownEditor), the count and the buttons

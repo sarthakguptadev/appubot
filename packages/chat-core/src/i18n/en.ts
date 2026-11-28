@@ -69,7 +69,7 @@ export const en = {
   'settings.page.instructions': 'Instructions',
   'settings.page.instructions.desc': 'What every bot should know and how it should work, on top of its own instructions.',
 
-  // Settings › Agents › Instructions
+  // Settings › Instructions
   'instructions.title': 'Instructions for every bot',
   'instructions.desc': 'Who you are, how you like things done, what to avoid. Every bot gets these before its own instructions, so a bot’s own can refine them. Changes reach the bots at their next message.',
   'instructions.placeholder': 'I’m Sarthak, a product designer in Mumbai. Reply in English, keep it short, use metric units and 24-hour times. Never send emails without showing me the draft first…',

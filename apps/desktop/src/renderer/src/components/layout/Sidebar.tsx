@@ -2,7 +2,7 @@ import { useT } from '../../lib/i18n';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { botThreads, type Bot, type Group, type Thread } from '@appubot/protocol';
 import { GROUP_TILE_MAX, GROUP_TILE_TURN_S, buildRoster, groupTileLayout, rosterPreview, threadTitle } from '@appubot/chat-core';
-import { AppsAdd, ChevronRight, CircleArrowUp, FolderOpen, Gauge, Headset, LogOut, Mail, MessageCircle, Pencil, Pin, Plus, Search, Settings, Smartphone, SquarePen, Trash2, UserPlus, Users } from '../ui/icons';
+import { AppsAdd, ChevronRight, CircleArrowUp, FolderOpen, Headset, LogOut, Mail, MessageCircle, Pencil, Pin, Plus, Search, Settings, Smartphone, SquarePen, Trash2, UserPlus, Users } from '../ui/icons';
 import { BotAvatar, Button, Icon, Menu, Spinner, Tooltip, cn, type BotPresence, type MenuItem } from '../ui';
 import { call, deleteBot, deleteThread, openBot, openBotDetails, openThread, renameThread, setPinned, startThread } from '../../lib/actions';
 import { rpc } from '../../lib/gateway';
@@ -16,7 +16,6 @@ import { UpdateRow } from '../../features/update/UpdateRow';
 import { ComputerMenu } from '../../features/cloud/ComputerMenu';
 import { forgetCloud, useCloudLink } from '../../features/cloud/cloudClient';
 import { paywallStart, signOutOfCloud, useCloud } from '../../features/cloud/cloudAccount';
-import { refreshLimits } from '../../features/providers/useLimits';
 import { emailSupport, openSupport } from '../../features/support/support';
 import { BILLING_PLANS_TITLE, settingAnchorId, teamInviteTarget } from '../../features/settings/nav';
 import { accountPlan } from './accountMenu';
@@ -414,10 +413,10 @@ function ConnectApps() {
 
 /**
  * Who is using AppuBot, at the foot's left: their picture (or initials) and name, signed in; else the Settings gear and
- * its word. Only a lost connection puts a dot on it. It opens the account menu, in three groups: the plan (its name and
- * how much of the agents' plan limits is used, opening Settings › Usage; Upgrade plan, not on the top plan; Invite
- * teammates, on a Work plan you run), then AppuBot on your phone, Support (a chat with us or an email) and Settings,
- * then Log out. The row has no fill of its own, under the pointer, pressed or open (the owner's call, 2026-11-27: "rm
+ * its word. Only a lost connection puts a dot on it. It opens the account menu, in three groups: the plan (Upgrade plan,
+ * not on the top plan; Invite teammates, on a Work plan you run; how much is used lives in Settings › Usage, not here:
+ * the owner's call, 2026-11-28), then AppuBot on your phone (a code to scan and the stores' badges), Support (a chat
+ * with us or an email) and Settings, then Log out. The row has no fill of its own, under the pointer, pressed or open (the owner's call, 2026-11-27: "rm
  * this hover bro on name"). The name is grey at rest and turns white under the pointer and while the menu is open.
  * The picture is the round buttons' size with their edge, centred on their line, so the foot reads as one row of circles.
  */
@@ -425,22 +424,21 @@ function AccountButton({ down }: { down: boolean }) {
   const t = useT();
   const view = useCloud((s) => s.view);
   const supported = useCloud((s) => s.supported !== false);
-  const limits = useStore((s) => s.limits);
   const email = view?.signedIn ? view.account?.email : undefined;
   const name = view?.signedIn ? (view.account?.name ?? email) : undefined;
-  const plan = accountPlan(view, limits);
+  const plan = accountPlan(view);
   const upgrade = () => {
     paywallStart.kind = plan.upgrade ?? 'personal';
     ui.openSettings('billing', plan.name === 'Free' ? settingAnchorId(BILLING_PLANS_TITLE) : undefined);
   };
+  const planRows: MenuItem[] = !supported ? [] : [
+    ...(plan.upgrade ? [{ label: 'Upgrade plan', icon: CircleArrowUp, onSelect: upgrade }] : []),
+    ...(plan.inviteTeam ? [{ label: 'Invite teammates', icon: UserPlus, onSelect: () => ui.openSettings('team', teamInviteTarget(plan.inviteTeam!)) }] : []),
+  ];
   const items: (MenuItem | 'separator')[] = [
-    ...(supported ? [
-      { label: plan.name, icon: Gauge, hint: plan.used === null ? undefined : <span className="text-note text-muted tabular-nums">{plan.used}% used</span>, onSelect: () => ui.openSettings('usage') },
-      ...(plan.upgrade ? [{ label: 'Upgrade plan', icon: CircleArrowUp, onSelect: upgrade }] : []),
-      ...(plan.inviteTeam ? [{ label: 'Invite teammates', icon: UserPlus, onSelect: () => ui.openSettings('team', teamInviteTarget(plan.inviteTeam!)) }] : []),
-      'separator' as const,
-    ] : []),
-    { label: 'Get AppuBot for mobile', icon: Smartphone, onSelect: () => ui.openModal({ kind: 'pair' }) },
+    ...planRows,
+    ...(planRows.length ? ['separator' as const] : []),
+    { label: 'Get AppuBot for mobile', icon: Smartphone, onSelect: () => ui.openModal({ kind: 'phone-app' }) },
     { label: 'Support', icon: Headset, onSelect: () => {}, items: [
       { label: 'Chat with us', icon: MessageCircle, onSelect: openSupport },
       { label: 'Email us', icon: Mail, onSelect: emailSupport },
@@ -458,7 +456,6 @@ function AccountButton({ down }: { down: boolean }) {
         <Tooltip label={down ? t('common.reconnecting') : null} side="top">
           <button
             {...p}
-            onClick={() => { p.onClick(); void refreshLimits('stale'); }}
             type="button"
             aria-label={name ? `${name}, ${t('common.settings')}` : t('common.settings')}
             className="ab-press ab-pill squircle no-drag flex h-[43px] w-full min-w-0 items-center gap-2.5 rounded-row px-1 text-left text-muted outline-none hover:text-fg aria-expanded:text-fg focus-visible:shadow-[inset_0_0_0_2px_var(--ab-ring)]"
