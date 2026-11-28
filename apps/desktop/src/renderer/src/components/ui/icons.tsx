@@ -23,7 +23,7 @@ import {
   ToggleOnIcon, Wrench01Icon, BulbIcon, DashboardSquareAddIcon, DashboardSpeed02Icon, CircleArrowUp01Icon, CustomerSupportIcon,
   KeyboardIcon, Navigation03Icon, SquareTerminalIcon, TextWrapIcon, FileEmpty02Icon, ViewIcon, ViewOffSlashIcon,
   MusicNote01Icon, Video01Icon, Message01Icon, Mail01Icon, MicOff02Icon, AudioLinesIcon, SourceCodeIcon,
-  CloudIcon, ScrollTextIcon, MinusSignIcon, UserGroupIcon, UserIcon, UserAdd01Icon, Crown02Icon,
+  CloudIcon, ScrollTextIcon, MinusSignIcon, UserGroupIcon, UserIcon, UserAdd01Icon,
 } from '@hugeicons/core-free-icons';
 
 export { HugeiconsIcon, type IconSvgElement };
@@ -243,7 +243,6 @@ export const Cloud = createIcon(CloudIcon, 'Cloud');
 export const Minus = createIcon(MinusSignIcon, 'Minus');
 export const Users = createIcon(UserGroupIcon, 'Users');
 /** a chief bot */
-export const Crown = createIcon(Crown02Icon, 'Crown');
 export const User = createIcon(UserIcon, 'User');
 export const UserPlus = createIcon(UserAdd01Icon, 'UserPlus');
 export const ScrollText = createIcon(ScrollTextIcon, 'ScrollText');
