@@ -9,6 +9,36 @@ import type { ReleaseNotes } from './whatsNew';
  */
 export const RELEASES: readonly ReleaseNotes[] = [
   {
+    version: '2026.1128.3',
+    features: [
+      {
+        id: 'chief-crown',
+        title: 'A crown for your chief',
+        description: 'Your chief bot wears a gold crown on its avatar, in the app, on its cursor and as its Telegram picture. In the app the crown turns with the bot’s head.',
+      },
+      {
+        id: 'settings-own-pages',
+        title: 'Settings pages of their own',
+        description: 'Vault, Usage, Instructions, Permissions and What’s new each have their own entry in the Settings sidebar instead of sitting behind tabs on another page.',
+      },
+      {
+        id: 'side-panel-per-bot',
+        title: 'The side panel stays where you left it',
+        description: 'Opening the side panel on one bot no longer opens it on every bot. Switching bots closes it, and it stays closed when you come back.',
+      },
+      {
+        id: 'phone-app-code',
+        title: 'Get AppuBot on your phone',
+        description: 'Get AppuBot for mobile in the account menu shows a code to scan with your phone’s camera, with the App Store and Google Play buttons under it.',
+      },
+      {
+        id: 'tidier-menus',
+        title: 'A tidier account menu, chat and About',
+        description: 'The account menu no longer shows your plan’s usage (Settings › Usage has it), the “is using an app” bar above the message box is gone, and Settings › About shows the app’s name, version and update status in a cleaner card.',
+      },
+    ],
+  },
+  {
     version: '2026.1128.2',
     features: [
       {
