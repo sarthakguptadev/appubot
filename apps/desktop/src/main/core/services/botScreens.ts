@@ -7,8 +7,9 @@
  * - A bot's first computer step starts its screen (or a viewer opening it does), and that bot's steps go to its own
  *   ComputerService from then on: its own Take control, no turns with other bots.
  * - There is no cap: every bot gets its screen. One that can't start (the host says why in the log, say the memory ran
- *   out) leaves the bot on the main screen for that turn, taking turns there as every bot did before. A turn that
- *   started on the main screen stays there until it ends, so its windows don't move away from it mid-task.
+ *   out) leaves the bot on the computer's own screen for that turn, taking turns there as every bot did before. A
+ *   turn that started on the computer's own screen stays there until it ends, so its windows don't move away from it
+ *   mid-task.
  * - A screen nobody used for SCREEN_SLEEP_MS (no step, no turn on it, nobody in control or watching) sleeps: its
  *   display stops (the apps on it close; what they keep on disk, like the browser's logins, stays). The next use
  *   starts it again.
@@ -44,8 +45,8 @@ interface Entry {
 
 export class BotScreens {
   private screens = new Map<string, Entry>();
-  /** turns that started on the main screen (no room for their own): they stay there until they end */
-  private onMain = new Set<string>();
+  /** turns that started on the computer's own screen (no room for their own): they stay there until they end */
+  private onShared = new Set<string>();
   private timer: ReturnType<typeof setInterval> | null = null;
   private offs: (() => void)[] = [];
   /** overrides SCREEN_SLEEP_MS (tests) */
@@ -64,7 +65,7 @@ export class BotScreens {
     this.offs.push(this.ctx.bus.on((e) => {
       if (e.event === 'bot.deleted') void this.forget((e.payload as { id: string }).id);
     }));
-    this.ctx.s.chat.onTurnCompleted((e) => { this.onMain.delete(e.threadId); });
+    this.ctx.s.chat.onTurnCompleted((e) => { this.onShared.delete(e.threadId); });
   }
 
   /** the bots' screens, for the computer's status */
@@ -93,16 +94,16 @@ export class BotScreens {
     return [...this.screens.values()].flatMap((e) => (e.state === 'on' && e.computer ? [e.computer] : []));
   }
 
-  /** The screen a thread's bot works on: its own, else the main one (no room, no host, no such thread). */
+  /** The screen a thread's bot works on: its own, else the computer's own (no room, no host, no such thread). */
   async forThread(threadId: string | undefined): Promise<ComputerService> {
-    const main = this.ctx.s.computer;
-    if (!this.host || !threadId || this.onMain.has(threadId)) return main;
+    const shared = this.ctx.s.computer;
+    if (!this.host || !threadId || this.onShared.has(threadId)) return shared;
     const botId = this.ctx.s.threads.get(threadId)?.botId;
-    if (!botId) return main;
+    if (!botId) return shared;
     const own = await this.open(botId);
     if (own) return own;
-    this.onMain.add(threadId);
-    return main;
+    this.onShared.add(threadId);
+    return shared;
   }
 
   /** A bot's own screen, started when it sleeps; null when it couldn't start. */
@@ -128,7 +129,7 @@ export class BotScreens {
         this.ctx.log.info(`bot screens: ${botId}'s screen is up`);
         return c;
       } catch (err) {
-        this.ctx.log.warn(`bot screens: ${botId}'s screen could not start; it uses the main screen`, errMsg(err));
+        this.ctx.log.warn(`bot screens: ${botId}'s screen could not start; it uses the computer's own screen`, errMsg(err));
         entry.state = 'asleep';
         await entry.computer?.sleep().catch(() => undefined);
         await host.close(botId, { forget: false }).catch(() => undefined);

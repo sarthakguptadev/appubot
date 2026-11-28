@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { currentChat, type PermissionRequest } from '@appubot/protocol';
-import { screenWaitText, threadScreen, threadTitle } from '@appubot/chat-core';
+import { screenWaitText, threadScreen, threadScreenBot, threadTitle } from '@appubot/chat-core';
 import { Bell, Clock, ComputerUse, Eye, MonitorSmartphone, Plus, ShieldQuestion } from '../../components/ui/icons';
 import { Button, EmptyState, Icon, cn } from '../../components/ui';
 import { openThread, sendMessage } from '../../lib/actions';
@@ -90,6 +90,8 @@ function ComputerNotice({ botName, threadId }: { botName: string; threadId: stri
     return t ? s.bots.find((b) => b.id === t.botId)?.name : undefined;
   });
   const mineId = useCloudDesktop((s) => s.control);
+  // the bot's own screen while it works there: Watch opens that one
+  const ownScreen = useStore((s) => threadScreenBot(s.computer, threadId));
   // the app on your AppuBot computer (or a team's) is known at once; the computer's own status (`onScreenOnly`)
   // arrives a moment later, and until then this must not read "your Mac"
   const remote = useCloudLink((s) => s.computer === 'cloud');
@@ -117,7 +119,7 @@ function ComputerNotice({ botName, threadId }: { botName: string; threadId: stri
       >
         <Icon icon={wait ? Clock : ComputerUse} size={14} className={cn('shrink-0', wait ? 'text-warning' : 'text-muted')} />
         <p className="min-w-0 flex-1 truncate text-fg-2" title={text}>{text}</p>
-        <Button size="xs" variant="secondary" icon={Eye} title="Watch the screen; take control from there" onClick={() => openCloudDesktop(useCloudLink.getState().team)}>
+        <Button size="xs" variant="secondary" icon={Eye} title="Watch the screen; take control from there" onClick={() => openCloudDesktop(useCloudLink.getState().team, { screen: ownScreen })}>
           Watch
         </Button>
       </motion.div>

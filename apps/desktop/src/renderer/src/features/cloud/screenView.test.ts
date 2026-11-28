@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CONTROL_IDLE_MS } from '@appubot/protocol';
-import { DEFAULT_SCREEN, VIEWER_HEADER_H, VIEWER_MARGIN, VIEWER_PILL_H, botScreenLine, controlUntil, fitScreen, fullRoom, localControl, mayStream, popupSize, screenCaption, screenCard, screenUrl, shortcutKeysym } from './screenView';
+import { DEFAULT_SCREEN, NO_SCREEN_CLOSE, VIEWER_HEADER_H, VIEWER_MARGIN, VIEWER_PILL_H, controlUntil, fitScreen, fullRoom, localControl, mayStream, screenCard, screenRefused, screenUrl, shortcutKeysym } from './screenView';
 
 describe('a bot’s own screen', () => {
   it('asks the screen port for that screen, keeping the signed link’s own query', () => {
@@ -9,16 +9,16 @@ describe('a bot’s own screen', () => {
     expect(screenUrl(link, 'bot_ada')).toBe('wss://ab12cd34ef-6080.agent37.app/websockify?a37_token=t0k&screen=bot_ada');
   });
 
-  it('says what the screen is doing in a few words', () => {
-    expect(botScreenLine(undefined)).toBe('Asleep');
-    expect(botScreenLine({ botId: 'b', state: 'starting', busy: false })).toBe('Starting…');
-    expect(botScreenLine({ botId: 'b', state: 'asleep', busy: false })).toBe('Asleep');
-    expect(botScreenLine({ botId: 'b', state: 'on', busy: true })).toBe('Working');
-    expect(botScreenLine({ botId: 'b', state: 'on', busy: false, activeThreadId: 't' })).toBe('Working');
-    expect(botScreenLine({ botId: 'b', state: 'on', busy: false })).toBe('Idle');
-    const control = { id: 'c', name: 'Sam', via: 'desktop' as const, since: 0, expiresAt: 1, left: 1 };
-    expect(botScreenLine({ botId: 'b', state: 'on', busy: true, control })).toBe('Sam has control');
+  it('fails at once with the computer’s reason when the screen can’t start, and reconnects after any other close', () => {
+    expect(screenRefused(NO_SCREEN_CLOSE, 'This bot’s screen couldn’t start. Try again in a moment.')).toBe('This bot’s screen couldn’t start. Try again in a moment.');
+    expect(screenRefused(NO_SCREEN_CLOSE, undefined)).toBe('This bot’s screen couldn’t start.');
+    expect(screenRefused(NO_SCREEN_CLOSE, '  ')).toBe('This bot’s screen couldn’t start.');
+    expect(screenRefused(1006, 'whatever')).toBeNull();
+    expect(screenRefused(1000, undefined)).toBeNull();
+    // the card shows it as a screen that can't be reached, with Try again
+    expect(screenCard({ cloud: 'running', conn: 'connected', phase: 'failed', why: screenRefused(NO_SCREEN_CLOSE, undefined)! })).toMatchObject({ kind: 'unreachable', line: 'This bot’s screen couldn’t start.' });
   });
+
 });
 
 describe('the Computer tab’s card', () => {
@@ -55,10 +55,6 @@ describe('the Computer tab’s card', () => {
     expect(mayStream({ cloud: 'running', conn: 'unauthorized' })).toBe(false);
   });
 
-  it('names the bot using it, else the computer', () => {
-    expect(screenCaption({ computer: 'Your AppuBot computer', botName: 'Ada' })).toBe('Ada is using it');
-    expect(screenCaption({ computer: 'Your AppuBot computer' })).toBe('Your AppuBot computer');
-  });
 });
 
 describe('control held here (a computer without the control channel)', () => {
@@ -122,25 +118,6 @@ describe('⌘ shortcuts on the computer', () => {
     expect(shortcutKeysym('MetaLeft')).toBeNull();
   });
 });
-
-describe('popupSize', () => {
-  it('opens as a popup of at most 70% of the window, the screen in its own shape, with room on every side', () => {
-    const p = popupSize({ w: 1440, h: 900 }, { w: 1440, h: 900 });
-    expect(p.w).toBeLessThanOrEqual(1440 * 0.7);
-    expect(1440 - p.w).toBeGreaterThanOrEqual(96);
-    expect(900 - p.h).toBeGreaterThanOrEqual(96);
-    const screen = { w: p.w - 2 * VIEWER_MARGIN, h: p.h - VIEWER_HEADER_H - VIEWER_PILL_H - 2 * VIEWER_MARGIN };
-    expect(Math.abs(screen.w / screen.h - 1.6)).toBeLessThan(0.01);
-  });
-
-  it('is held by the height in a short window and scales with the window', () => {
-    const short = popupSize({ w: 1920, h: 700 }, { w: 1920, h: 1080 });
-    expect(700 - short.h).toBeGreaterThanOrEqual(96);
-    expect(short.w).toBeLessThan(1920 * 0.7);
-    expect(popupSize({ w: 1920, h: 1080 }, undefined).w).toBeGreaterThan(popupSize({ w: 1440, h: 900 }, undefined).w);
-  });
-});
-
 
 describe('full size', () => {
   it('is the whole window less its top row, 28px at each side and 12px at the foot, the screen letterboxed in its shape', () => {

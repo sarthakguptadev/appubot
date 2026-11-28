@@ -11,7 +11,7 @@
  *               ?threads=1 (the thread switcher open, one of Appu's older threads unread)
  *               ?unread=1 (Ledger pinned, its GSTR-1 reply not seen yet: the tile's blue dot, the chat's NEW line)
  *               ?editor=1 (the bot's side panel open on Details, where it is set up)
- *               ?botscreens=1 (your AppuBot computer's bots with screens of their own: a bot's Computer tab, the viewer's switcher)
+ *               ?botscreens=1 (your AppuBot computer's bots with screens of their own: a bot's Computer tab opens its own)
  *               ?characters=off|fail|worn (a computer without characters / Generate failing / Ledger wearing one)
  *               ?cloud=signed-out|no-plan|sold-out|provisioning|running|asleep|waking|on-hold|past-due|ending|scheduled|export-only|failed|suspended
  *               (AppuBot Cloud's account, dev/mockCloud.ts; &on=cloud starts on the cloud computer's bots, &catalog=0 hides the plans' prices,

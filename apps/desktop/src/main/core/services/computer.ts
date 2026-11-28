@@ -70,9 +70,9 @@ function unavailableMsg(): string {
 export interface OwnScreen {
   botId: string;
   importCua?: CoreDeps['importCua'];
-  /** this screen's status changed (the main screen's status lists the bots' screens) */
+  /** this screen's status changed (the computer's own screen's status lists the bots' screens) */
   onStatus: () => void;
-  /** the computer's own pause (the main screen's) holds every screen */
+  /** the computer's own pause (its own screen's) holds every screen */
   paused: () => boolean;
 }
 
