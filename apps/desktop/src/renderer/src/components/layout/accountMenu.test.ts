@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import type { CloudAccountView, CloudComputer, CloudPlanId, CloudSubscription, CloudTeamView, CloudWorkPlanId, ProviderLimits } from '@appubot/protocol';
+import type { CloudAccountView, CloudComputer, CloudPlanId, CloudSubscription, CloudTeamView, CloudWorkPlanId } from '@appubot/protocol';
 import { accountPlan } from './accountMenu';
 
 const NOW = Date.now();
@@ -20,38 +20,27 @@ function view(o: { plan?: CloudPlanId; teams?: CloudTeamView[]; signedIn?: boole
     ...(o.teams ? { teams: o.teams } : {}),
   };
 }
-const limits = (...used: number[]): ProviderLimits[] => [{
-  providerId: 'claude-code', status: 'ok', source: 'claude', updatedAt: NOW,
-  windows: used.map((u, i) => ({ id: `w${i}`, label: 'Week', usedPercent: u, scope: { kind: 'all' as const } })),
-}];
 
 describe('the account menu’s plan', () => {
-  it('names your plan and the most used of your plan limits, and offers the next plan', () => {
-    expect(accountPlan(view({ plan: 'pro' }), limits(13.2, 4))).toEqual({ name: 'Pro', used: 13, upgrade: 'personal', inviteTeam: null });
+  it('names your plan and offers the next one', () => {
+    expect(accountPlan(view({ plan: 'pro' }))).toEqual({ name: 'Pro', upgrade: 'personal', inviteTeam: null });
   });
 
-  it('says Free with no percentage when there is no plan and nothing read, and Upgrade opens the plans', () => {
-    expect(accountPlan(view(), [])).toEqual({ name: 'Free', used: null, upgrade: 'personal', inviteTeam: null });
-    expect(accountPlan(view(), limits(40)).used).toBeNull();
-    expect(accountPlan(null, [])).toMatchObject({ name: 'Free', upgrade: 'personal' });
+  it('says Free when there is no plan, and Upgrade opens the plans', () => {
+    expect(accountPlan(view())).toEqual({ name: 'Free', upgrade: 'personal', inviteTeam: null });
+    expect(accountPlan(null)).toMatchObject({ name: 'Free', upgrade: 'personal' });
   });
 
   it('hides Upgrade on the top plan of each kind', () => {
-    expect(accountPlan(view({ plan: 'ultra' }), []).upgrade).toBeNull();
-    expect(accountPlan(view({ teams: [team('acme', 'scale', true)] }), []).upgrade).toBeNull();
+    expect(accountPlan(view({ plan: 'ultra' })).upgrade).toBeNull();
+    expect(accountPlan(view({ teams: [team('acme', 'scale', true)] })).upgrade).toBeNull();
   });
 
   it('offers Invite teammates only on a Work plan you run', () => {
-    expect(accountPlan(view({ teams: [team('acme', 'team', true)] }), [])).toMatchObject({ name: 'Team', upgrade: 'work', inviteTeam: 'acme' });
-    expect(accountPlan(view({ teams: [team('acme', 'team', false)] }), [])).toMatchObject({ name: 'Team', upgrade: null, inviteTeam: null });
-    expect(accountPlan(view({ teams: [team('acme', undefined, true)] }), []).inviteTeam).toBeNull();
-    expect(accountPlan(view({ plan: 'max', teams: [team('beta', 'business', true)] }), [])).toMatchObject({ name: 'Max', upgrade: 'personal', inviteTeam: 'beta' });
-  });
-
-  it('caps a limit run past its cap at 100% and leaves out agents signed out or unread', () => {
-    expect(accountPlan(view({ plan: 'pro' }), limits(130)).used).toBe(100);
-    const out = [{ ...limits(90)[0]!, status: 'signed_out' }] as ProviderLimits[];
-    expect(accountPlan(view({ plan: 'pro' }), out).used).toBeNull();
+    expect(accountPlan(view({ teams: [team('acme', 'team', true)] }))).toMatchObject({ name: 'Team', upgrade: 'work', inviteTeam: 'acme' });
+    expect(accountPlan(view({ teams: [team('acme', 'team', false)] }))).toMatchObject({ name: 'Team', upgrade: null, inviteTeam: null });
+    expect(accountPlan(view({ teams: [team('acme', undefined, true)] })).inviteTeam).toBeNull();
+    expect(accountPlan(view({ plan: 'max', teams: [team('beta', 'business', true)] }))).toMatchObject({ name: 'Max', upgrade: 'personal', inviteTeam: 'beta' });
   });
 });
 
