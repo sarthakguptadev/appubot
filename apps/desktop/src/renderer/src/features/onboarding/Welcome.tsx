@@ -58,7 +58,7 @@ export function Welcome({ onNext }: { onNext: () => void }) {
             </Standing>
           ))}
           <Standing size={132} x={0} delay={0.05}>
-            <BotAvatar bot={appu} color={appu ? undefined : '#FF7A1F'} size={132} cheerKey={cheer} />
+            <BotAvatar bot={appu} color={appu ? undefined : '#E87031'} size={132} cheerKey={cheer} />
           </Standing>
         </div>
         <motion.h1 {...reveal(0.35)} className="mt-9 font-display text-[46px] leading-[1.05] font-medium tracking-display text-fg">

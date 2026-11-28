@@ -200,7 +200,7 @@ export function botShapesOf(system: { botShapes?: readonly string[] } | null | u
   return BotShape.options.filter((s) => listed.includes(s));
 }
 /** Avatar palette for bots (blob colours). */
-export const BOT_COLORS = ['#FF4A5A', '#FF7A1F', '#FFA826', '#16C47A', '#1FBFAE', '#2E8EFF', '#9A68FF', '#FF4FA8', '#A0764F', '#8E8E93'] as const;
+export const BOT_COLORS = ['#FF4A5A', '#E87031', '#FFA826', '#16C47A', '#1FBFAE', '#2E8EFF', '#9A68FF', '#FF4FA8', '#A0764F', '#8E8E93'] as const;
 /** The palette's names, in order (what a bot calls its colours; any #RRGGBB works too). */
 export const BOT_COLOR_NAMES = ['red', 'orange', 'yellow', 'green', 'teal', 'blue', 'purple', 'pink', 'brown', 'grey'] as const;
 

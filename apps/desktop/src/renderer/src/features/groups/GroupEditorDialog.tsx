@@ -2,7 +2,8 @@
 // and who leads it: a chief member (the user's messages go to the lead, who hands work out with @Name), or nobody
 // (every member answers the user). Settings' cards: the name, a switch per bot, the lead as a row with its menu.
 import { useEffect, useState, type FormEvent } from 'react';
-import { ChevronDown, Crown } from '../../components/ui/icons';
+import { CHIEF_BADGE } from '@appubot/chat-core';
+import { ChevronDown, Star } from '../../components/ui/icons';
 import { BotAvatar, Button, CardRow, CardSection, Dialog, FIELD_HINT, Icon, Menu, SettingsCard, Switch, cn } from '../../components/ui';
 import { useStore } from '../../lib/store';
 import { createGroup, updateGroup } from './groups';
@@ -71,7 +72,7 @@ export function GroupEditorDialog({ open, onClose, groupId, withBotId }: { open:
                 <span className="flex min-w-0 flex-1 flex-col">
                   <span className="flex items-center gap-1.5 text-copy font-medium text-fg">
                     {b.name}
-                    {b.chief ? <span className="inline-flex items-center gap-0.5 text-[11px] font-normal text-muted"><Icon icon={Crown} size={11} />Chief</span> : null}
+                    {b.chief ? <span className="inline-flex items-center gap-0.5 text-[11px] font-normal text-muted"><span className="inline-flex" style={{ color: CHIEF_BADGE.gold }}><Icon icon={Star} size={11} /></span>Chief</span> : null}
                   </span>
                   {b.job ? <span className="truncate text-note text-muted">{b.job}</span> : null}
                 </span>

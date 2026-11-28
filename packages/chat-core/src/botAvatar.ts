@@ -9,7 +9,7 @@
 import type { BotShape } from '@appubot/protocol';
 import { BOT_BASE } from './botMotion';
 import { characterBox, type CharacterFigure } from './characters';
-import { botCrownSvg } from './botCrown';
+import { CHIEF_BADGE, chiefBadgeSvg } from './chiefBadge';
 
 type Pt = readonly [number, number];
 const f = (n: number) => +n.toFixed(2);
@@ -85,7 +85,7 @@ export const BOT_BODY: Readonly<Record<BotShape, string>> = {
   diamond: roundedPolygon([[50, 4], [96, 50], [50, 96], [4, 50]], 16),
   bell: 'M50 8C70 8 79 24 79 44V64Q79 73 89 79V86H11V79Q21 73 21 64V44C21 24 30 8 50 8Z',
   mushroom: 'M8 54A42 38 0 0 1 92 54Q92 62 84 62H67V84A9 9 0 0 1 58 93H42A9 9 0 0 1 33 84V62H16Q8 62 8 54Z',
-  // a round face with two round ears, traced as one outline: left ear, the crown, right ear, then round the face
+  // a round face with two round ears, traced as one outline: left ear, the top of the head, right ear, then round the face
   bear: 'M15 39A14 14 0 1 1 37 22.5Q50 19 63 22.5A14 14 0 1 1 85 39A42 38 0 1 1 15 39Z',
 };
 
@@ -270,11 +270,10 @@ export function sentBubble(color: string): { fill: string; ink: string } {
 /**
  * The avatar at rest as a standalone SVG (`size`px square): the bot centred on a soft tint of its colour with room
  * all round, so a round crop (Telegram's profile photo) never cuts into it. No motion, no ids that could clash. A chief
- * wears its crown (botCrown.ts), seen from the front.
+ * wears its badge (chiefBadge.ts), ringed in the tint behind it.
  */
 export function botAvatarSvg(figure: BotFigure, color: string, size = 640, chief = false): string {
   const look = botAvatarLook(figure, color);
-  const crown = chief ? botCrownSvg(figure) : null;
   const g = look.gloss;
   const rr = (r: RoundRect, fill: string) => `<rect x="${f(r.x)}" y="${f(r.y)}" width="${f(r.w)}" height="${f(r.h)}" rx="${f(r.r)}" fill="${fill}"/>`;
   const bg: readonly [string, string] = [mixHex(color, '#ffffff', 0.86), mixHex(color, '#ffffff', 0.7)];
@@ -287,12 +286,11 @@ export function botAvatarSvg(figure: BotFigure, color: string, size = 640, chief
     + '</defs>'
     + '<rect width="100" height="100" fill="url(#bg)"/>'
     + '<g transform="translate(15 15) scale(0.7)">'
-    + (crown?.back ?? '')
     + (look.outline ? `<path d="${look.body}" fill="none" stroke="${look.outline}" stroke-width="3"/>` : '')
     + `<path d="${look.body}" fill="url(#body)"/>`
     + (g.opacity <= 0 ? '' : `<g clip-path="url(#clip)"><ellipse cx="${f(g.cx)}" cy="${f(g.cy)}" rx="${f(g.rx)}" ry="${f(g.ry)}" transform="rotate(${g.rotate} ${f(g.cx)} ${f(g.cy)})" fill="#fff" opacity="${g.opacity}"/></g>`)
     + rr(look.visor, 'url(#glass)')
     + look.eyes.map((e) => rr(e, look.eye)).join('')
-    + (crown?.front ?? '')
+    + (chief ? chiefBadgeSvg(mixHex(bg[0], bg[1], (15 + 0.7 * CHIEF_BADGE.cy) / 100)) : '')
     + '</g></svg>';
 }

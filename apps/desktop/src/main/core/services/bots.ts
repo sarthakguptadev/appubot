@@ -18,7 +18,7 @@ import { checkCreditPick, isAppubotAi } from './credit';
 /** What the user calls this computer ("Mac", "PC", "computer"), in the bots' instructions and prompts. */
 const MACHINE = machineName(process.platform);
 
-export const DEFAULT_BOT = { name: 'Appu', emoji: '🪔', color: '#FF7A1F', shape: 'circle', job: `General assistant on this ${MACHINE}` } as const;
+export const DEFAULT_BOT = { name: 'Appu', emoji: '🪔', color: '#E87031', shape: 'circle', job: `General assistant on this ${MACHINE}` } as const;
 
 /** A new bot gets a random blob look unless one is given. */
 function randomLook(): { color: string; shape: BotShape } {

@@ -255,7 +255,7 @@ function mainThread(opts: MockOptions): Message[] {
           form: {
             kind: 'bot', fields: [],
             bot: {
-              action: 'update', name: 'Appu', color: '#FF7A1F', shape: 'circle', self: true,
+              action: 'update', name: 'Appu', color: '#E87031', shape: 'circle', self: true,
               changes: [
                 { label: 'Permissions', value: 'Full access: runs everything without asking', was: 'Approve for me', grants: true },
                 { label: 'Apps', value: 'Gmail', grants: true },

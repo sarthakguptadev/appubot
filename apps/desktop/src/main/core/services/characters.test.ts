@@ -110,8 +110,8 @@ describe('the library', () => {
     const worn = photoKey({ shape: 'hex', color: '#FF7A1F', characterId: c.id }, c);
     expect(worn).toMatch(new RegExp(`^v2c:${c.id}:`));
     expect(photoKey({ shape: 'hex', color: '#FF7A1F', characterId: c.id }, { ...c, face: { ...c.face, s: 0.4 } })).not.toBe(worn);
-    // a chief's picture wears its crown: a new key, so its Telegram bot gets the new picture; other bots' keys stay
-    expect(photoKey({ shape: 'hex', color: '#FF7A1F', chief: true })).toBe('v3:chief:v2:hex:#ff7a1f');
+    // a chief's picture wears its badge: a new key, so its Telegram bot gets the new picture; other bots' keys stay
+    expect(photoKey({ shape: 'hex', color: '#FF7A1F', chief: true })).toBe('v4:chief:v2:hex:#ff7a1f');
     expect(photoKey({ shape: 'hex', color: '#FF7A1F', chief: false })).toBe(plain);
   });
 });
