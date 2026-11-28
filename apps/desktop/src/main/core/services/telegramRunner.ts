@@ -283,7 +283,7 @@ export class TelegramRunner {
     const photo = photoKey(bot, typeof figure === 'object' ? figure : null);
     const draw = this.ctx.deps.svgToJpeg;
     if (done.photo !== photo && draw && await step('photo', async () => {
-      const jpeg = await draw(botAvatarSvg(figure, bot.color, PHOTO_PX), PHOTO_PX);
+      const jpeg = await draw(botAvatarSvg(figure, bot.color, PHOTO_PX, bot.chief), PHOTO_PX);
       await tg.api.setMyProfilePhoto({ type: 'static', photo: new InputFile(jpeg, 'avatar.jpg') });
     })) done.photo = photo;
     // still the same Telegram bot: keep what went through (no event: the app never shows this)

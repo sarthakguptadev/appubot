@@ -72,10 +72,13 @@ export const telegramAbout = (bot: Pick<Bot, 'name' | 'job'>): string => bot.job
 /**
  * Changes when the avatar would look different (bump the version when the drawing does): the shape and colour, or the
  * character it wears (its id and a hash of its drawing) and the colour. v2: the flat avatar (chat-core `BOT_FLAT`,
- * 2026-11-11).
+ * 2026-11-11). v3: a chief wears its crown (chat-core botCrown.ts, 2026-11-28); other bots' pictures didn't change, so
+ * their keys stay.
  */
-export const photoKey = (bot: Pick<Bot, 'shape' | 'color' | 'characterId'>, figure?: CharacterFigure | null): string =>
-  figure && bot.characterId ? `v2c:${bot.characterId}:${characterKey(figure)}:${bot.color.toLowerCase()}` : `v2:${bot.shape}:${bot.color.toLowerCase()}`;
+export const photoKey = (bot: Pick<Bot, 'shape' | 'color' | 'characterId'> & { chief?: boolean }, figure?: CharacterFigure | null): string => {
+  const key = figure && bot.characterId ? `v2c:${bot.characterId}:${characterKey(figure)}:${bot.color.toLowerCase()}` : `v2:${bot.shape}:${bot.color.toLowerCase()}`;
+  return bot.chief ? `v3:chief:${key}` : key;
+};
 export const PHOTO_PX = 640;
 
 /** A turn Telegram started: where its reply (and what it asks on the way) goes. */

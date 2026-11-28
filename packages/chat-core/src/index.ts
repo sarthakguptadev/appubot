@@ -29,6 +29,7 @@ export * from './routineRuns';
 export * from './suggestions';
 export * from './followUps';
 export * from './botAvatar';
+export * from './botCrown';
 export * from './botMotion';
 export * from './characters';
 export * from './reactions';

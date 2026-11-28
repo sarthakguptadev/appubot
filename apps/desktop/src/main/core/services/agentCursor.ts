@@ -53,7 +53,7 @@ export interface AgentCursorHost {
    * Show the cursor as this bot (its avatar's look; `seed` offsets its loops), in the `rest` mood. A hidden cursor
    * pops in at the user's pointer; a showing one keeps its place.
    */
-  show(o: { figure: BotFigure; color: string; seed: number }): void;
+  show(o: { figure: BotFigure; color: string; seed: number; chief?: boolean }): void;
   /** Glide to a point in GLOBAL screen points (any display); resolves when the pointer arrives. */
   moveTo(x: number, y: number, durationMs: number): Promise<void>;
   react(kind: CursorReaction): void;
@@ -215,11 +215,11 @@ export class AgentCursorController {
     this.listen();
     // the shape, or the character it wears (a gone one: the shape)
     const figure = botFigure(bot, this.ctx.s.characters?.list());
-    const key = `${bot.id} ${typeof figure === 'object' ? characterKey(figure) : figure} ${bot.color}`;
+    const key = `${bot.id} ${typeof figure === 'object' ? characterKey(figure) : figure} ${bot.color}${bot.chief ? ' chief' : ''}`;
     if (key !== this.drawn) {
       this.drawn = key;
       this.mood = 'rest';
-      this.host!.show({ figure, color: bot.color, seed: motionSeed(bot.id) });
+      this.host!.show({ figure, color: bot.color, seed: motionSeed(bot.id), chief: bot.chief });
     }
     return true;
   }

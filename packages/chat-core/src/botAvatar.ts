@@ -9,6 +9,7 @@
 import type { BotShape } from '@appubot/protocol';
 import { BOT_BASE } from './botMotion';
 import { characterBox, type CharacterFigure } from './characters';
+import { botCrownSvg } from './botCrown';
 
 type Pt = readonly [number, number];
 const f = (n: number) => +n.toFixed(2);
@@ -268,10 +269,12 @@ export function sentBubble(color: string): { fill: string; ink: string } {
 
 /**
  * The avatar at rest as a standalone SVG (`size`px square): the bot centred on a soft tint of its colour with room
- * all round, so a round crop (Telegram's profile photo) never cuts into it. No motion, no ids that could clash.
+ * all round, so a round crop (Telegram's profile photo) never cuts into it. No motion, no ids that could clash. A chief
+ * wears its crown (botCrown.ts), seen from the front.
  */
-export function botAvatarSvg(figure: BotFigure, color: string, size = 640): string {
+export function botAvatarSvg(figure: BotFigure, color: string, size = 640, chief = false): string {
   const look = botAvatarLook(figure, color);
+  const crown = chief ? botCrownSvg(figure) : null;
   const g = look.gloss;
   const rr = (r: RoundRect, fill: string) => `<rect x="${f(r.x)}" y="${f(r.y)}" width="${f(r.w)}" height="${f(r.h)}" rx="${f(r.r)}" fill="${fill}"/>`;
   const bg: readonly [string, string] = [mixHex(color, '#ffffff', 0.86), mixHex(color, '#ffffff', 0.7)];
@@ -284,10 +287,12 @@ export function botAvatarSvg(figure: BotFigure, color: string, size = 640): stri
     + '</defs>'
     + '<rect width="100" height="100" fill="url(#bg)"/>'
     + '<g transform="translate(15 15) scale(0.7)">'
+    + (crown?.back ?? '')
     + (look.outline ? `<path d="${look.body}" fill="none" stroke="${look.outline}" stroke-width="3"/>` : '')
     + `<path d="${look.body}" fill="url(#body)"/>`
     + (g.opacity <= 0 ? '' : `<g clip-path="url(#clip)"><ellipse cx="${f(g.cx)}" cy="${f(g.cy)}" rx="${f(g.rx)}" ry="${f(g.ry)}" transform="rotate(${g.rotate} ${f(g.cx)} ${f(g.cy)})" fill="#fff" opacity="${g.opacity}"/></g>`)
     + rr(look.visor, 'url(#glass)')
     + look.eyes.map((e) => rr(e, look.eye)).join('')
+    + (crown?.front ?? '')
     + '</g></svg>';
 }
