@@ -195,7 +195,7 @@ export function mockGroupMessages(film = false): GroupMessage[] {
 /* ---------- entities ---------- */
 const bots: Bot[] = [
   {
-    id: IDS.appu, slug: 'appu', name: 'Appu', emoji: '🪔', color: '#FF7A1F', shape: 'circle', job: 'Your teammate on this Mac',
+    id: IDS.appu, slug: 'appu', name: 'Appu', emoji: '🪔', color: '#E87031', shape: 'circle', job: 'Your teammate on this Mac',
     instructions: 'You are Appu, Sarthak\'s helpful teammate on his Mac. Be concise, ask before deleting anything, and keep invoices in ~/AppuBot/appu/invoices.',
     providerId: 'claude-code', modelId: 'sonnet', modeId: 'auto', effort: 'medium', fast: false, workspace: APPU_WS, computerUse: true, autoApprove: 'safe', appsOff: [], pinned: true, chief: true,
     createdAt: ago(40 * DAY), updatedAt: ago(2 * DAY),

@@ -52,7 +52,7 @@ export function DoneStep({ onBack, onFinish, finishing, onCloud, trialDays = 0 }
       body={bot ? <>{bot.name} is ready. Try one of these, or just say hi.</> : 'Try one of these, or just say hi.'}
       hero={
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.25, 1, 0.5, 1] }} className="mb-7">
-          <BotAvatar bot={bot} color={bot ? undefined : '#FF7A1F'} size={96} cheerKey={cheer} />
+          <BotAvatar bot={bot} color={bot ? undefined : '#E87031'} size={96} cheerKey={cheer} />
         </motion.div>
       }
       onBack={onBack}

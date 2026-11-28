@@ -10,9 +10,9 @@ const f = (n: number) => +n.toFixed(2);
 
 export const CHIEF_BADGE = {
   /** the disc's fill */
-  gold: '#F0A030',
+  gold: '#E9993A',
   /** the star's */
-  star: '#FFFFFF',
+  star: '#F5F5F5',
   /** the disc's middle and radius: 32% of the avatar wide, its ring reaching the box's bottom-right corner */
   cx: 81,
   cy: 81,

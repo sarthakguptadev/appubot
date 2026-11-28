@@ -48,7 +48,7 @@ export function FollowStep({ onNext, onBack }: { onNext: () => void; onBack: () 
         <div className="relative px-5 pb-5">
           <div className="-mt-9 flex items-end justify-between">
             <span className="flex size-[76px] items-center justify-center rounded-full bg-[#141414] ring-4 ring-[var(--ab-surface)]">
-              <BotAvatar color="#FF7A1F" size={52} happy still />
+              <BotAvatar color="#E87031" size={52} happy still />
             </span>
             <button
               type="button" onClick={follow}

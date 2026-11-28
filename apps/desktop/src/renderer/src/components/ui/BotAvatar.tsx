@@ -2,7 +2,7 @@
  * Bot avatar: a body in the bot's colour wearing a dark visor with two eyes. The geometry and colours are chat-core's
  * (botAvatarLook), the motion too (botMotion.ts, shared with the phone: its state machine, poses and tracks, as CSS
  * from botAvatarMotion.ts plus botAvatar.css; the agent cursor's overlay uses them as well), measured from a
- * reference recording, drawn as a solid (solidFace below: the round bot a shaded ball, other shapes a shaded volume, the visor and eyes
+ * reference recording, drawn as a solid (solidFace below: the round bot a ball, other shapes a volume, one flat colour with no shading, the visor and eyes
  * on its surface in CSS 3D, turned and nodded by the motion's yaw and pitch, going right round the back on a spin and
  * over the top on a flip): resting it sits still, upright and facing you, and when the pointer comes near it turns its head toward it and follows it with its eyes; a turn that starts makes its eyes big; thinking, it turns away and collapses into three
  * dots that light up in turn (in small places, `compact`, it stays itself, its eyes as at rest, and turns its head to
@@ -145,8 +145,6 @@ const LENS = +((SOLID.lens - SOLID.r) / SOLID.lens).toFixed(4);
 const TURN = `scale3d(${LENS}, ${LENS}, 1) rotateX(calc(var(--ab-pitch) * 1deg)) rotateY(calc(var(--ab-yaw) * 1deg))`;
 /** the box an eye is drawn in, on its plane (room for the look and the round eyes) */
 const EYE_BOX = 28;
-/** the light over the body (and face): stops of [offset, ink, opacity] */
-const SHADE: readonly (readonly [number, string, number])[] = [[0, '#fff', 0.3], [0.4, '#fff', 0.07], [0.62, '#fff', 0], [0.86, '#000', 0.07], [1, '#000', 0.22]];
 
 function solidFace(look: ReturnType<typeof botAvatarLook>, middle: number): { cx: number; strips: { w: number; from: number; at: string }[]; eyes: string[] } {
   const { r, strips: n, overlap } = SOLID;
@@ -258,20 +256,6 @@ export function BotAvatar({ bot, shape: shapeProp, figure: figureProp, color: co
           </span>
         </span>
       </span>
-      {/* the light: brighter up to the left, a little darker round the edge, a soft rim low on the right */}
-      <svg viewBox="0 0 100 100" overflow="visible" className="ab-bot-layer" aria-hidden>
-        <defs>
-          <radialGradient id={`${id}-light`} cx="0.5" cy="0.5" r="0.5" fx="0.36" fy="0.3">
-            {SHADE.map(([at, ink, a]) => <stop key={at} offset={at} stopColor={ink} stopOpacity={a} />)}
-          </radialGradient>
-          <linearGradient id={`${id}-rim`} x1="0.2" y1="0.1" x2="0.85" y2="0.95">
-            <stop offset="0.6" stopColor="#fff" stopOpacity="0" />
-            <stop offset="1" stopColor="#fff" stopOpacity="0.32" />
-          </linearGradient>
-        </defs>
-        <path d={look.body} fill={`url(#${id}-light)`} />
-        <path d={look.body} fill="none" stroke={`url(#${id}-rim)`} strokeWidth="3" clipPath={`url(#${id}-clip)`} />
-      </svg>
     </span>
   );
   return (
