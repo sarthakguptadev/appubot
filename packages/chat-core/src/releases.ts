@@ -9,6 +9,21 @@ import type { ReleaseNotes } from './whatsNew';
  */
 export const RELEASES: readonly ReleaseNotes[] = [
   {
+    version: '2026.1128.4',
+    features: [
+      {
+        id: 'chief-star-badge',
+        title: 'A gold star for your chief',
+        description: 'Your chief bot wears a small gold badge with a white star on the corner of its avatar, in the app, on its cursor and as its Telegram picture. It replaces the crown.',
+      },
+      {
+        id: 'flat-bots',
+        title: 'A cleaner look for your bots',
+        description: 'Bots are now one flat colour, with no shading, and still turn, nod and move in 3D as before. New bots’ orange is a slightly deeper shade.',
+      },
+    ],
+  },
+  {
     version: '2026.1128.3',
     features: [
       {
