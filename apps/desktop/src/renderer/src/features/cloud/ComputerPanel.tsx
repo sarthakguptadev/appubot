@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { CloudRepairKind } from '@appubot/protocol';
 import { REPAIR_OPTIONS, UNREACHABLE_FIX_HINT, WATCHING_KEEPS_AWAKE, unreachableFixes } from '@appubot/chat-core';
-import { Cloud, Hand, Maximize2, Moon, RefreshCw, RotateCw, Wrench } from '../../components/ui/icons';
+import { Cloud, Maximize2, Moon, RefreshCw, RotateCw, Wrench } from '../../components/ui/icons';
 import { Button, Icon, Spinner, cn } from '../../components/ui';
 import { useStore } from '../../lib/store';
 import { startCloud, useCloud } from './cloudAccount';
@@ -10,19 +10,16 @@ import { cloudPhase, teamAsView, type CloudPhase } from './cloudView';
 import { ScreenSurface, openCloudDesktop, useScreenTitle } from './DesktopView';
 import { RepairDialog } from './FixComputer';
 import { releaseScreen, retryScreen, useCloudDesktop, useScreen, wantScreen } from './screenSession';
-import { botScreenLine, mayStream, screenCaption, screenCard, type ScreenCard, type ScreenPhase } from './screenView';
+import { mayStream, screenCard, type ScreenCard, type ScreenPhase } from './screenView';
 
 /*
  * The side panel's Computer tab (only while the app is on your AppuBot computer or a team's: watching this Mac from
- * itself makes no sense): a small live picture of the computer's screen (16:10, one picture a second
- * at the cheapest quality: `screenSession.ts` paces it) with a line under it (which bot is using it now, else whose
- * computer it is), and its states: waking up, asleep (Wake), connecting, live, can't reach (the Fix your computer
- * choices). View only; a click opens the full-screen viewer (`DesktopView`), where Take control is. It streams only
- * while this tab shows in an open panel and the window is visible, and never wakes a sleeping computer by itself.
- * Where bots have screens of their own (the computer's status lists `screens`), a bot's Computer tab is that bot's
- * own screen (after the reference's "Bot's computer"): opening the tab starts it if it sleeps, the line under it says what
- * the bot is doing there, and Take control and Full size open the viewer on it. The viewer's switcher still shows
- * the computer's main screen and the other bots'.
+ * itself makes no sense): a small live picture of the screen (16:10, one picture a second at the cheapest quality:
+ * `screenSession.ts` paces it), nothing under it, and its states: waking up, asleep (Wake), connecting, live, can't
+ * reach (the Fix your computer choices). View only; a click opens the full-screen viewer (`DesktopView`) straight
+ * away, where Take control is. It streams only while this tab shows in an open panel and the window is visible, and
+ * never wakes a sleeping computer by itself. Where bots have screens of their own (the computer's status lists
+ * `screens`), a bot's Computer tab is that bot's screen: opening the tab starts it if it sleeps.
  */
 
 /** dev: `?screen=asleep|waking|connecting|live|reconnecting|paused|unreachable` shows that state (the browser mock has no screen) */
@@ -52,16 +49,9 @@ export function ComputerPanel() {
   const [woke, setWoke] = useState(false);
   const allowed = !MOCK && (woke || mayStream({ cloud, conn: link.conn, linkError: link.error }));
   const title = useScreenTitle(link.team);
-  // a bot's own screen, where bots have them (a group's room shows the computer's main screen)
+  // a bot's own screen, where bots have them (a group's room shows the computer's own)
   const bot = useStore((s) => (s.computer?.screens && s.selectedGroupId === null ? s.bots.find((b) => b.id === s.selectedBotId) : undefined));
-  const own = useStore((s) => (bot ? s.computer?.screens?.find((x) => x.botId === bot.id) : undefined));
   const screen = bot?.id;
-  // the bot using it now: the one holding the screen (bots take turns on it), else the one acting
-  const botName = useStore((s) => {
-    const threadId = s.computer?.screenThreadId ?? (s.computer?.busy ? s.computer.activeThreadId : undefined);
-    const t = threadId ? s.threads.find((x) => x.id === threadId) : undefined;
-    return t ? s.bots.find((b) => b.id === t.botId)?.name : undefined;
-  });
 
   useEffect(() => {
     if (!visible || !allowed) return;
@@ -76,7 +66,7 @@ export function ComputerPanel() {
   const [fixing, setFixing] = useState<CloudRepairKind | null>(null);
   const cardRef = useRef<HTMLDivElement | null>(null);
   const canExpand = card.kind === 'live' || card.kind === 'reconnecting' || card.kind === 'connecting' || card.kind === 'waking';
-  const expand = (control = false) => openCloudDesktop(link.team, { screen, control, from: cardRef.current?.getBoundingClientRect() });
+  const expand = () => openCloudDesktop(link.team, { screen, from: cardRef.current?.getBoundingClientRect() });
 
   const wake = () => {
     setWoke(true);
@@ -123,22 +113,6 @@ export function ComputerPanel() {
           ) : null}
           {card.kind !== 'live' && card.kind !== 'reconnecting' ? <CardState card={card} onWake={wake} onRetry={tryAgain} /> : null}
         </div>
-        {bot ? (
-          <>
-            <p className="mt-2.5 flex items-center justify-center gap-1.5 truncate text-center text-copy text-muted">
-              {own && (own.busy || own.activeThreadId) ? <span aria-hidden className="size-1.5 shrink-0 animate-pulse rounded-full bg-success" /> : null}
-              <span className="truncate">{bot.name}’s own screen · {botScreenLine(own)}</span>
-            </p>
-            {canExpand ? (
-              <div className="mt-3 flex justify-center gap-2">
-                <Button size="sm" variant="secondary" icon={Hand} onClick={() => expand(true)}>Take control</Button>
-                <Button size="sm" variant="outline" icon={Maximize2} onClick={() => expand()}>Full size</Button>
-              </div>
-            ) : null}
-          </>
-        ) : (
-          <p className="mt-2.5 truncate text-center text-copy text-muted">{screenCaption({ computer: title, botName })}</p>
-        )}
 
         {fixes.length ? (
           <div className="mt-5 flex flex-col items-center gap-2.5 text-center">

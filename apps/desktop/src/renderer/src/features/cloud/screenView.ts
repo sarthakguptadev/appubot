@@ -1,4 +1,4 @@
-import { CONTROL_IDLE_MS, type BotScreen, type ScreenControl } from '@appubot/protocol';
+import { CONTROL_IDLE_MS, type ScreenControl } from '@appubot/protocol';
 import type { CloudPhase } from './cloudView';
 import type { QualityLevels } from './desktopQuality';
 
@@ -70,24 +70,6 @@ export function screenRefused(code: number, said: string | undefined): string | 
 }
 
 /**
- * What a bot's own screen is doing, in a few words (the bot's Computer tab, the viewer's switcher): who has control,
- * else working, else its state. Never started yet reads as asleep: it starts with its first step, or when opened.
- */
-export function botScreenLine(s: BotScreen | undefined): string {
-  if (!s) return 'Asleep';
-  if (s.control) return `${s.control.name} has control`;
-  if (s.state === 'starting') return 'Starting…';
-  if (s.state === 'asleep') return 'Asleep';
-  if (s.busy || s.activeThreadId) return 'Working';
-  return 'Idle';
-}
-
-/** Under the preview: which bot is using it now, else whose computer it is. */
-export function screenCaption(o: { computer: string; botName?: string }): string {
-  return o.botName ? `${o.botName} is using it` : o.computer;
-}
-
-/**
  * Control held by this viewer alone, on a computer that doesn't speak the control channel (from before it): the
  * viewer just lets its input through, and gives it back after CONTROL_IDLE_MS without input, as the computer would.
  */
@@ -103,31 +85,15 @@ export function controlUntil(lastInput: number): number {
 /** the full viewer's layout, in CSS pixels: the room around the screen, the pill under it and the gap between */
 export const VIEWER_MARGIN = 12;
 export const VIEWER_PILL_H = 40;
-/** the panel's top row (the computer's name and ✕) */
+/** the viewer's top row (✕) */
 export const VIEWER_HEADER_H = 44;
-/** full size: the viewer is the whole window, the screen this far from its sides and the pill this far from its foot */
+/** the viewer is the whole window: the screen this far from its sides and the pill this far from its foot */
 export const VIEWER_FULL = { side: 28, bottom: 12 } as const;
-/** the popup it opens as: at most this share of the window's width, and at least this much of the dimmed app on every side */
-export const VIEWER_POPUP = { widthShare: 0.7, edge: 48 } as const;
-
-/**
- * The popup's size in a window of `win`: the screen in its own shape (`fb`, else 1440×900) as large as fits in
- * `VIEWER_POPUP`'s share of the window, plus the popup's own top row, pill and margins around it. Whole pixels.
- */
 /** The room for the screen and the pill at full size in a window of `win`: the window less the top row and the edges. */
 export function fullRoom(win: { w: number; h: number }): { w: number; h: number } {
   return { w: Math.max(0, win.w - 2 * VIEWER_FULL.side), h: Math.max(0, win.h - VIEWER_HEADER_H - VIEWER_FULL.bottom) };
 }
 
-export function popupSize(win: { w: number; h: number }, fb: { w: number; h: number } | undefined): { w: number; h: number } {
-  const s = fb && fb.w > 0 && fb.h > 0 ? fb : DEFAULT_SCREEN;
-  const chromeW = 2 * VIEWER_MARGIN;
-  const chromeH = VIEWER_HEADER_H + VIEWER_PILL_H + 2 * VIEWER_MARGIN;
-  const maxW = Math.min(win.w * VIEWER_POPUP.widthShare, win.w - 2 * VIEWER_POPUP.edge);
-  const maxH = win.h - 2 * VIEWER_POPUP.edge;
-  const screenW = Math.max(0, Math.min(maxW - chromeW, ((maxH - chromeH) * s.w) / s.h));
-  return { w: Math.floor(screenW + chromeW), h: Math.floor((screenW * s.h) / s.w + chromeH) };
-}
 /** the shape a screen is drawn in before its size is known (the cloud computer's own 1440×900) */
 export const DEFAULT_SCREEN = { w: 1440, h: 900 } as const;
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CONTROL_IDLE_MS, CONTROL_WARN_MS, type ScreenControl } from '@appubot/protocol';
-import { controlDeadline, controlNote, controlPill, screenWaitText, threadScreen } from './screenControl';
+import { controlDeadline, controlNote, controlPill, screenWaitText, threadScreen, threadScreenBot } from './screenControl';
 
 const ctl = (o: Partial<ScreenControl> = {}): ScreenControl => ({ id: 'ctl_1', name: 'Sam’s iPhone', via: 'live', since: 0, expiresAt: CONTROL_IDLE_MS, left: CONTROL_IDLE_MS, ...o });
 
@@ -54,5 +54,11 @@ describe('the screen a chat’s bot works on', () => {
     expect(threadScreen(st, 'thr_main')).toBe(st);
     expect(threadScreen(main, 'thr_a')).toBe(main);
     expect(threadScreen(null, 'thr_a')).toBeUndefined();
+    // a chat's Watch opens the screen its bot works or waits on
+    expect(threadScreenBot(st, 'thr_a')).toBe(st.screens![0]!.botId);
+    expect(threadScreenBot(st, 'thr_b')).toBe(st.screens![1]!.botId);
+    expect(threadScreenBot(st, 'thr_main')).toBeUndefined();
+    expect(threadScreenBot(main, 'thr_a')).toBeUndefined();
+    expect(threadScreenBot(null, 'thr_a')).toBeUndefined();
   });
 });

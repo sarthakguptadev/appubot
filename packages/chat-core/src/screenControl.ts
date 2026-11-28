@@ -14,8 +14,16 @@ import { CONTROL_WARN_MS, type ComputerStatus, type ScreenControl, type ScreenWa
  */
 export function threadScreen(st: ComputerStatus | null | undefined, threadId: string | undefined): Pick<ComputerStatus, 'activeThreadId' | 'waits' | 'control'> | undefined {
   if (!st) return undefined;
-  const own = threadId ? st.screens?.find((x) => x.activeThreadId === threadId || !!x.waits?.some((w) => w.threadId === threadId)) : undefined;
-  return own ?? st;
+  return ownScreen(st, threadId) ?? st;
+}
+
+/** The bot whose own screen a thread works or waits on (a chat's Watch opens that one); undefined: the computer's own. */
+export function threadScreenBot(st: ComputerStatus | null | undefined, threadId: string | undefined): string | undefined {
+  return st ? ownScreen(st, threadId)?.botId : undefined;
+}
+
+function ownScreen(st: ComputerStatus, threadId: string | undefined) {
+  return threadId ? st.screens?.find((x) => x.activeThreadId === threadId || !!x.waits?.some((w) => w.threadId === threadId)) : undefined;
 }
 
 export type ControlAction = 'take' | 'give' | 'keep';
