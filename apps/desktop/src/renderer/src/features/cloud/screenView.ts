@@ -58,6 +58,17 @@ export function screenUrl(websocketUrl: string, screen: string | undefined): str
   return u.toString();
 }
 
+/** the screen port's close when the screen asked for can't be had (the cloud gateway's NO_SCREEN_CLOSE) */
+export const NO_SCREEN_CLOSE = 4404;
+
+/**
+ * A closed socket that is a failure to show at once, with Try again, rather than a drop to reconnect after: the bot's
+ * screen couldn't start (the computer says why just before closing). Null: reconnect as usual.
+ */
+export function screenRefused(code: number, said: string | undefined): string | null {
+  return code === NO_SCREEN_CLOSE ? said?.trim() || 'This bot’s screen couldn’t start.' : null;
+}
+
 /**
  * What a bot's own screen is doing, in a few words (the bot's Computer tab, the viewer's switcher): who has control,
  * else working, else its state. Never started yet reads as asleep: it starts with its first step, or when opened.

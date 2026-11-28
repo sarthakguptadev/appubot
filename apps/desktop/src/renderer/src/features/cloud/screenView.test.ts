@@ -1,12 +1,22 @@
 import { describe, expect, it } from 'vitest';
 import { CONTROL_IDLE_MS } from '@appubot/protocol';
-import { DEFAULT_SCREEN, VIEWER_HEADER_H, VIEWER_MARGIN, VIEWER_PILL_H, botScreenLine, controlUntil, fitScreen, fullRoom, localControl, mayStream, popupSize, screenCaption, screenCard, screenUrl, shortcutKeysym } from './screenView';
+import { DEFAULT_SCREEN, NO_SCREEN_CLOSE, VIEWER_HEADER_H, VIEWER_MARGIN, VIEWER_PILL_H, botScreenLine, controlUntil, fitScreen, fullRoom, localControl, mayStream, popupSize, screenCaption, screenCard, screenRefused, screenUrl, shortcutKeysym } from './screenView';
 
 describe('a bot’s own screen', () => {
   it('asks the screen port for that screen, keeping the signed link’s own query', () => {
     const link = 'wss://ab12cd34ef-6080.agent37.app/websockify?a37_token=t0k';
     expect(screenUrl(link, undefined)).toBe(link);
     expect(screenUrl(link, 'bot_ada')).toBe('wss://ab12cd34ef-6080.agent37.app/websockify?a37_token=t0k&screen=bot_ada');
+  });
+
+  it('fails at once with the computer’s reason when the screen can’t start, and reconnects after any other close', () => {
+    expect(screenRefused(NO_SCREEN_CLOSE, 'This bot’s screen couldn’t start. Try again in a moment.')).toBe('This bot’s screen couldn’t start. Try again in a moment.');
+    expect(screenRefused(NO_SCREEN_CLOSE, undefined)).toBe('This bot’s screen couldn’t start.');
+    expect(screenRefused(NO_SCREEN_CLOSE, '  ')).toBe('This bot’s screen couldn’t start.');
+    expect(screenRefused(1006, 'whatever')).toBeNull();
+    expect(screenRefused(1000, undefined)).toBeNull();
+    // the card shows it as a screen that can't be reached, with Try again
+    expect(screenCard({ cloud: 'running', conn: 'connected', phase: 'failed', why: screenRefused(NO_SCREEN_CLOSE, undefined)! })).toMatchObject({ kind: 'unreachable', line: 'This bot’s screen couldn’t start.' });
   });
 
   it('says what the screen is doing in a few words', () => {

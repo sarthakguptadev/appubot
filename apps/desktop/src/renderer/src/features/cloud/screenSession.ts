@@ -5,7 +5,7 @@ import { errorMessage } from '../../lib/gateway';
 import { pushToast } from '../../lib/store';
 import { desktopLink, useCloud } from './cloudAccount';
 import { RECONNECT_GIVE_UP, autoStart, rateOver, reconnectDelayMs, stepQuality, type AutoState } from './desktopQuality';
-import { CLIPBOARD_MAX, PREVIEW_LEVELS, PREVIEW_PACE_MS, XK_CONTROL_L, controlUntil, localControl, screenUrl, shortcutKeysym, type ScreenPhase } from './screenView';
+import { CLIPBOARD_MAX, PREVIEW_LEVELS, PREVIEW_PACE_MS, XK_CONTROL_L, controlUntil, localControl, screenRefused, screenUrl, shortcutKeysym, type ScreenPhase } from './screenView';
 import { ViewerChannel } from './viewerChannel';
 import { ScreenWants } from './screenWants';
 
@@ -286,6 +286,14 @@ function lost(message: string): void {
   reconnectTimer = setTimeout(() => { reconnectTimer = null; void fetchLink(); }, reconnectDelayMs(failures));
 }
 
+/** the screen can't be had: say why at once, with Try again (`retryScreen`), instead of reconnecting in vain */
+function refuse(why: string): void {
+  if (!running) return;
+  dispose();
+  set({ phase: 'failed', why, mine: false, control: null });
+  useCloudDesktop.setState({ control: undefined });
+}
+
 function pause(): void {
   keepLastFrame();
   if (useScreen.getState().mine) giveBack();
@@ -338,6 +346,10 @@ async function connect(link: CloudDesktopLink, my: number): Promise<void> {
   // channel (who has control; this view's input reaches the screen only while it has it)
   const sock = new WebSocket(screenUrl(link.websocketUrl, runningScreen));
   socket = sock;
+  // a bot's screen that couldn't start: the computer says why, then closes for good (before noVNC hears the close)
+  let said: string | undefined;
+  let refused: string | null = null;
+  sock.addEventListener('close', (e) => { if (my === gen) refused = screenRefused(e.code, said); });
   sock.addEventListener('message', (e) => {
     const bytes = e.data instanceof ArrayBuffer ? e.data.byteLength : typeof e.data === 'string' ? e.data.length : 0;
     samples.push({ at: Date.now(), bytes });
@@ -362,7 +374,9 @@ async function connect(link: CloudDesktopLink, my: number): Promise<void> {
     if (client) client.viewOnly = !m.mine;
     if (m.mine) client?.focus();
     if (m.mine && !had) void sendMacClipboard();
-    if (m.error) pushToast({ title: 'Couldn’t take control', body: m.error, level: 'warning' });
+    // before the picture, an error is the screen's own (it couldn't start); once live, it's about taking control
+    if (m.error && useScreen.getState().phase === 'connected') pushToast({ title: 'Couldn’t take control', body: m.error, level: 'warning' });
+    else if (m.error) said = m.error;
   });
   channel = ch;
   const full = useScreen.getState().full;
@@ -404,6 +418,7 @@ async function connect(link: CloudDesktopLink, my: number): Promise<void> {
   });
   c.addEventListener('disconnect', (e) => {
     if (my !== gen) return;
+    if (refused) { refuse(refused); return; }
     const clean = !!(e as CustomEvent<{ clean: boolean }>).detail?.clean;
     lost(clean ? 'Your AppuBot computer closed the connection.' : 'The connection to your AppuBot computer dropped.');
   });
