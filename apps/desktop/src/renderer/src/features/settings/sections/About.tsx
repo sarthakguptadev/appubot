@@ -10,8 +10,7 @@ import { restartToUpdate } from '../../update/restartToUpdate';
 import { native } from '../../../lib/native';
 import { CREDITS_TITLE, LINKS_TITLE, settingAnchorId } from '../nav';
 import { CreditsDialog } from '../CreditsDialog';
-import { useCloudVersion, useThisComputer, type ThisComputer } from '../../cloud/thisComputer';
-import { SETTINGS_ROW, SETTINGS_ROW_DESCRIPTION, SETTINGS_ROW_TITLE, SettingRow, SettingsCard, SettingsGroup } from './shared';
+import { SETTINGS_ROW, SettingRow, SettingsCard, SettingsGroup } from './shared';
 
 /** Where AppuBot lives outside the app (the same as the website's); a row may carry more than one link. */
 const LINKS: { title: string; description: string; links: { label: string; url: string }[] }[] = [
@@ -56,24 +55,10 @@ function UpdateButton({ update }: { update: AppUpdateStatus | undefined }) {
   );
 }
 
-/**
- * The AppuBot computer on screen, under the app's own lines: its version as the account knows it (the one Fix your
- * computer shows; the number its own gateway reports is an internal one) and that nobody has to update it.
- */
-function cloudLine(computer: ThisComputer, v: { version?: number; latestVersion?: number; upToDate?: boolean }): string {
-  if (v.version === undefined) return `${computer.cap} updates by itself.`;
-  if (v.upToDate === false && v.latestVersion !== undefined && v.latestVersion !== v.version) {
-    return `${computer.cap} is on version ${v.version} and moves to ${v.latestVersion} by itself.`;
-  }
-  return `${computer.cap} is on version ${v.version}${v.upToDate ? ', the newest' : ''}. It updates by itself.`;
-}
-
 export function AboutSection() {
   // the app's own version and update are this Mac's, also with an AppuBot computer on screen (lib/thisMac.ts): the
   // app has to update there too, and it used to show no status and no button
-  const computer = useThisComputer();
   const update = useAppUpdate();
-  const cloud = useCloudVersion();
   const [credits, setCredits] = useState(false);
 
   useEffect(() => { void refreshMacSystem(); }, []);
@@ -83,19 +68,18 @@ export function AboutSection() {
 
   return (
     <div className="space-y-6">
-      <SettingsCard divided={false} className={cn(SETTINGS_ROW, 'flex items-center gap-3')}>
-        <Logo size={40} />
-        <div className="min-w-0 flex-1 space-y-0.5">
-          <div className={SETTINGS_ROW_TITLE}>AppuBot</div>
-          <div className={SETTINGS_ROW_DESCRIPTION}>
-            Version <span className="selectable font-mono text-fg-2">{version}</span>
-          </div>
+      {/* the app: its icon, its name over its version, and where its update stands in one quiet line; the button sits
+          level with the middle of the card */}
+      <SettingsCard divided={false} className={cn(SETTINGS_ROW, 'flex items-center gap-4')}>
+        <Logo size={48} className="shrink-0" />
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <div className="text-[15px] leading-5 font-medium text-fg">AppuBot</div>
+          <div className="selectable text-[13px] leading-[18px] text-fg-2 tabular-nums">Version {version}</div>
           {line ? (
-            <div className={cn(SETTINGS_ROW_DESCRIPTION, 'selectable', update?.state === 'error' && 'text-danger', update?.state === 'ready' && 'text-fg-2')}>{line}</div>
+            <div className={cn('selectable text-[13px] leading-[18px] text-muted', update?.state === 'error' && 'text-danger', update?.state === 'ready' && 'text-fg-2')}>{line}</div>
           ) : null}
-          {computer.remote ? <div className={cn(SETTINGS_ROW_DESCRIPTION, 'selectable')}>{cloudLine(computer, cloud)}</div> : null}
         </div>
-        <UpdateButton update={update} />
+        <div className="shrink-0"><UpdateButton update={update} /></div>
       </SettingsCard>
 
       <SettingsGroup title={LINKS_TITLE}>

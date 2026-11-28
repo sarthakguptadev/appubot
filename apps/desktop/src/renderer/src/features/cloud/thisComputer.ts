@@ -42,17 +42,3 @@ export function useCloudUpToDate(): boolean | undefined {
   const upToDate = useCloud((s) => (team ? s.view?.teams?.find((t) => t.team.id === team)?.computer : s.view?.computer)?.fix?.upToDate);
   return remote ? upToDate : undefined;
 }
-
-/**
- * The remote computer on screen as the account knows it: the version it runs (`CloudComputer.version`, the one Fix
- * your computer shows), the newest one and whether it is on it. Empty on this Mac, or while the account hasn't said.
- */
-export function useCloudVersion(): { version?: number; latestVersion?: number; upToDate?: boolean } {
-  const remote = useCloudLink((s) => s.computer === 'cloud');
-  const team = useCloudLink((s) => s.team);
-  const version = useCloud((s) => (team ? s.view?.teams?.find((t) => t.team.id === team)?.computer : s.view?.computer)?.computer?.version);
-  const latestVersion = useCloud((s) => (team ? s.view?.teams?.find((t) => t.team.id === team)?.computer : s.view?.computer)?.fix?.latestVersion);
-  const upToDate = useCloudUpToDate();
-  if (!remote) return {};
-  return { ...(version !== undefined ? { version } : {}), ...(latestVersion !== undefined ? { latestVersion } : {}), ...(upToDate !== undefined ? { upToDate } : {}) };
-}
