@@ -9,6 +9,26 @@ import type { ReleaseNotes } from './whatsNew';
  */
 export const RELEASES: readonly ReleaseNotes[] = [
   {
+    version: '2026.1128.2',
+    features: [
+      {
+        id: 'bot-screen-desktop',
+        title: 'Every bot’s screen is a full desktop',
+        description: 'On AppuBot Cloud, each bot’s own screen now shows the same desktop as your cloud computer, with the wallpaper and the dock at the bottom, instead of a black screen.',
+      },
+      {
+        id: 'simpler-screen-view',
+        title: 'A simpler screen view',
+        description: 'A bot’s Computer tab shows just its screen. Expand opens it straight to full size, with Take control under the screen and Esc to go back, and Watch in a chat opens that bot’s own screen.',
+      },
+      {
+        id: 'screen-try-again',
+        title: 'Try again when a screen can’t start',
+        description: 'If a bot’s screen can’t start, the viewer says so and offers Try again, instead of reconnecting over and over.',
+      },
+    ],
+  },
+  {
     version: '2026.1128.1',
     features: [
       {
