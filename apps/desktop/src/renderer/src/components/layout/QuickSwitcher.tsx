@@ -8,7 +8,7 @@ import { COMPUTER_USE, TEACH, shortcut } from '../../lib/platform';
 import { getState, macSettingsOf, ui, useStore } from '../../lib/store';
 import { setThreadEffort, setThreadModel } from '../../lib/choices';
 import { macCall, updateMacSettings } from '../../lib/thisMac';
-import { SETTINGS_PAGES, settingsNavItem, settingsTrail } from '../../features/settings/nav';
+import { SETTINGS_PAGES } from '../../features/settings/nav';
 import { settingRows as settingSearchRows } from '../../features/settings/settingsSearch';
 import { updateSettings } from '../../features/settings/sections/shared';
 import { openFind } from '../../features/chat/ThreadSearch';
@@ -118,7 +118,7 @@ function pages(botId: string | null): Record<PageId, Page | null> {
     } : null,
     settings: {
       title: 'Settings', icon: Settings, placeholder: 'Pick a settings page…',
-      rows: SETTINGS_PAGES.map((t) => pick(`tab:${t.id}`, t.label, () => ui.openSettings(t.id), { icon: t.icon, sub: settingsTrail(t.id) === t.label ? '' : settingsNavItem(t.id).label, verb: 'Open' })),
+      rows: SETTINGS_PAGES.map((t) => pick(`tab:${t.id}`, t.label, () => ui.openSettings(t.id), { icon: t.icon, verb: 'Open' })),
     },
   };
 }

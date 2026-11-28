@@ -12,9 +12,9 @@ import { machineParams, t } from '../../lib/i18n';
  * Settings taxonomy shared by the sidebar nav, the page header and the settings search (Synara's settingsNavigation).
  *
  * Pages (`SETTINGS_PAGES`, one per `SettingsSection`) are what deep links, `ui.openSettings` and the search name; the
- * sidebar (`SETTINGS_NAV_ITEMS`) is shorter: four groups of rows, a row holding one page or a few as tabs along the
- * top of its page (Agents › Usage › Instructions, Apps › Vault, Computer use › Permissions, About › What’s new). Every
- * page id still opens (its row, its tab), so old links and the search keep working.
+ * sidebar (`SETTINGS_NAV_ITEMS`) has one row per page, in five groups, and no page hides behind tabs on another (the
+ * owner's call 2026-11-28: Vault, Usage, Instructions, Permissions and What’s new each got their own row). The ids are
+ * the ones the tabs had, so every old link opens its page directly.
  *
  * The groups are named for what is in them (the owner's ask 2026-11-14, after You / AppuBot / Bots / This Mac read
  * as arbitrary): Account (the person, the money, the team), AI (what bots think and speak with), Connections (what
@@ -26,7 +26,7 @@ export type SettingsGroupId = 'account' | 'ai' | 'connections' | 'computer' | 'a
 
 export interface SettingsPage {
   id: SettingsSection;
-  /** the page's tab label (and its name in the search) */
+  /** the page's name in the nav, over the page and in the search */
   label: string;
   /** the line under the page's title */
   description: string;
@@ -35,8 +35,6 @@ export interface SettingsPage {
 
 export interface SettingsNavItem extends SettingsPage {
   group: SettingsGroupId;
-  /** the pages it holds, as tabs when more than one shows; the first is the row's own */
-  pages: SettingsSection[];
 }
 
 /*
@@ -55,8 +53,8 @@ export const SETTINGS_NAV_GROUPS: { id: SettingsGroupId; label: string }[] = [
 ];
 
 /**
- * The Computer use tab: allowing it, background mode, the bot's cursor, and while the system still has to allow
- * something, a way to the Permissions tab (where Teach mode's "Set up" goes too).
+ * The Computer use page: allowing it, background mode, the bot's cursor, and while the system still has to allow
+ * something, a way to the Permissions page (where Teach mode's "Set up" goes too).
  */
 export const SHOW_COMPUTER_SETTINGS = COMPUTER_USE;
 
@@ -100,53 +98,44 @@ export function settingsPage(id: SettingsSection): SettingsPage {
   return SETTINGS_PAGES.find((s) => s.id === id) ?? SETTINGS_PAGES[0]!;
 }
 
-const row = (group: SettingsGroupId, pages: SettingsSection[], label?: string): SettingsNavItem => {
-  const first = settingsPage(pages[0]!);
-  return {
-    id: first.id,
-    icon: first.icon,
-    get label() { return label ?? first.label; },
-    get description() { return first.description; },
-    group,
-    pages,
-  };
+const row = (group: SettingsGroupId, id: SettingsSection): SettingsNavItem => {
+  const page = settingsPage(id);
+  return { id, icon: page.icon, group, get label() { return page.label; }, get description() { return page.description; } };
 };
 
 export const SETTINGS_NAV_ITEMS: SettingsNavItem[] = [
   // the account, the money and the team first: where people look for them (Team only while on one: SettingsView)
-  row('account', ['account']),
-  row('account', ['billing']),
-  row('account', ['team']),
-  // what bots think and speak with: Agents › Usage › Instructions (the instructions every bot gets, beside the agents)
-  row('ai', ['providers', 'usage', 'instructions']),
-  row('ai', ['voice']),
-  // what bots reach and what reaches them
-  row('connections', ['apps', 'vault']),
-  row('connections', ['channels']),
-  row('connections', ['devices']),
+  row('account', 'account'),
+  row('account', 'billing'),
+  row('account', 'team'),
+  // what bots think and speak with: the agents, how much of their plans is left, what every bot is told, their voice
+  row('ai', 'providers'),
+  row('ai', 'usage'),
+  row('ai', 'instructions'),
+  row('ai', 'voice'),
+  // what bots reach and what reaches them: apps and the Vault's saved logins beside them first
+  row('connections', 'apps'),
+  row('connections', 'vault'),
+  row('connections', 'channels'),
+  row('connections', 'devices'),
   // only while an AppuBot computer is on screen (SettingsView): one way, from this Mac to it
-  row('connections', ['transfer']),
+  row('connections', 'transfer'),
   // bots from another assistant (Grok Bot, dots, Muse…): a prompt to send it, then the file it answers with
-  row('connections', ['import']),
-  // how the computer behaves; where computer use doesn't exist, the row is Permissions alone
-  row('computer', ['general']),
-  ...(SHOW_COMPUTER_SETTINGS ? [row('computer', ['computer', 'permissions'])] : [row('computer', ['permissions'])]),
-  row('computer', ['storage']),
+  row('connections', 'import'),
+  // how the computer behaves; Computer use only where it exists, Permissions on every system
+  row('computer', 'general'),
+  ...(SHOW_COMPUTER_SETTINGS ? [row('computer', 'computer')] : []),
+  row('computer', 'permissions'),
+  row('computer', 'storage'),
   // the app itself
-  row('app', ['appearance']),
-  row('app', ['about', 'whats-new']),
+  row('app', 'appearance'),
+  row('app', 'about'),
+  row('app', 'whats-new'),
 ];
 
-/** The sidebar row a page sits in (its own, or the one it is a tab of). */
+/** The sidebar row of a page (General's for Computer use where it doesn't exist). */
 export function settingsNavItem(id: SettingsSection): SettingsNavItem {
-  return SETTINGS_NAV_ITEMS.find((s) => s.pages.includes(id)) ?? SETTINGS_NAV_ITEMS.find((s) => s.id === 'general')!;
-}
-
-/** where a page is, for the search's second line: "Agents › Usage", or the row alone ("Billing") */
-export function settingsTrail(id: SettingsSection): string {
-  const nav = settingsNavItem(id);
-  const page = settingsPage(id);
-  return nav.label === page.label ? nav.label : `${nav.label} › ${page.label}`;
+  return SETTINGS_NAV_ITEMS.find((s) => s.id === id) ?? SETTINGS_NAV_ITEMS.find((s) => s.id === 'general')!;
 }
 
 /** Stable DOM id for a setting row or group, so search results can scroll to it. */

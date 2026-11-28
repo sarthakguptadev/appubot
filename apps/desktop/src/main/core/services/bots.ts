@@ -260,7 +260,7 @@ ${memoryIsEmpty(memory) ? '(empty)' : capMemory(memory, MEMORY_LOAD_MAX).text}
 
 export class BotsService {
   constructor(private ctx: CoreCtx) {
-    // instructions for every bot changed (Settings › Agents › Instructions): every bot's generated file follows, and its
+    // instructions for every bot changed (Settings › Instructions): every bot's generated file follows, and its
     // agents restart with resume at their next turn (the rendered text is in the profile key)
     ctx.s.settings.onChange((next, prev) => {
       if (next.globalInstructions === prev.globalInstructions) return;
