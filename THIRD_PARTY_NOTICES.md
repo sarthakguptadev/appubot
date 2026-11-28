@@ -227,6 +227,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
+## The store badges
+
+`apps/desktop/src/renderer/src/assets/store-badges`, shown in the app's Get AppuBot for mobile window, each linking to AppuBot's page in its store, unaltered.
+
+- `app-store.svg`: Apple's "Download on the App Store" badge (black, US-UK), from https://developer.apple.com/app-store/marketing/guidelines/. App Store and the Apple logo are trademarks of Apple Inc., registered in the U.S. and other countries.
+- `google-play.png`: Google's "Get it on Google Play" badge, from https://play.google.com/intl/en_us/badges/. Google Play and the Google Play logo are trademarks of Google LLC.
+
 ## The README's logos
 
 `assets/readme/logos`, used in the README only (the download buttons and the Telegram section); nothing in the app uses them.

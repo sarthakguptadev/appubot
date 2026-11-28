@@ -2,11 +2,15 @@
  * Where to get the phone app, as two codes a phone's camera reads: iPhone (the App Store) and Android (Google Play), the
  * links the site's phone cards use (`lib/links.ts`). Shown wherever a phone is paired: onboarding's Pair step,
  * Settings › Devices' pairing view and its empty state. Each code is also a button that opens the link here.
+ * The account menu's "Get AppuBot for mobile" opens `PhoneAppDialog`: one code for the site's phone downloads, which
+ * offers the store of the phone that opens it, and the stores' own badges under it.
  */
 import { useEffect, useState } from 'react';
-import { ANDROID_APP_URL, IOS_APP_URL } from '../../lib/links';
+import { ANDROID_APP_URL, IOS_APP_URL, PHONE_DOWNLOAD_URL } from '../../lib/links';
 import { native } from '../../lib/native';
-import { cn } from '../../components/ui';
+import { Dialog, cn } from '../../components/ui';
+import appStoreBadge from '../../assets/store-badges/app-store.svg';
+import googlePlayBadge from '../../assets/store-badges/google-play.png';
 
 /** A QR of `text` as a data URL (the encoder loads with the first use), or null while it's made. */
 export function useQrDataUrl(text: string, px = 320): string | null {
@@ -52,5 +56,42 @@ export function PhoneAppCodes({ size = 88, className }: { size?: number; classNa
     <div className={cn('flex items-start justify-center gap-3', className)}>
       {APPS.map((a) => <PhoneAppCode key={a.key} url={a.url} device={a.device} via={a.via} on={a.on} size={size} />)}
     </div>
+  );
+}
+
+/**
+ * The stores' badges as Apple and Google publish them, unaltered: Apple's black "Download on the App Store" (its grey
+ * edge keeps it clear on a dark page too) and Google's "Get it on Google Play", whose picture carries its own clear space
+ * round the badge (41 of its 250px each way), drawn so both badges stand the same height.
+ */
+const BADGE_H = 40;
+const PLAY = { h: 250, badge: 168, pad: 41 } as const;
+const STORES = [
+  { key: 'ios', url: IOS_APP_URL, label: 'Download on the App Store', src: appStoreBadge, height: BADGE_H, margin: 0 },
+  { key: 'android', url: ANDROID_APP_URL, label: 'Get it on Google Play', src: googlePlayBadge, height: (BADGE_H * PLAY.h) / PLAY.badge, margin: -(BADGE_H * PLAY.pad) / PLAY.badge },
+] as const;
+
+/** Get AppuBot on a phone: a code to scan, and the two stores' badges, each opening its store. */
+export function PhoneAppDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const qr = useQrDataUrl(PHONE_DOWNLOAD_URL, 528);
+  return (
+    <Dialog open={open} onClose={onClose} size="sm" title="Get AppuBot for mobile" description="Scan with your phone’s camera to download it.">
+      <div className="flex flex-col items-center gap-6 pt-3 pb-2">
+        <span className="flex size-[200px] items-center justify-center rounded-card bg-white shadow-[0_0_0_1px_var(--ab-hairline)]">
+          {qr ? <img src={qr} alt={`Code for ${PHONE_DOWNLOAD_URL}`} width={176} height={176} draggable={false} /> : <span className="block size-[176px] rounded-[4px] bg-[#f0f0f0]" />}
+        </span>
+        <div className="flex items-center justify-center gap-3">
+          {STORES.map((s) => (
+            <a
+              key={s.key} href={s.url} aria-label={s.label} title={s.label}
+              onClick={(e) => { e.preventDefault(); void native().openExternal(s.url); }}
+              className="flex rounded-[8px] focus-visible:shadow-[0_0_0_2px_var(--ab-ring)] focus-visible:outline-none"
+            >
+              <img src={s.src} alt={s.label} draggable={false} style={{ height: s.height, margin: s.margin }} />
+            </a>
+          ))}
+        </div>
+      </div>
+    </Dialog>
   );
 }

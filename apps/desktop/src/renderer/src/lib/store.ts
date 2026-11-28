@@ -25,6 +25,8 @@ export type Modal =
   | { kind: 'new-bot' }
   | { kind: 'teach' }
   | { kind: 'pair' }
+  /** where to get the phone app: a code to scan and the stores' badges (the account menu's Get AppuBot for mobile) */
+  | { kind: 'phone-app' }
   /** the first time an AppuBot computer is on screen here (CloudWelcome: the full-window first visit) */
   | { kind: 'cloud-welcome'; teamName?: string }
   /** a cloud computer refused this one as a device too many: its devices, to remove one (CloudDevicesDialog) */

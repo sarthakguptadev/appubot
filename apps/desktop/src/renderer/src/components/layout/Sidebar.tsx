@@ -415,8 +415,8 @@ function ConnectApps() {
  * Who is using AppuBot, at the foot's left: their picture (or initials) and name, signed in; else the Settings gear and
  * its word. Only a lost connection puts a dot on it. It opens the account menu, in three groups: the plan (Upgrade plan,
  * not on the top plan; Invite teammates, on a Work plan you run; how much is used lives in Settings › Usage, not here:
- * the owner's call, 2026-11-28), then AppuBot on your phone, Support (a chat with us or an email) and Settings, then
- * Log out. The row has no fill of its own, under the pointer, pressed or open (the owner's call, 2026-11-27: "rm
+ * the owner's call, 2026-11-28), then AppuBot on your phone (a code to scan and the stores' badges), Support (a chat
+ * with us or an email) and Settings, then Log out. The row has no fill of its own, under the pointer, pressed or open (the owner's call, 2026-11-27: "rm
  * this hover bro on name"). The name is grey at rest and turns white under the pointer and while the menu is open.
  * The picture is the round buttons' size with their edge, centred on their line, so the foot reads as one row of circles.
  */
@@ -438,7 +438,7 @@ function AccountButton({ down }: { down: boolean }) {
   const items: (MenuItem | 'separator')[] = [
     ...planRows,
     ...(planRows.length ? ['separator' as const] : []),
-    { label: 'Get AppuBot for mobile', icon: Smartphone, onSelect: () => ui.openModal({ kind: 'pair' }) },
+    { label: 'Get AppuBot for mobile', icon: Smartphone, onSelect: () => ui.openModal({ kind: 'phone-app' }) },
     { label: 'Support', icon: Headset, onSelect: () => {}, items: [
       { label: 'Chat with us', icon: MessageCircle, onSelect: openSupport },
       { label: 'Email us', icon: Mail, onSelect: emailSupport },
